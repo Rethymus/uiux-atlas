@@ -1,0 +1,30 @@
+---
+import EntryDetail from "@/components/EntryDetail.astro";
+import { getCollection } from "astro:content";
+import { CATEGORIES } from "@/lib/types";
+import type { EntrySchema } from "@/lib/types";
+
+interface Props {
+  entryId: string;
+  schema: EntrySchema;
+}
+
+// entryId 形如 "styles/glassmorphism";category 段必须落在 CATEGORIES 封闭列表内
+export async function getStaticPaths() {
+  const entries = await getCollection("entries");
+  return entries.flatMap((entry) => {
+    const [category, slug] = entry.id.split("/");
+    if (!slug || !CATEGORIES.some((c) => c.id === category)) return [];
+    return [
+      {
+        params: { category, slug },
+        props: { entryId: entry.id, schema: entry.data as unknown as EntrySchema },
+      },
+    ];
+  });
+}
+
+const { entryId, schema } = Astro.props;
+---
+
+<EntryDetail entryId={entryId} schema={schema} locale="en" />

@@ -1,0 +1,101 @@
+{
+  "name": "OKLCH Color Workflow",
+  "aliases": ["oklch 选色工作流", "感知均匀选色", "Perceptual color picking"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "CSS 官方感知均匀色彩空间 oklch():固定 L 只调 C/H,让对比度可预测、色板可推导。",
+    "en": "CSS's official perceptually uniform space oklch(): fix L, vary only C/H — predictable contrast, derivable palettes."
+  },
+  "origin": {
+    "zh": "oklch 是 Oklab(Björn Ottosson,2020)的柱坐标形式,收录进 CSS Color 4;『固定 L 调 C/H』的选色工作流由 Evil Martians《OKLCH in CSS》系统化(调研 06§1/§2)。",
+    "en": "oklch is the cylindrical form of Oklab (Björn Ottosson, 2020), standardized in CSS Color 4; the fix-L workflow was systematized by Evil Martians' 'OKLCH in CSS' (research 06 §1/§2)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "L",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 80,
+      "effect": {
+        "zh": "感知亮度 0–100%。默认 80(=0.8):Evil Martians 工作流中『L=0.8 的任何色相配黑字都清晰』;L≥87% 的背景配黑字对比度全部达标。",
+        "en": "Perceived lightness 0–100%. Default 80 (=0.8): in the Evil Martians workflow 'any hue at L=0.8 pairs clearly with black text'; backgrounds at L≥87% all pass contrast with black text."
+      }
+    },
+    {
+      "type": "number",
+      "name": "C",
+      "min": 0,
+      "max": 0.37,
+      "step": 0.005,
+      "default": 0.12,
+      "effect": {
+        "zh": "色度(chroma),0=灰。上限 0.37 取自 Evil Martians 实测的 sRGB 色域边界(P3 屏略高);理论值可到 0.5(MDN),但日常 UI 越过 0.37 即开始溢出 sRGB。",
+        "en": "Chroma; 0 = gray. The 0.37 cap is Evil Martians' measured sRGB gamut boundary (slightly higher on P3 screens); the theoretical max is ~0.5 (MDN), but everyday UI starts clipping sRGB past 0.37."
+      }
+    },
+    {
+      "type": "number",
+      "name": "H",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 220,
+      "effect": {
+        "zh": "色相角 0–360°。Evil Martians 经验映射:红≈20°、黄≈90°、绿≈140°、蓝≈220°、紫≈320°;默认 220=蓝。同一 L/C 下改 H,对比度几乎不变。",
+        "en": "Hue angle 0–360°. Evil Martians' rule of thumb: red ≈ 20°, yellow ≈ 90°, green ≈ 140°, blue ≈ 220°, purple ≈ 320°; default 220 = blue. At fixed L/C, changing H barely moves contrast."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "oklch() 自 2023 年 5 月起全主流浏览器支持(CSS Color 4,Baseline 广泛可用);相对颜色语法 oklch(from …) 属 CSS Color 5,支持较新。demo 的换算与显示是纯 JS 数学,不依赖浏览器 oklch 支持。",
+      "en": "oklch() is supported across all mainstream browsers since May 2023 (CSS Color 4, Baseline widely available); the relative-color syntax oklch(from …) belongs to CSS Color 5 with newer support. The demo's conversion and display are pure JS math and don't rely on the browser's oklch support."
+    },
+    "baseline": "2023"
+  },
+  "fallback": {
+    "zh": "老浏览器收到不了 oklch() 时,先声明 rgb()/hex 再覆写 oklch()(@supports 包裹);demo 用 JS 换算出 sRGB 后直接以 rgb() 上色,天然兼容。",
+    "en": "Browsers without oklch() should get rgb()/hex first with the oklch() override wrapped in @supports; the demo converts to sRGB in JS and paints with rgb(), so it is compatible by construction."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "从品牌主色推导整套色阶:固定 L/微调 C,明暗档感知均匀", "en": "Deriving a full scale from one brand color: fix L, nudge C — perceptually even steps" },
+      { "zh": "头像/标签按内容色相染色而亮度恒定(示例:oklch(from var(--dominant) 0.8 0.17 h))", "en": "Tinting avatars/tags by content hue at constant lightness (e.g. oklch(from var(--dominant) 0.8 0.17 h))" },
+      { "zh": "宽色域渐变插值(in oklab/oklch),避免 sRGB 插值的脏灰带", "en": "Wide-gamut gradient interpolation (in oklab/oklch) avoiding sRGB's muddy gray bands" },
+      { "zh": "主题工程:组件只引用语义变量,亮暗主题换映射表;hover 用相对颜色 calc(l + 0.1)", "en": "Theming: components reference semantic tokens only; hover via relative color calc(l + 0.1)" }
+    ],
+    "avoid": [
+      { "zh": "把高色度原值直接上线——Chrome/Safari 目前直接裁剪 RGB 而非降色度,色相会肉眼可见地跑偏,建议手写 P3 覆盖规则", "en": "Shipping raw high-chroma values — Chrome/Safari still clip RGB instead of gamut-mapping, visibly shifting hue; hand-write P3 overrides instead" },
+      { "zh": "只用 OKLCH 就宣布可访问性达标——对比度仍需用 WCAG/APCA 校验(Evil Martians 原文警示)", "en": "Claiming accessibility from OKLCH alone — contrast still needs WCAG/APCA verification (Evil Martians' own warning)" },
+      { "zh": "把 oklch 的 H 当 hsl 的 H 使用——两套色相角度并不重合(oklch 的红≈20°,hsl 的红=0°)", "en": "Reusing hsl hue angles in oklch — the two scales don't coincide (oklch red ≈ 20°, hsl red = 0°)" }
+    ]
+  },
+  "a11y": {
+    "zh": "WCAG 2.1 对比度阈值(不得四舍五入):正文 AA≥4.5:1、AAA≥7:1;大字(≥18pt 或 ≥14pt 粗体)AA≥3:1、AAA≥4.5:1;UI 组件边界≥3:1(SC 1.4.11)。固定 L 的最大收益就是对比度可预测——但预测后仍要在最差组合上复核;Evil Martians 明示『仅靠 OKLCH 不保证可访问性,还需 APCA 校验』。",
+    "en": "WCAG 2.1 contrast thresholds (no rounding up): body text AA≥4.5:1, AAA≥7:1; large text (≥18pt or ≥14pt bold) AA≥3:1, AAA≥4.5:1; UI component boundaries≥3:1 (SC 1.4.11). The core payoff of fixed L is predictable contrast — which still must be re-checked on the worst-case pairing; Evil Martians explicitly states 'OKLCH alone doesn't guarantee accessibility; verify with APCA.'"
+  },
+  "sources": [
+    "https://evilmartians.com/chronicles/oklch-in-css-a-utility-for-perceptually-uniform-color-systems",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch",
+    "https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现 OKLCH 选色工作流:用 L/C/H 三个感知分量生成主色,固定 L 保证对比度可预测,并实时换算 sRGB 与对黑/白两色底的 WCAG 对比度。",
+      "en": "Implement the OKLCH picking workflow: derive a color from the perceptual L/C/H components, keep L fixed for predictable contrast, and live-convert to sRGB with WCAG contrast against black and white."
+    },
+    "acceptance": [
+      { "zh": "颜色由 oklch(L% C H) 拼串生成,三个分量独立可调", "en": "The color is built from oklch(L% C H) with three independently tunable components" },
+      { "zh": "oklch→sRGB 用标准数学(Ottosson 矩阵 + gamma),不引第三方包", "en": "oklch→sRGB uses standard math (Ottosson matrices + gamma) with no third-party packages" },
+      { "zh": "实时显示对黑/白两色底的对比度比值与 WCAG AA(4.5)/AAA(7) 通过状态", "en": "Show live contrast ratios against black and white with WCAG AA (4.5) / AAA (7) pass states" },
+      { "zh": "越出 sRGB 色域时如实标注(浏览器现状是直接裁剪 RGB)", "en": "Flag sRGB gamut overflow honestly (browsers currently clip RGB outright)" },
+      { "zh": "对比度判定不得四舍五入达标(WCAG 原文要求)", "en": "Never round contrast ratios up to pass (explicit WCAG requirement)" }
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "name": "Stagger Orchestration (Motion)",
+  "aliases": ["交错入场", "逐项编排", "staggerChildren"],
+  "category": "motion",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "Motion 变体编排:容器把 staggerChildren 下发给子项,每个列表项错峰入场——第 i 项在 i × stagger 后启动,总铺开时间 = stagger × (n−1)。",
+    "en": "Motion variant orchestration: the container hands staggerChildren down to its children, and list items enter in sequence — item i starts at i × stagger, with total spread = stagger × (n−1)."
+  },
+  "origin": {
+    "zh": "Motion transitions 文档的编排能力:delay(负值=中途开始)、repeat、repeatType,文档页目录明确含「delay and stagger」编排(stagger 细节未被调研截取,调研 04§1.3);demo 用变体的 staggerChildren 实现,单位为秒。",
+    "en": "The orchestration capability of Motion's transitions docs: delay (negative = start mid-flight), repeat, repeatType, with the docs page's TOC explicitly listing \"delay and stagger\" orchestration (stagger details were not captured by the research, research 04 §1.3); the demo implements it via variant staggerChildren, which is in seconds."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stagger",
+      "min": 0,
+      "max": 200,
+      "step": 5,
+      "default": 40,
+      "unit": "ms",
+      "effect": {
+        "zh": "相邻子项的启动间隔,demo 换算成秒传给 Motion 变体的 staggerChildren。调研只记载 Motion 文档页含「delay and stagger」编排能力,staggerChildren 默认值未被截取——40ms 为社区常见值,未证实。",
+        "en": "The start interval between adjacent children; the demo converts it to seconds for Motion's staggerChildren. The research only records that the Motion docs page covers \"delay and stagger\" orchestration, without the staggerChildren default — 40ms is a common community value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "items",
+      "options": [
+        { "value": "3", "label": { "zh": "3 项", "en": "3 items" } },
+        { "value": "4", "label": { "zh": "4 项", "en": "4 items" } },
+        { "value": "5", "label": { "zh": "5 项", "en": "5 items" } },
+        { "value": "6", "label": { "zh": "6 项", "en": "6 items" } },
+        { "value": "7", "label": { "zh": "7 项", "en": "7 items" } },
+        { "value": "8", "label": { "zh": "8 项", "en": "8 items" } }
+      ],
+      "default": "5",
+      "effect": {
+        "zh": "子项数量(演示用枚举)。总铺开时间 = stagger × (n−1) 随项数线性增长——项数越多,同样 stagger 下末项等待越久。",
+        "en": "Number of children (a demo enum). Total spread = stagger × (n−1) grows linearly with item count — more items mean a longer wait for the last one at the same stagger."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "客户端 JS 动效库,不依赖新 CSS 特性;需 JS 可执行,禁用 JS 时列表直接以最终状态渲染。本次调研未逐浏览器核验其支持矩阵。",
+      "en": "A client-side JS animation library with no reliance on new CSS features; requires JS, and the list renders in its final state without it. Its per-browser matrix was not audited in this research pass."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时去掉位移、改用纯 opacity 交错淡入(淡入淡出降级)——大平移是前庭障碍的常见触发源(MDN prefers-reduced-motion,调研 04§6.1),节奏保留、位移取消。",
+    "en": "Under prefers-reduced-motion, drop the displacement and cross-fade with opacity only (a fade fallback) — large translations are a common vestibular trigger (MDN prefers-reduced-motion, research 04 §6.1); the rhythm stays, the movement goes."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "列表/卡片组的首次入场(导航项、功能区、结果列表)", "en": "First entrance of lists/card groups (nav items, feature blocks, result lists)" },
+      { "zh": "向导/表单的分步揭示,引导视线按序推进", "en": "Step-by-step reveals in wizards/forms that walk the eye in order" },
+      { "zh": "叙事型页面的节奏性入场,配合 M3 进入类时长档位(decelerate 250–400ms,调研 04§1.4)", "en": "Rhythmic entrances on narrative pages, paired with M3's enter-class duration tiers (decelerate 250–400ms, research 04 §1.4)" }
+    ],
+    "avoid": [
+      { "zh": "长列表(>20 项)整段 stagger——末项等待线性拉长,用户会错过尾部内容", "en": "Staggering the whole of long lists (>20 items) — the last item's wait grows linearly and users miss the tail" },
+      { "zh": "用户主动触发的重复操作(每次点击都点名入场)", "en": "User-initiated repeated actions (a roll-call entrance on every click)" },
+      { "zh": "需要立刻可用的关键路径——编排感不能以可读性为代价(HIG:动效可取消、简短精确)", "en": "Critical paths that must be instantly usable — orchestration must not cost readability (HIG: motion is cancellable and brief)" }
+    ]
+  },
+  "a11y": {
+    "zh": "位移类入场是前庭触发源,必须响应 prefers-reduced-motion(降级为 opacity 淡入);列表保持 ul/li 语义,动画不改变可达性结构;末项落定前的内容不应承载关键信息,或提供「跳过」路径(HIG:动效可取消)。",
+    "en": "Displacement entrances are vestibular triggers and must honor prefers-reduced-motion (fade to opacity); the list keeps ul/li semantics and animation never changes the accessibility tree; content before the last item settles should not carry key information, or offer a skip path (HIG: motion is cancellable)."
+  },
+  "sources": [
+    "https://motion.dev/docs/react-transitions"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个列表的错峰入场:N 个列表项从下方 16px 处淡入上浮,相邻项延迟按快照 stagger 错开,容器变体用 staggerChildren 编排;显示总铺开时间 stagger × (n−1)。",
+      "en": "Replicate a staggered list entrance: N list items fade in and rise 16px, adjacent items offset by the snapshot stagger, orchestrated by a container variant with staggerChildren; display the total spread stagger × (n−1)."
+    },
+    "acceptance": [
+      { "zh": "容器变体 transition.staggerChildren = 快照 stagger(换算成秒),子项共享 itemVariants", "en": "The container variant sets transition.staggerChildren = snapshot stagger (converted to seconds); children share itemVariants" },
+      { "zh": "第 i 项延迟 ≈ i × stagger,第一项 0 延迟立即入场", "en": "Item i starts at ≈ i × stagger; the first item has zero delay" },
+      { "zh": "只动画 opacity 与 translate(合成器属性)", "en": "Animate only opacity and translate (compositor properties)" },
+      { "zh": "prefers-reduced-motion: reduce 时去掉位移,改纯 opacity 交错淡入", "en": "Under prefers-reduced-motion: reduce, drop displacement and cross-fade with opacity only" },
+      { "zh": "列表为语义 ul/li,参数或重播变化时整段编排从头重放", "en": "The list is semantic ul/li; parameter or replay changes restart the whole orchestration" }
+    ]
+  }
+}

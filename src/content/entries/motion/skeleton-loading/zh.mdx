@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+骨架屏是「同一张卡片的两个状态」:占位态用几何色块复刻内容布局,内容就绪后快速淡入覆盖。占位块与内容块**尺寸对齐**,切换时不发生布局跳动:
+
+```html
+<div class="card" aria-busy="true">
+  <!-- 占位态(纯装饰,读屏跳过) -->
+  <div class="sk-avatar sk-block" aria-hidden="true"></div>
+  <div class="sk-line sk-block" style="width: 62%" aria-hidden="true"></div>
+  <!-- 内容态(淡入覆盖) -->
+  <img class="avatar" src="…" alt="" />
+  <h3 class="name">Ada Lovelace</h3>
+</div>
+```
+
+- M3 把 skeleton loaders 列为六大转场模式之一:「UI 抽象,暗示内容加载后出现的位置」,用**微妙脉动**表示不确定进度(视觉走向:从屏幕左上到右下),内容加载完成后**快速淡入**覆盖骨架(调研 04§2.2);
+- Luke Wroblewski《Avoid The Spinner》:进度指示让人「盯着钟看」,骨架屏让注意力落在「内容正在到来」而非「等待」,Polar 用它消灭了 spinner(调研 04§2.2);
+- 色块是纯装饰,加载语义走 aria-busy 与文字状态,不依赖动画。
+
+## 样式与参数
+
+脉动用 transform 扫光实现(合成器友好,web.dev 性能底线,调研 04§1.5):
+
+```css
+.sk-block { position: relative; overflow: hidden; background: <基色>; }
+.sk-block::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%;
+  background: linear-gradient(90deg, transparent, hsla(0 0% 100% / 0.4), transparent);
+  animation: sk-sweep var(--skeleton-duration, 1200ms) ease-in-out infinite;
+}
+@keyframes sk-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}
+/* diagonal:120° 渐变 + 对角位移,对应 M3「左上→右下」的视觉走向 */
+```
+
+两个参数:
+
+- `pulse`(CSS 型,`--skeleton-duration`):脉动周期。M3 只要求「微妙脉动」,**未记载数值**——1200ms 为社区常见值,未证实;
+- `direction`(JS 型,demo 切 `data-dir`):horizontal=经典左→右扫光;diagonal=120° 渐变对角扫过(M3 的左上→右下走向,调研 04§2.2)。
+
+**加载选型阈值(NN/g,调研 04§2.2)——先选型,再决定要不要骨架:**
+
+| 预期加载时长 | 官方建议 |
+| --- | --- |
+| &lt;1s | 即时状态变化(按钮按压态等),不做指示器 |
+| ≥1s | 必须给进度指示 |
+| 2–10s | 循环动画(spinner / 循环进度条 / 骨架脉动) |
+| ≥10s | 百分比进度条 + 文字说明(如 "Loading comments…");>10s 再附完成时间估计 |
+
+有进度指示时用户满意度更高、平均可等待约 3 倍时长(NN/g 转述内布拉斯加大学实验)。
+
+## 动效与交互
+
+- **状态切换**:demo 点「重新加载」重进占位态,1.8s 后内容淡入(演示用时长,落在 NN/g「≥1s 必须指示」区间);
+- **内容淡入**:200ms + M3 Standard easing `cubic-bezier(0.2, 0, 0, 1)`(M3 short4 档 200ms + Standard easing,调研 04§1.4/§2.6);
+- **切换零跳动**:占位块与内容块同尺寸同圆角,布局位移为 0——骨架屏「稳定布局」的价值所在;
+- **reduced-motion**:扫光停用(色块保持静态基色)、淡入直出;「正在加载」由 aria-busy + `role="status"` 文字兜底;
+- spinner 与骨架的取舍:同为不确定进度,骨架保留布局线索(lukew),循环动画适合 2–10s(NN/g)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `pulse` | 呼吸更舒缓、更「微妙」;>2.4s 后扫光变得难以察觉,用户可能以为页面静止 | 脉动急促抢眼,违反 M3「微妙」要求;600ms 时接近闪烁 |
+| `direction` | diagonal 沿 M3 的左上→右下走向,大面积卡片上方向感更强 | horizontal 是社区最常见形态,扫描线更「直给」;两者都只改视觉走向,不改语义 |
+
+选型口诀:先问「大概等多久」——&lt;1s 什么都不做,1–10s 用骨架/循环指示,≥10s 上百分比进度;骨架只在**布局可预知**时有意义。

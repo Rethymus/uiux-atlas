@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+毛玻璃是三层结构,顺序不能颠倒:**丰富的背景**(照片或多层渐变)在最底下,**玻璃面板**(含 `backdrop-filter`)浮在中间,内容在最上层。
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <div class="glass-card">
+    <h3>标题</h3>
+    <p>正文</p>
+  </div>
+</div>
+```
+
+关键点:
+
+- 玻璃面板必须是背景的**兄弟层**,`backdrop-filter` 模糊的是面板身后透出的所有内容;
+- 背景越丰富(色彩、明暗跨度大),玻璃的「厚度感」越强;放在纯色底上玻璃直接失效;
+- 面板上的文字与控件是普通文档流,不参与模糊。
+
+## 样式与参数
+
+五个参数对应四条 CSS 声明与一个 `data-variant` 开关,全部经 `--glass-*` 变量注入:
+
+```css
+.glass-card {
+  background-color: var(--glass-fill);        /* oklch(1 0 0 / 0.15) ≈ rgba(255,255,255,.15) */
+  border: 1px solid var(--glass-border);      /* oklch(1 0 0 / 0.3) ≈ rgba(255,255,255,.3) */
+  border-radius: var(--glass-radius);         /* 20px */
+  -webkit-backdrop-filter: blur(var(--glass-blur)); /* Safari 9–17 前缀 */
+  backdrop-filter: blur(var(--glass-blur));   /* 20px */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /* 柔投影,来自生产实测 */
+}
+
+/* 深色变体:生产实测配方 rgba(17,25,40,0.55)(superdesign.dev) */
+.glass-card[data-variant="dark"] { color: #f5f7fa; }
+.glass-card[data-variant="dark"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(17, 25, 40, 0.55);
+}
+```
+
+数值出处:
+
+- `blur(20px)` + 白 15% 填充 + `1px rgba(255,255,255,.3)` 描边 + 圆角 20px = **glassmorphism.com 生成器经典配方**;
+- 生产实测(superdesign.dev 抓取生产 CSS):Apple 全局导航 `blur(20px)+saturate(180%)`、Framer 10px、Reflect 4–22px、Resend 25px;圆角集中在 16–20px;
+- 浏览器支持:Chrome/Edge 76+、Firefox 103+、Safari 9+ 带 `-webkit-` 前缀、Safari 18(2024-09)起无前缀。
+
+## 动效与交互
+
+玻璃本身是静态材质,动效克制即可:
+
+- **变体切换**:demo 订阅参数面板的 `variant`,改写卡片 `data-variant`;深色薄层用 0.25s opacity 过渡;
+- **入场**:卡片淡入 + 10px 上移,只动 `opacity/translate`(合成器属性);`prefers-reduced-motion` 时取消;
+- **背景内容移动**(视频、滚动)时,`backdrop-filter` 每帧重新采样,大面积玻璃代价高——动画只落在 `transform/opacity` 上(web.dev 性能准则);
+- hover 位移、阴影加深属于可选项,高频操作上应省略(Apple HIG:高频交互避免加动效)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `blur` | 玻璃更「厚」,背后内容更不可辨;>30px 后糊成一片且采样开销上升 | 趋近透明色块;低于 6px 失去玻璃感(生产实测下限约 4px,Reflect) |
+| `fill` | 更白更实,可读性变好但「玻璃感」减弱;alpha 过高退化成普通卡片 | 更透更脆;低于 8% 时接近裸背景,文字对比度不可控 |
+| `border` | 亮边更亮更硬,边缘更清晰 | 边缘消失,玻璃与背景粘连——玻璃感约一半靠这条 1px 亮边 |
+| `radius` | 更「App 卡片」,注意与内层圆角同心(Apple Liquid Glass 的同心圆角规则) | 退化为普通矩形;低于 16px 失去玻璃卡的标志性轮廓 |
+| `variant` | dark 叠加深色薄层、反白文字,对比度更容易守住 | light 是白霜配方,浅背景上必须额外核对文字对比度 |
+
+经验区间:blur 10–25px、fill 白 10–15% alpha、圆角 16–20px;多层玻璃叠放会让透出内容互相发浑,单层是常态。

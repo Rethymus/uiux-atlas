@@ -1,0 +1,120 @@
+{
+  "name": "Bento Grid",
+  "aliases": ["便当盒布局", "Bento Box Layout", "便当格"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "一个 CSS Grid 上的不等大小圆角卡槽阵列,以格子大小编码信息优先级——Apple 2022-09 发布会后成为 SaaS 功能区的默认形态;是布局不是配色。",
+    "en": "An array of unequal rounded slots on one CSS Grid, encoding information priority through cell size — the default shape of SaaS feature sections after Apple's 2022-09 keynote; it is a layout, not a color scheme."
+  },
+  "origin": {
+    "zh": "取名自日式便当盒;Apple 2020 年 M1 芯片页已是雏形,2022 年 9 月发布会与 WWDC 2022 幻灯片令设计社区截图逆向并风行,2023 年 Linear/Vercel/Raycast 等使其成为 SaaS 功能区默认形态;2026 年从时尚转向标准布局惯例(全年生成占比 1.6%→1.3%)(调研 03§9)。",
+    "en": "Named after the Japanese bento box; Apple's 2020 M1 page was an early form, the September 2022 keynote and WWDC 2022 slides made design communities reverse-engineer it into a craze, and by 2023 Linear/Vercel/Raycast had made it the default SaaS feature-section shape; by 2026 it matures from fashion into standard layout convention (share 1.6%→1.3%) (research 03 §9)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "cols",
+      "options": [
+        { "value": "2", "label": { "zh": "2 列", "en": "2 columns" } },
+        { "value": "3", "label": { "zh": "3 列", "en": "3 columns" } },
+        { "value": "4", "label": { "zh": "4 列", "en": "4 columns" } },
+        { "value": "6", "label": { "zh": "6 列", "en": "6 columns" } }
+      ],
+      "default": "4",
+      "cssVar": "--bento-cols",
+      "effect": {
+        "zh": "列数,注入 grid-template-columns: repeat(N, minmax(0,1fr))。默认 4 列取自调研配方 repeat(4, minmax(0,1fr))(superdesign.dev);6 列适合规格数字密的展示;2/3 列用于窄容器。列数变化会重排全部 span,注意保持 hero 格的支配地位。",
+        "en": "Column count, injected as grid-template-columns: repeat(N, minmax(0,1fr)). The default 4 comes from the documented recipe repeat(4, minmax(0,1fr)) (superdesign.dev); 6 suits dense spec numbers; 2/3 fit narrow containers. Changing columns re-flows every span — keep the hero cell dominant."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "rowHeight",
+      "unit": "px",
+      "min": 120,
+      "max": 260,
+      "step": 1,
+      "default": 180,
+      "cssVar": "--bento-row",
+      "effect": {
+        "zh": "行高(grid-auto-rows)。默认 180px 取自调研配方 grid-auto-rows: 180px(superdesign.dev);行高是全部格子的节奏单位,hero 格占 2 行即 2×行高+gap。",
+        "en": "Row height (grid-auto-rows). Default 180px from the documented recipe grid-auto-rows: 180px (superdesign.dev); row height is the rhythm unit for every cell — a hero spans 2 rows = 2×row + gap."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--bento-gap",
+      "effect": {
+        "zh": "格间间隙。默认 16px 取自调研配方 gap: 16px(superdesign.dev);「紧凑网格+统一间隙」是 bento 的识别特征,间隙不统一会立刻散架。",
+        "en": "Gap between cells. Default 16px from the documented recipe gap: 16px (superdesign.dev); 'a compact grid with one uniform gap' is the signature — uneven gaps fall apart instantly."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 24,
+      "cssVar": "--bento-radius",
+      "effect": {
+        "zh": "单元格圆角。默认 24px 为调研标注的标志值(区间 20–28px);低于 16px 时「退化为普通卡片」,bento 的视觉身份消失(superdesign.dev)。",
+        "en": "Cell corner radius. Default 24px is the documented signature value (range 20–28px); below 16px cells 'degrade into ordinary cards' and the bento identity disappears (superdesign.dev)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS Grid 与 repeat()/span 全平台可用;demo 用容器查询(@container)让断点随演示台宽度而非视口变化,生产按调研用视口媒体查询(768px→2 列、480px→1 列并重置 span)即可。",
+      "en": "CSS Grid with repeat()/span works everywhere; the demo uses container queries (@container) so breakpoints track the stage width rather than the viewport — production can use the documented viewport media queries (768px→2 columns, 480px→1 column with spans reset)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 Grid 的环境退化为纵向堆叠的等宽卡片(自动回退到 block 布局),层级信息丢失但内容完整;使用 grid-auto-flow: dense 时务必先确认焦点顺序可接受,否则去掉 dense 改为手动排布。",
+    "en": "Without Grid support, cells stack vertically as equal-width cards (natural block fallback): hierarchy is lost but content survives. When using grid-auto-flow: dense, verify the focus order first — otherwise drop dense and place cells manually."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "SaaS 产品功能区的默认形态(2023 年起 Linear/Vercel/Raycast 一代的通行做法,调研 03§9)", "en": "The default shape of SaaS feature sections (the Linear/Vercel/Raycast generation's convention since 2023, research 03 §9)" },
+      { "zh": "产品规格展示:最大格=最重要事实,规格数字进小格(Apple 式)", "en": "Spec showcases: the largest cell = the most important fact, spec numbers in small cells (Apple-style)" },
+      { "zh": "发布页、年度回顾、个人主页的模块化摘要", "en": "Launch pages, year-in-review and personal-site modular summaries" }
+    ],
+    "avoid": [
+      { "zh": "需要严格阅读顺序的内容列表——span 重排与 dense 回填会打乱顺序(调研 03§9 可访问性陷阱)", "en": "Content lists needing a strict reading order — spans and dense backfill scramble the order (a research §9 a11y trap)" },
+      { "zh": "每格内容超过一个事实——「每格自包含一个事实」是 bento 的内容纪律", "en": "More than one fact per cell — 'each cell holds one fact' is the bento content discipline" },
+      { "zh": "长文阅读与线性叙事——格子化会切碎叙事流", "en": "Long-form reading and linear narrative — gridding chops the flow" }
+    ]
+  },
+  "a11y": {
+    "zh": "调研明示三大陷阱:①grid-auto-flow: dense 使视觉顺序≠DOM 顺序,键盘焦点乱跳,违反 WCAG 2.4.3(焦点顺序)与 1.3.2(有意义序列)——dense 仅用于纯装饰网格或以 DOM 顺序为视觉顺序;②图文混排需逐格核对 4.5:1 文本对比;③移动端退化为无层级长滚动时,信息优先级随视觉层级一起丢失,注意保持标题与语义顺序。",
+    "en": "The research names three traps: (1) grid-auto-flow: dense makes visual order ≠ DOM order so keyboard focus jumps around, violating WCAG 2.4.3 (Focus Order) and 1.3.2 (Meaningful Sequence) — use dense only for decorative grids or keep DOM order as visual order; (2) mixed text/image cells each need a 4.5:1 check; (3) when mobile degrades to a flat long scroll, information priority vanishes with the visual hierarchy — preserve headings and semantic order."
+  },
+  "sources": [
+    "https://superdesign.dev/styles/bento-grid",
+    "https://design-styles.enlighten-media.net/pages/bento-ui/",
+    "https://www.deck.gallery/blog/apple-bento-grid-decks-roundup/",
+    "https://bentogrids.com"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块 bento 功能区:repeat(N, minmax(0,1fr)) 网格、统一 gap、标志圆角、2×2 hero 格与 span 2 宽格/高格,dense 回填,响应式断点降列。",
+      "en": "Replicate a bento feature grid: a repeat(N, minmax(0,1fr)) grid, one uniform gap, the signature radius, a 2×2 hero with span-2 wide/tall cells, dense backfill, and column reduction at responsive breakpoints."
+    },
+    "acceptance": [
+      { "zh": "grid-template-columns: repeat(N, minmax(0,1fr)) 且 gap 全局统一(默认 16px)", "en": "grid-template-columns: repeat(N, minmax(0,1fr)) with one uniform gap (default 16px)" },
+      { "zh": "行高取参数值(默认 180px),hero 格 span 2×2", "en": "Row height uses the parameter value (default 180px); the hero cell spans 2×2" },
+      { "zh": "单元格圆角取参数值(默认 24px,不低于 16px)", "en": "Cell radius uses the parameter value (default 24px, never below 16px)" },
+      { "zh": "格子大小编码优先级:最大格放最重要事实,每格自包含一个事实", "en": "Cell size encodes priority: the largest cell carries the most important fact, one fact per cell" },
+      { "zh": "断点降列(768px→2 列、480px→1 列并重置 span),DOM 顺序=阅读顺序,不依赖 dense 排序", "en": "Breakpoints reduce columns (768px→2, 480px→1 with spans reset); DOM order = reading order, no reliance on dense for sequencing" }
+    ]
+  }
+}

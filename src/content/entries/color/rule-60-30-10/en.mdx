@@ -1,0 +1,70 @@
+## Structure & DOM
+
+60-30-10 is a **role assignment** rule: the three colors are not any three colors — each owns a visual duty, and the shares are the "visual-area budget":
+
+- **60% dominant** — the large-area base tone, i.e. the background canvas in UI, usually a neutral (white / light gray / deep gray);
+- **30% secondary** — the secondary surfaces: sidebars, cards, panels, search bars (LogRocket's own enumeration);
+- **10% accent** — the minority of focus elements: CTAs, links, icons; the most vivid part of the interface (hype4: the accent is the "focus / call to action").
+
+The demo renders the three shares as a composition bar plus a wireframe scene:
+
+```html
+<div class="r-frame">
+  <section class="r-band r-dominant">…canvas skeleton…</section>
+  <section class="r-band r-secondary">…card skeletons…</section>
+  <section class="r-band r-accent">…CTA…</section>
+</div>
+```
+
+- Each band's `flex-grow` is driven by the normalized shares — **flex-grow allocates remaining space proportionally, so normalization happens for free**, corroborating the JS-computed percentages;
+- The three colors are the demo's fixed illustrative palette (white canvas / light-gray components / bright-blue button, matching LogRocket's Material example); **the params tune only the shares, never the colors**.
+
+## Styling & Parameters
+
+Three number params (0–100, JS-type, normalized inside the demo):
+
+```ts
+// normalization inside the demo: the sum need not equal 100
+const total = dominant + secondary + accent;
+const pct = (v: number) => (total === 0 ? 0 : (v / total) * 100);
+// 60/30/10 → 60% / 30% / 10%; 70/40/20 → 53.8% / 30.8% / 15.4%
+```
+
+- The defaults **60 / 30 / 10** are the rule's defining values, consistent across both LogRocket and hype4 (research 06 §9);
+- Classic examples (LogRocket): Material **white 60 / light-gray components 30 / bright-blue button 10**; Spotify **black 60 / deep gray 30 / vibrant green 10** — the same rule holds in both light and dark themes;
+- The rule originates in interior design, and both sources state it is **a guideline, not a hard rule** — the shares are a budget line, not a pixel metric.
+
+At the theme layer the three roles become three semantic variables — components reference roles only, while shares and values are managed centrally in the theme:
+
+```css
+:root {
+  --role-dominant: var(--neutral-0);   /* 60%: the canvas, usually a neutral */
+  --role-secondary: var(--neutral-50); /* 30%: cards / sidebar / panels */
+  --role-accent: var(--brand-500);     /* 10%: CTAs / links / icons */
+}
+.dark {
+  /* dark-mode mapping flip; brighten and desaturate the accent here (M3 convention, above) */
+  --role-dominant: var(--neutral-950);
+  --role-secondary: var(--neutral-900);
+  --role-accent: var(--brand-300);
+}
+```
+
+**Dark-mode caution (hype4's exact wording, research 06 §13)**: in dark mode avoid oversaturated colors — too much contrast causes visual fatigue. The official footnote is M3's practice: dark accents brighten and desaturate (light `#6750A4` → dark `#D0BCFF`, research 06 §7/§14). The research also makes clear that quantified conventions like "desaturate by 15–30% overall in dark mode" have **no reliable quantified standard found** — the direction is trustworthy, the magnitude has no official number; verify visually.
+
+## Motion & Interaction
+
+- Changing any share re-lays-out the three bands immediately; the readout bar shows the **normalized percentages** (one decimal);
+- Width changes transition over 0.3s, animating only `flex-grow` (restrained motion, short duration); `prefers-reduced-motion` removes the transition;
+- The readout also reports the raw total: when the three values don't sum to 100, the demo explicitly says "total X → normalized", so nobody mistakes the shares for broken;
+- The rule itself carries no motion semantics; if accent elements get micro-motion (hover brightening), animate only `transform/opacity`, and avoid high-saturation flicker in dark mode.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `dominant` | steadier, airier canvas with more breathing room; past ~70% the secondary surfaces start to look thin | the canvas is squeezed and the page turns "noisy"; the dominant loses its large-area anchoring role |
+| `secondary` | secondary surfaces expand and perceived density rises; near the dominant's share the hierarchy starts to blur | cards/panels wither and content lacks a footing; near 0 only the two poles of canvas and CTA remain |
+| `accent` | more, more visible focal elements; but once the accent is no longer scarce the "focus" semantics dilute and the page turns busy (hype4: don't make every color vivid) | the CTA lacks presence and the call to action goes unnoticed; near 0 the interface keeps only two neutral tiers |
+
+Exercise: drag the shares to 70/20/10, 40/40/20 and watch the readout bar to feel the "budget shifting" — every point the dominant gives up becomes presence for secondary and accent; stable interfaces almost always keep the accent in the smallest share.

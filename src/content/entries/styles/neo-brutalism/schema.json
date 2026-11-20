@@ -1,0 +1,114 @@
+{
+  "name": "Neo-Brutalism",
+  "aliases": ["新粗野主义", "Neubrutalism", "Neo Memphis"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "黑描边+零模糊硬偏移阴影+糖果色几何块面:粗野主义的「可商用化」分支,把常规 UX 包在响亮的块面里。",
+    "en": "Black outlines + zero-blur hard offset shadows + candy-colored geometric blocks: the commercialized branch of brutalism, wrapping conventional UX in loud shapes."
+  },
+  "origin": {
+    "zh": "daisyUI 风格库将其定义为「late-2010s 和 2020 年代的数字风格,把常规 UX 包裹在响亮的几何块、深色描边、硬偏移阴影、平面色块和夸张字体里」,又称 Neo Memphis;2023 年起在 SaaS 落地页与独立产品中成为「新酷」(调研 03§6)。",
+    "en": "Defined by daisyUI as \"a digital style of the late 2010s and 2020s that wraps conventional UX in loud geometric blocks, dark outlines, hard offset shadows, flat color blocks and exaggerated typography\", also called Neo Memphis; the 'new cool' on SaaS landing pages and indie products since 2023 (research 03 §6)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "shadowOffset",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 4,
+      "cssVar": "--nb-shadow",
+      "effect": {
+        "zh": "硬偏移阴影的 x/y 偏移量(零模糊、纯黑)。默认 4px 取自判定配方 box-shadow: 4px 4px 0 #000——「出现 4px 4px 0 #000 硬阴影即新粗野主义」(superdesign.dev)。这是该风格最强的身份特征。",
+        "en": "The x/y offset of the hard shadow (zero blur, black). Default 4px comes from the signature recipe box-shadow: 4px 4px 0 #000 — 'a 4px 4px 0 #000 hard shadow is the tell of neo-brutalism' (superdesign.dev). The style's strongest identity marker."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "borderWidth",
+      "unit": "px",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "default": 3,
+      "cssVar": "--nb-border",
+      "effect": {
+        "zh": "黑色实线描边宽度。调研区间 2–4px(daisyUI 词条 059 与 superdesign.dev 均记载);默认 3px 为本条目基准(区间中值)。描边与硬阴影共同构成块面的「印刷感」轮廓。",
+        "en": "Solid black outline width. Research range 2–4px (daisyUI entry 059 and superdesign.dev); default 3px is this entry's baseline (mid-range). Outline and hard shadow together give the blocks their print-like silhouette."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--nb-radius",
+      "effect": {
+        "zh": "圆角半径。默认 0=直角,粗野主义的默认姿态(daisyUI:直角或极小圆角);上限 16px 覆盖社区常见的「圆角新粗野」变体,但圆角越大硬阴影的「错位感」越弱。",
+        "en": "Corner radius. Default 0 = square corners, brutalism's default posture (daisyUI: square or minimally rounded); the 16px cap covers the community's rounded variant, though larger radii weaken the shadow's offset-dislocation feel."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#ff90e8",
+      "cssVar": "--nb-accent",
+      "effect": {
+        "zh": "单一饱和强调色,用于 CTA、高亮块与选中态。默认 #ff90e8 为社区常见糖果色示例(社区常见值,未证实——调研只记载「单一饱和强调色/高饱和扁平色块」,未给出具体色值);生产中常与黑、白、奶油底搭配。",
+        "en": "A single saturated accent for CTAs, highlight blocks and selected states. Default #ff90e8 is a community-common candy color sample (community value, unverified — the research records only 'a single saturated accent / saturated flat blocks' without a specific hex); production pairs it with black, white and cream bases."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "border、box-shadow、transform 全平台可用,无任何新 API;零模糊硬阴影甚至比柔影渲染更便宜。",
+      "en": "border, box-shadow and transform work everywhere — no new APIs; the zero-blur hard shadow is even cheaper to render than a soft one."
+    }
+  },
+  "fallback": {
+    "zh": "无兼容风险,退化方案只关乎可读性:高饱和强调色上的文本若对比不足,把文本色在黑/白之间切换并核对 4.5:1;描边+阴影全部移除后界面退回默认卡片,风格消失但功能不损。",
+    "en": "No compatibility risk; the degradation path is about readability: switch text between black and white on the saturated accent and verify 4.5:1; strip outlines and shadows and the UI falls back to plain cards — the style disappears, functionality does not."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "SaaS 落地页与独立产品品牌站——2023 年起的「新酷」主场(调研 03§6)", "en": "SaaS landing pages and indie product sites — the style's 'new cool' home since 2023 (research 03 §6)" },
+      { "zh": "设计社区、作品集、活动与营销页,需要强个性与反抛光姿态", "en": "Design communities, portfolios, campaign pages — strong personality and an anti-polish stance" },
+      { "zh": "表单与卡片仍走常规 UX——新粗野主义「把常规 UX 包在响亮块面里」,不牺牲可用性", "en": "Forms and cards keep conventional UX — neo-brutalism 'wraps conventional UX in loud blocks' without sacrificing usability" }
+    ],
+    "avoid": [
+      { "zh": "长文阅读界面——粗描边与高饱和色块对持续阅读是持续噪音", "en": "Long-form reading — fat outlines and saturated blocks are persistent noise" },
+      { "zh": "企业级严肃产品主界面与医疗/金融后台——风格气质与信任基调冲突", "en": "Serious enterprise shells and medical/finance backends — the look clashes with trust cues" },
+      { "zh": "多强调色堆叠——判据是单一饱和强调色,糖果色互相冲撞会失去印刷感", "en": "Stacking multiple accents — the recipe is a single saturated accent; clashing candies lose the print feel" }
+    ]
+  },
+  "a11y": {
+    "zh": "黑描边天然提供强边界对比(远超 SC 1.4.11 的 3:1);但高饱和糖果色上的文本必须逐个核对 4.5:1(深色文本于亮糖果色、白色文本于深糖果色)。硬阴影不得作为唯一焦点线索——焦点态加 3px offset 的 outline;按压/悬停位移在 prefers-reduced-motion 下取消过渡。",
+    "en": "Black outlines naturally supply strong boundary contrast (well beyond the 3:1 of SC 1.4.11); but text on saturated candy fills must be checked case by case at 4.5:1 (dark text on bright candy, white on deep candy). Hard shadows must never be the only focus cue — add a 3px-offset outline for focus; cancel press/hover shift transitions under prefers-reduced-motion."
+  },
+  "sources": [
+    "https://trends.daisyui.com/ui-design-trends-2025/",
+    "https://superdesign.dev/styles/brutalism",
+    "https://neobrutalism.dev"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块新粗野主义卡片:黑实线描边、零模糊硬偏移阴影(4px 4px 0 #000)、直角、单一糖果强调色,常规 UX 控件包裹在响亮块面里,按压时位移吞掉阴影。",
+      "en": "Replicate a neo-brutalist card: solid black outline, zero-blur hard offset shadow (4px 4px 0 #000), square corners, a single candy accent — conventional UX controls wrapped in loud blocks, with press swallowing the shadow via translation."
+    },
+    "acceptance": [
+      { "zh": "阴影配方 box-shadow: Npx Npx 0 #000(默认 4px 4px 0 #000),零模糊、零扩散", "en": "Shadow recipe box-shadow: Npx Npx 0 #000 (default 4px 4px 0 #000), zero blur, zero spread" },
+      { "zh": "描边为黑色实线(2–4px 区间,默认 3px),与阴影同色同系", "en": "Outline is a solid black line (2–4px range, default 3px), same family as the shadow" },
+      { "zh": "强调色只保留一个饱和糖果色;文本在其上核对 4.5:1", "en": "Exactly one saturated candy accent; text on it checked at 4.5:1" },
+      { "zh": "按压反馈:元素位移到阴影原点(translate N,N)且阴影归零,非阴影动画", "en": "Press feedback: element translates to the shadow origin (translate N, N) with the shadow zeroed — not a shadow animation" },
+      { "zh": "圆角默认 0;字体可用 Space Grotesk/Archivo 一类几何无衬线展示体", "en": "Radius defaults to 0; type may use geometric sans display faces like Space Grotesk / Archivo" }
+    ]
+  }
+}

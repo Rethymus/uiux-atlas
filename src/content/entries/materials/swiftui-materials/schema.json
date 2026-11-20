@@ -1,0 +1,93 @@
+{
+  "name": "SwiftUI Materials",
+  "aliases": ["SwiftUI 材质", "系统材质", "UIBlurEffect", "vibrancy"],
+  "category": "materials",
+  "system": "apple",
+  "star": 2,
+  "tagline": {
+    "zh": "SwiftUI 的六档背景材质(ultraThin…ultraThick、bar):介于前景与背景间的半透明层,前景自动获得 vibrancy;Web 端只能用 CSS 变量做近似对照。",
+    "en": "SwiftUI's six background materials (ultraThin…ultraThick, bar): translucent layers between foreground and background that grant the foreground vibrancy; on the web they can only be approximated with CSS variables."
+  },
+  "origin": {
+    "zh": "SwiftUI Material 六种:iOS 15+ 的 ultraThinMaterial / thinMaterial / regularMaterial / thickMaterial / ultraThickMaterial / bar(调研 02 §1 A8);前身是 UIKit UIBlurEffect 的 Style 常量族(A7);HIG vibrancy 层级 label/fill 多级 + separator(A10)。Web 端透明度近似为社区做法,官方未公布数值。",
+    "en": "SwiftUI Material six types: ultraThinMaterial / thinMaterial / regularMaterial / thickMaterial / ultraThickMaterial / bar on iOS 15+ (research 02 §1 A8), preceded by UIKit's UIBlurEffect style constants (A7); HIG vibrancy hierarchy labels/fills in tiers plus separator (A10). The web opacity approximations are community practice — Apple publishes no numbers."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "material",
+      "options": [
+        { "value": "ultraThin", "label": { "zh": "超薄 ultraThin", "en": "ultraThin" } },
+        { "value": "thin", "label": { "zh": "薄 thin", "en": "thin" } },
+        { "value": "regular", "label": { "zh": "标准 regular", "en": "regular" } },
+        { "value": "thick", "label": { "zh": "厚 thick", "en": "thick" } },
+        { "value": "ultraThick", "label": { "zh": "超厚 ultraThick", "en": "ultraThick" } },
+        { "value": "bar", "label": { "zh": "工具条 bar", "en": "bar" } }
+      ],
+      "default": "regular",
+      "effect": {
+        "zh": "官方六档背景材质(A8):材质是介于前景与背景间的半透明层,『类似重度磨砂玻璃』;越厚越不透明、文字对比度越稳;bar 专用于工具条。regular 为标准档,作 demo 默认。demo 订阅后切换 data-material,按社区近似表换 Web 薄层透明度与模糊(近似值,未证实)。",
+        "en": "The six official background materials (A8): a material is a translucent layer between foreground and background, 'like heavily frosted glass'; thicker means more opaque and steadier text contrast; bar is toolbar-specific. regular is the standard tier and the demo default. The demo subscribes and toggles data-material, mapping to web veil alpha and blur via the community approximation table (unverified values)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "vibrancy",
+      "options": [
+        { "value": "default", "label": { "zh": "default 主级", "en": "default" } },
+        { "value": "secondary", "label": { "zh": "secondary 次级", "en": "secondary" } },
+        { "value": "tertiary", "label": { "zh": "tertiary 三级", "en": "tertiary" } },
+        { "value": "quaternary", "label": { "zh": "quaternary 四级", "en": "quaternary" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "HIG vibrancy 层级(A10):label 与 fill 分 default→secondary→tertiary→quaternary 四级,对比度递减;separator 一级;**quaternary 在 ultraThin/thin 材质上禁用(对比度不足)**。材质上的前景自动获得 vibrancy,自定义 foregroundStyle 会关闭它(A8)。demo 高亮所选层级,并在禁用组合出现时显示官方警告。",
+        "en": "The HIG vibrancy hierarchy (A10): labels and fills come in default→secondary→tertiary→quaternary tiers of decreasing contrast, separator has one tier; **quaternary is disallowed on ultraThin/thin materials (insufficient contrast)**. Foreground on a material gets vibrancy automatically; a custom foregroundStyle turns it off (A8). The demo highlights the chosen tier and shows the official warning for the disallowed combination."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "官方材质仅 Apple 平台:iOS 15+/macOS 的 SwiftUI Material 与 UIBlurEffect(调研 02 §1 A7/A8)。Web 近似依赖 backdrop-filter:Chrome 76 / Firefox 103 / Safari 9(-webkit- 前缀,Safari 18 起无前缀)(调研 02 §4 D2 / 03 §1)。",
+      "en": "The official materials are Apple-only: SwiftUI Material and UIBlurEffect on iOS 15+/macOS (research 02 §1 A7/A8). The web approximation relies on backdrop-filter: Chrome 76 / Firefox 103 / Safari 9 (-webkit- prefix, unprefixed since Safari 18) (research 02 §4 D2 / 03 §1)."
+    }
+  },
+  "fallback": {
+    "zh": "Web 近似的透明度/模糊数值均为社区对照值——不支持 backdrop-filter 时,按所选材质档位提高填充不透明度(越厚越接近实色)保住文字可读;vibrancy 在 Web 无法复刻,文字对比度需按最亮/最暗透出背景手工核对。",
+    "en": "The web alpha/blur numbers are community mappings — without backdrop-filter support, raise the fill opacity by material tier (thicker = closer to solid) to keep text readable; vibrancy cannot be recreated on the web, so text contrast must be hand-checked against the brightest/darkest transmitted backdrop."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "工具条与标签栏(bar 材质的官方场景),列表行、卡片底等支撑层", "en": "Toolbars and tab bars (the official bar-material scene), list rows and card substrates" },
+      { "zh": "临时浮层:sheet、popover、菜单——按厚薄档位表达层级", "en": "Transient surfaces: sheets, popovers, menus — tier thickness expresses hierarchy" },
+      { "zh": "需要前景 vibrancy 的标签/图标层(材质之上前景自动获得 vibrancy,A8)", "en": "Label/icon layers that need foreground vibrancy (foreground over a material gets it automatically, A8)" }
+    ],
+    "avoid": [
+      { "zh": "ultraThin/thin 上放 quaternary 层级内容——官方禁用,对比度不足(A10)", "en": "quaternary-tier content on ultraThin/thin — officially disallowed for insufficient contrast (A10)" },
+      { "zh": "用自定义前景色替代 vibrancy 后仍期待系统对比度——自定义 foregroundStyle 会关闭 vibrancy(A8)", "en": "expecting system contrast after overriding the foreground — a custom foregroundStyle disables vibrancy (A8)" },
+      { "zh": "把 Web 近似数值当成官方数值——Apple 未公布材质的透明度/模糊数值", "en": "treating web approximation numbers as official — Apple publishes no alpha/blur figures for materials" }
+    ]
+  },
+  "a11y": {
+    "zh": "材质上的文字对比度按『透出背景最亮/最暗』两端核对 4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17);薄档材质(ultraThin/thin)上避免低对比层级(quaternary,官方禁用);vibrancy 不可用时用次级文字色等价替代。",
+    "en": "Check text on materials against the brightest/darkest transmitted backdrop for 4.5:1 (WCAG 2.1 SC 1.4.3, research 06 §V §17); avoid low-contrast tiers on thin materials (quaternary is officially disallowed); when vibrancy is unavailable, fall back to explicit secondary text colors."
+  },
+  "sources": [
+    "https://developer.apple.com/documentation/swiftui/material",
+    "https://developer.apple.com/design/human-interface-guidelines/materials",
+    "https://developer.apple.com/documentation/uikit/uiblureffect"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 CSS 变量近似复刻一档 SwiftUI 材质面板:半透明薄层 + 背景模糊,展示六档材质切换与 vibrancy 四级文字层级,并标出 quaternary 在薄材质上的官方禁用组合。",
+      "en": "Approximate a SwiftUI material panel with CSS variables: translucent veil + backdrop blur, showing the six material tiers and the four vibrancy text tiers, flagging the officially disallowed quaternary-on-thin combination."
+    },
+    "acceptance": [
+      { "zh": "material 枚举覆盖官方六档 ultraThin/thin/regular/thick/ultraThick/bar,默认 regular", "en": "The material enum covers the official six tiers ultraThin/thin/regular/thick/ultraThick/bar, defaulting to regular" },
+      { "zh": "Web 近似透明度按档位单调递增(越厚越实),并在 UI 注明『社区近似值,未证实』", "en": "Web approximation alphas increase monotonically by tier (thicker = more opaque), labeled 'community approximation, unverified' in the UI" },
+      { "zh": "vibrancy 层级演示 default→quaternary 四级对比度递减 + separator", "en": "The vibrancy demo shows default→quaternary with decreasing contrast plus a separator" },
+      { "zh": "quaternary + ultraThin/thin 组合显示官方禁用警告", "en": "The quaternary + ultraThin/thin combination shows the official disallowed warning" },
+      { "zh": "动效只动 transform/opacity,prefers-reduced-motion 时停用", "en": "Animate only transform/opacity; disabled under prefers-reduced-motion" }
+    ]
+  }
+}

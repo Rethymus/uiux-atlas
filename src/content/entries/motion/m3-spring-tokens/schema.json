@@ -1,0 +1,102 @@
+{
+  "name": "M3 Spring Tokens",
+  "aliases": ["Material 3 弹簧 token", "MotionScheme", "spring composite tokens"],
+  "category": "motion",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "M3 Expressive 的 motion physics 系统:scheme(expressive/standard)× speed(fast/default/slow)× type(spatial/effects) 共 12 枚 spring composite token,官方同步给出 Web 端 cubic-bezier 换算曲线与时长。",
+    "en": "M3 Expressive's motion physics system: scheme (expressive/standard) × speed (fast/default/slow) × type (spatial/effects) — 12 spring composite tokens, with official Web cubic-bezier conversions and durations."
+  },
+  "origin": {
+    "zh": "M3 官方 motion physics 系统以 spring(stiffness/damping/mass)替代旧 easing+duration 体系,提供 expressive/standard 两套 MotionScheme 预设(调研 02§B1);12 枚 composite token 的 Web cubic-bezier 换算表取自 m3.material.io/styles/motion/overview/specs(调研 02§B2);Compose MotionScheme 的 damping/stiffness 实现数值取自 androidx 官方源码(调研 02§B3)。",
+    "en": "M3's official motion physics system replaces the old easing+duration system with springs (stiffness/damping/mass) and ships two MotionScheme presets, expressive/standard (research 02 §B1); the 12 composite tokens' Web cubic-bezier conversions come from m3.material.io/styles/motion/overview/specs (research 02 §B2); the Compose MotionScheme damping/stiffness values come from the official androidx source (research 02 §B3)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "scheme",
+      "options": [
+        { "value": "expressive", "label": { "zh": "expressive(表达)", "en": "expressive" } },
+        { "value": "standard", "label": { "zh": "standard(标准)", "en": "standard" } }
+      ],
+      "default": "expressive",
+      "effect": {
+        "zh": "MotionScheme 预设(官方两套):expressive=空间弹簧过冲带回弹、整体更张扬(M3 Expressive 主打);standard=低回弹偏功能(调研 02§B1)。选 scheme 即整体切换 12 枚 token 的曲线与时长。",
+        "en": "The two official MotionScheme presets: expressive = spatial springs with overshoot and bounce, the more expressive M3 Expressive look; standard = low-bounce and functional (research 02 §B1). Switching scheme swaps the curves and durations of all 12 tokens."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "speed",
+      "options": [
+        { "value": "fast", "label": { "zh": "fast(快)", "en": "fast" } },
+        { "value": "default", "label": { "zh": "default(默认)", "en": "default" } },
+        { "value": "slow", "label": { "zh": "slow(慢)", "en": "slow" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "速度分档,同时决定官方换算曲线的时长与 Compose 弹簧的 stiffness:fast 150–350ms / default 200–500ms / slow 300–750ms(随 type 不同,调研 02§B2);Compose 侧 fast=高 stiffness、slow=低 stiffness(调研 02§B3)。",
+        "en": "Speed tier, which sets both the converted curve's duration and the Compose spring stiffness: fast 150–350ms / default 200–500ms / slow 300–750ms depending on type (research 02 §B2); on the Compose side fast = high stiffness, slow = low stiffness (research 02 §B3)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "type",
+      "options": [
+        { "value": "spatial", "label": { "zh": "spatial(空间)", "en": "spatial" } },
+        { "value": "effects", "label": { "zh": "effects(效果)", "en": "effects" } }
+      ],
+      "default": "spatial",
+      "effect": {
+        "zh": "spatial=空间弹簧,用于位移/尺寸等空间属性(曲线可过冲、y>1);effects=效果弹簧,用于颜色/透明度等状态反馈(damping=1.0 临界阻尼无过冲、时长更短,调研 02§B2/B3)。",
+        "en": "spatial = spatial springs for positional/size properties (curves may overshoot, y>1); effects = effect springs for state feedback like color/opacity (damping 1.0 = critically damped with no overshoot, shorter durations, research 02 §B2/B3)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Web 端消费的是官方给出的 cubic-bezier 换算——普通 CSS animation/transition,全浏览器可用,无新特性依赖;原生物理弹簧在 Compose(Android)侧实现。demo 用 CSS 曲线 + WAAPI 复现,极旧环境(无 Web Animations API)直出终态。",
+      "en": "On the Web these tokens are consumed via the official cubic-bezier conversions — plain CSS animation/transition, available in every browser with no new-feature dependency; the native physics springs live on the Compose (Android) side. The demo replays them with CSS curves + WAAPI; very old environments (no Web Animations API) output the final state directly."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时直出终态(demo 跳过 element.animate);不支持 Web Animations API 的环境同样直出终态——token 的信息(曲线/时长数值)始终以文本读数呈现,不依赖动画。",
+    "en": "Output the final state directly under prefers-reduced-motion (the demo skips element.animate); environments without the Web Animations API do the same — the token data (curve/duration values) is always shown as text and never depends on the animation."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "需要 M3 Expressive 风格的位移类转场:FAB 展开、卡片变换等空间属性动画(spatial)", "en": "M3 Expressive-style positional transitions: FAB expansion, container transforms and other spatial animations" },
+      { "zh": "状态反馈类动画(选中、颜色淡入)用 effects 档:临界阻尼、150–300ms,快而不弹", "en": "State-feedback animation (selection, color fades) on the effects tier: critically damped, 150–300ms, quick without bounce" },
+      { "zh": "跨端统一手感:Web 用官方 cubic-bezier 换算,Android 用 Compose MotionScheme 同名 token", "en": "Cross-platform consistency: Web consumes the official cubic-bezier conversions while Android uses the same-named Compose MotionScheme tokens" },
+      { "zh": "从 Material 迁移到 Web 端组件库时,以本表的曲线+时长为交付参数", "en": "Handing off Material designs to Web component libraries using this table's curves + durations" }
+    ],
+    "avoid": [
+      { "zh": "spatial 曲线(y>1 过冲)用在连续量(进度条、滚动同步)——过冲属装饰性位移", "en": "spatial curves (y>1 overshoot) on continuous quantities (progress bars, scroll sync) — overshoot is decorative displacement" },
+      { "zh": "把 expressive/standard 当作新旧体系之分——两者是并行 MotionScheme,旧 easing+duration 体系才是被替代项(调研 02§B1/B4)", "en": "Treating expressive/standard as old vs new — they are parallel MotionSchemes; the thing being replaced is the old easing+duration system (research 02 §B1/B4)" },
+      { "zh": "同屏高频操作全用 slow 档——slow 300–750ms 只适合大面积、少频次转场(M3 时长准则,调研 04§1.4)", "en": "slow tier on frequent same-screen operations — 300–750ms is for large, infrequent transitions (M3 duration rules, research 04 §1.4)" },
+      { "zh": "自行拼接贝塞尔冒充官方 token——数值必须逐枚取官方表(调研 02§B2),不得沿用社区流传的 M2 曲线", "en": "Fabricating Béziers in place of official tokens — values must be taken token-by-token from the official table (research 02 §B2), not from community-circulated M2 curves" }
+    ]
+  },
+  "a11y": {
+    "zh": "spatial 档的过冲属位移类动效,须响应 prefers-reduced-motion 直出终态(demo 已内建);effects 档时长短且临界阻尼,风险较低但仍建议一并降级;动效不作关键信息唯一渠道(HIG/M3 一致原则)。",
+    "en": "The spatial tier's overshoot is displacement motion and must honor prefers-reduced-motion with the final state (built into the demo); the effects tier is short and critically damped — lower risk, but degrade it too; motion is never the sole carrier of key information (shared HIG/M3 principle)."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/overview/specs",
+    "https://developer.android.com/reference/kotlin/androidx/compose/material3/MotionScheme",
+    "https://m3.material.io/styles/motion/overview"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "按 scheme/speed/type 快照选中官方 spring composite token,用其 Web 换算(cubic-bezier 曲线 + 时长)驱动一段芯片位移动画,并在读数区显示同名 Compose MotionScheme 的 damping/stiffness 与曲线数值。",
+      "en": "Select the official spring composite token for the scheme/speed/type snapshot, drive a chip travel animation with its Web conversion (cubic-bezier curve + duration), and display the same-named Compose MotionScheme damping/stiffness plus the curve values in a readout."
+    },
+    "acceptance": [
+      { "zh": "曲线与时长严格取官方 12 枚 token 表的对应行,不得自行拟合", "en": "Curves and durations come strictly from the official 12-token table row for the current combo; never fitted by hand" },
+      { "zh": "切换 scheme/speed/type 任一枚,动画立即以新 token 重跑", "en": "Switching any of scheme/speed/type re-runs the animation immediately with the new token" },
+      { "zh": "读数区并列展示 Web 换算曲线/时长与 Compose damping/stiffness(官方 androidx 数值)", "en": "The readout shows the Web conversion curve/duration alongside the Compose damping/stiffness (official androidx values)" },
+      { "zh": "prefers-reduced-motion: reduce 时直出终态", "en": "Under prefers-reduced-motion: reduce, output the final state directly" }
+    ]
+  }
+}

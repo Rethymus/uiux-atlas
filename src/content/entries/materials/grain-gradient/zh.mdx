@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+噪点渐变是「**渐变底 + 噪点覆盖层**」的双层结构:噪点由内联 SVG 的 `feTurbulence` 滤镜生成(以 data-URI 平铺,零请求),渐变一端留透明让噪点透出:
+
+```html
+<div class="scene">          <!-- isolation: isolate,防止混合模式外溢 -->
+  <div class="gradient"></div>
+  <div class="grain" aria-hidden="true"></div> <!-- 噪点层:data-URI + filter + opacity -->
+</div>
+<!-- 噪点 SVG 本体(baseFrequency/numOctaves 由参数驱动) -->
+<svg><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.65"
+  numOctaves="3" stitchTiles="stitch"/></filter>
+  <rect width="100%" height="100%" filter="url(#n)"/></svg>
+```
+
+关键点:
+
+- `type='fractalNoise'` + `stitchTiles='stitch'` 让噪点无缝平铺(CSS-Tricks 配方);
+- 叠加顺序:`background: linear-gradient(..., transparent), url(noise.svg)`——渐变一端透明是让噪点可见的前提;
+- 噪点层永远 `aria-hidden`,可整层移除而不丢信息。
+
+## 样式与参数
+
+四个参数中两个写进 SVG 滤镜(JS 型,改值需重建 data-URI),两个走 CSS 变量:
+
+```css
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: var(--grain-opacity);               /* 0.16,CodeFronts 轻量变体 */
+  filter: contrast(var(--grain-contrast)) brightness(1000%); /* 170% / 1000%,CSS-Tricks */
+  mix-blend-mode: multiply;                    /* 精修:只与渐变混合 */
+}
+.scene { isolation: isolate; }                 /* 防止 multiply 混到页面背景 */
+.grain {
+  background-image: url("data:image/svg+xml,..."); /* feTurbulence baseFrequency=0.65 numOctaves=3 */
+  background-size: 180px 180px;                /* data-URI 无法自然平铺,显式定尺寸 */
+}
+```
+
+数值出处:
+
+- `fractalNoise / baseFrequency 0.65 / numOctaves 3 / stitchTiles stitch` 与 `contrast(170%) brightness(1000%)`:**CSS-Tricks《Grainy Gradients》配方原文**(调研 06§15);
+- 噪点层 `opacity 0.16` 与「主作用是杀死渐变色带」:CodeFronts 轻量变体(该变体用 baseFrequency 0.9 / numOctaves 2 / rect opacity 0.55,调研 06§15)——本条目默认取 CSS-Tricks 的滤镜参数 + CodeFronts 的层透明度,组合已在参数 effect 注明;
+- `mix-blend-mode: multiply` + 父容器 `isolation: isolate` 是 CSS-Tricks 给出的精修路线;其评论区同时提示:极端 contrast/brightness 会丢色彩,mask 方案可能更高效——如实并列。
+
+## 动效与交互
+
+本条目默认**完全静止**——噪点是空间质感,不是时间动效:
+
+- 无 CSS 动画;若要「胶片颗粒抖动」,必须限帧(如 steps 动画切 background-position)并在 `prefers-reduced-motion` 时停用;
+- baseFrequency/numOctaves 改值时 demo 重建 data-URI:一次背景重绘,编辑期操作可接受;
+- contrast 参数走 CSS 变量,无需重建 SVG,改动即时生效。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `baseFrequency` | 颗粒变细变密(0.9 = CodeFronts 轻量变体);>0.9 接近电视雪花 | 颗粒变粗成「块状噪斑」;&lt;0.2 只剩几个大色块,失去均匀质感 |
+| `numOctaves` | 细节层次更多、更「胶片」;渲染成本同步上涨 | 噪点更平更均匀;1 时几乎无层次但仍保留消色带作用 |
+| `contrast` | 灰噪点推向黑白硬颗粒,风格化最强;>220% 色彩被吃掉(CSS-Tricks 评论提示) | 噪点退回均匀灰雾;100% 以下几乎看不出颗粒,只剩轻微 dither |
+| `grainOpacity` | 噪点压过渐变,「脏旧」感上升;>0.4 时文字下方开始干扰 | 趋向纯渐变;&lt;0.08 时消色带作用在部分屏上失效——0.16 是 CodeFronts 给的消带甜点 |
+
+经验区间:消色带用途 opacity 0.12–0.2 + contrast 100–170%;风格化用途 contrast 170–250% + opacity 0.25–0.5,但都要重新核对文字对比度。

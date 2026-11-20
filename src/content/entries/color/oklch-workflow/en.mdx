@@ -1,0 +1,61 @@
+## Structure & DOM
+
+The demo has two panes: a large swatch on the left (painted with the sRGB value live-converted from L/C/H, carrying black- and white-text samples) and a readout panel on the right — the `oklch()` string, the converted `rgb()`, and the contrast ratios against black and white with AA/AAA badges.
+
+```ts
+// oklch → sRGB: Ottosson's matrices (matching CSS Color 4), no third-party packages
+const l_ = L + 0.3963377774 * a + 0.2158037573 * b;  // a = C·cos(H), b = C·sin(H)
+const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+const [r, g, b2] = lmsToLinearSrgb(l_ ** 3, m_ ** 3, s_ ** 3);
+// linear sRGB → relative luminance → contrast
+const Y = 0.2126 * r + 0.7152 * g + 0.0722 * b2;
+const vsBlack = (Y + 0.05) / 0.05;   // black text on the swatch
+const vsWhite = 1.05 / (Y + 0.05);   // white text on the swatch
+```
+
+- The swatch paints with the converted `rgb()` while showing the original `oklch()` string — the whole conversion chain stays auditable;
+- Channels that fall outside sRGB are clipped, matching current browser behavior, and flagged honestly with a warning strip (Chrome/Safari do not yet gamut-map by reducing chroma as the spec requires — plain clipping visibly shifts the hue).
+
+## Styling & Parameters
+
+`oklch(L C H / A)` is the cylindrical form of Oklab (2020, Björn Ottosson), supported across all mainstream browsers since 2023-05 (Baseline). The workflow rules come from Evil Martians' "OKLCH in CSS":
+
+- **Fix L, vary only C/H**: colors sharing L share perceived lightness, so text contrast becomes predictable. Their example: content-tinted avatars via `oklch(from var(--dominant) 0.8 0.17 h)` — at L=0.8 any hue reads clearly with black text; **backgrounds at L≥87% all pass contrast with black text**;
+- **The measured chroma ceiling is ≈0.37** (the sRGB gamut edge; slightly higher on P3 screens); per MDN the theoretical max is ~0.5, and 100% = 0.4, not 1;
+- **Hue rules of thumb**: red ≈ 20°, yellow ≈ 90°, green ≈ 140°, blue ≈ 220° (this entry's default), purple ≈ 320° — these do not coincide with hsl angles (CIELab's red sits near 41°);
+- A bonus: old CIELab suffers the "blue turns purple" hue-drift defect between 270–330° — Oklab was created to fix exactly that;
+- Theming: components reference semantic tokens like `var(--error)` only; light/dark themes swap the mapping; hover derives via relative color `calc(l + 0.1)`.
+
+The full CSS posture of the workflow — sRGB fallback first, oklch override second, chroma released on P3:
+
+```css
+.swatch { background: rgb(82 207 243); }              /* base sRGB fallback */
+@supports (color: oklch(0.8 0.12 220)) {
+  .swatch { background: oklch(80% 0.12 220); }
+}
+@media (color-gamut: p3) {
+  .swatch { background: oklch(80% 0.2 220); }         /* release chroma on P3 */
+}
+/* hover lifts perceived lightness one step: relative color (CSS Color 5; calc may only add numbers, not 10%) */
+.swatch:hover { background: oklch(from oklch(80% 0.12 220) calc(l + 0.1) c h); }
+```
+
+## Motion & Interaction
+
+- Changing any parameter recomputes the swatch, `rgb()` and contrast ratios instantly — perceptual uniformity means dragging H spins the hue while contrast barely moves, and dragging L walks contrast along its scale;
+- The swatch background cross-fades over 0.18s via `transition` on `background-color` only; under `prefers-reduced-motion` the transition is dropped and values jump;
+- Contrast verdicts must **not be rounded up to pass** (explicit WCAG 2.1 requirement): 4.499:1 fails;
+- Threshold quick reference (WCAG 2.1 Understanding): body text AA 4.5:1 / AAA 7:1; large text (≥18pt or ≥14pt bold) 3:1 / 4.5:1; UI component boundaries 3:1 (SC 1.4.11);
+- Playing nice with wide gamut: P3's gamut volume is ~1.5× sRGB's; the standard posture is "base sRGB value + `@supports (color: color(display-p3 1 0 0))` + `@media (color-gamut: p3)` with hand-written vivid overrides" rather than trusting the browser to map;
+- Same for gradients: declare the interpolation space explicitly (`linear-gradient(in oklab, …)`) to avoid the muddy gray bands of default sRGB interpolation over long distances (Tailwind v4 moved its whole palette to oklch and defaults gradients to OKLAB interpolation).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `L` | lighter — contrast against black drops, against white rises; 0.8 is the sweet spot of the "pairs with black text" zone, and ≥87% always passes | darker — contrast against black rises, against white falls; below ~50% white text starts to become viable |
+| `C` | more vivid; near 0.37 it easily leaves the sRGB gamut and clipping shifts the hue (the demo raises its warning strip) | grayer; at C=0 the color is decided by L alone (pure neutral gray, with the most extreme black/white contrast ends) |
+| `H` | spins the hue wheel (220 = blue); at fixed L/C contrast barely moves — the core payoff of OKLCH's perceptual uniformity | spins the other way; some high-C regions trip gamut clipping while perceived lightness stays stable |
+
+Mnemonic: use L to set "how heavy this layer is", C for "how vivid", H for "which hue"; contrast stays predictable at every step — but still re-check it against the worst-case backdrop pairing, since Evil Martians themselves warn that "OKLCH alone doesn't guarantee accessibility; verify with APCA."

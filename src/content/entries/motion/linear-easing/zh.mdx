@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+linear-easing 是「JS 采样一次,浏览器插值一万次」的工具条目:JS 侧按弹簧物理方程采样出进度点序列,编译成一段 linear() 文本;之后动画完全由纯 CSS 播放,运行时不再需要 JS:
+
+```css
+/* 生成产物直接可用 */
+--spring-easing: linear(0, 0.014, 0.106, 0.352 18%, 1.08 31%, …, 1);
+.box {
+  animation: slide 1.42s var(--spring-easing) both;
+}
+```
+
+- linear() 用 ≥2 个进度点做分段线性插值,点可带 0–2 个百分比标记时间位置;**进度值可以越界**(如 1.08),overshoot 因此能原样保留(MDN,调研 04§1.2);
+- **Baseline 2023-12 起全浏览器可用**(调研 04§1.2);旧浏览器会丢弃整条 timing-function,先写 cubic-bezier 再写 linear(…) 兜底(cubic-bezier 的 y 值允许越界,可用 1.2 一类的值带一点 overshoot,调研 04§1.1):
+
+```css
+.box {
+  /* 回退:不支持 linear() 的浏览器用上一条 */
+  animation-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);
+  animation-timing-function: var(--spring-easing);
+}
+```
+
+- demo 的 `<pre>` 显示的就是当前正在应用的 linear() 文本,改滑杆立即重编译。
+
+## 样式与参数
+
+两个参数都是 JS 型弹簧输入(demo 以 mass=1 采样),算法参照 Jake Archibald linear() easing generator(调研 04§1.2、09§1.6):
+
+- `stiffness`(k)与 `damping`(c):demo 用半隐式欧拉积分 `a = −k(x−1) − c·v` 采样,每 8ms 取点,直到静止;
+- **默认值 170 / 26 是社区常见弹簧手感值(react-spring 的传统默认),调研未证实为官方数值**——css-easing-2 规范中没有 spring(),linear() 也没有官方默认参数(调研 09§1.6);
+- 抽稀与圆整沿用生成器公开约定:simplify=0.0017、round=3(README 链接参数可见,调研 04§8);demo 按 round=3 输出,抽稀后时间不均匀的点补 % 停留点;
+- mass 固定为 1(Motion 官方 mass 默认值,调研 04§1.3);想要更「重」的手感,把 k 与 c 同乘一个 &lt;1 的系数——阻尼比 ζ = c/(2√k) 不变、频率降低——再重新采样即可;
+- 产物大小(demo 独立脚本实测):默认 170/26 → 18 点、约 230 字符;最极端的 k=600/c=5 → 96 点、约 1.3KB——全站性产物建议抽稀后入库。
+
+```tsx
+// 采样核心(半隐式欧拉,mass = 1)
+let x = 0, v = 0, t = 0;
+while (t < 6) {
+  const a = -k * (x - 1) - c * v;   // 目标归一化为 1
+  v += a * dt; x += v * dt; t += dt;
+  if (t >= nextSample) points.push({ t, p: x });
+}
+```
+
+总时长:linear() 只定义形状,时长仍是普通 `animation-duration`——demo 取「模拟静止时刻」作为时长;想固定总时长(如对齐 M3 500ms 档),先定 duration 再按比例压缩采样时间轴即可。
+
+## 动效与交互
+
+- **编译即应用**:滑杆一改,linear() 重算,demo 立即用生成的 timing-function 重播 CSS 动画——生成什么就播什么,所见即所得;
+- **对照轨道**:第二条轨道用 `ease` 播同样的动画,有无 overshoot 一目了然;
+- **与物理弹簧的分界**:linear() 是**固定曲线**——没有速度状态、不可打断续速;要「跟手且可打断」的弹簧用 Motion(见 motion-spring 条目),要纯 CSS 产物才烘 linear()(Motion 的 duration+bounce 模式官方明示「可编译为纯 CSS」,同一条路径,调研 09§1.6);
+- **reduced-motion**:reduce 时不播动画、直出终态;`<pre>` 里的生成结果照常更新——这个条目的价值在产物,不在演示动画本身;
+- 零运行时:产物不携带 JS,可烧进任意框架或静态站。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stiffness` | 频率更高、到位更快,overshoot 更尖锐;600 时接近「抖针」,采样点变密 | 曲线更绵软,缓慢爬向目标;50 时接近慢速吸附,时长变长 |
+| `damping` | 振荡更早被吸收;超过临界(默认刚度下约 >26)转入过阻尼——无 overshoot 的平滑逼近,40 时基本无回弹 | 振荡次数增多;5 时多次来回弹跳,overshoot 段抽稀几乎全保留,产物文本显著变长 |
+
+采样提示:overshoot 段要保真,容差(0.0017)就得小、点就得密;round=3 在绝大多数 UI 行程上不可感知(调研 04§8 记载的生成器默认)。产物含越界值(>1)是合法且必要的——那是 overshoot 本身。
+
+本站实测(demo 独立脚本验证):默认 170/26 在 mass=1 下 ζ = 26/(2√170) ≈ 1.0,近乎临界阻尼——0.7s 干脆到位、无 overshoot;想看回弹把 damping 拖到 15 以下(ζ < 0.58),overshoot 立刻越过终点标线。

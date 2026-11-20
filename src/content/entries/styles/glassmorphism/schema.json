@@ -1,0 +1,126 @@
+{
+  "name": "Glassmorphism",
+  "aliases": ["毛玻璃", "Frosted Glass", "Glass UI"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "半透明磨砂玻璃面板:背景模糊 + 低透明度填充 + 1px 细亮描边,必须叠在丰富的彩色背景上才成立。",
+    "en": "Frosted-glass panels: backdrop blur + translucent fill + a 1px hairline light border — only reads as glass over a rich, colorful backdrop."
+  },
+  "origin": {
+    "zh": "术语由 Michał Malewicz(Hype4)创造并于 2020 年 11 月命名(glassmorphism.com 站点自述);生产参照系是 Apple 全局导航与 macOS Big Sur 半透明侧栏(调研 03§1)。",
+    "en": "The term was coined and named by Michał Malewicz (Hype4) in November 2020 per glassmorphism.com's own account; Apple's global nav and the macOS Big Sur translucent sidebar serve as production reference points (research 03 §1)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--glass-blur",
+      "effect": {
+        "zh": "backdrop-filter 背景模糊半径,玻璃『厚度感』的来源。默认 20px 取自 glassmorphism.com 生成器经典配方;生产实测:Apple 全局导航 20px、Framer 10px、Resend 25px(superdesign.dev)。",
+        "en": "backdrop-filter blur radius — the source of the glass 'thickness'. Default 20px is the glassmorphism.com generator's classic recipe; production: Apple global nav 20px, Framer 10px, Resend 25px (superdesign.dev)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "fill",
+      "format": "oklch",
+      "default": "oklch(1 0 0 / 0.15)",
+      "cssVar": "--glass-fill",
+      "effect": {
+        "zh": "玻璃底色(含透明度)。默认 oklch(1 0 0 / 0.15) 等价于生成器配方 rgba(255,255,255,0.15);白色 10–15% alpha 读作『霜面』(superdesign.dev)。",
+        "en": "Glass fill color incl. alpha. Default oklch(1 0 0 / 0.15) equals the generator recipe rgba(255,255,255,0.15); white 10–15% alpha reads as 'frost' (superdesign.dev)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "border",
+      "format": "oklch",
+      "default": "oklch(1 0 0 / 0.3)",
+      "cssVar": "--glass-border",
+      "effect": {
+        "zh": "1px 描边颜色,承接环境光的细亮边。默认 oklch(1 0 0 / 0.3) 等价于生成器配方 rgba(255,255,255,0.3);玻璃感约一半来自这条亮边。",
+        "en": "1px border color, the light-catching hairline. Default oklch(1 0 0 / 0.3) equals the generator recipe rgba(255,255,255,0.3); roughly half of the glass feel comes from this edge."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--glass-radius",
+      "effect": {
+        "zh": "圆角半径。默认 20px 为生成器配方;生产页面玻璃卡圆角集中在 16–20px(superdesign.dev)。",
+        "en": "Corner radius. Default 20px is the generator recipe; production glass cards cluster at 16–20px (superdesign.dev)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "light", "label": { "zh": "浅色玻璃", "en": "Light glass" } },
+        { "value": "dark", "label": { "zh": "深色玻璃", "en": "Dark glass" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-variant)。light=白霜玻璃(生成器配方);dark=深色玻璃变体,生产实测配方 rgba(17,25,40,0.55)(superdesign.dev),demo 会叠加深色薄层并反白文字。",
+        "en": "JS-type param (demo subscribes and toggles data-variant). light = white-frost glass (generator recipe); dark = dark glass variant with the production-measured rgba(17,25,40,0.55) recipe (superdesign.dev) — the demo stacks a dark veil and flips text to light."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "backdrop-filter:Chrome/Edge 76+(2019)、Firefox 103+(2022)、Safari 9+ 需 -webkit- 前缀,Safari 18(2024-09)起无前缀(调研 03§1)。",
+      "en": "backdrop-filter: Chrome/Edge 76+ (2019), Firefox 103+ (2022), Safari 9+ requires the -webkit- prefix; unprefixed since Safari 18 (2024-09) (research 03 §1)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 backdrop-filter 时,提高填充不透明度(或改用实色 surface)并保留描边与圆角,让文字回到实底上可读;Safari 9–17 记得写 -webkit-backdrop-filter。",
+    "en": "Without backdrop-filter support, raise the fill opacity (or switch to a solid surface) while keeping the border and radius so text sits on a readable base; on Safari 9–17 also write -webkit-backdrop-filter."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "彩色照片/渐变背景上的浮层卡片(登录卡、播放器、汇总卡)", "en": "Overlay cards over colorful photos or gradients (auth cards, players, summary cards)" },
+      { "zh": "悬浮导航与工具条——对照 Apple 全局导航 blur(20px)+saturate(180%)", "en": "Floating nav bars and toolbars — cf. Apple's global nav blur(20px)+saturate(180%)" },
+      { "zh": "模态/抽屉下面的层级垫层,让被遮内容保持可感知", "en": "Scrim layers under modals/drawers so covered content stays perceptible" },
+      { "zh": "图片上的字幕条与角标", "en": "Caption bars and badges on top of imagery" }
+    ],
+    "avoid": [
+      { "zh": "纯色/白色背景——玻璃在平色底上失效,只剩一层淡色矩形", "en": "Flat or white backgrounds — glass degenerates into a pale rectangle" },
+      { "zh": "小号正文与密集数据文字——填充稀释对比度,且底内容滚动时对比度持续变化", "en": "Small body text and dense data — the fill dilutes contrast, which also shifts as backdrop content scrolls" },
+      { "zh": "玻璃叠玻璃的多层嵌套——透出的层会互相发浑", "en": "Glass stacked on glass — layered translucency turns muddy" },
+      { "zh": "全屏内容层大面积使用——NN/g 已批评 Liquid Glass 全屏化伤害可读性(调研 03§2)", "en": "Full-screen content layers — NN/g criticized Liquid Glass' full-screen use for hurting readability (research 03 §2)" }
+    ]
+  },
+  "a11y": {
+    "zh": "玻璃上的文字要按『透出的最亮与最暗背景』两种极端核对 4.5:1(WCAG 2.1 SC 1.4.3);控件边界保持 3:1 非文本对比(SC 1.4.11);模糊层不得作为传达关键信息的唯一手段。深色变体(如 rgba(17,25,40,0.55))比白霜更容易守住对比度。",
+    "en": "Check text on glass against the brightest and darkest backdrop extremes for 4.5:1 (WCAG 2.1 SC 1.4.3); keep component boundaries at 3:1 non-text contrast (SC 1.4.11); never let the blur layer be the sole carrier of key information. Dark fills (e.g. rgba(17,25,40,0.55)) hold contrast more reliably than white frost."
+  },
+  "sources": [
+    "https://glassmorphism.com/",
+    "https://superdesign.dev/styles/glassmorphism",
+    "https://hype4.academy/tools/glassmorphism-generator/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 backdrop-filter 复刻一块毛玻璃卡片:半透明填充、背景模糊、1px 半透明描边、大圆角与柔和投影,悬浮于彩色照片背景之上。",
+      "en": "Replicate a frosted-glass card with backdrop-filter: translucent fill, backdrop blur, a 1px translucent border, large radius and a soft shadow, floating over a colorful photo backdrop."
+    },
+    "acceptance": [
+      { "zh": "backdrop-filter: blur(Npx) 同时写 -webkit- 前缀兜底", "en": "backdrop-filter: blur(Npx) with the -webkit- prefixed fallback in place" },
+      { "zh": "填充、描边、圆角严格使用参数快照值,不要自行调整", "en": "Fill, border and radius use the exact parameter snapshot values; do not adjust them" },
+      { "zh": "背景必须是彩色照片或多层渐变——放在纯色底上玻璃会失效", "en": "The backdrop must be a colorful photo or multi-stop gradient — glass breaks on flat color" },
+      { "zh": "深色变体叠加 rgba(17,25,40,0.55) 一类深填充并反白文字", "en": "The dark variant stacks a deep fill like rgba(17,25,40,0.55) and flips text to light" },
+      { "zh": "提供 @supports 回退:不支持时提高填充不透明度保证可读", "en": "Provide an @supports fallback: raise fill opacity for readability when unsupported" }
+    ]
+  }
+}

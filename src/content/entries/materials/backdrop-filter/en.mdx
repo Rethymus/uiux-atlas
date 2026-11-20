@@ -1,0 +1,65 @@
+## Structure & DOM
+
+`backdrop-filter` builds a three-layer stack: the **backdrop** (photo/gradient plus colorful display type) at the bottom, the **frosted panel** floating above it, and content on top. The essential difference from `filter`: it blurs everything rendered **behind** the panel while the panel itself is untouched.
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <h2 class="display">Colorful display type</h2>
+  <section class="frost">
+    <h3>Frosted panel</h3>
+    <p>Body copy and controls stay in normal flow and are never blurred.</p>
+  </section>
+</div>
+```
+
+Key points:
+
+- The frosted panel must be a **sibling layer** of the backdrop — it samples the rendered result behind itself;
+- The richer the backdrop (color, light/dark range), the stronger the frosted "thickness"; on a flat color the frost collapses entirely;
+- Panel text must survive contrast checks against both the brightest and darkest backdrop extremes.
+
+## Styling & Parameters
+
+Three parameters map to one chained declaration, injected through `--bf-*` variables:
+
+```css
+.frost {
+  background-color: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(var(--bf-blur))
+    saturate(var(--bf-saturate)) brightness(var(--bf-brightness));
+  backdrop-filter: blur(var(--bf-blur))
+    saturate(var(--bf-saturate)) brightness(var(--bf-brightness));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or
+  (-webkit-backdrop-filter: blur(1px))) {
+  .frost { background-color: #e8ecf3; } /* raise fill for readability */
+}
+```
+
+Where the numbers come from:
+
+- `blur(20px)`: the glassmorphism.com generator's classic recipe (research 06 §IV §16); Apple's global nav measures 20px in production too;
+- `saturate(180%)`: production CSS on Apple's global nav measured `blur(20px)+saturate(180%)` (superdesign.dev); 100% is the identity no-op;
+- `brightness(100%)`: the identity point defined by Filter Effects L1 (research 02 §4 D1) — only dark-glass recipes dip below 100%;
+- Support: Chrome 76 / Edge 17 / Firefox 103 / Safari 9 (BCD, research 02 §4 D2); Safari 9–17 needs the `-webkit-` prefix, unprefixed since Safari 18.
+
+## Motion & Interaction
+
+- Entrance: fade in + 10px rise, animating only `opacity/translate`; disabled under `prefers-reduced-motion`;
+- Frost is a static material — when backdrop content moves (scrolling, video), `backdrop-filter` **re-samples every frame**; large panels get expensive, so animate only `transform/opacity` (web.dev performance rules);
+- Live tuning: the three variables change the transmitted layer's blur/vividness/brightness instantly, with no re-render of the panel content;
+- Hover-deepened shadows are optional and should be skipped on high-frequency controls (Apple HIG: avoid motion on frequent interactions).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `blur` | thickens the frost and hides the backdrop; past 30px it smears into mush and sampling cost climbs | approaches a plain tinted block; below 6px the frosted feel disappears (production floor ≈ 4px) |
+| `saturate` | intensifies transmitted color, making the glass feel "alive"; past 250% it reads plasticky | the backdrop eats the color and the glass turns gray; 100% is the identity point (production recipes always exceed 100%) |
+| `brightness` | lifts the transmitted layer — on dark backdrops it can blow past text contrast; past 150% it washes out | dims the transmitted layer, the standard dark-glass move; below 50% the glass nearly blackens |
+
+Working ranges: blur 10–25px, saturate 120–200%, brightness 80–110%; `saturate` and `blur` normally ship as a pair (the Apple nav recipe) — tuning one alone tends to unbalance the mix.

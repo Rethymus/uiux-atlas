@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+容器查询是 **宿主/组件两层结构**:宿主声明「我是一个容器」,组件内部按容器条件分支。宿主不参与查询,查询只作用于它的后代。
+
+```html
+<!-- 宿主:任何布局位置(侧栏/主栏/弹窗) -->
+<aside class="widget-host">
+  <!-- 容器:被查询的元素,必须先声明 container-type -->
+  <div class="card-container">
+    <article class="card">…</article>
+  </div>
+</aside>
+```
+
+关键点:
+
+- `container-type: inline-size` 让元素成为尺寸容器(最常用;`size` 会连块轴一起接管,普通组件避免用,调研 05§6);
+- `@container` 查询的是 **最近符合条件的祖先容器**,`container-name` 用于在多个容器间指定目标;
+- 可查询特征:width/height/inline-size/block-size/aspect-ratio/orientation;容器单位 cqw/cqh/cqi/cqb/cqmin/cqmax 随同一机制提供(cqi = 容器内联尺寸的 1%);
+- style() 样式查询可查自定义属性计算值,但各家支持矩阵调研未核实(未证实),生产慎用。
+
+## 样式与参数
+
+两个参数分工明确:`width` 是 CSS 型(--cq-width 变量);`breakpoint` 是 JS 型——**查询条件必须是字面量**,不能使用自定义属性,demo 订阅后重生成规则。
+
+```css
+.card-container {
+  container-type: inline-size;
+  container-name: cq-card;
+  width: var(--cq-width);           /* 400px:CSS 型参数 */
+}
+
+/* 默认纵排(渐进增强:不支持容器查询的环境直接可用) */
+.card { display: flex; flex-direction: column; gap: 10px; }
+.card .banner { height: 64px; height: 18cqw; }          /* 固定值在前,容器单位在后 */
+.card .title  { font-size: clamp(15px, 5.5cqi, 30px); } /* cqi + clamp 保下限 */
+
+/* 断点(JS 型参数,320px)——由 demo 重生成,不能写 var() */
+@container cq-card (min-width: 320px) {
+  .card { flex-direction: row; align-items: stretch; }
+  .card .banner { width: 42cqi; height: auto; min-height: 110px; }
+  .card .title  { font-size: clamp(17px, 7cqi, 30px); }
+}
+```
+
+数值出处:Baseline 2023-02(MDN container-type,调研 05§6:Chrome/Edge 105、Safari 16(2022)、Firefox 其后补齐);MDN 示例断点写法 `(min-width: 40rem)`;demo 的 400px/320px 为任务规格演示值,生产断点应由组件内容决定。
+
+## 动效与交互
+
+重排本身是布局切换,不是动画:
+
+- 跨断点时纵排/横排瞬时切换,无过渡——flex-direction 不可动画,强行过渡会闪烁;
+- demo 的拖拽手柄用 pointer capture 实现,与面板滑杆共享同一 store 值双向同步;手柄是 WAI-ARIA separator 角色,方向键 ±10px(Shift ±50px)提供键盘等价操作(调研 05§8 的可访问分栏模式同源);
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭;
+- cqw/cqi 尺寸随拖拽连续变化,这就是「组件级流式」:无需任何 JS 或断点。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `width` | 容器变宽:横排形态下 banner(42cqi)与标题(7cqi)按比例放大,逼近 800px 时标题触到 clamp 上限 | 容器变窄:低于断点回到纵排;banner(18cqw)变扁,标题贴住 15px 下限,再窄也只是定值 |
+| `breakpoint` | 断点右移:纵排区间扩大,更宽的容器仍保持纵排;横排出现得更晚 | 断点左移:横排更早出现,窄容器里横排可能挤爆文字;低于 200px 后绝大多数宽度都是横排 |
+
+经验区间:组件断点 1–2 个、按内容触发(如标题能放下两行时翻横排);banner/标题等比例元素用 cqw/cqi + clamp 下限;宿主与组件分离,别把页面当容器。

@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+演示是两条并排弹簧轨,同起点、同目标、同时发射:上轨跑**预设**(Apple 官方 duration+bounce 定义),下轨跑**自定义** response/dampingFraction(换算成 Motion 物理弹簧)。每条轨道只有三件套 DOM:
+
+```html
+<div class="ss-lane">
+  <div class="ss-end ss-end-l"></div>
+  <div class="ss-end ss-end-r"></div>
+  <motion.div class="ss-ball" style={{ x }} />  <!-- x 即 useMotionValue -->
+</div>
+```
+
+关键点:
+
+- 球的位置由 `useMotionValue` 驱动 `transform: translateX`,对同一个 MotionValue 调用 `animate()` 即可发射/打断;
+- 两轨共用一个「发射」入口(按钮或点击轨道),保证手感差异在同一时间轴上可直接对照;
+- 读数条实时显示换算出的 `stiffness/damping`(下轨)与预设 bounce(上轨),数值与手感一一对应。
+
+## 样式与参数
+
+三个参数都是 JS 型(无 CSS 变量),由 demo 订阅 store 组装 Motion transition:
+
+```tsx
+// SwiftUI response/dampingFraction → Motion stiffness/damping 换算:
+// 二阶阻尼谐振子(mass = 1)的标准等价——
+//   stiffness = (2π / response)²
+//     (Apple 定义:response 是「以近似时长(秒)表达的刚度」≈ 固有周期,ω₀ = 2π/response)
+//   damping = 4π × dampingFraction / response
+//     (Apple 定义:dampingFraction 是「相对临界阻尼所需阻尼量的比例」,ζ = c / (2√(km)))
+// 注意:这是物理推导的换算,Apple 与 Motion 均未发布官方互转公式。
+const stiffness = (2 * Math.PI / response) ** 2;          // 默认 0.5s → ≈ 157.9
+const damping = (4 * Math.PI * dampingFraction) / response; // 默认 0.825 → ≈ 20.7
+animate(xCustom, target, { type: "spring", stiffness, damping, mass: 1 });
+
+// 上轨:预设严格按 Apple 官方定义(duration 0.5s + 基础 bounce)
+animate(xPreset, target, { type: "spring", duration: 0.5, bounce: bounceOf(preset) });
+```
+
+数值出处(Apple DocC,官方 JSON 数据接口核实;调研 02§A11/A13、04§1.3B 双源一致):
+
+- `response` 官方默认 **0.5s**、`dampingFraction` 官方默认 **0.825**(`blendDuration` 默认 0,不在本条目参数内);
+- 预设族官方定义:**bouncy = duration 0.5s + bounce 0.3**、**snappy = 0.5s + 0.15**、**smooth = 0.5s + 0**;
+- 参数语义为 Apple 原文:response=「以近似时长表达的刚度」,dampingFraction=「相对临界阻尼所需阻尼量的比例」。
+
+Motion 消费换算结果:motion.dev 文档定义 `type:"spring"` 接受 stiffness/damping/mass(默认 1/10/1,见 motion-spring 条目),与 SwiftUI 体系同族但参数轴不同——**不能直接互传**,必须走上面的换算。
+
+## 动效与交互
+
+- **同跑对照**:点「发射」(或任一轨道/回车)两轨同时奔向同一目标——snappy 与自定义 0.5/0.825 的差异、bouncy 的回弹次数,一眼可辨;
+- **参数即改即看**:拖动 response/dampingFraction 滑杆会打断下轨当前弹簧并从当前位置续接(Motion 物理弹簧继承当前值速度,文档默认行为);选预设则切换上轨的 bounce;
+- **对照组的存在理由**:预设是 duration+bounce 体系(总时长可预估),response/dampingFraction 是刚度+阻尼体系(手感可迁移)——同一颗球两条轨道,把两套体系的差异变成可见事实;
+- **reduced-motion**:检测到 `prefers-reduced-motion: reduce` 时跳过动画,球直接落在目标位;读数条仍显示当前参数换算值;
+- 性能:只动画 `transform`(球位移),符合 web.dev 底线(调研 04§1.5)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `response` | 弹簧更慢更黏:换算 stiffness 按 1/response² 陡降,行程耗时明显拉长 | 更急促利落;趋近 0.1 时接近「弹射」,Apple 明示 0=无限刚适合交互驱动 |
+| `dampingFraction` | 趋近 1 回弹消失(临界阻尼);>1 过阻尼,缓慢爬向目标 | 回弹增多,&lt;0.5 明显振荡;0.825 官方默认是「带一丝回弹」的平衡点 |
+| `preset` | bouncy(基础 bounce 0.3)回弹幅度最大、次数最多 | smooth(基础 bounce 0)临界阻尼无回弹;snappy(0.15)居中,Apple 定位为通用交互 |
+| 换算值(只读) | stiffness 越大越突然、damping 越大越快吸收振荡——两者都由 response/dampingFraction 唯一决定 | 同理反向;读数条让你在拖滑杆时看到数值随动,建立「参数轴↔手感」直觉 |
+
+选型口诀:对齐 iOS 手感 → response/dampingFraction(可从系统控件实测值出发);对齐时间轴 → 预设 duration+bounce;两套体系换算走二阶阻尼谐振子等价,不要直接互传。

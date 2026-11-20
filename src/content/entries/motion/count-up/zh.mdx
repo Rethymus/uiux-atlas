@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+数字滚动只有两层:「一个逐帧更新的视觉数字」+「一条只含终值的读屏文本」,两层互不干扰:
+
+```html
+<p class="stat">
+  <span class="stat-label">年度访客 Annual visitors</span>
+  <span class="stat-value" aria-hidden="true">1,247</span>  <!-- 逐帧刷新 -->
+  <span class="visually-hidden">2,026</span>                <!-- 读屏只读终值 -->
+</p>
+```
+
+关键点:
+
+- 屏幕阅读器读到的是初值或中间值(css-tricks 评论区实测:VoiceOver 读出 8/61 而视觉停在 100)——动画节点必须 `aria-hidden`,另给 sr-only 终值;
+- 数字用 `font-variant-numeric: tabular-nums`:等宽数字避免逐帧宽度抖动;
+- 若用 hover 触发,要补 `:focus` 与 `tabindex`(css-tricks 建议),保证键盘可达。
+
+## 样式与参数
+
+纯 CSS 方案的骨架(css-tricks 主方案):注册 `<integer>` 变量,对它做插值,再用 counter 显示:
+
+```css
+@property --num {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+.stat-value::after {
+  counter-reset: num var(--num);
+  content: counter(num);
+  transition: --num 1.2s ease-out;  /* 时长/缓动/起止值均可调 */
+  animation-fill-mode: forwards;    /* 停在终值 */
+}
+```
+
+小数位用 `calc()` 把整数与小数部分拆开分别渲染(css-tricks)。demo 走等价的 JS 路线:rAF 按缓动曲线逐帧算值 + `toLocaleString` 格式化,`prefers-reduced-motion` 用 matchMedia + change 监听检测(web.dev 惯例,调研 04§6.2),reduce 时跳过滚动直出终值。
+
+三个参数都是 JS 型(demo 订阅 store 驱动,无 CSS 变量),数值出处:
+
+- `duration`:css-tricks 只给出「时长与缓动可调、fill-mode forwards 停在终值」的维度,**未记载默认数值**——本条目的 1200ms 是社区常见值,未证实;
+- `endValue`:终值(起点恒为 0,起始/终值在可调维度之列);默认 2026 是本站演示用值,非官方;
+- `decimals`:0/1/2;默认 0 为演示用值。
+
+## 动效与交互
+
+- **缓动选择**:计数器几乎总用 ease-out——开头快、收尾慢的「落定感」;demo 用 ease-out cubic,每帧 `endValue × easeOutCubic(p)`,终帧强制精确终值(避免浮点截断差 1);
+- **触发时机**:数据就绪后播一次即可;重复滚动留给数据揭晓类场景(Apple HIG:高频交互避免加动效,调研 04§1.6);
+- **reduced-motion**:直出终值——css-tricks 评论区给出的建议,也是本条目的强制降级路径;
+- **性能**:只改文本节点,外加一条 `scaleX` 进度条(transform 属性),不触发布局;对比纯 CSS 方案,rAF 的代价是每帧一次文本写入,量级对单个指标卡可忽略。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `duration` | 悬念更久、落定更隆重;>2s 用户开始怀疑页面卡住,多卡并发时更明显 | 接近瞬时闪现;&lt;300ms 时人眼几乎读不到过程,只剩「数字跳了一下」 |
+| `endValue` | 数值越大,同样时长下每帧增量越大、滚动越「急」;万级以上建议配更长时长或更陡的减速段 | 小数值过程更平缓;0 时整个动画等于什么都没发生 |
+| `decimals` | 小数位让每帧文本宽度变化更频繁,tabular-nums 从可选变成必需 | 整数化更清爽;0 是仪表盘的默认选择 |
+
+选型提示:200–4000ms 的合理落点集中在 800–1600ms;千位分隔与小数位在动画开始前就定好,滚动中途改变位数会造成跳动。

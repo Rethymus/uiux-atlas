@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+演示是「卡片列表 ⇄ 详情页」两个状态的同文档过渡。列表态 4 张卡片各是一个 `<button>`;详情态一张大图 hero + 返回按钮。核心流程只有一段:
+
+```ts
+const open = (id: string) => {
+  // 旧快照拍下前:给被点卡片赋名(morph 模式)
+  cardRefs.current[id]?.classList.add("vt-name");
+  const apply = () => flushSync(() => setDetailId(id)); // DOM 更新必须在回调内同步完成
+  const doc = document as VTDocument;
+  if (!doc.startViewTransition || reduced) {
+    apply(); // 无 API 或 reduced-motion:直切
+    cardRefs.current[id]?.classList.remove("vt-name");
+    return;
+  }
+  doc.startViewTransition(apply);
+};
+```
+
+关键点:
+
+- 浏览器把回调前后的页面各拍一张快照,期间渲染冻结;**所有过渡动画都是 CSS 动画**,伪元素树 `::view-transition → group → image-pair → old/new` 承载快照(调研 04§3.1);
+- morph 的魔法:**旧新两侧不必是同一 DOM 节点**——过渡前给列表卡片赋名、过渡后详情 hero 带同名,`::view-transition-group(name)` 自动补间位置/宽高(官方 shared element transition,调研 04§3.2);
+- 名字**必须同时唯一**:同一时刻两个元素同名,整个过渡被跳过——demo 在发射前清理旧名、过渡结束后摘名,保证任何时刻至多一个持有者。
+
+## 样式与参数
+
+`duration`/`easing` 是 CSS 型参数(经 `--vt-duration`/`--vt-easing` 注入);`mode` 是 JS 型,demo 订阅后决定赋名策略。覆写伪元素动画:
+
+```css
+/* 快照动画全部可覆写——这是「所有动画都是 CSS 动画」的直接收益 */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: var(--vt-duration, 300ms);
+  animation-timing-function: var(--vt-easing, cubic-bezier(0.4, 0, 0.2, 1));
+}
+/* morph 模式:被点卡片 / 详情 hero 共享的名字 */
+.vt-name { view-transition-name: vt-card; }
+```
+
+数值出处:默认 **300ms + cubic-bezier(0.4, 0, 0.2, 1)** 取 Chrome 官方 same-document 页的 Material shared-axis 示例主段(退出 90ms + 主段 300ms,进入 210ms 延迟 90ms;demo 取主段参数,调研 04§3.2)。平台内置交叉淡化的默认时长调研未记载,不作官方标注。
+
+实现细节:伪元素树挂在 `<html>` 下,不继承 `.demo-stage` 上的变量——demo 把两个 CSS 变量同步镜像到 `document.documentElement`,卸载时移除;React 的 DOM 更新经 `flushSync` 在过渡回调内同步完成,回调不做异步等待(官方建议 100ms 内)。
+
+## 动效与交互
+
+- **morph**:点任一卡片 → 卡片与 hero 互换身份,位置/尺寸由 group 自动补间;返回时反向再来一次(hero→卡片)。`view-transition-name` 唯一性由「发射前清名、结束后摘名」保证;
+- **fade**:不赋名,只剩 root 一层的交叉淡化——平台默认过渡,时长/缓动同样受参数控制;
+- **不支持 / reduced-motion 直切**:无 API 或系统要求减少动效时,`apply()` 直接执行,界面瞬间换态、功能不损失;
+- **同一时刻仅一个过渡**:快速连点时新过渡把旧过渡跳到结尾(官方行为),不会叠加;
+- 性能与冻结:过渡期间页面渲染冻结,`apply` 是同步小更新,无长任务。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `duration` | 过场更从容,morph 的位移轨迹更可辨;>500ms 开始拖沓,冻结感变重(渲染冻结期变长) | 接近直切;&lt;150ms 时 morph 的空间关系读不出来,只剩闪变 |
+| `easing` | y2&lt;1 的减速收尾让 morph 停得稳;y 越界会在整页位移上放大过冲,慎用 | 两控制点趋近对角线读作 linear——匀速的整页滑动比 ease 更显机械 |
+| `mode` | morph:空间连续性最强(容器变换体验),列表↔详情的因果关系明确 | fade:最朴素保守,元素无空间关联或大量内容重排时反而更干净 |
+
+经验区间:同文档小范围状态切换 200–300ms;morph 建议配 (0.4, 0, 0.2, 1) 这类无过冲曲线(整页位移过冲极易晕);fade 模式时长可更短。唯一性纪律优先于一切:先摘名,再发起下一次过渡。

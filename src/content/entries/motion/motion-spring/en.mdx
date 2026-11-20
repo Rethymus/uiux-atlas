@@ -1,0 +1,64 @@
+## Structure & DOM
+
+The demo is a horizontal lane with a wall at each end; a ball's `transform: translateX` is driven by a `useMotionValue` and ping-pongs between the walls. Clicking anywhere on the lane retargets the spring to the click point. The core is a single call — re-invoking `animate()` on the same MotionValue:
+
+```tsx
+const x = useMotionValue(0);
+
+// physics mode: setting stiffness/damping/mass overrides bounce/duration
+animate(x, target, { type: "spring", stiffness, damping, mass });
+
+// durationBased mode: passes the doc-annotated default duration of 0.3s
+animate(x, target, { type: "spring", bounce, duration: 0.3 });
+```
+
+- When a leg settles (`controls.then()`), the next leg targets the opposite wall;
+- Calling `animate(x, newTarget, …)` mid-flight interrupts the current leg — in physics mode the new spring departs from the **current value and current velocity**; the docs annotate `velocity` as defaulting to the "current value velocity";
+- Interruption also comes from parameter changes: dragging the stiffness/damping sliders re-anchors the running spring the same way;
+- Keyboard path: the lane is focusable; Enter bounces the target to the opposite wall; a live velocity readout makes "velocity survives interruption" observable.
+
+The lane's DOM is just three pieces — the spring depends on none of it:
+
+```tsx
+<div className="ms-track" onClick={retarget}>
+  <div className="ms-wall ms-wall-l" />
+  <div className="ms-wall ms-wall-r" />
+  <motion.div className="ms-ball" style={{ x }} />  {/* x is the useMotionValue above */}
+</div>
+```
+
+When the spring counts as "at rest" also comes from doc defaults: `restSpeed` default 0.1/s and `restDelta` default 0.01 — both speed and remaining delta must drop under their thresholds before `controls.then()` fires the return leg.
+
+## Styling & Parameters
+
+This entry has no CSS-variable parameters — all five are JS-type; the demo subscribes to the store and assembles the transition object. Parameter semantics and official numbers (Motion docs, verified live on this site):
+
+- `stiffness` default **1** (higher = more sudden), `damping` default **10** (0 oscillates forever), `mass` default **1** (higher = more lethargic), `bounce` default **0.25** (range [-1,1]), `duration` default **0.3s**;
+- **The discrepancies, stated honestly**: ① the docs page annotates stiffness's default as 1, while the long-standing community claim is 100 (unverified during research). This site additionally audited the installed motion-dom@12.43.0 source: its runtime fallback is also `stiffness: 100`. ② when `duration` is omitted the runtime falls back to **800ms** — a second docs-vs-runtime divergence of the same shape (the "0.8s for multi-keyframes" phrasing is a tween note, unrelated to springs). Following the research protocol, this entry adopts the **doc-annotated values** (stiffness 1, duration 0.3s) as the official defaults, and the demo passes them explicitly to lock them in — with the caveat that 1/10/1 is heavily overdamped and near-frozen; for the classic spring feel, raise stiffness to 100–300.
+
+A durationBased spring can be exported as **pure CSS**: Motion 12 samples the spring into `linear()` multi-point interpolation (Baseline since 2023-12, available in all browsers) — the same curve without shipping Motion:
+
+```css
+/* Pure-CSS equivalent of a spring: dense linear() samples, produced by Motion / the generator */
+animation: arrive 0.42s linear(var(--spring-samples)) forwards;
+```
+
+## Motion & Interaction
+
+- **A truly interruptible spring**: retargeting by click and retuning by slider both continue from the mid-flight state (position + velocity) instead of restarting — the signature of physics mode;
+- **The two modes contrasted**: durationBased is defined by bounce+duration, "easier to understand and exportable as pure CSS", but velocity is deliberately zeroed on interruption (source comment: inherited velocity makes small-range springs oscillate wildly); physics mode keeps the velocity;
+- **The drag cousin**: drag release belongs to the `inertia` animation (power 0.8, timeConstant 700, modifyTarget for snap-to-grid, min/max bounds rebounding with bounceStiffness 500 / bounceDamping 10) — it consumes the release-time velocity too, completing the gesture-motion family;
+- **reduced-motion**: when `useReducedMotion()` reports reduce, the demo skips animation and outputs the final state directly (clicks land instantly) and stops the ping-pong loop;
+- Performance: only `transform` (ball translation) is animated, honoring web.dev's "transform/opacity only" floor.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stiffness` | a harder spring — more sudden arrivals, sharper overshoot; >400 feels like a slingshot | softer and stickier; near 0 the spring freezes — at the doc-annotated default 1 a few-hundred-px leg takes tens of seconds, which is exactly the practical gap between the doc value and the community's 100 |
+| `damping` | absorbs oscillation sooner; past the critical point it turns overdamped (a slow crawl to target) | more oscillations and visible bouncing; at 0 it oscillates forever (documented warning), so this entry floors at 1 |
+| `mass` | more inertia — more lethargic at equal stiffness, gentler overshoot | more responsive; at 0.1 it reacts almost instantly |
+| `bounce` | more bounce amplitude and repetitions (1 = extremely bouncy) | 0 = critically damped, no bounce; negative = overdamped, faster start and slower settle (reshapes, doesn't reschedule); durationBased mode only |
+| `mode` | physics: inherits velocity, natural feel, unpredictable duration | durationBased: fixed total duration, orchestratable, CSS-exportable — at the cost of zeroed velocity on interrupt |
+
+Rule of thumb: "follow my hand" → physics + inherited velocity; "align to a timeline" → bounce+duration; neither can be a cubic-bezier — pure-CSS export only approximates via `linear()` sampling.

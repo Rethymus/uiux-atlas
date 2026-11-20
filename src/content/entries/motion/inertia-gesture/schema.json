@@ -1,0 +1,85 @@
+{
+  "name": "Inertia Gesture (Motion)",
+  "aliases": ["惯性滚动", "拖拽释放惯性", "Momentum scroll"],
+  "category": "motion",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "Motion 的 type:\"inertia\":拖拽期间直接跟手,释放后按「power × 释放速度」滑行、按 timeConstant 指数衰减;越界由边界弹簧兜住。",
+    "en": "Motion's type:\"inertia\": the element tracks the pointer during drag, then glides by power × release velocity and decays exponentially over timeConstant; bounds are caught by a boundary spring."
+  },
+  "origin": {
+    "zh": "motion.dev transitions 文档定义的 inertia(拖拽释放):power(默认 0.8)、timeConstant(默认 700)、modifyTarget(吸附网格)、min/max + bounceStiffness(默认 500)/bounceDamping(默认 10)(调研 04§1.3、§7 行14);事件基建是 Pointer Events(Baseline 2020-07,调研 04§5.1)。",
+    "en": "inertia as defined in the motion.dev transitions docs (drag release): power (default 0.8), timeConstant (default 700), modifyTarget (snap-to-grid), min/max + bounceStiffness (default 500)/bounceDamping (default 10) (research 04 §1.3, §7 row 14); the event foundation is Pointer Events (Baseline 2020-07, research 04 §5.1)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "power",
+      "min": 0.1,
+      "max": 2,
+      "step": 0.05,
+      "default": 0.8,
+      "effect": {
+        "zh": "释放速度的放大系数,决定滑行距离。官方默认 0.8(motion.dev 文档标注);生成器落点公式 target = 起点 + power × 释放速度(motion-dom@12.43.0 animation/generators/inertia.mjs:ideal = origin + power * velocity)。",
+        "en": "Multiplier applied to the release velocity — it sets the glide distance. Official default 0.8 (motion.dev docs); the generator's landing formula is target = origin + power × release velocity (motion-dom@12.43.0 animation/generators/inertia.mjs: ideal = origin + power * velocity)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "timeConstant",
+      "min": 100,
+      "max": 1500,
+      "step": 10,
+      "default": 700,
+      "unit": "ms",
+      "effect": {
+        "zh": "指数衰减的时间常数(毫秒):value(t) = target − amplitude × e^(−t/timeConstant)。官方默认 700ms(motion.dev 文档标注);差异如实并列:motion-dom@12.43.0 的 inertia 生成器运行时回退是 325,framer-motion 拖拽组件实际传 750——本条目按调研约定取文档标注值 700。",
+        "en": "Time constant of the exponential decay (ms): value(t) = target − amplitude × e^(−t/timeConstant). Official default 700ms (motion.dev docs); the discrepancy, stated plainly: motion-dom@12.43.0's inertia generator falls back to 325 at runtime, and framer-motion's drag passes 750 — per the research protocol this entry adopts the doc-annotated 700."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "动效本身是客户端 JS(不依赖新 CSS 特性,禁用 JS 时仅失去惯性滑行);拖拽事件基建 Pointer Events 自 2020-07 起 Baseline widely available(调研 04§5.1)。",
+      "en": "The motion itself is client-side JS (no reliance on new CSS features; without JS only the glide is lost); the drag event foundation, Pointer Events, is Baseline widely available since 2020-07 (research 04 §5.1)."
+    },
+    "baseline": "2020-07"
+  },
+  "fallback": {
+    "zh": "跟手段是直接操纵,必须保留;惯性滑行是装饰动效——prefers-reduced-motion 时释放瞬间直出落点(钳制在边界内),不播滑行;动效不作为传达关键信息的唯一手段(HIG 动效原则)。",
+    "en": "The tracking phase is direct manipulation and must stay; the glide is decorative — under prefers-reduced-motion the release lands directly (clamped within bounds) without gliding; never let motion be the sole carrier of key information (HIG motion principles)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "拖拽甩动后的自由滑行(列表甩动、轮盘、平移画布)", "en": "Free glide after a flick (flick-scrolling lists, wheels, panning canvases)" },
+      { "zh": "需要 modifyTarget 吸附网格/档位的释放(snap-to-grid 轮播)", "en": "Releases that should snap via modifyTarget (snap-to-grid carousels)" },
+      { "zh": "min/max 边界内滑动、越界用边界弹簧拉回的抽屉/面板", "en": "Drawers/panels sliding within min/max where overshoot rebounds via the boundary spring" }
+    ],
+    "avoid": [
+      { "zh": "期望到位后回弹的场景——inertia 没有回弹,只有越界兜底;要回弹用 type:\"spring\"", "en": "Cases that need a settle-bounce — inertia has none, only boundary catching; use type:\"spring\" for bounce" },
+      { "zh": "没有真实手势来源的纯按钮触发——没有释放速度,惯性无从谈起", "en": "Pure button triggers with no real gesture — without a release velocity there is no inertia" },
+      { "zh": "高频小控件——HIG:高频交互避免加动效", "en": "High-frequency small controls — Apple HIG: avoid motion on frequent interactions" }
+    ]
+  },
+  "a11y": {
+    "zh": "拖拽跟手是直接操纵,不属于可省略的装饰动效,必须保留;但释放后的滑行要响应 prefers-reduced-motion(直出落点);手势不是唯一路径——提供按钮/键盘等效触发(demo 的「甩动」按钮);Pointer Events 处理 pointercancel,`touch-action` 明确声明避免与页面滚动打架。",
+    "en": "Drag tracking is direct manipulation and not an omittable decoration — it stays; but the post-release glide must honor prefers-reduced-motion (land directly); gestures are never the only path — provide a button/keyboard equivalent (the demo's flick button); handle pointercancel and declare touch-action so the gesture doesn't fight page scrolling."
+  },
+  "sources": [
+    "https://motion.dev/docs/react-transitions"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一根可拖拽的横向轨道:拖拽直接跟手,释放后按参数快照(power/timeConstant)做惯性滑行,预测落点标线实时显示;超出 min/max 时用边界弹簧(bounceStiffness 500/bounceDamping 10)拉回。",
+      "en": "Replicate a draggable horizontal lane: the element tracks the pointer, then glides by the parameter snapshot (power/timeConstant) on release with a live predicted-landing marker; beyond min/max a boundary spring (bounceStiffness 500 / bounceDamping 10) pulls it back."
+    },
+    "acceptance": [
+      { "zh": "拖拽期间 pointermove 直写 MotionValue(跟手),不经过任何缓动", "en": "During drag, pointermove writes the MotionValue directly (1:1 tracking), no easing involved" },
+      { "zh": "释放调用 animate(x, 0, { type: \"inertia\", power, timeConstant, min, max, bounceStiffness: 500, bounceDamping: 10 }),velocity 缺省由 MotionValue 的当前速度注入", "en": "Release calls animate(x, 0, { type: \"inertia\", power, timeConstant, min, max, bounceStiffness: 500, bounceDamping: 10 }) with velocity injected from the MotionValue's current speed" },
+      { "zh": "落点公式 = 起点 + power × 释放速度;预测标线与实际落点一致(越界时钉在墙上)", "en": "Landing = origin + power × release velocity; the predicted marker matches the actual landing (pinned to the wall when out of bounds)" },
+      { "zh": "prefers-reduced-motion: reduce 时释放直出落点,不播滑行;拖拽跟手保留", "en": "Under prefers-reduced-motion: reduce, release lands directly without gliding; drag tracking stays" },
+      { "zh": "提供按钮/键盘等效的固定速度甩动路径(非手势用户可达)", "en": "Provide a button/keyboard flick with fixed velocity so non-gesture users can reach the same effect" }
+    ]
+  }
+}

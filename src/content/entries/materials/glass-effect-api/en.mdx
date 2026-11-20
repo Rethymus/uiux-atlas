@@ -1,0 +1,80 @@
+## Structure & DOM
+
+The SwiftUI API is three-tier: `glassEffect(_:in:)` puts glass on **a single view**; `GlassEffectContainer(spacing:content:)` merges **a group of glass shapes** into one rendering field with morph support; `glassEffectID(_:in:)` registers each shape's identity for morph matching. The Web approximation mirrors the hierarchy:
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <div class="container">                 <!-- ≈ GlassEffectContainer -->
+    <button class="glass">A</button>      <!-- ≈ glassEffect(.regular, in: Capsule) -->
+    <div class="bridge"></div>            <!-- spacing-driven blend bridge (merged-render cross-section) -->
+    <button class="glass">B</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- The official default shape is a **Capsule** (`glassEffect`'s default `in:` argument, research 02 §A2) — both demo controls are capsules;
+- "Merged rendering" approximates on the Web as a **fading blend bridge**: as spacing approaches the shapes' actual gap, the bridge fuses them into one; a true shared blur field and morphing need the native API;
+- Variant and interactive are written by JS to `data-variant` / `data-interactive`; all material styling stays in CSS.
+
+## Styling & Parameters
+
+The four parameters map to the API surface: variant (Glass regular/clear), tintIntensity (a strength mapping of tint), interactive (interactive(_:)), spacing (the container's blend distance):
+
+```css
+.glass {
+  border-radius: 999px;                      /* documented default shape Capsule */
+  /* regular approximation: blur + luminance lift + hairline (Web values, not official) */
+  background: oklch(1 0 0 / 0.22);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 1px solid oklch(1 0 0 / 0.45);
+}
+.scene[data-variant="clear"] .glass {
+  background: oklch(1 0 0 / 0.06);
+  backdrop-filter: blur(3px) saturate(1.2);
+}
+.scene[data-variant="clear"] .glass::after {  /* HIG: 35% dark layer over bright content */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: rgb(0 0 0 / 0.35);
+}
+.glass::before {                              /* tint(_:): one fixed accent × intensity */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: oklch(0.62 0.17 250); opacity: var(--liquid-tint);
+}
+.scene[data-interactive="on"] .glass:hover { filter: brightness(1.12); }
+.scene[data-interactive="on"] .glass:active { transform: scale(0.96); }
+.bridge {                                     /* spacing: 24px fixed gap between capsules */
+  width: 24px; height: 44px; margin: 0 -12px;
+  opacity: clamp(0, calc((var(--liquid-spacing) - 8) / 16), 1); /* fades in near the gap */
+}
+```
+
+Where the numbers come from:
+
+- Variant semantics, default .regular, default Capsule, interactive(_:)/tint(_:), and the container's blending rule: all from Apple's API docs and HIG Materials (research 02 §A1–A6, fetched firsthand);
+- The **35%-opacity dark layer** on clear over bright content: verbatim HIG Materials (research 06 §16/§18);
+- blur(14px)/saturate(1.6)/22% white fill are **Web approximation demo values** — Apple publishes no material blur numbers and they must never be cited as official;
+- The spacing default of 8 and the (s−8)/16 bridge ramp are demo fits (no official numeric default), flagged in the param effect.
+
+## Motion & Interaction
+
+The motion core of Liquid Glass is **morphing**: when two shapes come closer than the container spacing they blend, and with `glassEffectID` identity matching they can deform continuously between forms. The Web approximation can only present the static cross-section of "blend bridge fades in":
+
+- The spacing slider drives the bridge's opacity (clamp ramp), demonstrating "larger spacing blends earlier" (A4 verbatim);
+- interactive=on gives hover brightening and a 0.96 press scale over 0.15s; under `prefers-reduced-motion` drop the transform transition and keep only the luminance change;
+- Variant switching cross-fades over 0.2s; Liquid Glass' real refraction and scroll edge effect cannot be replicated on the Web, and the demo does not pretend otherwise.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `variant` (→clear) | clear is nearly blur-free, transmitting all backdrop detail — fit only for floating controls over media | back to regular: blur + luminance lift for legibility, the default for most contexts (HIG) |
+| `tintIntensity` | stains the glass with the accent; past 40% it reads as a solid button and the glass feel dies | 0% is pure untinted glass (the demo default); brand color stays subtle |
+| `interactive` (→on) | pointer feedback appears — hover lift + press scale, communicating "tappable" | feedback off, visually silent — but the keyboard focus indicator must always remain |
+| `spacing` | at ≥24px (reaching or exceeding the fixed gap) the bridge fully shows and both shapes read as one, echoing "larger spacing blends earlier" | under 8px the bridge vanishes and the shapes are fully independent; true morph matching additionally needs glassEffectID, which the Web approximation omits |
+| (fixed semantics) | — | without the dim layer, white text on clear over bright backdrops (snow, sky) always fails contrast — the 35% dim layer is a legibility precondition, not optional |
+
+Rule of thumb: start functional layers on regular; switch to clear only over photos/video with minimal content; morphing happens only inside one GlassEffectContainer — shapes never blend across containers.

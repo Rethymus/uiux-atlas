@@ -1,0 +1,67 @@
+## Structure & DOM
+
+The demo is an **inner scroll container** with three pieces: a sticky reading progress bar (fixed to `scroll()`), a mid-page reveal card (driven by the params), and tall filler content above and below. DOM:
+
+```html
+<div class="sd-scroller" tabindex="0">        <!-- overflow-y: auto; the nearest scroll container -->
+  <div class="sd-progress"><div class="sd-bar"></div></div>  <!-- sticky top bar -->
+  <p class="sd-spacer">…tall filler…</p>
+  <div class="sd-card">Reveal card</div>       <!-- the timeline/range params land here -->
+  <p class="sd-spacer">…tall filler…</p>
+</div>
+```
+
+Key points:
+
+- `scroll()` resolves to the **nearest scrolling ancestor** (`.sd-scroller`); the bar sticks to its top and fills across the whole scroll;
+- `view()` uses the card's own visibility progress within the scroll port — two timelines coexisting in one container, each minding its own subject;
+- The card is a plain in-flow element with no JS listeners attached — the whole point of declarative scroll-driven animations (replacing hand-written scroll-event logic, able to run off the main thread, research 04 §4).
+
+## Styling & Parameters
+
+All three parameters are injected through `--sd-*` CSS variables:
+
+```css
+/* Progress bar: fixed to scroll(), per the official example (scaleX, not width — compositor-friendly) */
+.sd-bar {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: sd-grow linear both;
+  animation-timeline: scroll();   /* nearest scroll container */
+  animation-duration: auto;
+}
+/* Reveal card: the timeline/range parameters take effect here */
+@supports (animation-timeline: view()) {
+  .sd-card {
+    animation: sd-reveal linear both;
+    animation-duration: auto;
+    animation-timeline: var(--sd-timeline);   /* scroll() / view() */
+    animation-range: var(--sd-range-start) var(--sd-range-end);
+  }
+}
+@keyframes sd-reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+```
+
+Where the numbers come from: the default `entry 25% cover 50%` is lifted verbatim from Chrome's official Reveal example (research 04 §4: the animation starts when the image is 25% into entering the viewport and completes at 50% coverage); the scaleX(0→1) progress bar is likewise the official example's recipe; `animation-timeline` must be declared **after** the `animation` shorthand (it is not part of the shorthand, research 04 §4). The named-range tiers (cover/entry/exit/contain + offset percentages) are specified in MDN's animation-range — and **entry/exit/contain are defined only for view progress timelines**, so the demo substitutes full-range cover under scroll() and states that substitution in the UI.
+
+## Motion & Interaction
+
+- **Progress bar**: runs 0→100% with the container's scroll — the official textbook case; static on unsupported browsers;
+- **Reveal card**: switching timeline between view()/scroll() instantly changes what "progress" means — view() watches the card's own visibility, scroll() watches the container's overall scroll; changing the range tiers re-maps the animation in place (scroll position untouched);
+- **scroll() substitution**: entry/exit tiers are swapped for cover 0%→100% full range, and the readout shows both the effective values and why; contain is likewise view-only and substituted too;
+- **Keyboard & buttons**: the scroll container is focusable with arrow-key scrolling; "Scroll to card / Back to top" buttons call `scrollTo` (with `auto` behavior under reduced-motion);
+- **Dual degradation**: without `@supports` the card is statically visible; under `prefers-reduced-motion: reduce` the reveal is disabled (always visible) while the progress bar remains (an informational map of scroll position, not decoration).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `timeline` | scroll(): progress = the container's overall scroll ratio; the card's timing ties to total scroll distance, and entry/exit go inert | view(): progress = the card's own pass through the scroll port; range semantics wrap the element's geometry — the default, official reveal scenario |
+| `rangeStart` | larger entry percentages start the animation later (the element must be further in); contain starts once fully contained | entry 0% starts as soon as the element pokes in; cover 0% = the timeline's very start (measured from the container top) |
+| `rangeEnd` | larger cover/exit percentages finish later (cover 100% waits until the element scrolls fully past the viewport) | cover 50% = the official default, completing at mid-pass; ends before the start behave inconsistently across implementations — avoid |
+| Combined rhythm | late start + late end = a long, deep-scroll reveal; suits large imagery and tall cards | early start + early end = a snap-in reveal; suits small cards |
+
+Working ranges: reveals commonly start at `entry 10%–30%` and finish around `cover 40%–60%` (the official example's 25%/50% sits mid-range); progress bars stay on full cover (scroll()'s cover is the entire timeline). Content first: anything a reveal can hide must have both fallbacks in place before shipping.

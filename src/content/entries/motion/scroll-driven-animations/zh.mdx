@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+演示是一个**内部滚动容器**,三件套:顶栏阅读进度条(sticky,固定消费 `scroll()`)、中段 reveal 卡片(消费参数)、上下垫高的占位内容。DOM:
+
+```html
+<div class="sd-scroller" tabindex="0">        <!-- overflow-y: auto,最近的滚动容器 -->
+  <div class="sd-progress"><div class="sd-bar"></div></div>  <!-- sticky 顶栏 -->
+  <p class="sd-spacer">…垫高内容…</p>
+  <div class="sd-card">Reveal 卡片</div>       <!-- timeline/range 参数作用于此 -->
+  <p class="sd-spacer">…垫高内容…</p>
+</div>
+```
+
+关键点:
+
+- `scroll()` 取**最近的滚动容器祖先**(即 `.sd-scroller`),进度条 sticky 在其顶部,滚动整条可见;
+- `view()` 以卡片自身在滚动口内的可见进度为时间轴——同一容器内两颗时间轴并存,各管各的;
+- 卡片是普通文档流元素,不附加 JS 监听——这正是声明式滚动驱动动画的意义(替代 scroll 事件手写逻辑,可在主线程外运行,调研 04§4)。
+
+## 样式与参数
+
+三个参数全部经 `--sd-*` CSS 变量注入:
+
+```css
+/* 进度条:固定 scroll(),官方示例做法(scaleX 而非 width,走合成器) */
+.sd-bar {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: sd-grow linear both;
+  animation-timeline: scroll();   /* 最近的滚动容器 */
+  animation-duration: auto;
+}
+/* reveal 卡片:timeline/range 两个参数在这里生效 */
+@supports (animation-timeline: view()) {
+  .sd-card {
+    animation: sd-reveal linear both;
+    animation-duration: auto;
+    animation-timeline: var(--sd-timeline);   /* scroll() / view() */
+    animation-range: var(--sd-range-start) var(--sd-range-end);
+  }
+}
+@keyframes sd-reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+```
+
+数值出处:默认 `entry 25% cover 50%` 逐字取 Chrome 官方 Reveal 示例(调研 04§4:『图片进入视口 25% 处开始、滚过视口 50% 时完成』);进度条 scaleX(0→1) 同样是官方示例配方;`animation-timeline` 必须写在 `animation` 简写**之后**(不在简写内,调研 04§4)。named range 档位(cover/entry/exit/contain + 偏移百分比)的语义见 MDN animation-range——**entry/exit/contain 只对 view progress timeline 有定义**,所以 demo 在 scroll() 模式下把 entry/exit 档显式替换为 cover 全程,并在界面注明这一替换。
+
+## 动效与交互
+
+- **进度条**:随容器滚动 0→100%,官方教科书用例;不支持的环境呈静态底条;
+- **reveal 卡片**:timeline 切 view()/scroll() 会立刻改变「进度」的含义——view() 看卡片自身可见度,scroll() 看整条容器滚动;range 起止档变化同样即时生效(滚动位置不变、动画映射变了);
+- **scroll() 模式的替换**:entry/exit 档被换成 cover 0%→100% 全程,读数条显示「实际生效值」与替换原因;contain 同样只适用 view 时间轴,一并替换;
+- **键盘与按钮**:滚动容器可聚焦,方向键滚动;「滚到卡片 / 回顶部」按钮调 `scrollTo`(reduced-motion 时用 `auto` 行为直跳);
+- **双降级**:`@supports` 不通过 → 卡片静态可见;`prefers-reduced-motion: reduce` → 取消 reveal(始终可见),进度条保留(滚动位置的信息映射,非装饰)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `timeline` | scroll():进度=整条容器滚动比例,卡片提前/延后与滚动总量挂钩,entry/exit 失效 | view():进度=卡片自身进出滚动口的过程,range 语义围绕元素几何;默认档即官方 reveal 场景 |
+| `rangeStart` | entry 档百分比越大,动画开始越晚(元素要进入更深才开始);contain 档 = 元素完全含于视口才开始 | entry 0% = 刚冒头就开始;cover 0% = 时间轴全程起点(从容器顶就开始算) |
+| `rangeEnd` | cover/exit 档百分比越大,完成得越晚(如 cover 100% 要滚过整个视口才收尾) | cover 50% = 官方默认,半程即完成;终点早于起点时行为依实现而定,应避免 |
+| 组合节奏 | 起点晚 + 终点晚 = 「深滚出」的长程揭示;适合大图/长卡 | 起点早 + 终点早 = 「刚冒头就到位」的短促揭示;适合小卡片 |
+
+经验区间:reveal 常用 `entry 10%–30%` 起、`cover 40%–60%` 收(官方示例 25%/50% 居中);进度条固定 cover 全程(scroll() 的 cover 即整条时间轴)。内容优先:凡 reveal 会隐藏的东西,两套降级都必须先就位。

@@ -1,0 +1,60 @@
+## Structure & DOM
+
+Variable fonts need no special DOM — just a font file carrying the `fvar` table and plain text. The key separation is between the **@font-face declaration** (which axes the file has) and the **axis-control declaration** (where the axes sit right now).
+
+```html
+<p class="display">Headlines use the display optical size</p>
+<p class="body">Body copy uses the text optical size.</p>
+```
+
+```css
+@font-face {
+  /* Injected in this repo via @fontsource-variable/inter/standard.css: one file carries wght + opsz */
+  font-family: "Inter Variable";
+  font-weight: 100 900; /* a range, not a point — the hallmark of a variable font */
+}
+```
+
+Key points:
+
+- The OpenType spec defines five registered axes: wght/wdth/slnt/ital/opsz; a font may support subranges, and custom axes must be named in uppercase (research 05 §20);
+- Inter Variable's scales: opsz 14–32 and wght 100–900 (rsms/inter official spec, research 05 §24);
+- Axis names are case-sensitive, and font-variation-settings must restate every axis value together once declared.
+
+## Styling & Parameters
+
+Two CSS-type parameters are injected as `--vf-wght`/`--vf-opsz`; the demo samples consume the variables directly:
+
+```css
+.vf-sample {
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-optical-sizing: none; /* turn off auto so manual opsz is not overridden */
+  font-variation-settings: "wght" var(--vf-wght), "opsz" var(--vf-opsz);
+  /* advanced syntax: font-variation-settings: "wght" 375, "GRAD" 88; */
+}
+```
+
+Where the numbers come from:
+
+- wght default 400 (Regular) is the registered-axis default; opsz default 14 is the axis minimum — both match this repo's `@fontsource-variable/inter` metadata.json (wght 100–900 default 400; opsz 14–32 default 14);
+- The endpoints 100–900 and 14–32 come from rsms/inter's official technical spec (research 05 §24, first-hand);
+- x-height reference: at opsz=14 it is 1118/2048 UPM (text optical size — tall x-height aids small sizes); at opsz=32 it is 1056/2048 (display optical size, stronger contrast).
+
+## Motion & Interaction
+
+Axes are continuous, but keep motion restrained:
+
+- Slider changes re-render glyphs instantly — the whole point of variable fonts is continuous interpolation without swapping font files;
+- Hover nudges of ±50 on wght are feasible, but weight changes glyph widths and can move line breaks — restrict to short labels;
+- Weight/optical-size animations (e.g. a headline thickening on scroll) re-rasterize glyphs every frame: expensive and distracting, avoid in production;
+- This demo has no animation, so no `prefers-reduced-motion` handling is needed.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `wght` | thickens strokes toward Black at 900; strengthens hierarchy but crowds letter-spacing | thins strokes: 100 (Thin) suits only large decorative sizes; small-size legibility collapses |
+| `opsz` | shifts toward the display optical size: more contrast, tighter forms, lower x-height (1056/2048) — refinement for big headlines | shifts toward the text optical size: taller x-height (1118/2048), more open forms — easier small sizes |
+| (combined) | high wght + high opsz = a poster-grade display combo, only for very large sizes | low wght + low opsz = the long-form reading combo, the comfort zone for body copy |
+
+Working ranges: body at wght 400–450 with opsz 14; text labels 500–600; display headlines 600–800 with opsz 24–32. Always declare a font-weight fallback before the low-level axis control, and restate every axis value together.

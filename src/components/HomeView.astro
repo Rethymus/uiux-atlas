@@ -1,0 +1,56 @@
+---
+import Base from "@/layouts/Base.astro";
+import EntryCard from "@/components/EntryCard.astro";
+import { CATEGORIES } from "@/lib/types";
+import type { EntryMeta, Locale } from "@/lib/types";
+import { t } from "@/i18n/ui";
+import { categoryUrl, entryUrl, homeUrl } from "@/lib/urls";
+
+interface Props {
+  locale: Locale;
+  metas: EntryMeta[];
+}
+
+const { locale, metas } = Astro.props;
+const dict = t(locale);
+const home = dict.home;
+const featured = metas.filter((m) => m.star === 3).slice(0, 6);
+---
+
+<Base
+  locale={locale}
+  title={home.heroTitle}
+  description={home.heroSub}
+  altUrl={homeUrl(locale === "en" ? "zh" : "en")}
+>
+  <section class="hero">
+    <h1>{home.heroTitle}</h1>
+    <p>{home.heroSub}</p>
+  </section>
+
+  <h2 class="section-title">{home.browse}</h2>
+  <div class="cat-grid">
+    {
+      CATEGORIES.map((c) => {
+        const n = metas.filter((m) => m.slug.startsWith(`${c.id}/`)).length;
+        return (
+          <a class="cat-card" href={categoryUrl(locale, c.id)}>
+            <span>{locale === "en" ? c.en : c.zh}</span>
+            <span class="cat-count">
+              {n} {locale === "en" && n === 1 ? "entry" : home.entriesCount}
+            </span>
+          </a>
+        );
+      })
+    }
+  </div>
+
+  <h2 class="section-title">{home.featured}</h2>
+  <div class="entry-grid">
+    {
+      featured.map((m) => (
+        <EntryCard entry={m} locale={locale} href={entryUrl(locale, m.slug)} />
+      ))
+    }
+  </div>
+</Base>

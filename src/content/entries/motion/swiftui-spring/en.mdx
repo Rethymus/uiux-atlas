@@ -1,0 +1,64 @@
+## Structure & DOM
+
+The demo runs two spring lanes side by side, launched together from the same start toward the same target: the top lane runs the **preset** (Apple's official duration+bounce definition), the bottom lane the **custom** response/dampingFraction (converted into a Motion physics spring). Each lane needs only three DOM pieces:
+
+```html
+<div class="ss-lane">
+  <div class="ss-end ss-end-l"></div>
+  <div class="ss-end ss-end-r"></div>
+  <motion.div class="ss-ball" style={{ x }} />  <!-- x is the useMotionValue -->
+</div>
+```
+
+Key points:
+
+- The ball's position rides a `useMotionValue` driving `transform: translateX`; calling `animate()` on the same MotionValue launches or interrupts;
+- Both lanes share one launch entry (button, lane click, or Enter) so the feel difference is compared on one shared timeline;
+- The readout shows the converted `stiffness/damping` (bottom lane) and the preset bounce (top lane) live, keeping numbers and feel in one-to-one correspondence.
+
+## Styling & Parameters
+
+All three parameters are JS-typed (no CSS variables); the demo subscribes to the store and assembles Motion transitions:
+
+```tsx
+// SwiftUI response/dampingFraction → Motion stiffness/damping conversion:
+// the standard equivalence of a damped harmonic oscillator (mass = 1) —
+//   stiffness = (2π / response)²
+//     (Apple: response is the stiffness expressed as an approximate duration ≈ natural period, ω₀ = 2π/response)
+//   damping = 4π × dampingFraction / response
+//     (Apple: dampingFraction is the fraction of the damping needed for critical damping, ζ = c / (2√(km)))
+// Note: this conversion is derived from physics; neither Apple nor Motion publishes an official cross-formula.
+const stiffness = (2 * Math.PI / response) ** 2;            // default 0.5s → ≈ 157.9
+const damping = (4 * Math.PI * dampingFraction) / response; // default 0.825 → ≈ 20.7
+animate(xCustom, target, { type: "spring", stiffness, damping, mass: 1 });
+
+// Top lane: presets exactly per Apple's official definitions (duration 0.5s + base bounce)
+animate(xPreset, target, { type: "spring", duration: 0.5, bounce: bounceOf(preset) });
+```
+
+Where the numbers come from (Apple DocC, verified via the official docs JSON data endpoint; research 02 §A11/A13 and 04 §1.3B agree):
+
+- `response` official default **0.5s**, `dampingFraction` official default **0.825** (`blendDuration` defaults to 0 and is not a parameter of this entry);
+- Official preset definitions: **bouncy = duration 0.5s + bounce 0.3**, **snappy = 0.5s + 0.15**, **smooth = 0.5s + 0**;
+- Parameter semantics are Apple's own wording: response = stiffness as an approximate duration, dampingFraction = fraction of critical damping.
+
+Motion consumes the conversion: motion.dev documents `type:"spring"` taking stiffness/damping/mass (defaults 1/10/1, see the motion-spring entry) — the same family as SwiftUI's system but on different axes, so **never pass values across directly**; always convert.
+
+## Motion & Interaction
+
+- **Side-by-side race**: tapping "Launch" (or either lane / Enter) sends both balls to the same target — snappy vs the custom 0.5/0.825, or bouncy's extra hops, readable at a glance;
+- **Params apply live**: dragging response/dampingFraction interrupts the bottom spring mid-flight and continues from the current position (Motion physics springs inherit the current value's velocity per the docs); picking a preset switches the top lane's bounce;
+- **Why the control exists**: presets live in the duration+bounce system (predictable total time) while response/dampingFraction live in the stiffness+damping system (transferable feel) — one ball per system turns that abstraction into a visible fact;
+- **Reduced motion**: under `prefers-reduced-motion: reduce` the animation is skipped and balls land on target immediately; the readout still shows the converted values;
+- Performance: only `transform` is animated (ball travel), honoring the web.dev floor (research 04 §1.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `response` | slower, stickier springs: converted stiffness falls off as 1/response², visibly lengthening the travel | snappier; near 0.1 it approaches a launch — Apple notes 0 = infinitely stiff, suited to interactive driving |
+| `dampingFraction` | approaches 1 and the bounce disappears (critical damping); >1 overdamps, crawling to target | more bounce, visibly oscillating under 0.5; the 0.825 official default balances "a hint of overshoot" |
+| `preset` | bouncy (base bounce 0.3) bounces largest and longest | smooth (base bounce 0) is critically damped with no bounce; snappy (0.15) sits between, Apple's general-interaction pick |
+| Converted values (read-only) | higher stiffness = more sudden, higher damping = oscillation absorbed sooner — both uniquely determined by response/dampingFraction | likewise in reverse; the live readout builds an intuition for "parameter axes ↔ feel" while dragging |
+
+Selection rule: matching iOS feel → response/dampingFraction (start from measured system values); matching a timeline → preset duration+bounce; conversions go through the damped-oscillator equivalence, never a direct hand-off.

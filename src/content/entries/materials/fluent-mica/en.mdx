@@ -1,0 +1,60 @@
+## Structure & DOM
+
+Mica is an **opaque** material: when the window is created, the desktop wallpaper is **sampled once** and painted into the window background for its lifetime; scrolling or changing content never re-transmits through it (research 02 §3 C2). This is the exact inverse of Acrylic's element-by-element live transparency. The web recreation replaces "sampling" with a wallpaper copy plus heavy filters:
+
+```html
+<div class="scene">
+  <img class="wallpaper" src="wallpaper.jpg" alt="" />  <!-- desktop wallpaper -->
+  <section class="window">
+    <img class="mica-sample" src="wallpaper.jpg" alt="" /> <!-- wallpaper copy: the single "sample" -->
+    <div class="tint"></div>                               <!-- tint veil: tint -->
+    <div class="chrome">title bar + content</div>
+  </section>
+</div>
+```
+
+Key points:
+
+- The window background does **not** use `backdrop-filter` — it is not a see-through layer but a static sample baked into the window;
+- Mica Alt is only the strongly-tinted variant; the structure is identical;
+- The web cannot read the real desktop wallpaper, so the demo uses a photo to approximate the "sampled once" behavior.
+
+## Styling & Parameters
+
+Two parameters: variant (JS-driven, toggling `data-variant`) and tint (CSS variable `--fm-tint`):
+
+```css
+.window { position: relative; overflow: hidden; border-radius: 12px; }
+/* The "sample layer": wallpaper copy + heavy blur/desaturation (community approximation; official params unpublished) */
+.mica-sample {
+  position: absolute; inset: -20%;
+  width: 140%; height: 140%; object-fit: cover;
+  filter: blur(64px) saturate(60%) brightness(0.92);
+}
+.tint { position: absolute; inset: 0; opacity: var(--fm-tint); } /* default 50% */
+.window[data-variant="mica"]     .tint { background: rgb(243 243 243 / 0.65); }
+.window[data-variant="mica-alt"] .tint { background: rgb(76 60 154 / 0.75); } /* strong tint */
+```
+
+Where the numbers come from:
+
+- "Opaque, samples the wallpaper once, long-lived window background", "Mica Alt strongly tinted for tabbed title bars", "Windows App SDK 1.1+": the official docs (research 02 §3 C2);
+- **The tint default of 50% and the sample filters (blur 64px etc.) are community approximations — no official figures are published (unverified)**;
+- The division of labor with Acrylic (transient UI → Acrylic, long-lived windows → Mica): the official docs (C1/C2);
+- Web support: pure CSS, no backdrop-filter dependency.
+
+## Motion & Interaction
+
+- Variant/tint switch: the tint veil transitions over 0.25s; removed under `prefers-reduced-motion`;
+- **The background never moves**: the demo keeps a content strip scrolling inside the window while the sampled background stays frozen — exactly the "sampled once" behavior (the Acrylic strip, by contrast, live-blurs whatever passes behind it);
+- In-window content animation touches only `transform`; the sample layer never animates;
+- Live tuning: the tint slider changes veil strength and the variant switch swaps its color.
+
+## Parameter Sensitivity
+
+| Parameter | Turning up (→ mica-alt)… | Turning down (→ mica)… |
+| --- | --- | --- |
+| `variant` | strong tint: a stronger app identity suited to tabbed title bars; the wallpaper recedes and both light/dark foregrounds need re-checking | standard mica: a more neutral wallpaper sample for large long-lived surfaces like settings or workspaces |
+| `tint` | app color overwhelms the sample: the window reads as a branded solid panel; 100% is a plain solid window | the sample shows through more: window appearance fluctuates across wallpapers and text contrast gets harder to predict; 0 is the bare sample layer |
+
+Choosing between Acrylic and Mica: **need see-through, pick Acrylic; need stability, pick Mica** — Mica trades transparency for performance (one sample) and predictable contrast; when both appear on screen, Acrylic handles flyouts and Mica anchors the window base, keeping hierarchy legible.

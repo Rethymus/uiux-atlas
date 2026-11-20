@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+可变字体不需要特殊 DOM——只需要一个携带 `fvar` 表的字体文件和一段普通文本。关键是 **@font-face 声明**与 **轴控制声明**分离:文件负责「有哪些轴」,文本样式负责「轴停在哪儿」。
+
+```html
+<p class="display">标题用 display 光学档</p>
+<p class="body">正文用 text 光学档。</p>
+```
+
+```css
+@font-face {
+  /* 本仓经 @fontsource-variable/inter/standard.css 注入:同一文件携带 wght + opsz */
+  font-family: "Inter Variable";
+  font-weight: 100 900; /* 区间声明 = 可变字重的标志 */
+}
+```
+
+关键点:
+
+- OpenType 规范定义五个注册轴:wght/wdth/slnt/ital/opsz,各字体可只支持子区间;自定义轴须大写命名(调研 05§20);
+- Inter Variable 的标尺:opsz 14–32、wght 100–900(rsms/inter 官方规格,调研 05§24);
+- 轴名大小写敏感,`font-variation-settings` 一旦声明须整体重申所有轴值。
+
+## 样式与参数
+
+两个 CSS 型参数经 `--vf-wght`/`--vf-opsz` 注入,demo 的样张直接消费变量:
+
+```css
+.vf-sample {
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-optical-sizing: none; /* 关掉 auto,手动控 opsz 才不被覆盖 */
+  font-variation-settings: "wght" var(--vf-wght), "opsz" var(--vf-opsz);
+  /* 高级语法:font-variation-settings: "wght" 375, "GRAD" 88; */
+}
+```
+
+数值出处:
+
+- wght 默认 400(Regular)= 注册轴默认;opsz 默认 14 = 轴最小值——两者均与本仓 `@fontsource-variable/inter` 的 metadata.json 记载一致(wght 100–900/默认 400,opsz 14–32/默认 14);
+- 轴端点 100–900 与 14–32 出自 rsms/inter 官方技术规格(调研 05§24 一手核对);
+- x-height 对照:opsz=14 时 1118/2048 UPM(text 档,高 x-height 利于小字),opsz=32 时 1056/2048(display 档,对比更强)。
+
+## 动效与交互
+
+轴是连续的,但「动」要克制:
+
+- 面板滑杆改动后字形即时重绘——可变字体的优势正是不用换字体文件即可连续过渡;
+- hover 微移字重(±50)可行,但会改变字形宽度、引起换行漂移,只在短标签上使用;
+- 字重/光学字号动画(如滚动标题由细变粗)每帧重排字形,代价高且分散注意力,生产中避免;
+- 本条目 demo 无动画,不需要 `prefers-reduced-motion` 降级。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `wght` | 笔画变粗、字面变「黑」,900 接近 Black;标题层级感增强但挤占字距 | 笔画变细,100(Thin)仅适合大字号装饰性场景;小字号可读性骤降 |
+| `opsz` | 切向 display 档:对比度增强、字面更紧凑、x-height 降低(1056/2048)——大标题更精致 | 切向 text 档:x-height 抬高(1118/2048)、字形更舒展——小字号更易读 |
+| (组合) | wght 高 + opsz 高 = 海报级 display 组合,仅适合超大字号 | wght 低 + opsz 低 = 长文阅读组合,正文最舒适的区间 |
+
+经验区间:正文 wght 400–450 且 opsz 14;text 标签 500–600;display 标题 600–800 且 opsz 24–32。声明低层轴控时务必先写 font-weight 兜底,并整体重申所有轴值。

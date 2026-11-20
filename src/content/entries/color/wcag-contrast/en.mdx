@@ -1,0 +1,60 @@
+## Structure & DOM
+
+The checker is "one sample + one set of readouts": the left preview panel paints ground and text with the param colors (plus a foreground-stroked graphic sample as a visual non-text 3:1 reference), the right side shows the ratio and the four pass states.
+
+```ts
+// WCAG 2.1 relative luminance: linearize the gamma-encoded sRGB channels, then weight
+// (formula source: W3C WCAG 2.1 Understanding / contrast-minimum)
+const lin = (c: number) => {
+  c /= 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+};
+const luminance = (hex: string) =>
+  0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+// Contrast: lighter+0.05 over darker+0.05 (order-independent of fg/bg)
+const ratio = (L1: number, L2: number) =>
+  (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+```
+
+- Judgement uses the **unrounded value**: the display may keep two decimals, but 4.499:1 must show ✗ — WCAG's own wording forbids rounding the threshold (research 06 §17);
+- Swapping fg/bg does not change the ratio (the demo paints both hex params into the preview, so swapping verifies it by eye).
+
+## Styling & Parameters
+
+Two CSS-type color params (injected via `--wc-*` variables) plus one JS-type enum param:
+
+```css
+.wc-preview {
+  background-color: var(--wc-bg); /* default #FFFBFE (M3 surface baseline) */
+  color: var(--wc-fg);            /* default #1C1B1F (M3 on-surface baseline) */
+}
+.wc-preview[data-scale="large"] .wc-sample-normal { display: none; }
+.wc-preview[data-scale="normal"] .wc-sample-large { display: none; }
+```
+
+Where the numbers come from:
+
+- The default pair is the **official M3 baseline**: on-surface `#1C1B1F` / surface `#FFFBFE` (Android developer docs verbatim, research 06 §7), measured **16.7:1** (computed with the WCAG formula via node while writing this entry);
+- The four gates (W3C WCAG 2.1 Understanding, research 06 §17):
+  - **AA / SC 1.4.3**: body text ≥ **4.5:1** (from the contrast-sensitivity loss of ~20/40 vision, 3×1.5);
+  - **AAA / SC 1.4.6**: body text ≥ **7:1** (~20/80 vision);
+  - **Large text**: ≥18pt (≈24px) or ≥14pt (≈18.66px) bold — halved to **3:1 / 4.5:1**;
+  - **Non-text / SC 1.4.11**: icons, focus rings, checkmarks, chart elements ≥ **3:1**, default state only; hover is out of scope;
+- Scope includes placeholders, tooltips, and images of text; shared exemptions: logotypes, pure decoration, invisible elements, disabled controls, UA default styles, incidental text in photos.
+
+## Motion & Interaction
+
+- Any hex or tier change recomputes the ratio and the four badges **instantly** — pure JS math, no animation lag; the preview's background gets a 0.18s `transition` purely for visual comfort, removed under `prefers-reduced-motion`;
+- **textScale (large)** switches the *applicable thresholds*: the normal tier judges the sample at 4.5:1/7:1; the large tier enlarges the sample to 24px (or 18.66px bold) and judges at 3:1/4.5:1 — the badges always show all four, and the tier makes clear which two apply;
+- Division of labor with APCA (WCAG 3 candidate, research 06 §18): **APCA emits perceptual Lc values, not ratios**, and is **asymmetric** — dark-on-light and light-on-dark thresholds differ, modeled for self-emissive screens; the spec mandates the `apca-w3` package and forbids hand-rolling the formula. Radix Colors targets APCA Lc60/Lc90 for its text steps (research 06 §8). This entry computes WCAG 2.1; the two systems must not be mixed or substituted for each other;
+- Tool cross-check: WebAIM Contrast Checker judges with the same thresholds (AA 4.5/3, AAA 7/4.5, graphics 3:1) and serves as a cross-validator (research 06 §20).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `foreground` | a lighter foreground: if it starts darker than the ground the ratio first falls, then rises past the mid-gray crossover (numerator/denominator swap); against a white ground, lightening usually **lowers** the ratio | a darker foreground: the ratio climbs against light grounds; as it nears the ground's lightness the ratio collapses toward 1:1 and all four gates fail |
+| `background` | a lighter ground: helps dark foregrounds, hurts light ones | a darker ground: favors light text (white-on-dark) and punishes dark text; at equal lightness the ratio is 1:1 and nothing passes |
+| `textScale` | large: thresholds drop to 3:1/4.5:1, turning a 4.2:1 "edge case" from ✗ to ✅ — only if the text is genuinely large (≥18pt or ≥14pt bold) | normal: back to the strict 4.5:1/7:1 regime; 8px text cannot borrow the large-text exemption — the exemption reads pt sizes, not vibes |
+
+Do not stack ratios to 15:1 as an aesthetics metric — Apple HIG suggests a 4.5:1 floor, aiming for 7:1 on small text (research 06 §12/§13); excessive contrast glares in dark mode. What really needs watching is the **worst pairing** — check dark-on-light and light-on-dark separately.

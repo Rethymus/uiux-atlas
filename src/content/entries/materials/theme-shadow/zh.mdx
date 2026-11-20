@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+ThemeShadow 的心智模型是「**元素浮在 z 轴上,系统替你算阴影**」:你只声明元素的 elevation(z 坐标),阴影的具体模糊、偏移与浓淡由光照、主题、环境自动决定。投影落在谁身上要显式交代:
+
+```xml
+<!-- WinUI:XAML 侧 -->
+<Grid x:Name="RootGrid" Translation="0,0,8">
+  <Grid.Shadow>
+    <ThemeShadow />
+  </Grid.Shadow>
+</Grid>
+<!-- 非 Popup 场景:必须显式指定投影接收者 -->
+themeShadow.Receivers.Add(BackgroundGrid);
+```
+
+关键点:
+
+- z 语义:`Translation` 的第三维(或 `UiElement.Translation`)即 elevation,单位 DIP;Popup/Flyout/Dialog 自动接 ThemeShadow,**其余元素必须把接收元素加进 `Receivers` 集合**,否则阴影不渲染;
+- **仅支持矩形阴影**——异形(圆形、带缺口的形状)要用 `DropShadow` 自行定制(调研 02§C5);
+- 旧的 Depth/depth-shadow 设计指南页已 404 迁移,深度语义以 ThemeShadow/DropShadow API 页为准(调研 02§7 勘误)。
+
+## 样式与参数
+
+Web 端没有 ThemeShadow,demo 用 box-shadow 按「z 越大越弥散越淡」做趋势近似——**这是近似公式,不是 Fluent 实际光照算法**:
+
+```css
+.demo-stage {
+  --theme-shadow-elevation: 8;   /* z 值(无量纲) */
+  --theme-shadow-opacity: 100%;  /* demo 增益,API 本体无此参数 */
+}
+.fl-card {
+  /* blur/offset 随 z 增大,alpha 随 z 增大而减小 */
+  box-shadow:
+    0 calc(var(--z) * 0.4px)
+      calc(var(--z) * 2.2px + 2px)
+      color-mix(in srgb, black
+        calc(clamp(0, var(--z) * 0.035, 0.5) * var(--theme-shadow-opacity)),
+        transparent);
+  border-radius: 8px;            /* ThemeShadow 投影为矩形 */
+}
+/* 参数卡:--z 直接取参数 */
+.fl-card.param { --z: var(--theme-shadow-elevation); }
+/* 对照卡:固定 z 档 0 / 4 / 8 / 16 / 32(内联 --z) */
+```
+
+数值出处:
+
+- z 坐标即 elevation、Receivers 集合、矩形限定:全部来自 WinUI ThemeShadow API 页(调研 02§C5 一手抓取);
+- **官方未记载任何「z → 阴影参数」数值表**(系统自适应正是卖点);demo 的 `0.4 / 2.2 / 0.035` 系数是本条目的 Web 近似拟合,已在正文与 fallback 中如实标注;
+- 默认 z=8 为本批任务规格给定的演示档,非官方默认。
+
+## 动效与交互
+
+Fluent 深度模型允许 z **作为可动属性**:
+
+- 抬升/落下(z 插值)是层级叙事的一部分:拖拽时临时 +z、松手回落;过渡约 150–250ms 的平滑插值(Web demo 用 CSS transition 过渡 --z 的映射结果),`prefers-reduced-motion` 时直出终态;
+- 主题切换(浅色 ⇄ 深色)时 ThemeShadow 自动重算,demo 提供浅/暗画布对照;
+- 不要动画阴影的颜色/模糊参数本身——动 z(语义量),让公式得出阴影;这正是 ThemeShadow「系统算阴影」设计意图的 Web 对应实践。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `elevation` | 阴影更弥散、更淡、更大偏移——「浮得更高」;>24 后弱 alpha 大 blur 在浅底上接近不可见,层级感靠偏移维持 | 阴影收紧变实;接近 0 时与「贴在画布上」无异,z=0 完全无阴影(对照卡第 1 张) |
+| `opacity` | 全强度阴影,浅底上明确但偏重 | 阴影整体变淡;0% 无阴影(仅用于对照,生产中应改 z 而不是压 opacity) |
+| (固定语义) | — | Receivers 未设置时非 Popup 元素**完全没有阴影**——不是「变淡」,是缺失;排错先查 Receivers |
+
+经验法则:层级分档建议 0/4/8/16/32(浮层 > 卡片 > 基面),同一屏内 z 档不要超过 4 级;深色主题下弱阴影可感知度骤降,层级要靠 surface 亮度差(提亮=前进)与阴影共同表达。

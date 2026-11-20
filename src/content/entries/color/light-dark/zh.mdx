@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+`light-dark()` 是一次**求值**,不是一次匹配:浏览器根据当前元素的 `color-scheme` 决定取第一参数还是第二参数。因此结构上永远成对出现——**先声明 color-scheme,再写取色点**:
+
+```css
+:root {
+  color-scheme: light dark; /* 不声明它,light-dark() 两个值都无法取用 */
+}
+
+.card {
+  background-color: light-dark(#FFFBFE, #1C1B1F); /* 参数一浅色 / 参数二深色 */
+  color: light-dark(#1C1B1F, #FFFBFE);
+  border: 1px solid light-dark(oklch(0 0 0 / 0.12), oklch(1 0 0 / 0.15));
+}
+```
+
+关键点:
+
+- `light-dark()` 属于 CSS Color 5,Baseline 2024-05(MDN,调研 06§11);**免写 `@media (prefers-color-scheme)`**;
+- 取哪个值只看**元素的 color-scheme**:`color-scheme: light dark` = 跟随系统;`color-scheme: light` / `dark` = 钉死单侧;
+- 它接受完整的 `<color>`——MDN 明确它也接受 `<image>`,可以整段换渐变背景(调研 06§11);
+- 嵌入式 SVG/iframe 继承父元素的 color-scheme,嵌入内容也能跟着双态(调研 06§11)。
+
+## 样式与参数
+
+两个 CSS 型 color 参数(经 `--ld-*` 变量注入)+ 一个 JS 型 enum 参数,共三个:
+
+```css
+.ld-chip {
+  /* demo 组合出的声明:light-dark(var(--ld-light), var(--ld-dark)) */
+  background-color: light-dark(var(--ld-light), var(--ld-dark));
+  color: light-dark(#FFFFFF, #381E72); /* M3 on-primary 基线(Android 文档,调研 06§7) */
+}
+
+/* demo 舞台:scheme 参数改写的就是这一行 */
+.ld-scene { color-scheme: light dark; }
+.ld-scene[data-scheme="light"] { color-scheme: light; }
+.ld-scene[data-scheme="dark"]  { color-scheme: dark; }
+```
+
+数值出处:
+
+- 默认两色取 **M3 官方基线**:亮色 primary `#6750A4` / 暗色 primary `#D0BCFF`(Android 开发者文档原文,调研 06§7)——这对值同时演示了「暗色 accent 提亮降饱和」惯例(调研 06§14);
+- 实测对比度(本条目写作时以 WCAG 2.1 公式计算):`#6750A4` 对白字 6.44:1(过 AA 不过 AAA);`#D0BCFF` 配 on-primary `#381E72` 达 7.7:1(AAA 过)——暗色侧反而更耐读;
+- demo 中性底色用系统色 `Canvas`/`CanvasText`——CSS Color 4 §6.2 规定系统色关键词响应元素 color-scheme,天然双态、零发明值;
+- 回退:`@supports not (color: light-dark(#fff, #000))` 时落到 `prefers-color-scheme` 翻转变量(调研 06§11 记载的传统策略)。
+
+## 动效与交互
+
+demo 的三态切换不碰任何颜色值,只改一个属性:
+
+- **scheme 参数**(JS 型)订阅后改写舞台的 `color-scheme`:`system → light dark`、`light → light`、`dark → dark`;
+- 取色点全部写 `light-dark(浅值, 深值)`,切态时颜色**即时翻转**,补 0.25s `transition` 平滑过渡;
+- system 档下颜色由 OS 偏好驱动——深浅模式之间是**跳变**而非插值,这是语义正确的形态(外观切换本就是离散事件);`prefers-reduced-motion` 时取消 transition;
+- 老浏览器(无 light-dark() 支持)上 demo 的三态开关失效,但 OS 跟随仍然可用——`@supports not` 分支已把 `Canvas`/变量翻转写好。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `lightValue` | 浅色侧 accent 更醒目;过亮会让白字(on-primary)对比度跌破 4.5:1 | 浅色侧更沉闷;趋近表面色时按钮与画布粘连,边界对比不足 |
+| `darkValue` | 暗色侧更亮更饱和;过饱和在暗底上刺眼(hype4 告诫,调研 06§13) | 暗色侧变暗;跌破暗底亮度水平后,「accent 提亮降饱和」惯例被破坏,组件从前景退到背景 |
+| `scheme` | dark:两侧全取第二参数;system:跟随 OS 偏好,三态中最贴近真实用户 | light:两侧全取第一参数;演示用,生产中等于替用户做决定 |
+
+经验:M3 基线对(#6750A4/#D0BCFF)是一对已验证可用的默认——亮侧 6.44:1(白字 AA)、暗侧 7.7:1(AAA);换自己的品牌色时,两侧要**分别**用 wcag-contrast 条目的四项阈值复核一遍,不能只查一边。

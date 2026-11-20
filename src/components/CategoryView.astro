@@ -1,0 +1,53 @@
+---
+import Base from "@/layouts/Base.astro";
+import EntryCard from "@/components/EntryCard.astro";
+import FilterBar from "@/components/FilterBar";
+import { CATEGORIES } from "@/lib/types";
+import type { CategoryId, EntryMeta, Locale } from "@/lib/types";
+import { t } from "@/i18n/ui";
+import { categoryUrl, entryUrl } from "@/lib/urls";
+
+interface Props {
+  locale: Locale;
+  /** getStaticPaths 只从 CATEGORIES 生成,这里必然合法 */
+  categoryId: CategoryId;
+  metas: EntryMeta[];
+}
+
+const { locale, categoryId, metas } = Astro.props;
+const dict = t(locale);
+const cat = CATEGORIES.find((c) => c.id === categoryId)!;
+const catName = locale === "en" ? cat.en : cat.zh;
+const altUrl = locale === "en" ? categoryUrl("zh", categoryId) : categoryUrl("en", categoryId);
+---
+
+<Base
+  locale={locale}
+  title={catName}
+  description={dict.siteTagline}
+  altUrl={altUrl}
+  activeCategory={categoryId}
+>
+  <header class="entry-head">
+    <h1>{catName}</h1>
+    <p class="entry-sub">{metas.length} {locale === "en" && metas.length === 1 ? "entry" : dict.home.entriesCount}</p>
+  </header>
+
+  <div data-filter-scope>
+    <FilterBar client:visible entries={metas} locale={locale} />
+    <div class="entry-grid">
+      {
+        metas.map((m) => (
+          <EntryCard
+            entry={m}
+            locale={locale}
+            href={entryUrl(locale, m.slug)}
+            data-slug={m.slug}
+            data-system={m.system}
+            data-star={m.star}
+          />
+        ))
+      }
+    </div>
+  </div>
+</Base>

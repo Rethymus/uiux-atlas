@@ -1,0 +1,76 @@
+## 结构与 DOM
+
+新粗野主义没有叠层、没有模糊、没有渐变——只有**平面块面**加一道印刷式轮廓。DOM 就是普通卡片与表单:
+
+```html
+<div class="nb-card">
+  <h3 class="nb-title">响亮标题</h3>
+  <button class="nb-btn">主操作</button>
+</div>
+```
+
+关键点:
+
+- 每个可交互元素 = 实色填充 + 黑实线描边 + 零模糊硬偏移阴影,三者缺一风格即垮;
+- 阴影颜色固定 `#000`(或与描边同色),blur 与 spread 恒为 0;
+- daisyUI 判定口诀:**出现 `4px 4px 0 #000` 硬阴影即新粗野主义**;
+- 控件行为仍是常规 UX——这个风格「把常规 UX 包裹在响亮的几何块里」,不做可用性实验。
+
+## 样式与参数
+
+四个参数对应阴影偏移、描边宽、圆角与强调色,经 `--nb-*` 变量注入:
+
+```css
+.nb-card {
+  background: #fffdf5;               /* 奶油纸底,demo 示例色 */
+  border: var(--nb-border) solid #000; /* 默认 3px,调研区间 2–4px */
+  border-radius: var(--nb-radius);   /* 默认 0 = 直角 */
+  box-shadow: var(--nb-shadow) var(--nb-shadow) 0 #000; /* 判据配方:4px 4px 0 #000 */
+  color: #111111;
+}
+
+.nb-btn {
+  background: var(--nb-accent);      /* 单一饱和强调色 */
+  border: var(--nb-border) solid #000;
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow) var(--nb-shadow) 0 #000;
+  font-weight: 700;
+}
+
+/* 按压:位移到阴影原点并吞掉阴影(非阴影动画) */
+.nb-btn:active {
+  translate: var(--nb-shadow) var(--nb-shadow);
+  box-shadow: none;
+}
+.nb-btn:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 3px;
+}
+```
+
+数值出处:
+
+- `box-shadow: 4px 4px 0 #000` 与描边 2–4px:superdesign.dev 粗野主义页(判定口诀原文)与 daisyUI 趋势词条 059(「深色描边、硬偏移阴影」);
+- 直角/极小圆角:daisyUI 词条 059;字体常用 Space Grotesk/Archivo 等几何无衬线展示体(superdesign.dev);
+- 强调色默认 `#ff90e8` 为**社区常见糖果色示例(未证实)**——调研只记载「单一饱和强调色」,未给具体色值;
+- 组件参照:neobrutalism.dev(shadcn/ui 基座的 64 个 React 组件库)。
+
+## 动效与交互
+
+动效规则只有一条:**硬**,任何柔化都会稀释风格:
+
+- **按压**:元素 `translate` 到阴影原点、阴影归零——像把块面按进纸里;0s(无过渡)或 ≤0.1s 的极短过渡;
+- **悬停**:阴影加倍(`calc(var(--nb-shadow) * 2)`)或填充反色,均无缓动曲线;
+- **焦点**:`outline: 3px solid #000; outline-offset: 3px`,在描边外再画一圈,绝不只靠阴影表达焦点;
+- `prefers-reduced-motion`:取消全部过渡,按压直接切换终态。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `shadowOffset` | 错位感与体积感增强,「贴纸」味变浓;超过 8px 开始显得笨重,布局要预留阴影占位 | 趋近 0 时退化为纯描边卡片,风格身份大减 |
+| `borderWidth` | 印刷轮廓更狠,块面感更强;超过 4px 在小控件上吃掉可点区域 | 轮廓变细弱;0 时只剩阴影,像普通的扁平卡片 |
+| `radius` | 圆角新粗野变体,更友好;但圆角与硬阴影的错位感互相削弱 | 回到直角原教旨,错位感最强 |
+| `accent` | 更亮的糖果色需配黑字,更深的配白字——逐色核对 4.5:1 | 强调色占比越小越「克制粗野」;全部去掉则只剩黑白,风格偏回 web brutalism |
+
+经验区间:shadowOffset 3–6px、borderWidth 2–4px、radius 0–8px、单一强调色。描边、阴影、文字三者的黑色必须一致,杂色黑会立刻显得廉价。

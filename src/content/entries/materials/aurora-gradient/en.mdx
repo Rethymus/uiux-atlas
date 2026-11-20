@@ -1,0 +1,75 @@
+## Structure & DOM
+
+An aurora layer is "**blob stack + whole-layer filter**": all blobs are painted as the multi-layer `background` of one container, while blur/saturation/drift apply only to that container. Content (a text card) lives independently on top. The layer is oversized with `inset:-25%` so drifting never exposes an edge:
+
+```html
+<div class="stage">            <!-- scene, overflow:hidden -->
+  <div class="aurora"></div>   <!-- blob layer: layered background + filter + animation -->
+  <div class="card">…</div>    <!-- content: normal document flow -->
+</div>
+```
+
+Key points:
+
+- Blobs are stacked `radial-gradient` layers (MDN: gradients are `<image>` values and `background` stacks multiple layers); the fourth blob sits on its own overlay element so the 3/4 count can toggle;
+- The filter applies to the **whole layer**, not per blob — one resample, bounded cost;
+- Blob luminance (L) is pinned at 0.6–0.75: bright enough to glow without crushing text contrast above (CodeFronts' tuning rule).
+
+## Styling & Parameters
+
+Of the six parameters, four land on the layer container and two on blob positions:
+
+```css
+.aurora {
+  position: absolute;
+  inset: -25%;                       /* oversized so drift shows no seams */
+  background:
+    radial-gradient(38% 42% at var(--aurora-spot-a) 25%,
+      oklch(0.6 0.24 300 / .85), transparent 68%),        /* blob A: CodeFronts verbatim */
+    radial-gradient(42% 46% at var(--aurora-spot-b) 30%,
+      oklch(0.72 0.17 195 / .8), transparent 68%),        /* blob B */
+    radial-gradient(50% 55% at 78% 72%,
+      oklch(0.68 0.18 340 / .8), transparent 68%),        /* blob C */
+    conic-gradient(from 220deg at 60% 45%,               /* one conic base layer */
+      oklch(0.35 0.06 265), oklch(0.3 0.05 210), oklch(0.35 0.06 265));
+  filter: blur(var(--aurora-blur)) saturate(calc(var(--aurora-saturate) / 100));
+  animation: aurora-drift var(--aurora-drift, 18s) ease-in-out alternate infinite;
+}
+@keyframes aurora-drift {
+  from { transform: translate(-2%, -1%) rotate(0.001deg) scale(1); }
+  to   { transform: translate(2%, 1%) rotate(2deg) scale(1.06); }
+}
+/* blob D lives on its own child layer inside the filtered container; display:none at the 3-blob setting */
+.aurora .blob-d { position: absolute; inset: 0;
+  background: radial-gradient(45% 50% at 32% 88%, oklch(0.75 0.15 85 / .75), transparent 68%); }
+[data-spots="3"] .blob-d { display: none; }
+```
+
+Where the numbers come from:
+
+- Four blobs + conic base, `inset:-25%`, `blur(42px) saturate(1.15)`, transform-only animation, reduced-motion stop — all verbatim from the CodeFronts recipe (research 06 §14); the first blob `38% 42% at 20% 25%` comes from the same source;
+- The "move `at x% y%` and you have a mesh editor" play is stated by both MDN's gradient guide and CodeFronts (research 06 §14);
+- The drift default of 18s is the demo scale set by this batch's spec; **the CodeFronts recipe itself is 60s** — production ambience should use 60s-class durations (also noted in the param effect);
+- Blobs B–D's positions and hues are demo values arranged within the recorded "L 0.6–0.75" constraint (only the first blob's position is recorded verbatim).
+
+## Motion & Interaction
+
+One rule governs the animation: **transform the whole layer only**:
+
+- `translate + rotate + scale` are compositor properties — the blur result is not resampled (the filter lives on the layer; its transform runs on the compositor), so a 60s-class drift costs almost nothing on the main thread;
+- `ease-in-out alternate infinite` makes the drift seamless; `steps` or short durations turn it into visible breathing/flicker, betraying the ambient role;
+- **Under `prefers-reduced-motion: reduce`, `animation: none` outputs the static final state** (the demo ships this) — a static aurora still works;
+- Changing blur/saturate repaints the whole layer — acceptable as an editing-time action; never animate the filter values themselves in production.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `spots` (3/4) | 4 blobs give the fullest color interplay, per the recipe | 3 blobs save one resample and calm the composition; fewer than 3 loses the multi-hue weave that reads as aurora |
+| `blur` | melts blob edges completely — strongest aurora feel; past 80px colors wash out and saturate must compensate | blobs reappear as crisp spheres; under 20px hard edges emerge and the effect becomes "colored spotlights", not ambience |
+| `saturate` | intensifies color; past 140% it reads neon on dark bases | returns to the gradient's native color; at 100% (no boost) the gray wash from blur is most visible |
+| `drift` | slower drifts read as ambient light (60s-class) | faster than 6s the layer visibly sways and steals attention; 0 = static |
+| `spotA`/`spotB` | moving both toward the edges empties the middle | overlapping blobs create an over-bright hotspot that overwhelms text; keep them diagonally offset |
+| (fixed) | — | once blob L passes 0.75, the 4.5:1 text contrast above starts failing |
+
+Two structural reminders: the blob layer must be `aria-hidden` (or semantically empty) — it is decoration, not content; and the text card must sit outside the filtered container, otherwise it gets blurred too.

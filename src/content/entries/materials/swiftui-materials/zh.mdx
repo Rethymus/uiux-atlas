@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+SwiftUI 官方语境里,材质**不是视图**,而是介于前景与背景之间的半透明层,『类似重度磨砂玻璃的混合效果』;材质之上的前景自动获得 vibrancy(A8)。Web 近似复刻的结构是『背景 → 薄层(伪材质)→ vibrancy 文字层级』:
+
+```swift
+// 官方 API(iOS 15+,调研 02 §1 A8)
+ScrollView { … }
+  .background(.ultraThinMaterial)   // 六档之一:ultraThin/thin/regular/thick/ultraThick/bar
+  .foregroundStyle(.secondary)      // 或依赖材质自动 vibrancy
+```
+
+```html
+<div class="scene">
+  <img class="bg" src="photo.jpg" alt="" />
+  <section class="mat"> <!-- 薄层:伪材质 -->
+    <p class="v-default">default 主级</p>
+    <p class="v-secondary">secondary 次级</p>
+    <hr class="v-sep" />
+  </section>
+</div>
+```
+
+关键点:材质厚薄表达的是**层级承诺**——越厚越接近实色、文字越稳;vibrancy 是材质赠予前景的对比策略,不是随便调透明度。
+
+## 样式与参数
+
+Web 端用 CSS 变量按档位近似六档透明度与模糊(**社区近似值,官方未公布数值**):
+
+```css
+.mat {
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(var(--sm-blur));
+  backdrop-filter: blur(var(--sm-blur));
+  background: rgb(255 255 255 / var(--sm-alpha));
+}
+/* 社区近似表(未证实):ultraThin .08/12px · thin .18/16px · regular .30/20px
+   thick .44/24px · ultraThick .60/28px · bar .36/16px */
+.mat[data-material="thick"]     { --sm-alpha: 0.44; --sm-blur: 24px; }
+.mat[data-material="ultraThick"]{ --sm-alpha: 0.60; --sm-blur: 28px; }
+
+/* vibrancy 层级:对比度递减(A10),近似以前景透明度表达 */
+.v-default    { color: rgb(0 0 0 / 1); }
+.v-secondary  { color: rgb(0 0 0 / 0.65); }
+.v-tertiary   { color: rgb(0 0 0 / 0.45); }
+.v-quaternary { color: rgb(0 0 0 / 0.30); } /* ultraThin/thin 上官方禁用 */
+```
+
+数值出处:
+
+- 六档名称与语义:SwiftUI Material 文档(A8,调研 02 §1);bar 为工具条专用档;
+- vibrancy 层级 default→quaternary、separator 一级、**quaternary 在 ultraThin/thin 上禁用**:HIG Materials(A10);
+- **透明度/模糊数值:官方未公布**——上表为社区近似对照值,Web 端只能示意趋势(越厚越暗越保对比),换真机仍以系统渲染为准。
+
+## 动效与交互
+
+- 材质切换:薄层透明度/模糊用 0.25s 过渡,营造『材质变厚』的连续感;`prefers-reduced-motion` 时取消过渡;
+- 层级切换:vibrancy 四级行逐行淡入 0.25s,当前选中行加左侧指示条;
+- 禁用组合(quaternary + ultraThin/thin)出现时,警告条淡入并停止其他动效——这是需要用户读到的状态,不该被动画稀释;
+- demo 的背景保持静态:材质厚薄的对比不需要动效陪衬,静态最利于对比度核对。
+
+## 参数敏感度
+
+| 参数 | 调大(更厚的档位)… | 调小(更薄的档位)… |
+| --- | --- | --- |
+| `material` | 越厚越不透明:文字对比度更稳,但『材质感』减弱,ultraThick 接近实色卡片 | 越薄越透:背景色彩透出更多、更『液』,但文字对比度完全依赖 vibrancy/加粗,ultraThin 上连 quaternary 都被官方禁用 |
+| `vibrancy` | 层级越低(→quaternary)对比度越弱:适合时间戳、占位符等次要信息;在厚材质上才安全 | 层级越高(→default)对比度越强:正文与关键信息必须落在 default/secondary |
+| 组合(材质×层级) | 厚材质 × 低层级:信息可读但偏『噪』,注意别让装饰性层级进正文 | 薄材质 × 低层级:官方禁用组合——demo 会警告,生产中直接避免 |
+
+经验法则:层级承诺与内容重要度对齐——工具条用 bar、正文支撑用 regular 以上、装饰性浮层才用 ultraThin;vibrancy 每降一级都要在真机/两极端背景上重核 4.5:1(WCAG 2.1 SC 1.4.3)。

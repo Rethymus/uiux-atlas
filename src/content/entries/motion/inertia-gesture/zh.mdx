@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+惯性动效的消费端只有「一根轨道 + 一个可拖拽的球」:拖拽期间球直接跟手(pointermove 实时写 MotionValue),释放瞬间把控制权交给 inertia——物理全部发生在 MotionValue 内部,不依赖 DOM 结构:
+
+```tsx
+const x = useMotionValue(0);
+
+// 拖拽:x.set(clamp(起点 + 指针位移, -limit, limit))
+// 释放:与 framer-motion 拖拽组件同一条路径(VisualElementDragControls.startAnimation)
+animate(x, 0, {
+  type: "inertia",
+  power,           // 默认 0.8:释放速度的放大系数
+  timeConstant,    // 默认 700ms:指数衰减的时间常数
+  min: -limit, max: limit,                  // 越界即触发边界弹簧
+  bounceStiffness: 500, bounceDamping: 10,  // 文档标注默认值(调研 04§1.3)
+});
+```
+
+- `velocity` 省略时由 animateMotionValue 注入 `value.getVelocity()`(motion-dom@12.43.0 animation/interfaces/motion-value.mjs:29)——「甩得越快飞得越远」来自这里;
+- 事件基建是 Pointer Events:pointerdown/move/up/cancel + `setPointerCapture()`,`touch-action` 决定浏览器是否把手势判为滚动(Baseline 2020-07,调研 04§5.1);`pointercancel`(来电、系统手势接管)也要走释放路径,让惯性照常接管;
+- demo 另给键盘等效路径:轨道可聚焦,回车触发一次固定速度的「甩动」。
+
+## 样式与参数
+
+两个参数都是 JS 型,直接组装进 transition,没有 CSS 变量。数值出处(motion.dev transitions 文档,调研 04§1.3):
+
+- `power`:官方默认 **0.8**;生成器落点公式 `target = 起点 + power × 释放速度`(motion-dom@12.43.0 animation/generators/inertia.mjs:`ideal = origin + power * velocity`),demo 用同一条公式实时渲染「预测落点」标线;
+- `timeConstant`:官方默认 **700ms**(毫秒);衰减轨迹是 `value(t) = target − amplitude × e^(−t/timeConstant)`,τ 就是它。
+- **差异如实并列**:文档标注 700,但 motion-dom@12.43.0 的 inertia 生成器运行时回退是 **325**,framer-motion 拖拽组件实际传 **750**——与 motion-spring 条目的 stiffness=1/100 一样,本站按调研约定取文档标注值 700 为官方默认;
+- 停止条件由生成器的 `restDelta` 决定(运行时默认 0.5,单位为值本身,motion-dom@12.43.0 inertia.mjs 签名),衰减到与落点的差低于阈值即判定完成。
+
+轨道的 DOM 只有三件套加一条预测标线,惯性不依赖任何 DOM 结构:
+
+```tsx
+<div className="ig-lane" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+  <div className="ig-wall ig-wall-l" />
+  <div className="ig-wall ig-wall-r" />
+  <div className="ig-marker" style={{ transform: `translateX(${predicted}px)` }} /> {/* 预测落点 */}
+  <motion.div className="ig-ball" style={{ x }} />  {/* x 即上面的 useMotionValue */}
+</div>
+```
+
+## 动效与交互
+
+- **跟手段**(拖拽中):不经过任何动画库,`x.set()` 直写——这一段是直接操纵,不属于可省略的装饰动效;
+- **惯性段**(释放后):释放速度被 `power` 放大成滑行距离,`timeConstant` 控制衰减快慢;轨迹是指数逼近、永远「差一点」才停——inertia 与弹簧的区别就在这里:**inertia 没有到位回弹**,只有越界时才切换成边界弹簧兜住;
+- **越界回弹**:预测落点超出 min/max 时,生成器在越界瞬间建一颗弹簧飞向最近边界(motion-dom inertia.mjs 的 checkCatchBoundary),demo 会把标线钉在墙上并给出提示;
+- **吸附档位**:传 `modifyTarget` 可以改写自由落点——把理想落点吸附到网格/档位上,是 snap-to-grid 轮播的标准做法(调研 04§1.3);
+- **参数即改即生效**:拖动 power/timeConstant 滑杆会从当前值 + 当前速度重发一次惯性;
+- **reduced-motion**:跟手保留,释放瞬间直出落点(钳制在墙内),不播滑行;
+- 性能:只动 `transform`(球体位移),符合 web.dev「只动 transform/opacity」的底线(调研 04§1.5)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `power` | 同样甩速滑得更远,「甩」的存在感更强;2.0 时轻甩就贴墙 | 滑行距离明显缩短,释放后近乎原地急停;0.1 时惯性几乎不可感 |
+| `timeConstant` | 指数衰减更慢,尾段「悠悠滑行」拉长,显得顺滑;1500ms 时像在果冻里漂 | 衰减极快,滑行变成急刹;100ms 时接近没有惯性 |
+
+选型口诀:power 定「多远」,timeConstant 定「多久」;甩动距离 ≈ power × 释放速度,尾段时长 ≈ 3–4 × timeConstant。要吸附网格用 modifyTarget,要回弹用 type:"spring"——inertia 自己只负责滑行与越界兜底。

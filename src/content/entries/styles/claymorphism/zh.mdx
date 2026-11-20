@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+claymorphism 与新拟物的分野在结构上就能看出来:元素**浮在**页面之上,有自己的底色——不与背景同色,因此保住了真实的元素-背景对比。
+
+```html
+<div class="clay-page">
+  <div class="clay-card">
+    <h3>黏土卡片</h3>
+    <button class="clay-btn">按我一下</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- 页面背景(浅粉彩)与 clay 元素(更饱和的粉彩)是两种颜色,层级靠「浮起」表达;
+- 充气错觉由**三段式阴影**合成:外投影把元素托起,下缘暗内阴影压出底面,顶部亮内阴影鼓出受光面;
+- 顺序关键:外投影在前、暗内阴影次之、亮内阴影最后——调换顺序高光会被暗面吃掉。
+
+## 样式与参数
+
+三个参数对应圆角、外投影 y 偏移与双内阴影 alpha,经 `--clay-*` 变量注入:
+
+```css
+.clay-card {
+  background: #b3a4ee;              /* 粉彩底,demo 示例色 */
+  border-radius: var(--clay-radius); /* 默认 32px,卡片经验值 */
+  box-shadow:
+    0 var(--clay-shadow-y) 68px rgba(112, 100, 176, 0.30),          /* 外投影:色相化,禁纯黑 */
+    inset 0 -8px 16px rgb(95 70 140 / calc(0.22 * var(--clay-inner-alpha))),  /* 下缘暗内阴影 */
+    inset 0 8px 16px rgb(255 255 255 / calc(0.65 * var(--clay-inner-alpha))); /* 顶部亮内阴影 */
+}
+
+/* 按压反馈:位移而非动画阴影(superdesign.dev) */
+.clay-btn:active {
+  transform: translateY(2px) scale(0.98);
+}
+.clay-btn:focus-visible {
+  outline: 3px solid #6a5acd;       /* 显式焦点环 */
+  outline-offset: 2px;
+}
+```
+
+数值出处(superdesign.dev claymorphism 页):
+
+- 圆角区间 20–40px,经验值≈元素高度 25%:卡片 32px/按钮 24px/输入 20px,默认取 32px;
+- 外投影 `0 35px 68px rgba(112,100,176,.30)`——向元素色相着色,禁用纯黑;
+- 双内阴影:下缘暗 `rgba(95,70,140,.22)` + 顶部亮 `rgba(255,255,255,.65)`;CSS 落地由 clay.css 库与 LogRocket 教程推广了双内阴影写法;
+- 按压反馈 `translateY(2px) scale(0.98)`;显式 3px `:focus-visible` 描边;
+- 代表案例:Duolingo(厚按钮 3D 挤出)、Fall Guys(充气角色→UI)、Joon(儿童习惯 App)。
+
+## 动效与交互
+
+黏土的动效语言是「捏」而不是「移」:
+
+- **按压**:按钮下沉 `translateY(2px) scale(0.98)`,0.15s ease;明确禁止用阴影动画模拟按压——三段阴影过渡既昂贵又容易糊;
+- **弹回**:松手靠 transform 回弹,可加 `cubic-bezier(0.34, 1.56, 0.64, 1)` 一类轻微过冲,呼应充气质感;
+- **入场**:卡片淡入+上浮;`prefers-reduced-motion` 时取消过渡与入场动画,直出终态;
+- 悬停不做位移类装饰动效——厚投影本身就自带体积感,再加动效会显得躁。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `radius` | 充气感最强,接近气球;超过 40px 小元素上圆角吃掉内容区 | 退回普通圆角卡片;低于 20px 黏土特征基本消失 |
+| `shadowY` | 元素「悬浮」更高,层次感强;过 50px 后像悬空贴纸,页面重心发飘 | 元素贴近页面;趋近 0 时只剩内阴影,接近厚底色块 |
+| `innerAlpha` | 1 以上高光与暗面都加强,充气感上升但高光易发脏 | 0 时内阴影消失,只剩外投影,退化成带色投影的普通卡片 |
+
+经验区间:radius 20–40px(卡片 32)、shadowY 30–40px、innerAlpha 0.8–1.2。投影色永远跟元素色相走,换成灰黑投影黏土会立刻变成「塑料」。

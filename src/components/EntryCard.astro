@@ -1,0 +1,27 @@
+---
+import type { EntryMeta, Locale } from "@/lib/types";
+import { SYSTEMS } from "@/lib/types";
+
+interface Props {
+  entry: EntryMeta;
+  locale: Locale;
+  href: string;
+  /** 过滤用 data 属性(FilterBar 客户端显隐卡片) */
+  "data-slug"?: string;
+  "data-system"?: string;
+  "data-star"?: number | string;
+}
+
+const { entry, locale, href, ...attrs } = Astro.props;
+const system = SYSTEMS.find((s) => s.id === entry.system);
+const systemLabel = system ? (locale === "en" ? system.en : system.zh) : entry.system;
+---
+
+<a class="entry-card" href={href} {...attrs}>
+  <span class="entry-name">{entry.name}</span>
+  <span class="entry-tagline">{entry.tagline[locale]}</span>
+  <span class="entry-meta">
+    <span class="chip">{systemLabel}</span>
+    <span class="chip"><span class="stars">{"★".repeat(entry.star)}</span></span>
+  </span>
+</a>

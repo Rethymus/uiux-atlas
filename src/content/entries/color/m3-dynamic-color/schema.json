@@ -1,0 +1,102 @@
+{
+  "name": "M3 Dynamic Color",
+  "aliases": ["Material You 动态取色", "Dynamic Color", "动态取色流程"],
+  "category": "color",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "从一个 source 色相出发,按变体配方展开 5 个调色板,再按角色 tone 映射成 primary/on-primary/container 等语义色——亮暗主题共用同一套 token。",
+    "en": "From one source hue, expand five palettes per a variant recipe, then map role tones into primary/on-primary/container semantics — light and dark share the same tokens."
+  },
+  "origin": {
+    "zh": "Android 12 推出 Material You 动态取色:壁纸 → quantize(Celebi = Wu + WSMeans)→ score 选出 source color → 外推 5 个关键色 → 每关键色 13-tone 调色板 → 同一壁纸派生 5 套方案构成亮/暗主题;Android 13 增加 Neutral / Vibrant Tonal / Expressive 变体(各自以 vibrancy 与色相旋转配方变换种子色)(调研 06§六6)。demo 按官方库 material-color-utilities 0.3.0(Apache-2.0)的 scheme_*.js 与 material_dynamic_colors.js 实现。",
+    "en": "Android 12 introduced Material You dynamic color: wallpaper → quantize (Celebi = Wu + WSMeans) → score picks the source color → 5 key colors → 13-tone palettes each → 5 schemes per wallpaper forming light/dark themes; Android 13 added Neutral / Vibrant Tonal / Expressive variants (seed transformed by vibrancy and hue-rotation recipes) (research 06 §6). The demo follows the official material-color-utilities 0.3.0 (Apache-2.0) scheme_*.js and material_dynamic_colors.js."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "sourceHue",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 299,
+      "effect": {
+        "zh": "source color 的 HCT 色相——整套方案的唯一输入。默认 299 = M3 官方基线种子紫 #6750A4 的 HCT 色相(demo 内嵌 CAM16 前向模型实测 298.98;调研 06§六7 载明 #6750A4 为官方亮色 primary)。注意 HCT 色相刻度与 hsl/oklch 不同:oklch 蓝≈220°,HCT 蓝≈300° 附近。",
+        "en": "The HCT hue of the source color — the scheme's single input. Default 299 = the HCT hue of the M3 baseline seed purple #6750A4 (measured 298.98 with the embedded CAM16 forward model; research 06 §7 records #6750A4 as the official light primary). HCT hue scales differ from hsl/oklch: oklch blue ≈ 220°, HCT blue near 300°."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "tonal-spot", "label": { "zh": "Tonal Spot(Android 12 默认)", "en": "Tonal Spot (Android 12 default)" } },
+        { "value": "neutral", "label": { "zh": "Neutral(近灰)", "en": "Neutral (near-gray)" } },
+        { "value": "vibrant", "label": { "zh": "Vibrant(最大鲜艳度)", "en": "Vibrant (max colorfulness)" } },
+        { "value": "expressive", "label": { "zh": "Expressive(色相跳转)", "en": "Expressive (detached hue)" } }
+      ],
+      "default": "tonal-spot",
+      "effect": {
+        "zh": "变体=关键色调色板的生成配方(色度档 + 色相旋转,常量取自 material-color-utilities scheme_*.js 发布源码):tonal-spot = primary(h,36)/secondary(h,16)/tertiary(h+60,24)/neutral(h,6)/NV(h,8),Android 12 起的默认;neutral = 12/8/16/2/2,近乎灰阶;vibrant = primary(h,200,按可达截断)+ secondary/tertiary 按色相断点表旋转,追求最大鲜艳;expressive = primary(h+240,40),中性色相偏 +15°,整体与种子色相刻意分离。变体名与出现时间(Android 12: Tonal Spot;Android 13: Neutral/Vibrant/Expressive)见调研 06§六6。",
+        "en": "Variant = the recipe that builds the five key palettes (chroma levels + hue rotations; constants from the published scheme_*.js): tonal-spot = primary(h,36)/secondary(h,16)/tertiary(h+60,24)/neutral(h,6)/NV(h,8), default since Android 12; neutral = 12/8/16/2/2, near-grayscale; vibrant = primary(h,200, clamped to what is achievable) with secondary/tertiary rotated via breakpoint tables for maximum colorfulness; expressive = primary(h+240,40) with neutrals shifted +15°, deliberately detached from the seed hue. Variant names and timeline (Android 12: Tonal Spot; Android 13: Neutral/Vibrant/Expressive) per research 06 §6."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "scheme",
+      "options": [
+        { "value": "light", "label": { "zh": "亮色", "en": "Light" } },
+        { "value": "dark", "label": { "zh": "暗色", "en": "Dark" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "亮/暗主题:同一套角色 token 换 tone 取值(库内 contrastLevel 0 约定)——accent 类 40↔80、container 类 90↔30、on-类 100↔20 或 30↔90、surface 类 98↔6。官方手调基线参照(调研 06§六7):亮 primary #6750A4 / on-primary #FFFFFF / primary-container #EADDFF / error #B3261E / surface #FFFBFE / on-surface #1C1B1F;暗 primary #D0BCFF(≈tone 80)/ on-primary #381E72 / primary-container #4F378B / surface-variant #49454F——体现『暗色 accent 更亮更低饱和』惯例。变体生成值与手调基线接近但不逐值相等(基线 primary 调色板 chroma≈48,变体管线为 36;基线 neutral≈4,变体为 6)。",
+        "en": "Light/dark: the same role tokens read different tones (library convention at contrastLevel 0) — accents 40↔80, containers 90↔30, on-colors 100↔20 or 30↔90, surfaces 98↔6. Official hand-tuned baseline for reference (research 06 §7): light primary #6750A4 / on-primary #FFFFFF / primary-container #EADDFF / error #B3261E / surface #FFFBFE / on-surface #1C1B1F; dark primary #D0BCFF (≈tone 80) / on-primary #381E72 / primary-container #4F378B / surface-variant #49454F — reflecting the 'darker-mode accents get brighter and less saturated' convention. Variant-generated values sit close to but not exactly on the hand-tuned baseline (baseline primary palette chroma≈48 vs 36 in the variant pipeline; neutral≈4 vs 6)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "角色色以 hex/CSS 变量落地,任何浏览器可用;Android 平台由 DynamicColors 在运行时应用。demo 的调色板与角色计算是内嵌 TS 移植(material-color-utilities 官方提供 C++/Dart/Java/Swift/TypeScript/Kotlin 实现),无 CSS 特性依赖。",
+      "en": "Roles land as hex/CSS variables usable in any browser; on Android the system applies them at runtime via DynamicColors. The demo's palette and role computation is an embedded TS port (material-color-utilities ships C++/Dart/Java/Swift/TypeScript/Kotlin implementations) with no CSS feature dependency."
+    }
+  },
+  "fallback": {
+    "zh": "Web 端建议构建期生成两套角色变量(--md-primary/--md-on-primary/…)并按 prefers-color-scheme 或主题类切换;不支持变量切换的极端环境退回单主题固定 hex。角色值一律整值输出,不做运行时插值。",
+    "en": "On the web, generate both role token sets at build time (--md-primary/--md-on-primary/…) and switch via prefers-color-scheme or a theme class; in environments without variable switching, fall back to a single fixed theme. Output whole role values; no runtime interpolation."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "按壁纸/品牌色整套换肤:一个 source hue 进来,primary/secondary/tertiary/neutral/error 五板 + 全套角色变量出去", "en": "Whole-app theming from wallpaper/brand color: one source hue in, five palettes plus the full role token set out" },
+      { "zh": "亮暗主题共用语义 token:组件只写 var(--md-primary),主题只换映射(与三层 token 架构同构)", "en": "Light/dark sharing semantic tokens: components write var(--md-primary) only, themes swap mappings (isomorphic to the 3-layer token architecture)" },
+      { "zh": "不同『性格』的产品主题:tonal-spot 跟随、neutral 克制、vibrant 张扬、expressive 出跳", "en": "Product themes with different personalities: tonal-spot follows, neutral restrains, vibrant shouts, expressive leaps" },
+      { "zh": "品牌色保留:自定义色经 HarmonizedColors 在 HCT 中向系统色相调和,保持对比与平衡", "en": "Brand-color retention: HarmonizedColors aligns custom colors toward the system hue in HCT, keeping contrast and balance" }
+    ],
+    "avoid": [
+      { "zh": "把生成值当官方基线值:基线 #6750A4 系手调( chroma≈48),tonal-spot 管线 primary chroma=36,两者接近但不同", "en": "Treating generated values as the official baseline: #6750A4 is hand-tuned (chroma≈48) while the tonal-spot pipeline uses 36 — close, not equal" },
+      { "zh": "只在暗色主题下检查对比度:两套 scheme 的 on-类角色是不同 tone,必须各自复核", "en": "Checking contrast only in dark: on-roles take different tones per scheme — verify both" },
+      { "zh": "绕过角色直接用调色板任意 tone 上 UI:角色档位带对比度约束,随手取 tone 会破坏可读性", "en": "Bypassing roles and painting UI with arbitrary palette tones: role tones carry contrast constraints, random tones break readability" }
+    ]
+  },
+  "a11y": {
+    "zh": "角色档位自带对比度约束(库内 contrastLevel 0):on-色与色底 tone 差 ≥50 → 正文 ≥4.5:1(AA);tone 差 ≥40 → 非文本/大字 ≥3:1。primary 对 surface 的对比度由 contrastCurve(3,4.5,7,7) 保证最低 3:1。换 variant/scheme 后应重新核对关键组合(按钮字/底、文本/背景)而非假设恒成立;WCAG 阈值不得四舍五入。",
+    "en": "Role tones carry contrast constraints (library contrastLevel 0): an on-color ≥50 tones from its base guarantees ≥4.5:1 body text (AA); a ≥40-tone gap guarantees ≥3:1 for non-text/large text. primary vs. surface is held at ≥3:1 by contrastCurve(3,4.5,7,7). After changing variant/scheme, re-verify the critical pairings (button text/base, text/background) instead of assuming they hold; WCAG thresholds never round up."
+  },
+  "sources": [
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors",
+    "https://github.com/material-foundation/material-color-utilities"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现 Material 3 动态取色方案生成器:输入 source hue / variant / scheme,输出 primary/on-primary/container/surface 等关键角色色与一张用角色色拼装的迷你界面卡。",
+      "en": "Implement an M3 dynamic-color scheme generator: input source hue / variant / scheme, output key roles (primary/on-primary/containers/surfaces) plus a mini UI card assembled from the roles."
+    },
+    "acceptance": [
+      { "zh": "调色板按变体配方生成(tonal-spot/neutral/vibrant/expressive 各自的色度档与色相旋转)", "en": "Palettes follow the variant recipes (per-variant chroma levels and hue rotations)" },
+      { "zh": "角色由 tone 映射生成:accent 40/80、container 90/30、on-类 100↔20/30↔90、surface 98/6(contrastLevel 0)", "en": "Roles come from tone mapping: accents 40/80, containers 90/30, on-colors 100↔20/30↔90, surfaces 98/6 (contrastLevel 0)" },
+      { "zh": "亮暗共用同一组角色名,只换 tone;切换即时可见", "en": "Light/dark share role names and differ only in tone; switching is instantly visible" },
+      { "zh": "HCT→sRGB 用 material-color-utilities 求解算法,不引第三方包", "en": "HCT→sRGB uses the material-color-utilities solver, no third-party packages" },
+      { "zh": "输出处标注官方手调基线参照值(#6750A4 系)并说明生成值与基线的关系", "en": "Annotate the official hand-tuned baseline reference (#6750A4 family) and how generated values relate to it" }
+    ]
+  }
+}

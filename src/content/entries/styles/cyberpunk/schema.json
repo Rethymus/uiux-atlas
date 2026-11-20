@@ -1,0 +1,113 @@
+{
+  "name": "Cyberpunk",
+  "aliases": ["赛博朋克", "Cyberpunk UI", "霓虹 HUD"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "近黑底上的电光青/品红/酸黄,叠加扫描线、色差与 RGB 通道错位——「故障即氛围」,压缩等宽字体与 HUD 网格读数构成终端语感。",
+    "en": "Electric cyan / magenta / acid yellow on near-black, layered with scanlines, chromatic aberration and RGB channel split — 'glitch as atmosphere', with compressed monospace type and HUD readouts for a terminal voice."
+  },
+  "origin": {
+    "zh": "1984 年《Neuromancer》奠定「黑暗、发光、联网」的赛博空间视觉母语;1995 年《Hackers》等带入主流银幕;2013 年前后 synthwave 与独立游戏触发刻意复兴;Cyberpunk 2077 与暗色模式浪潮使其成为娱乐品牌的合法选项(调研 03§14)。",
+    "en": "Gibson's 1984 Neuromancer established the 'dark, glowing, networked' visual mother tongue; films like Hackers (1995) took it mainstream; synthwave and indie games triggered a deliberate revival around 2013; Cyberpunk 2077 and the dark-mode wave made it a legitimate option for entertainment brands (research 03 §14)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "scanGap",
+      "unit": "px",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4,
+      "cssVar": "--cy-scan-gap",
+      "effect": {
+        "zh": "扫描线重复间距(CRT 暗线周期)。调研记载「扫描线间距与透明度」为可调变量(enlighten cyberpunk 页),未记载具体数值;默认 4px 为本条目基准设定。间距越小越像密集 CRT,越大越像百叶窗。",
+        "en": "Scanline repeat period (the CRT dark-line cycle). The research lists scanline spacing and opacity as tunable variables (the enlighten cyberpunk page) without specific values; the 4px default is this entry's baseline. Smaller gaps read as dense CRT, larger as venetian blinds."
+      }
+    },
+    {
+      "type": "number",
+      "name": "scanAlpha",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.25,
+      "cssVar": "--cy-scan-alpha",
+      "effect": {
+        "zh": "扫描线暗线的透明度,0=关闭扫描线。调研未记载具体数值;默认 0.25 为本条目基准设定。暗线只压暗不提亮,叠加在霓虹层之上。",
+        "en": "Opacity of the scanline dark line; 0 disables scanlines. The research records no specific value; the 0.25 default is this entry's baseline. The dark line only dims — it overlays the neon layer."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "rgbShift",
+      "unit": "px",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "cssVar": "--cy-rgb",
+      "effect": {
+        "zh": "RGB 通道位移(色差):霓虹文字左右两侧品红/青描影的间距,0=无色差。调研记载「RGB 位移量」为可调变量,未记载数值;默认 2px 为本条目基准设定。位移越大故障感越强,可读性下降越快。",
+        "en": "RGB channel shift (chromatic aberration): the magenta/cyan fringing distance left and right of neon type; 0 disables it. The research lists the RGB shift as a tunable variable without a value; the 2px default is this entry's baseline. Larger shifts strengthen the glitch but erode legibility faster."
+      }
+    },
+    {
+      "type": "number",
+      "name": "glow",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 1,
+      "cssVar": "--cy-glow",
+      "effect": {
+        "zh": "霓虹亮度:辉光层(text-shadow 双层模糊)的倍率,0=关灯只剩纯色文字,2=强霓虹泛光。调研记载「霓虹强调色板对暗底亮度比」为核心变量,未记载具体数值;默认 1 为本条目基准设定。",
+        "en": "Neon brightness: a multiplier on the glow layers (two blurred text-shadow layers); 0 turns the bloom off leaving flat type, 2 is a heavy neon halo. The research names the accent-to-dark-base luminance ratio as the core variable without a value; the 1 default is this entry's baseline."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "repeating-linear-gradient、多层 text-shadow、CSS 动画全平台可用;demo 的 rgb(... / calc(...)) alpha 计算需现代浏览器,旧环境可写死 alpha 值。",
+      "en": "repeating-linear-gradient, multi-layer text-shadow and CSS animation work everywhere; the demo's rgb(... / calc(...)) alpha math needs a modern browser — older ones can hardcode the alpha values."
+    }
+  },
+  "fallback": {
+    "zh": "降级顺序:先关 glitch 动画(静态 RGB 分离仍成立),再关扫描线,最后保留纯色霓虹文字+HUD 边框——核心识别(近黑底+电光色)不依赖任何动效。动画只装饰,不承载信息。",
+    "en": "Degradation order: drop the glitch animation first (the static RGB split still reads), then the scanlines, and finally keep flat neon type + HUD frames — the core identity (near-black + electric colors) depends on no motion. Animation decorates; it never carries information."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "娱乐与游戏品牌站——Cyberpunk 2077 官网(扫描线+霓虹+全屏视频)是标杆案例(调研 03§14)", "en": "Entertainment and game brand sites — the Cyberpunk 2077 site (scanlines + neon + full-screen video) is the benchmark (research 03 §14)" },
+      { "zh": "音乐、夜生活、电竞活动页与限定发布皮肤", "en": "Music, nightlife and esports campaign pages and limited-release skins" },
+      { "zh": "短时停留的沉浸式首屏——强氛围、低信息密度", "en": "Short-stay immersive heroes — strong atmosphere, low information density" }
+    ],
+    "avoid": [
+      { "zh": "需要长时间阅读的界面——低对比霓虹文字伤害可读性(调研明示局限)", "en": "Interfaces for sustained reading — low-contrast neon hurts legibility (a limitation the research names)" },
+      { "zh": "企业产品与生产力工具——受众窄、时代感强易过时", "en": "Enterprise products and productivity tools — narrow audience and a dated feel over time" },
+      { "zh": "重资产预算紧张的项目——该风格常伴随视频/粒子/着色器成本(调研明示)", "en": "Projects without heavy-asset budgets — the style usually drags video/particle/shader costs (named in the research)" }
+    ]
+  },
+  "a11y": {
+    "zh": "调研明示「装饰性低对比霓虹文字伤害可访问性」:霓虹文字逐一核对 4.5:1,辉光只是增强不承担对比;扫描线与色差层 aria-hidden,绝不承载信息;glitch 动画必须响应 prefers-reduced-motion 降级为静态分离,并避免大面积高频闪烁(光敏性不适风险)。",
+    "en": "The research names 'decorative low-contrast neon text' as an accessibility hazard: check every neon string at 4.5:1, treating glow as reinforcement only; scanline and aberration layers are aria-hidden and never carry information; the glitch animation must degrade under prefers-reduced-motion to a static split, and large-area high-frequency flicker (photosensitivity risk) is to be avoided."
+  },
+  "sources": [
+    "https://design-styles.enlighten-media.net/pages/cyberpunk/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块赛博朋克 HUD 面板:近黑底、霓虹标题(双层辉光+品红/青 RGB 分离)、扫描线叠层、等宽遥测读数与角标框线,glitch 抖动可降级。",
+      "en": "Replicate a cyberpunk HUD panel: near-black base, a neon title (double glow + magenta/cyan RGB split), a scanline overlay, monospace telemetry rows and corner-bracket framing, with a degradable glitch jitter."
+    },
+    "acceptance": [
+      { "zh": "近黑底 + 电光青/品红/酸黄色板,霓虹文字双层 text-shadow 辉光", "en": "Near-black base + electric cyan/magenta/acid-yellow palette, neon type with two-layer text-shadow glow" },
+      { "zh": "RGB 分离用参数位移量左右错位,0 时完全关闭", "en": "The RGB split offsets by the parameter value on both sides and fully disables at 0" },
+      { "zh": "扫描线为 repeating-linear-gradient 暗线,间距与透明度取参数值,叠层 aria-hidden", "en": "Scanlines are a repeating-linear-gradient dark line with parameter spacing and opacity, overlay aria-hidden" },
+      { "zh": "等宽压缩字体做遥测读数,HUD 角标框线只做装饰", "en": "Monospace compressed type for telemetry; HUD corner brackets are decorative only" },
+      { "zh": "glitch 抖动响应 prefers-reduced-motion:关闭动画、保留静态 RGB 分离", "en": "Glitch jitter honors prefers-reduced-motion: animation off, static RGB split retained" }
+    ]
+  }
+}

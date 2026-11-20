@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+演示是一个横向轨道:两端各一堵墙,一颗球用 `useMotionValue` 驱动 `transform: translateX`,在两墙之间 ping-pong;点击轨道任意位置把弹簧目标改到点击点。核心只有一行——对同一个 MotionValue 反复调用 `animate()`:
+
+```tsx
+const x = useMotionValue(0);
+
+// physics 模式:stiffness/damping/mass 出现即覆盖 bounce/duration
+animate(x, target, { type: "spring", stiffness, damping, mass });
+
+// durationBased 模式:显式传文档标注默认 duration 0.3s
+animate(x, target, { type: "spring", bounce, duration: 0.3 });
+```
+
+- 每条腿结束(`controls.then()`)后自动折返对侧墙;
+- 运行中再次 `animate(x, newTarget, …)` 会打断当前腿——physics 模式下新弹簧从**当前值 + 当前速度**出发,文档标注 `velocity` 默认取「当前值速度」;
+- 打断也可来自参数变化:拖动 stiffness/damping 滑杆同样是对运行中的弹簧续接;
+- 键盘等价路径:轨道可聚焦,回车把目标弹向对侧墙;速度读数同步展示,便于观察「打断瞬间速度不归零」。
+
+轨道的 DOM 只有三件套,弹簧不依赖任何 DOM 结构:
+
+```tsx
+<div className="ms-track" onClick={retarget}>
+  <div className="ms-wall ms-wall-l" />
+  <div className="ms-wall ms-wall-r" />
+  <motion.div className="ms-ball" style={{ x }} />  {/* x 即上面的 useMotionValue */}
+</div>
+```
+
+弹簧何时算「停」也由文档默认值决定:`restSpeed` 默认 0.1/s、`restDelta` 默认 0.01——速度与距目标的差值同时低于阈值才判定到位,`controls.then()` 由此触发折返。
+
+## 样式与参数
+
+本条目没有 CSS 变量参数——五个参数全部是 JS 型,由 demo 订阅 store 组装 transition 对象。参数语义与官方数值(Motion 文档,本站已实地核实):
+
+- `stiffness` 默认 **1**(越大越突然)、`damping` 默认 **10**(0 则无限振荡)、`mass` 默认 **1**(越大越迟缓)、`bounce` 默认 **0.25**(取值 [-1,1])、`duration` 默认 **0.3s**;
+- **差异如实并列**:①文档页把 stiffness 默认标注为 1,但社区长期流传的说法是 100(调研时未找到佐证);本站进一步核验了实际安装的 motion-dom@12.43.0 源码,其运行时回退同样是 `stiffness: 100`。②duration 在省略时运行时回退为 **800ms**,与文档标注的 0.3s 属同型分歧(「多关键帧 0.8s」的说法实为 tween 注记,与弹簧无关)。本条目按调研约定取**文档标注值**(stiffness 1、duration 0.3s)作为官方默认,demo 显式传参锁定;并提醒:1/10/1 是强过阻尼、近乎冻结的组合,想要经典弹簧手感请把 stiffness 拖到 100–300。
+
+durationBased 弹簧可以导出为**纯 CSS**:Motion 12 会把弹簧采样成 `linear()` 多点插值(Baseline 2023-12,全浏览器可用),不装 Motion 也能得到同样的曲线:
+
+```css
+/* 弹簧的纯 CSS 等价:linear() 密集采样,由 Motion/Jake Archibald 生成器输出 */
+animation: arrive 0.42s linear(var(--spring-samples)) forwards;
+```
+
+## 动效与交互
+
+- **可打断的真弹簧**:点击改目标、拖动参数滑杆,动画都从中途状态(位置+速度)继续,而不是跳回起点重新播——physics 模式的标志性特征;
+- **两种模式的对照**:durationBased 由 bounce+duration 定义,「更容易理解、可导出纯 CSS」,但打断后速度被刻意归零(源码注释:继承速度会让小行程弹簧剧烈振荡);physics 模式则继承速度;
+- **拖拽场景的近亲**:拖拽释放属于 `inertia` 动画(power 0.8、timeConstant 700,可用 modifyTarget 吸附网格,min/max 边界以 bounceStiffness 500/bounceDamping 10 回弹)——它同样消费「释放瞬间的速度」,与 physics 弹簧构成手势动效全家桶;
+- **reduced-motion**:`useReducedMotion()` 检测到 reduce 时跳过动画直出终态(点击瞬间到位),并停用 ping-pong 循环;
+- 性能:只动画 `transform`(球体位移),符合 web.dev「只动 transform/opacity」的底线。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stiffness` | 弹簧更硬,到位更突然、超调更尖锐;>400 接近「弹射」 | 更软更黏;趋近 0 时弹簧冻结——文档默认 1 在数百 px 行程下单程要数十秒,这正是文档标注值与社区经验 100 的现实差异 |
+| `damping` | 振荡更快被吸收,超过临界值转入过阻尼(缓慢爬向目标) | 振荡次数增多、来回弹跳;到 0 会无限振荡(文档警告),本条目下限 1 |
+| `mass` | 惯性更大,同刚度下更迟钝、超调更缓 | 更灵敏,0.1 时近乎瞬时响应 |
+| `bounce` | 回弹幅度与次数增加(1=极弹) | 0=临界阻尼无回弹;负值=过阻尼,启动更快收尾更慢(只改形状,不改总时长);仅 durationBased 生效 |
+| `mode` | physics:继承速度、手感自然,时长不可预估 | durationBased:总时长固定(duration)、可编排可导出 CSS,代价是打断后速度归零 |
+
+选型口诀:要「跟手」用 physics + 继承速度;要「对齐时间轴」用 bounce+duration;两者都不能表达为 cubic-bezier,导出纯 CSS 只能走 `linear()` 采样近似。

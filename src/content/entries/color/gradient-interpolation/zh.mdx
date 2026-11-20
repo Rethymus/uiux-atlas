@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+渐变是 `<image>`,`in` 空间子句随角度一起写在函数名后、色标表之前:
+
+```css
+/* 角度在前,in 子句在后(MDN 惯用写法;正式语法中二者经 || 组合可互换位次) */
+.hero {
+  background: linear-gradient(90deg, red, blue);                 /* 兜底:旧式色默认 sRGB 插值 */
+}
+@supports (background: linear-gradient(90deg in oklab, red, blue)) {
+  .hero {
+    background: linear-gradient(90deg in oklab, red, blue);      /* 感知均匀插值 */
+  }
+}
+```
+
+- **语法位次**:正式语法 `[ <angle> || <color-interpolation-method> ]` 允许角度与 in 子句互换位次,惯用写法把角度放最前:`linear-gradient(90deg in oklch longer hue, red, blue)`;
+- **hue 策略只属于柱坐标空间**:语法表 `<polar-color-space> = hsl | hwb | lch | oklch`(CSS Color 4 §13.1,写作时抓取规范原文复核);srgb/oklab/display-p3 是直角空间,携带 hue 关键词整条声明无效——demo 对非 oklch 空间显示「hue 不适用」;
+- 结构上每条对比条带 = 一个 div,背景由 JS 拼 `linear-gradient(90deg in <space> [hue], var(--gi-from), var(--gi-to))` 内联注入;样式表里的**无 in 普通渐变是兜底**,内联声明无效(不支持)时被丢弃、自动落回兜底。
+
+## 样式与参数
+
+四个参数:两个 enum(JS 型)+ 两个 color(CSS 型,`--gi-from/--gi-to`):
+
+```css
+.mid-srgb    { background: color-mix(in srgb,      var(--gi-from), var(--gi-to)); }
+.mid-oklab   { background: color-mix(in oklab,     var(--gi-from), var(--gi-to)); }
+.mid-oklch   { background: color-mix(in oklch shorter hue, var(--gi-from), var(--gi-to)); }
+.mid-display { background: color-mix(in display-p3, var(--gi-from), var(--gi-to)); }
+```
+
+数值出处:
+
+- 端色默认 **red `#FF0000` → blue `#0000FF`**,取 CSS Color 4 例证/调研原文 `linear-gradient(in oklab, red, blue)`(调研 06§4)——红蓝对撞在 sRGB 插值下中段穿过脏灰紫,是规范文档自己使用的演示用例;
+- **space 默认 oklab**:Tailwind v4(2025-01)渐变默认 OKLAB 插值(调研 06§4);CSS Color 4 §13.1 亦规定宿主语法未定义兜底空间时用 Oklab(写作时抓取规范复核);
+- **hueStrategy 默认 shorter**:调研 06§4 仅记载四策略清单(shorter/longer/increasing/decreasing)未记载默认值;写作时抓取 W3C CSS Color 4 §13.1 原文确认——「For a `<polar-color-space>` if the `<hue-interpolation-method>` is not specified, it defaults to shorter」;
+- 四种 hue 策略语义(规范 §13.4):shorter 走短弧、longer 走长弧、increasing 沿递增方向、decreasing 沿递减方向——后两者在动画中不会因差值越过 180° 而翻弧;
+- 缺失分量规则:白色等无色相的颜色在柱坐标空间插值时,**hue 取对端色相参与插值**(调研 06§4),所以 `color-mix(in oklch, white, green)` 得到的是真正「白→绿」的过渡而非偏红;
+
+对白色这类无色相端点,规范的处理是让它继承对端色相(规范原文以 `color-mix(in hsl, white 30%, green 70%)` 为例):
+
+```css
+/* white 在 oklch 中 hue 缺失 → 取 green 的 hue,得到纯白到绿的干净过渡 */
+color-mix(in oklch, white, green);   /* 而非把 white 的 hue 当作 0°(偏红) */
+```
+
+Tailwind v4 的工程注脚:调色板整体 rgb→oklch、渐变默认 OKLAB 插值、`bg-linear-to-r/srgb`、`/oklch` 修饰符可切换空间、透明度用 `color-mix(in oklab, var(--color-blue-500) 50%, transparent)`(调研 06§4)。
+
+## 动效与交互
+
+- 改任一参数,主条带、四条对比带与四个中点色块**即时重绘**——全部由浏览器插值,JS 只拼字符串;
+- 空间切换时条带宽度不变、颜色路线变:同一渐变在 oklch 下全程高饱和、srgb 下中段发灰——**无需动画即可一眼对比**;
+- hue 策略切换仅在空间 = oklch 时生效;其余空间 demo 明示「hue 不适用(直角空间)」,并把 hue 关键词从拼串中省略;
+- 条带无入场动画,避免动效掩盖色彩差异;`prefers-reduced-motion` 下亦无任何过渡(demo 无 transition);
+- 渐变上如需叠字,先按最亮/最暗两端核对对比度(wcag-contrast 条目),插值空间的选择会移动中段最差点。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `space` | oklch:chroma 全程拉满最鲜艳(保 chroma 是它的设计目标);display-p3:在更广基色上插值,P3 屏上略鲜艳,但与 srgb 差异细微 | oklab:感知均匀、中段亮度平滑;切回 srgb 即回到兼容旧行为,红蓝类长距过渡立即出现脏灰带 |
+| `hueStrategy` | longer:绕远弧,红→黄会途经蓝紫,适合刻意编排;increasing/decreasing:固定方向,动画中差值过 180° 不翻弧 | shorter(默认):走最短弧,过渡最经济;当两端色相近对跖时短弧与长弧差异最大 |
+| `from` / `to` | 两端色相夹角越大,空间间差异越明显——拉到红/蓝对跖是演示最优解 | 两端越接近,各空间结果趋同,对比条带失去教学意义;同色相深浅渐变时各空间几乎无差 |
+
+经验:默认组合(oklab + red→blue)是「安全又好看」的一档;要看最戏剧性的差异,把空间切到 srgb 看脏灰带、切到 oklch 再把 hue 策略拨到 longer 看绕行蓝紫的色相旅行——这两次切换就是本条目全部知识点的现场演示。

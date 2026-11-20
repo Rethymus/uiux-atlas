@@ -1,0 +1,105 @@
+{
+  "name": "Backdrop Filter",
+  "aliases": ["背景滤镜", "背景模糊", "backdrop-filter"],
+  "category": "materials",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "对元素『身后』的全部内容应用 filter 函数链:blur + saturate + brightness 三件套,是毛玻璃与各类系统玻璃材质的 Web 底座。",
+    "en": "Applies a chain of filter functions to everything *behind* the element — blur + saturate + brightness, the web foundation under frosted glass and most system glass materials."
+  },
+  "origin": {
+    "zh": "CSS Filter Effects Level 2 官方规范能力(调研 02 §4 D2);经典配方 blur(20px) 记载于 glassmorphism.com 生成器(调研 06 §四 §16),Apple 全局导航 blur(20px)+saturate(180%) 为生产 CSS 实测(superdesign.dev,同 styles/glassmorphism 条目)。",
+    "en": "An official CSS Filter Effects Level 2 capability (research 02 §4 D2); the classic blur(20px) recipe is recorded by the glassmorphism.com generator (research 06 §IV §16), and Apple's global-nav blur(20px)+saturate(180%) comes from production CSS measurements (superdesign.dev, same as the styles/glassmorphism entry)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--bf-blur",
+      "effect": {
+        "zh": "背景模糊半径,『磨砂厚度感』的直接来源。默认 20px = glassmorphism.com 生成器经典配方(调研 06 §四 §16);生产实测 Apple 全局导航同为 20px(superdesign.dev)。",
+        "en": "Backdrop blur radius — the direct source of the frosted 'thickness'. Default 20px is the glassmorphism.com generator's classic recipe (research 06 §IV §16); Apple's global nav measures the same 20px in production CSS (superdesign.dev)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "saturate",
+      "unit": "%",
+      "min": 100,
+      "max": 300,
+      "step": 5,
+      "default": 180,
+      "cssVar": "--bf-saturate",
+      "effect": {
+        "zh": "透出背景的饱和度补偿:磨砂会把背景色彩压淡,提高 saturate 找回鲜艳度。默认 180% = Apple 全局导航生产 CSS 实测值(blur(20px)+saturate(180%),superdesign.dev);100% 为恒等值,不改变色彩。",
+        "en": "Saturation compensation for the transmitted backdrop: frosting desaturates what shows through, so raising saturate restores vividness. Default 180% is the production-measured value on Apple's global nav (blur(20px)+saturate(180%), superdesign.dev); 100% is the identity no-op."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "brightness",
+      "unit": "%",
+      "min": 50,
+      "max": 150,
+      "step": 1,
+      "default": 100,
+      "cssVar": "--bf-brightness",
+      "effect": {
+        "zh": "透出背景的亮度调整。默认 100% 为 Filter Effects L1 定义的恒等点(调研 02 §4 D1);深色玻璃配方常用 <100% 压暗透出层,守住面板文字的对比度。",
+        "en": "Brightness adjustment on the transmitted backdrop. Default 100% is the identity point defined by Filter Effects L1 (research 02 §4 D1); dark-glass recipes go below 100% to dim what shows through and hold text contrast."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "backdrop-filter:Chrome 76 / Edge 17 / Firefox 103 / Safari 9(BCD 实测,调研 02 §4 D2);Safari 9–17 需 -webkit- 前缀,Safari 18(2024-09)起无前缀(调研 03 §1)。",
+      "en": "backdrop-filter: Chrome 76 / Edge 17 / Firefox 103 / Safari 9 (BCD-measured, research 02 §4 D2); Safari 9–17 requires the -webkit- prefix, unprefixed since Safari 18 (2024-09) (research 03 §1)."
+    }
+  },
+  "fallback": {
+    "zh": "@supports not (backdrop-filter: blur(1px)) 时,提高面板填充不透明度(或改用实色表面)并保留描边与圆角,让文字回到可读底色上;Safari 9–17 必须同时写 -webkit-backdrop-filter。",
+    "en": "Under @supports not (backdrop-filter: blur(1px)), raise the panel fill opacity (or switch to a solid surface) while keeping border and radius so text sits on a readable base; on Safari 9–17 also write -webkit-backdrop-filter."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "悬浮导航与工具条——对照 Apple 全局导航 blur(20px)+saturate(180%) 生产实测", "en": "Floating nav bars and toolbars — cf. the production-measured Apple global nav blur(20px)+saturate(180%)" },
+      { "zh": "彩色照片/多层渐变上的浮层卡片与播放器", "en": "Overlay cards and players over colorful photos or gradients" },
+      { "zh": "模态/抽屉下面的层级垫层,让被遮内容保持可感知", "en": "Scrim layers under modals/drawers so covered content stays perceptible" },
+      { "zh": "图片上的字幕条与角标", "en": "Caption bars and badges on top of imagery" }
+    ],
+    "avoid": [
+      { "zh": "纯色/白色背景——背后没有可模糊的内容,玻璃直接失效", "en": "Flat or white backdrops — nothing to blur, the effect collapses" },
+      { "zh": "全屏大面积使用——背景每帧重采样,采样开销随面积上升", "en": "Full-screen slabs — the backdrop re-samples every frame, cost scales with area" },
+      { "zh": "小号正文与密集数据——填充稀释对比度且随背景滚动持续变化", "en": "Small body text and dense data — the fill dilutes contrast, which shifts as the backdrop scrolls" },
+      { "zh": "玻璃叠玻璃的多层嵌套——透出的层互相发浑", "en": "Glass stacked on glass — layered translucency turns muddy" }
+    ]
+  },
+  "a11y": {
+    "zh": "面板上的文字按『透出背景最亮/最暗』两端核对 4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17);控件边界保持 3:1 非文本对比(SC 1.4.11);backdrop 内容滚动时对比度持续变化——偏实或偏暗的填充比高透填充更稳。",
+    "en": "Check text on the panel against the brightest and darkest backdrop extremes for 4.5:1 (WCAG 2.1 SC 1.4.3, research 06 §V §17); keep component boundaries at 3:1 non-text contrast (SC 1.4.11); backdrop scrolling shifts contrast continuously — firmer or darker fills hold up better than high-transparency ones."
+  },
+  "sources": [
+    "https://drafts.fxtf.org/filter-effects-2/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter",
+    "https://hype4.academy/tools/glassmorphism-generator/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 backdrop-filter 函数链 blur+saturate+brightness 做一块磨砂面板,悬浮于彩色照片与彩色大字标题之上,面板内容保持 4.5:1 可读。",
+      "en": "Build a frosted panel with a backdrop-filter chain of blur+saturate+brightness, floating over a colorful photo and oversized colorful type, with panel content kept readable at 4.5:1."
+    },
+    "acceptance": [
+      { "zh": "backdrop-filter 链式书写 blur(var) saturate(var) brightness(var),并同时写 -webkit- 前缀", "en": "Write the backdrop-filter chain blur(var) saturate(var) brightness(var) with the -webkit- prefixed twin" },
+      { "zh": "三个参数严格使用快照默认值:blur 20px / saturate 180% / brightness 100%", "en": "Use the exact snapshot defaults: blur 20px / saturate 180% / brightness 100%" },
+      { "zh": "背景必须是彩色照片+彩色大字——纯色底上磨砂面板只剩一层淡色矩形", "en": "The backdrop must be a colorful photo plus colorful display type — on flat color the frost degenerates into a pale rectangle" },
+      { "zh": "提供 @supports 回退:不支持时提高填充不透明度保证可读", "en": "Provide an @supports fallback: raise fill opacity for readability when unsupported" },
+      { "zh": "动效只落在 transform/opacity;prefers-reduced-motion 时取消入场动画", "en": "Animate only transform/opacity; cancel entrance animation under prefers-reduced-motion" }
+    ]
+  }
+}

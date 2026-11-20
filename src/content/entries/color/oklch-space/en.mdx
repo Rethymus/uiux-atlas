@@ -1,0 +1,60 @@
+## Structure & DOM
+
+`oklch()` is a function adopted in CSS Color 4 with no DOM requirements of its own — it is just a color value. The minimal structure to use it is one element painted with it plus a readout that exposes the component semantics:
+
+```html
+<div class="swatch"><!-- the block painted by oklch() --></div>
+<span class="readout">oklch(70% 0.15 145)</span>
+```
+
+- The value is decoupled from elements: it can appear in `color`, `background-color`, `border-color`, `fill`, `shadow` — anywhere a `<color>` is accepted;
+- Transparency goes after the slash: `oklch(70% 0.15 145 / 0.5)`; whatever shows through underneath becomes part of the final look; alpha also accepts percentages and composes with `color-mix(in oklab, …)` for translucent derivatives (Tailwind v4's opacity recipe, research 06 §4);
+- Missing components are legal too: `oklch(none 0 none)` is the W3C example for desaturation animations (CSS Color 4 §4.4, research 06 §1);
+- The demo implements the same conversion in JS (Ottosson matrices) so every numeric step can be inspected.
+
+## Styling & Parameters
+
+Four components with clear semantics: **L** perceived lightness (0 black → 100 white), **C** chroma (0 = gray), **H** hue angle, **alpha** opacity:
+
+```css
+.swatch {
+  /* sRGB fallback first, oklch override after */
+  background-color: rgb(91 182 97);
+  background-color: oklch(70% 0.15 145);
+  color: oklch(0.15 0.03 145);
+}
+@supports (color: oklch(70% 0.15 145)) {
+  .swatch { border-color: oklch(70% 0.15 145 / 0.4); } /* alpha after the slash */
+}
+@media (color-gamut: p3) {
+  .swatch { background-color: oklch(70% 0.37 145); }  /* release chroma on P3 */
+}
+```
+
+Where the numbers come from (research 06 §1/§2):
+
+- L takes 0–1 or 0%–100%, 0 = black, 1 = white (MDN); C's practical cap is ≈ **0.5**, and **100% = 0.4**, not 1 (MDN);
+- H spans 0–360° but its scale matches neither hsl nor lch: hsl 0° = red, CIELab red ≈ 41°; Evil Martians' mapping: red ≈ 20°, yellow ≈ 90°, green ≈ 140°, blue ≈ 220°, purple ≈ 320° (this entry's default 145 is "green");
+- C's measured sRGB boundary ≈ 0.37 (slightly higher on P3); Chrome/Safari currently clip RGB instead of the spec's chroma reduction, visibly shifting hue — hand-write P3 overrides;
+- The percentage notation is a particular trap for C: 100% equals only 0.4, so a single `oklch(70% 100% 145)` is already past the sRGB boundary — prefer decimal notation day to day;
+- Baseline "widely available" = May 2023.
+
+## Motion & Interaction
+
+- Changing any component recomputes the color and readout instantly. The most direct proof of perceptual uniformity: **a ladder with fixed C/H and L stepping +10 looks evenly spaced in lightness** — the demo converts each step to sRGB in JS and lays out 10 steps;
+- The interaction payoff of uniformity: hover lightening can be a relative color `oklch(from var(--c) calc(l + 0.1) c h)` (CSS Color 5; calc may only add/subtract numbers) — the same Δl is an equal perceptual step for every hue (research 06 §2);
+- Gradients likewise: declaring `linear-gradient(in oklch, …)` pins the interpolation space, so long-range hue transitions no longer produce the muddy gray bands of default sRGB interpolation (CSS Color 4 §13, research 06 §4);
+- Swatch transitions animate only `background-color` (0.18s); under `prefers-reduced-motion` the transition is removed and values jump;
+- No transform animation: in a color-space demo any movement is just noise;
+- When any converted channel leaves [0,1] the demo raises an honest overflow warning and clips, matching what real pages hit on non-P3 screens.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `L` | brighter: contrast vs black text drops, vs white rises; backgrounds at ≥87% always pass with black text (Evil Martians) | darker: contrast vs black text rises; white text only becomes viable below ~50%; 0/100 are pure black/white and C/H lose meaning |
+| `C` | more vivid; past ≈0.37 it leaves sRGB and clipping shifts hue (release it on P3 screens) | toward gray; at C=0 the color is fully determined by L, with the most extreme black/white contrast endpoints |
+| `H` | rotates around the wheel (145 = green, 220 = blue): perceived lightness barely moves at fixed L/C | rotates the other way; high-C regions may trigger gamut clipping mid-rotation |
+| `alpha` | lets more of the backdrop through; element and background interpenetrate and contrast follows the composite | toward solid; 0 makes it invisible |
+
+The order of operations: L decides "how heavy", C decides "how vivid", H only decides "which color". This entry covers the space itself — **the fix-L picking workflow and contrast engineering live in the sibling entry oklch-workflow**.

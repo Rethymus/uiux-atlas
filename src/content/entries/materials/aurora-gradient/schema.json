@@ -1,0 +1,145 @@
+{
+  "name": "Aurora Gradient",
+  "aliases": ["极光渐变", "Mesh gradient", "Aurora mesh background"],
+  "category": "materials",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "极光渐变:多层低亮度 oklch 光斑 radial-gradient 叠在一层 conic 底色上,整层 blur+saturate 后缓慢平移——大面积、可动画、几乎零成本的『氛围光』。",
+    "en": "Aurora gradient: stacked low-luminance oklch radial-gradient blobs over a conic base, blurred and saturated as one layer, then drifted slowly — an ambient glow at near-zero cost."
+  },
+  "origin": {
+    "zh": "社区配方,出处 CodeFronts《Animated Mesh / Aurora Gradient Background》(MIT 许可,调研 06§四14 一手抓取),结构原型来自 MDN《Using CSS gradients》的多层 radial-gradient 叠加;非任何设计系统的官方材质。",
+    "en": "A community recipe from CodeFronts' 'Animated Mesh / Aurora Gradient Background' (MIT licensed; research 06 §14, primary fetch), structurally prototyped on MDN's stacked radial-gradients in 'Using CSS gradients'; not an official material of any design system."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "spots",
+      "options": [
+        { "value": "3", "label": { "zh": "3 个光斑", "en": "3 blobs" } },
+        { "value": "4", "label": { "zh": "4 个光斑", "en": "4 blobs" } }
+      ],
+      "default": "4",
+      "effect": {
+        "zh": "光斑数量。默认 4 = CodeFronts 配方的 4 个 radial-gradient 光斑 + 1 层 conic 底色(调研 06§14);减到 3 是成本/氛围的折中。JS 型参数,demo 切 data-spots 隐藏第 4 个光斑。",
+        "en": "Blob count. Default 4 = CodeFronts' four radial-gradient blobs plus one conic base layer (research 06 §14); 3 is the cost/ambience trade-off. JS-type param: the demo toggles data-spots to hide the fourth blob."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 120,
+      "step": 1,
+      "default": 42,
+      "cssVar": "--aurora-blur",
+      "effect": {
+        "zh": "整层模糊半径,把硬边光斑融成极光。默认 42px 为 CodeFronts 配方原文 filter: blur(42px)(调研 06§14)。",
+        "en": "Whole-layer blur radius that melts hard-edged blobs into aurora. Default 42px is the CodeFronts recipe's literal filter: blur(42px) (research 06 §14)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "saturate",
+      "unit": "%",
+      "min": 100,
+      "max": 160,
+      "step": 1,
+      "default": 115,
+      "cssVar": "--aurora-saturate",
+      "effect": {
+        "zh": "整层饱和度提升,blur 会洗掉颜色,用 saturate 补回来。默认 115% 对应 CodeFronts 配方 filter: saturate(1.15)(调研 06§14)。",
+        "en": "Whole-layer saturation boost — blur washes color out, saturate brings it back. Default 115% matches the CodeFronts recipe's filter: saturate(1.15) (research 06 §14)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "drift",
+      "unit": "s",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 18,
+      "cssVar": "--aurora-drift",
+      "effect": {
+        "zh": "整层漂移动画一轮时长(平移/旋转/缩放,ease-in-out alternate),0 = 静止。CodeFronts 配方原文为 60s 慢漂(调研 06§14);默认 18s 是本批任务规格给定的演示档,并非调研记载值——做生产氛围背景时建议改回 60s 级别。",
+        "en": "One cycle of the whole-layer drift animation (translate/rotate/scale, ease-in-out alternate); 0 = static. The CodeFronts recipe itself uses 60s (research 06 §14); the default 18s is the demo scale set by this batch's spec, not a research-recorded value — for production ambience prefer 60s-class durations."
+      }
+    },
+    {
+      "type": "number",
+      "name": "spotA",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--aurora-spot-a",
+      "effect": {
+        "zh": "光斑 A 的横向位置(at x% y%)。默认 20% 为 CodeFronts 首光斑记载值(38% 42% at 20% 25%,调研 06§14);纵向固定 25%。改位置即 MDN 所说『mesh 编辑器』玩法。",
+        "en": "Horizontal position of blob A (at x% y%). Default 20% is CodeFronts' recorded first-blob value (38% 42% at 20% 25%, research 06 §14); the vertical axis stays at 25%. Moving blobs is the 'mesh editor' play MDN describes."
+      }
+    },
+    {
+      "type": "number",
+      "name": "spotB",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 70,
+      "cssVar": "--aurora-spot-b",
+      "effect": {
+        "zh": "光斑 B 的横向位置(at x% y%,纵向固定 30%)。CodeFronts 只逐值记载了首光斑位置,70% 为演示取值(社区常见做法是对角错开布置,未证实为配方原文)。",
+        "en": "Horizontal position of blob B (at x% y%, vertical fixed at 30%). CodeFronts records only the first blob's position verbatim; 70% is a demo value (community practice offsets blobs diagonally, unverified as the literal recipe)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "依赖多层 background + filter: blur/saturate(filter: Chrome 18 / Firefox 49 / Safari 6,BCD 调研 02§D1)+ oklch(Baseline 2023-05,调研 06§1);动画只动 transform,全浏览器可用。老浏览器退化路径见 fallback。",
+      "en": "Relies on layered backgrounds plus filter: blur/saturate (filter: Chrome 18 / Firefox 49 / Safari 6 per BCD, research 02 §D1) and oklch (Baseline 2023-05, research 06 §1); the animation only transforms, safe everywhere. Legacy degradation in fallback."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 filter 的环境直接显示未模糊的多光斑渐变(仍然成立,只是更『硬』);不支持 oklch 的极老环境可把光斑色换成同亮度的 srgb 等价色;reduced-motion 时整层静止。",
+    "en": "Without filter support the unblurred multi-blob gradient still shows (just harder-edged); on very old engines without oklch swap blob colors for luminance-matched sRGB equivalents; under reduced-motion the layer stays static."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "落地页/活动页的大面积氛围背景,上面承载文字卡片或玻璃面板", "en": "Hero/landing ambience under text cards or glass panels" },
+      { "zh": "毛玻璃的底衬——玻璃材质必须有丰富背景才成立,极光层是廉价的高质量底", "en": "Backdrop for glassmorphism — glass needs a rich backdrop, and aurora is a cheap high-quality one" },
+      { "zh": "暗色主题的产品营销图、空状态插画背景", "en": "Dark-theme marketing shots and empty-state illustration backgrounds" },
+      { "zh": "需要『活背景』但不想上 WebGL/视频的场景——只动 transform,合成器友好", "en": "Living backgrounds without WebGL/video — transform-only, compositor-friendly" }
+    ],
+    "avoid": [
+      { "zh": "正文阅读区背后——blur 层大面积重采样,滚动内容叠在上面时开销陡增", "en": "Behind body-text regions — a large blurred layer resamples expensively under scrolling content" },
+      { "zh": "光斑亮度超过 0.75 后直接压文字——配方心法是把光斑 L 钉在 0.6–0.75(CodeFronts)", "en": "Blob luminance past 0.75 crushes text contrast — the recipe's rule pins blob L at 0.6–0.75 (CodeFronts)" },
+      { "zh": "小尺寸控件内——42px 级模糊在小元素里只会得到一坨糊色", "en": "Inside small widgets — 42px-class blur turns into a muddy blob on small elements" },
+      { "zh": "需要精确品牌色的场景——blur+saturate 会改变渐变的呈现色,取色验收要对着最终渲染结果" , "en": "Exact-brand-color contexts — blur+saturate shifts rendered colors; sample from the final composite" }
+    ]
+  },
+  "a11y": {
+    "zh": "极光层是纯装饰:对屏幕阅读器不可达(aria-hidden / 空元素),不承载信息;其上文字按 WCAG 2.1 SC 1.4.3 核对 4.5:1(把光斑最亮处当作底色极端);prefers-reduced-motion 时必须停止漂移(demo 已实现静止降级)。",
+    "en": "The aurora layer is pure decoration: invisible to screen readers (aria-hidden / empty elements), carrying no information; text on top must hold 4.5:1 per WCAG 2.1 SC 1.4.3 (treat the brightest blob as the worst-case backdrop); drift must stop under prefers-reduced-motion (the demo ships the static fallback)."
+  },
+  "sources": [
+    "https://codefronts.com/design-styles/css-gradient-ui/animated-mesh-aurora-gradient-background/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Using_CSS_gradients"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用纯 CSS 复刻一块可漂移的极光背景:4 个低亮度 oklch 光斑 + conic 底色,整层 inset 外扩、blur(42px) saturate(1.15),仅以 transform 缓慢漂移,上层放一张可读的文字卡。",
+      "en": "Replicate a drifting aurora background in pure CSS: four low-luminance oklch blobs over a conic base, the whole layer inset-oversized with blur(42px) saturate(1.15), drifting via transform only, with a readable text card on top."
+    },
+    "acceptance": [
+      { "zh": "光斑用 radial-gradient(<尺寸> at x% y%, oklch(L 0.18–0.24 H / .55–.85), transparent ~68%),L 保持在 0.6–0.75", "en": "Blobs use radial-gradient(<size> at x% y%, oklch(L 0.18–0.24 H / .55–.85), transparent ~68%) with L pinned at 0.6–0.75" },
+      { "zh": "模糊与饱和只作用在整层容器(filter: blur(Npx) saturate(S)),不逐光斑设置", "en": "Blur and saturate apply to the whole layer container (filter: blur(Npx) saturate(S)), not per blob" },
+      { "zh": "整层 inset:-25% 外扩,动画只 transform(ease-in-out alternate infinite),避免边缘露底", "en": "The layer is oversized with inset:-25% and animated via transform only (ease-in-out alternate infinite) so no edge gaps show" },
+      { "zh": "prefers-reduced-motion: reduce 时动画停止,背景静止但视觉完整", "en": "Under prefers-reduced-motion: reduce the animation stops and the background stays visually complete but static" },
+      { "zh": "层为 aria-hidden 装饰,文字卡对比度在光斑最亮处仍达 4.5:1", "en": "The layer is aria-hidden decoration; the text card keeps 4.5:1 over the brightest blob" }
+    ]
+  }
+}

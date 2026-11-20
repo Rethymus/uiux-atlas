@@ -1,0 +1,113 @@
+{
+  "name": "OKLCH Color Space",
+  "aliases": ["oklch 色彩空间", "感知均匀色彩空间", "Perceptually uniform color space"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "CSS 官方感知均匀色彩空间 oklch(L C H / A):数值变化即人眼感知变化——本条讲空间本身的四个分量与坐标语义。",
+    "en": "CSS's official perceptually uniform space oklch(L C H / A): numeric deltas equal perceptual deltas — this entry covers the space itself and its four components."
+  },
+  "origin": {
+    "zh": "Oklab 由 Björn Ottosson 于 2020 年发布(为图像处理设计的感知均匀空间),oklch 是它的柱面极坐标形式,收录进 CSS Color Module Level 4;2023 年 5 月起全主流浏览器支持(调研 06§一1)。选色工作流法则见姊妹条目 oklch-workflow。",
+    "en": "Oklab was published by Björn Ottosson in 2020 as a perceptually uniform space for image processing; oklch is its cylindrical form, standardized in CSS Color Module Level 4 and supported by all mainstream browsers since May 2023 (research 06 §1). For the picking workflow see the sibling entry oklch-workflow."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "L",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 70,
+      "effect": {
+        "zh": "感知亮度:0=黑、100=白,也可写作 0–1。L 轴与人眼感知线性一致——等步长的 L 变化看起来等亮(这是 oklch 与 HSL 的根本区别,HSL 的 L 与真实感知亮度不一致)。工作流参照值:Evil Martians 的 L=0.8(配黑字都清晰)、L≥87%(背景配黑字对比度恒达标)。默认 70 为条目快照(调研未载官方默认)。",
+        "en": "Perceived lightness: 0 = black, 100 = white (also writable as 0–1). The L axis is linear to human perception — equal L steps look equally spaced (the fundamental difference from HSL, whose L does not track perceived lightness). Workflow anchors from Evil Martians: L=0.8 (pairs clearly with black text), L≥87% (backgrounds pass contrast with black text). Default 70 is an entry snapshot; research records no official default."
+      }
+    },
+    {
+      "type": "number",
+      "name": "C",
+      "min": 0,
+      "max": 0.5,
+      "step": 0.005,
+      "default": 0.15,
+      "effect": {
+        "zh": "色度(chroma),0=无彩色灰。MDN:理论上无上限,但实践中不超过 0.5,且注意 100% = 0.4 而非 1。Evil Martians 实测:sRGB 色域的实际边界约 0.37(P3 屏略高)——越过即溢出色域,浏览器(Chrome/Safari)会直接裁剪 RGB 导致色相跑偏。默认 0.15 为条目快照,处于 sRGB 内的安全区。",
+        "en": "Chroma; 0 = neutral gray. MDN: theoretically unbounded, but practically capped near 0.5 — and note 100% = 0.4, not 1. Evil Martians measured the actual sRGB gamut boundary at ≈0.37 (slightly higher on P3 screens): past it the color leaves the gamut and browsers (Chrome/Safari) clip RGB outright, visibly shifting hue. Default 0.15 is an entry snapshot inside the safe sRGB range."
+      }
+    },
+    {
+      "type": "number",
+      "name": "H",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 145,
+      "effect": {
+        "zh": "色相角 0–360°。oklch 的色相刻度与 hsl/lch 都不重合:hsl 0°=红,CIELab 的红约 41°;Evil Martians 经验映射:红≈20°、黄≈90°、绿≈140°、蓝≈220°、紫≈320°。默认 145(绿)取自该映射。同一 L/C 下转动 H,感知亮度几乎不变。",
+        "en": "Hue angle 0–360°. oklch's hue scale coincides with neither hsl nor lch: hsl 0° = red, CIELab red ≈ 41°; Evil Martians' rule of thumb: red ≈ 20°, yellow ≈ 90°, green ≈ 140°, blue ≈ 220°, purple ≈ 320°. Default 145 (green) follows that mapping. Rotating H at fixed L/C barely moves perceived lightness."
+      }
+    },
+    {
+      "type": "number",
+      "name": "alpha",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 1,
+      "effect": {
+        "zh": "透明度,语法上以 / 分隔:oklch(L C H / A)。1=完全不透明,0=全透明;半透明时透出的背景会参与最终观感与对比度。默认 1(不透明)。",
+        "en": "Opacity, written after a slash in the syntax: oklch(L C H / A). 1 = fully opaque, 0 = fully transparent; when translucent, the backdrop participates in the final appearance and contrast. Default 1 (opaque)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "oklch() 自 2023 年 5 月起为主流浏览器广泛可用(CSS Color Module Level 4,Baseline);相对颜色语法 oklch(from …) 属 CSS Color 5,支持较新。demo 的上色与换算是纯 JS 数学(Ottosson 矩阵 + sRGB gamma),不依赖浏览器 oklch 支持。",
+      "en": "oklch() is widely available across mainstream browsers since May 2023 (CSS Color Module Level 4, Baseline); the relative-color syntax oklch(from …) belongs to CSS Color 5 with newer support. The demo paints and converts via pure JS math (Ottosson matrices + sRGB gamma), independent of the browser's oklch support."
+    },
+    "baseline": "2023"
+  },
+  "fallback": {
+    "zh": "不支持 oklch() 的浏览器:先写 rgb()/hex 基础值,再用 @supports (color: oklch(0.7 0.15 145)) 包一层 oklch() 覆写;构建期可用 oklch.com 等工具把值换算成 sRGB 兜底。demo 直接以 JS 换算出的 rgb() 上色,天然兼容老引擎。",
+    "en": "Browsers without oklch(): declare an rgb()/hex base first, then wrap an oklch() override in @supports (color: oklch(0.7 0.15 145)); at build time, convert values to an sRGB fallback via tools like oklch.com. The demo paints with JS-converted rgb() and is compatible by construction."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "任何需要『数值等步 = 感知等步』的场合:色阶推导、渐变插值、hover 提亮", "en": "Anywhere numeric steps must equal perceptual steps: scale derivation, gradient interpolation, hover lightening" },
+      { "zh": "带透明度的主题色:oklch(L C H / A) 一条声明同时表达颜色与 alpha", "en": "Themed colors with transparency: one oklch(L C H / A) declaration carries color and alpha together" },
+      { "zh": "广色域显示:P3 屏上放开 C 到 0.37 以上获得更鲜艳的品牌色", "en": "Wide-gamut displays: raise C past 0.37 on P3 screens for more vivid brand colors" },
+      { "zh": "与 light-dark()/color-mix 组合:oklch 语义分量让暗色主题改 L/C 而不改色相", "en": "Composed with light-dark()/color-mix: oklch components let dark themes adjust L/C without touching hue" }
+    ],
+    "avoid": [
+      { "zh": "把 hsl 的色相角直接搬进 oklch——两套角度不重合,红在 oklch 里约 20° 而非 0°", "en": "Copying hsl hue angles into oklch — the scales differ; red sits near 20° in oklch, not 0°" },
+      { "zh": "把 C 当 0–100 的百分数用:100% 只等于 0.4,而 sRGB 实际边界约 0.37", "en": "Treating C as a 0–100 percentage: 100% equals only 0.4, and sRGB's real boundary is ≈0.37" },
+      { "zh": "高 C 值直接上线——Chrome/Safari 现状是裁剪 RGB 而非降色度,色相会肉眼可见地偏移", "en": "Shipping raw high-C values — Chrome/Safari currently clip RGB instead of gamut-mapping, visibly shifting hue" }
+    ]
+  },
+  "a11y": {
+    "zh": "L 是感知亮度,是对比度的第一决定因素:WCAG 2.1 正文 AA≥4.5:1、AAA≥7:1(阈值不得四舍五入)。半透明色(alpha<1)叠在不可控背景上时,对比度按『合成后的最亮/最暗状态』核对,不能只按原色计算;Evil Martians 明示『仅靠 OKLCH 不保证可访问性,还需 APCA/WCAG 校验』。",
+    "en": "L is perceived lightness and the first determinant of contrast: WCAG 2.1 body-text AA≥4.5:1, AAA≥7:1 (thresholds never round up). With translucent colors (alpha<1) over an uncontrolled backdrop, verify contrast against the composited brightest/darkest states, not the raw color; Evil Martians explicitly warns 'OKLCH alone doesn't guarantee accessibility — verify with APCA/WCAG.'"
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch",
+    "https://www.w3.org/TR/css-color-4/",
+    "https://evilmartians.com/chronicles/oklch-in-css-a-utility-for-perceptually-uniform-color-systems"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 oklch(L C H / A) 表达一组主题色:主色 + 同色相的亮度阶梯(等 ΔL),展示感知均匀性,并给出 sRGB 兜底与色域溢出处理。",
+      "en": "Express a set of theme colors as oklch(L C H / A): a base color plus a same-hue lightness ladder (equal ΔL) demonstrating perceptual uniformity, with an sRGB fallback and gamut-overflow handling."
+    },
+    "acceptance": [
+      { "zh": "颜色一律写成 oklch(L% C H) 形式,四分量独立可调,注释中注明各分量语义", "en": "Colors are written as oklch(L% C H) with the four components independently adjustable and their semantics noted" },
+      { "zh": "亮度阶梯用等 ΔL 步进,同 C/H 只改 L,视觉上等亮度间隔", "en": "The ladder steps equal ΔL at fixed C/H, visually evenly spaced in lightness" },
+      { "zh": "sRGB 兜底在前、oklch 覆写在后(@supports 包裹)", "en": "sRGB fallback declared first, oklch override wrapped in @supports" },
+      { "zh": "C > 0.37 时如实标注可能溢出 sRGB(P3 用 @media (color-gamut: p3) 放开)", "en": "Flag possible sRGB overflow when C > 0.37 (release chroma under @media (color-gamut: p3))" },
+      { "zh": "半透明色不做对比度承诺,或按合成后状态复核", "en": "Make no contrast promise for translucent colors, or verify against the composited result" }
+    ]
+  }
+}

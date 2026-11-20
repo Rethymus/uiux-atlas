@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+流式字阶不需要任何额外 DOM——它是一层 **CSS 自定义属性令牌**:在 `:root` 上定义 `--step-0..5`,组件按语义取用。
+
+```html
+<body>
+  <h1 class="step-5">标题随视口伸缩</h1>
+  <p class="step-0">正文保持基准字号。</p>
+</body>
+```
+
+```css
+:root {
+  --step-0: clamp(1rem, 0.875rem + 0.4167vw, 1.25rem);
+  --step-1: clamp(1.25rem, 1.0938rem + 0.5208vw, 1.5625rem);
+  /* … --step-2..5 同法生成 */
+}
+```
+
+关键点:
+
+- 视口区间 `minViewport/maxViewport` 与字号区间 `minSize/maxSize` 是两条平行刻度:斜率 =(max−min)÷(maxVw−minVw),视口按 16px 根字号折成 rem;
+- 每升一级,该级的 min 与 max 都乘一次比率 `ratio`(Utopia 支持两侧各设比率,本条目简化为单比率);
+- 生成的 clamp 值精度取 4 位小数,与 Utopia 输出一致。
+
+## 样式与参数
+
+五个参数全部为 JS 型(无 cssVar):demo 订阅参数面板后按上述公式实时重算,把 `--step-0..5` 写进预览区,同时展示生成代码。
+
+```css
+/* demo 默认参数生成:480px→1440px,1rem→1.25rem,比率 1.25 */
+:root {
+  --step-0: clamp(1rem, 0.875rem + 0.4167vw, 1.25rem);
+  --step-5: clamp(3.0518rem, 2.6703rem + 1.2716vw, 3.8147rem);
+}
+h1  { font-size: var(--step-5); line-height: 1.05; }  /* 标题收紧行高 */
+h2  { font-size: var(--step-3); line-height: 1.15; }
+p   { font-size: var(--step-0); line-height: 1.6; }   /* 正文 ≥1.5(WCAG 1.4.12) */
+```
+
+数值出处:
+
+- 公式与输出形态 = Utopia 流式字阶生成器(调研 05§13 一手实测输出:`--step-0: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem)`,demo 公式按同一输入可逐字复现该输出);
+- 比率 1.25 = Utopia 可选比率、modularscale 记作 4:5 大三度(调研 05§13/§17);
+- `maxSize` 默认 1.25rem 与上列 Utopia 样本的 max 值一致;`minViewport/maxViewport` 默认 480/1440px 为本条目任务规格取值,由 Utopia 样本反推的官方默认约 360/1240px(未直接记录,两说并列)。
+
+## 动效与交互
+
+字阶是静态令牌,「动」只发生在视口变化时:
+
+- 视口连续缩放时 clamp 输出连续变化,无跳变、无过渡动画——不需要 transition;
+- demo 中拖「模拟视口」滑杆与拖浏览器窗口等效,右侧 px 徽标按同一公式换算,便于在固定窗口里观察两端区间;
+- 无 `prefers-reduced-motion` 相关降级需求(本条目不产生任何动画)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `minViewport` | 整条曲线右移:小屏(如 375px)完全停在 min 值,移动端字阶变「死」 | 插值更早开始,手机上就开始放大——min 值区变短 |
+| `maxViewport` | 斜率变缓,桌面端缩放更不明显、更晚到达上限 | 斜率变陡,桌面端字级差异被放大,过早停在 max 值 |
+| `minSize` | 正文与全阶下限整体抬高,`--step-0` 相对 `--step-5` 更接近,对比减弱 | 正文下限逼近 0.8rem,长文可读性下降,违反可读下限的常见实践 |
+| `maxSize` | 大屏正文变大,斜率变陡(clamp 跨度拉大),整阶视觉更「响」 | 接近 minSize 时斜率趋零,字阶退化为静态;低于 minSize 则 clamp 语义倒挂(min 优先) |
+| `ratio` | 高级别 step 呈指数放大,`--step-5` 迅速逼近 2× 上限,展示页风格 | 趋近 1.1 时各 step 挤在一起,层级靠字重而非字号区分 |
+
+经验区间:视口 360–1440px、正文 1–1.125rem 起、比率 1.2–1.333(Utopia 样本与 modularscale 常用档);正文两端差控制在 1–2 级,行高随级别收紧。

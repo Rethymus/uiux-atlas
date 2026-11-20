@@ -1,0 +1,60 @@
+## Structure & DOM
+
+The orchestration cast is "one container variant + N child variants": the container writes staggerChildren into its own transition config, children declare their own entrance, and the timing offsets flow down from the container:
+
+```tsx
+const listVariants: Variants = {
+  hidden: {},
+  // delay joins the orchestration and accepts negative values (= start mid-flight, research 04 §1.3)
+  show: { transition: { staggerChildren: 0.04 } },  // unit is seconds
+};
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+<motion.ul variants={listVariants} initial="hidden" animate="show">
+  {items.map((it) => (
+    <motion.li variants={itemVariants} key={it.id}>{it.label}</motion.li>
+  ))}
+</motion.ul>
+```
+
+- Each child runs its full 0.4s; what is offset is the **start point**: item i's delay ≈ i × staggerChildren;
+- Replaying = remounting (bump the key) or re-firing animate; the demo remounts on parameter changes so every change is immediately visible;
+- The list stays semantic DOM (ul/li); animation never alters the accessibility structure;
+- Screen readers are unaffected by the orchestration: the animation touches only opacity/transform, so the DOM and the accessibility tree are complete from frame one — all list items are read immediately;
+- Child variants are independent and may each carry their own duration — stacking a duration gradient over the stagger removes the mechanical feel, touching only animation parameters, never the orchestration structure.
+
+This is the opposite semantic of the interruptible spring: an entrance orchestration **cannot be retargeted mid-flight** — to redo it, replay the whole sequence (back to hidden, then show again); for springs that retarget while inheriting velocity, see the motion-spring entry.
+
+## Styling & Parameters
+
+Both parameters are JS-type (the demo subscribes to the store; no CSS variables):
+
+- `stagger`: the start interval between adjacent children, in ms; the demo converts it to seconds for staggerChildren (Motion's orchestration API works in seconds; the panel layer does the ms→s conversion so mixing with M3 duration tiers never trips on units). The research only records that the Motion transitions docs page covers "delay and stagger" orchestration (research 04 §1.3) without the staggerChildren default — **40ms is a common community value, unverified**;
+- `items`: number of children, 3–8 (a demo enum); the cap at 8 is deliberate — beyond that the total spread grows uncontrollably linearly, and long lists should switch to scroll-triggered reveals (see the scroll-driven-animations entry) instead of a single orchestration;
+- the entrance curve belongs to the decelerate family (M3: enter-class animations start at peak speed and settle gently, research 04 §1.4) — the demo's easeOut is that family.
+
+The entrance values themselves (16px rise, 0.4s, easeOut) are demo values; M3's official enter-class duration tiers are the reference points: Standard decelerate 250ms / Emphasized decelerate 400ms (research 04 §1.4).
+
+## Motion & Interaction
+
+- **Anchor and stagger**: item 1 enters with zero delay; the last starts at stagger × (n−1) — the demo pins this total spread on a live chip;
+- **The other face of delay**: Motion's delay accepts negative values (= start mid-flight, research 04 §1.3); combined with stagger it builds "catch-up entrances"; the orchestration trio also includes repeat and repeatType (same docs page);
+- **Performance**: animate only opacity and translate (compositor properties, web.dev's floor, research 04 §1.5); avoid staggering entire long lists (>20 items) — the tail's wait grows linearly, so when you must, stagger only the first few above-the-fold items and render the rest directly;
+- **Pairing with exits**: M3's official rule "enter > exit" (example: enter 500ms / exit 200ms, research 04 §1.4) — staggered entrances pair with quick fade-out exits, leaving attention to the next task;
+- **Restraint**: HIG asks feedback motion to be "brief and precise" (research 04 §1.6) — orchestration is an emphasis tool; avoid multiple stagger groups entering simultaneously in one view;
+- **reduced-motion**: large translations are a common vestibular trigger (research 04 §6.1) — under reduce children cross-fade with opacity only, keeping the rhythm while dropping the movement;
+- Parameter changes replay immediately: every step of the stagger slider restarts the whole orchestration, making the feel directly comparable.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stagger` | stronger roll-call feel; past 100ms with many items the tail waits 1s+ and users miss the last entries | approaches a simultaneous entrance; at 0 every child enters at once and the orchestration disappears |
+| `items` | total spread = stagger × (n−1) grows linearly; the last item lands later and later | tighter; at 3 items even a 200ms stagger never drags |
+
+Rule of thumb: fix "when should the last item land", then derive stagger = allowed spread ÷ (n−1); community practice clusters at 20–80ms (unverified), and narrative/showcase pages can go wider.
+
+Example: 8 items with a 600ms spread budget → stagger ≈ 600 ÷ 7 ≈ 85ms; the same budget for 5 items makes 150ms feel slow — shrink the budget or cut items instead.

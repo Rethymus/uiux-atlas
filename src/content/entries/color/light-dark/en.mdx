@@ -1,0 +1,65 @@
+## Structure & DOM
+
+`light-dark()` is a single **evaluation**, not a match: the browser decides whether to use the first or second argument based on the current element's `color-scheme`. Structurally it always comes in a pair — **declare color-scheme first, then write the pick points**:
+
+```css
+:root {
+  color-scheme: light dark; /* without it, neither value of light-dark() is ever used */
+}
+
+.card {
+  background-color: light-dark(#FFFBFE, #1C1B1F); /* arg 1 = light / arg 2 = dark */
+  color: light-dark(#1C1B1F, #FFFBFE);
+  border: 1px solid light-dark(oklch(0 0 0 / 0.12), oklch(1 0 0 / 0.15));
+}
+```
+
+Key points:
+
+- `light-dark()` belongs to CSS Color 5 and is Baseline 2024-05 (MDN, research 06 §11); **no `@media (prefers-color-scheme)` needed**;
+- Which value is used depends **only on the element's color-scheme**: `color-scheme: light dark` = follow the system; `color-scheme: light` / `dark` = pin one side;
+- It takes a full `<color>` — MDN notes it also accepts `<image>`, so whole gradient backdrops can switch (research 06 §11);
+- Embedded SVG/iframes inherit the parent's color-scheme, so embedded content dual-modes too (research 06 §11).
+
+## Styling & Parameters
+
+Two CSS-type color params (injected via `--ld-*` variables) plus one JS-type enum param:
+
+```css
+.ld-chip {
+  /* the declaration the demo composes: light-dark(var(--ld-light), var(--ld-dark)) */
+  background-color: light-dark(var(--ld-light), var(--ld-dark));
+  color: light-dark(#FFFFFF, #381E72); /* M3 on-primary baseline (Android docs, research 06 §7) */
+}
+
+/* demo stage: exactly the line the scheme param rewrites */
+.ld-scene { color-scheme: light dark; }
+.ld-scene[data-scheme="light"] { color-scheme: light; }
+.ld-scene[data-scheme="dark"]  { color-scheme: dark; }
+```
+
+Where the numbers come from:
+
+- The default pair is the **official M3 baseline**: light primary `#6750A4` / dark primary `#D0BCFF` (Android developer docs verbatim, research 06 §7) — the pair also demonstrates the "dark accents brighten and desaturate" convention (research 06 §14);
+- Measured contrast (computed with the WCAG 2.1 formula while writing this entry): `#6750A4` against white text is 6.44:1 (passes AA, not AAA); `#D0BCFF` with on-primary `#381E72` reaches 7.7:1 (AAA pass) — the dark side is actually the more readable one;
+- The demo's neutral surfaces use the system colors `Canvas`/`CanvasText` — CSS Color 4 §6.2 defines system-color keywords to respond to the element's color-scheme, so they dual-mode with zero invented values;
+- Fallback: under `@supports not (color: light-dark(#fff, #000))` the demo falls to flipping custom properties via `prefers-color-scheme` (the traditional strategy recorded in research 06 §11).
+
+## Motion & Interaction
+
+The demo's three-state switch never touches a color value; it changes one property:
+
+- The **scheme param** (JS-type) rewrites the stage's `color-scheme` on subscription: `system → light dark`, `light → light`, `dark → dark`;
+- Every pick point is written `light-dark(light, dark)`, so switching is an **instant flip**, smoothed with a 0.25s `transition`;
+- In the system state the OS preference drives the colors — light/dark is a **jump**, not an interpolation, which is the semantically correct form (appearance switching is a discrete event); `prefers-reduced-motion` removes the transition;
+- On browsers without light-dark() the demo's three-state switch is inert, but OS-following still works — the `@supports not` branch wires up `Canvas`/variable flipping.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `lightValue` | makes the light-side accent more prominent; too light and white text (on-primary) drops below 4.5:1 | mutes the light side; near the surface tone the button glues to the canvas with weak boundary contrast |
+| `darkValue` | brightens and saturates the dark side; oversaturation on dark grounds is glaring (hype4's warning, research 06 §13) | darkens the dark side; once it dips below the surface lightness the "brighter, less saturated accent" convention breaks and the component recedes into the background |
+| `scheme` | dark: both sides take arg 2; system: follows the OS preference — the most truthful of the three states | light: both sides take arg 1; useful for demos, but in production it means deciding for the user |
+
+Working pair: the M3 baseline duo (#6750A4/#D0BCFF) is a verified default — 6.44:1 on the light side (white text, AA), 7.7:1 on the dark side (AAA). When swapping in your own brand colors, re-check **both** sides against the four thresholds in the wcag-contrast entry; checking one side is not enough.

@@ -1,0 +1,61 @@
+## 结构与 DOM
+
+混合模式有两个入口:`mix-blend-mode` 把**整个元素**与其背后内容混合;`background-blend-mode` 只混合**同一元素自己的多层 background**。demo 用前者:底层彩色渐变 + 上层近白渐变,混合范围用 `isolation: isolate` 限定在舞台内:
+
+```html
+<div class="stage">              <!-- isolation: isolate -->
+  <div class="layer-a"></div>    <!-- 底层:彩色渐变 -->
+  <div class="layer-b"></div>    <!-- 上层:mix-blend-mode + opacity -->
+</div>
+```
+
+关键点:
+
+- 混合发生在**同一个 stacking context** 内——没有 isolate 时,上层会一路混到页面背景,这是最常见的翻车点;
+- `mix-blend-mode` 会让元素形成一个独立合成层,其效果等价于规范定义的「源 = 元素渲染结果,目标 = 其背后所有内容」;
+- 16 种模式全部是规范命名值,不可自造(如 `linear-burn` 不存在)。
+
+## 样式与参数
+
+两个参数各对应一条声明:
+
+```css
+.stage { isolation: isolate; }
+.layer-a {
+  background:
+    radial-gradient(60% 80% at 22% 24%, oklch(0.66 0.2 330 / 0.9), transparent 70%),
+    radial-gradient(55% 70% at 80% 22%, oklch(0.72 0.16 85 / 0.85), transparent 68%),
+    linear-gradient(140deg, oklch(0.4 0.12 250), oklch(0.34 0.1 190));
+}
+.layer-b {
+  background: linear-gradient(120deg,
+    oklch(0.96 0.03 260), oklch(0.93 0.05 320) 60%, oklch(0.9 0.04 200));
+  mix-blend-mode: var(--blend-mode);  /* normal(默认)…luminosity,16 种 */
+  opacity: var(--blend-opacity);      /* 100%(默认)= 不做 alpha 衰减 */
+}
+```
+
+数值出处:
+
+- **16 种枚举**逐一取自 Compositing 1 §10.1 的命名清单:normal、multiply、screen、overlay、darken、lighten、color-dodge、color-burn、hard-light、soft-light、difference、exclusion、hue、saturation、color、luminosity(调研 02§D3,规范页已一手核验);
+- `normal` 与 `opacity: 1` 为规范 initial value(故作默认);
+- demo 的渐变色为演示用 oklch 光斑(结构照 MDN《Using CSS gradients》的多层叠加式),非规范内容。
+
+## 动效与交互
+
+模式切换本身无需动画——**混合结果即时生效**,这也是它适合做交互式调色的原因:
+
+- 切换 `--blend-mode` 是一次样式重算,肉眼即时可见;避免对 mix-blend-mode 值本身做过渡(规范未定义混合函数间的插值,过渡行为不可预期);
+- opacity 可以正常过渡(alpha 插值有明确定义),用来做混合层的淡入;
+- `difference` 类模式配合指针移动(把上层跟手)是经典「反色探照灯」玩法,但要注意重绘成本;`prefers-reduced-motion` 时取消跟手动画,demo 已处理。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `mode`(按族) | 明暗族(multiply/color-burn/darken)整体压暗压深;提亮族(screen/color-dodge/lighten)洗白发光;difference/exclusion 出高对比反色;hue/saturation/color 只换色相不保亮度,luminosity 只留亮度 | 回到 normal 即纯遮盖;soft-light/hard-light 居中,变化温和——先从这两档探路最安全 |
+| `opacity` | 100% 时混合全强度,multiply/difference 可能压得文字无法读 | 向 0% 退化为「逐渐消失的 normal」,混合感按 alpha 线性衰减;50–70% 常是强模式的可用区 |
+
+经验法则:上层越「白」,multiply/overlay 的效果越像给底图打光;上层越「黑」,screen 越像镂空。文字要落在混合层上时,先试 soft-light + opacity ≤70%,再用取色器对最终合成结果核对比度。
+
+与 `background-blend-mode` 的分工:两层背景同属一个元素时优先用它,天然没有 stacking context 陷阱;demo 用 `mix-blend-mode` 是因为两层是独立元素,需要 isolation 划界。

@@ -1,0 +1,99 @@
+{
+  "name": "Count-Up Number",
+  "aliases": ["数字滚动", "数字计数动画", "Number counter"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "数值从 0 滚到终点的计数动画:@property --num 注册变量做 CSS 插值,或 rAF 逐帧递增;仪表盘指标的标配。",
+    "en": "A counter that rolls from 0 to its target: CSS interpolation on a registered @property --num variable, or per-frame rAF increments — the dashboard-stat staple."
+  },
+  "origin": {
+    "zh": "CSS-Tricks《Animating Number Counters》(含评论区可访问性讨论):@property --num 注册 <integer> 变量 → transition/keyframes 插值 → counter-reset + counter() 显示;JS 侧等价做法是 rAF 逐帧递增(调研 04§2.5)。",
+    "en": "CSS-Tricks' \"Animating Number Counters\" (incl. the comment-thread accessibility discussion): register an <integer> variable via @property --num, interpolate it with transition/keyframes, display via counter-reset + counter(); the JS-side equivalent is per-frame rAF increments (research 04 §2.5)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "duration",
+      "min": 200,
+      "max": 4000,
+      "step": 50,
+      "default": 1200,
+      "unit": "ms",
+      "effect": {
+        "zh": "计数总时长。css-tricks 给出的可调维度是「时长与缓动可调、animation-fill-mode: forwards 停在终值」,未记载默认数值——本条目的 1200ms 为社区常见值,未证实。",
+        "en": "Total count duration. css-tricks documents the adjustable dimensions (duration and easing, animation-fill-mode: forwards to hold the final value) but no default number — this entry's 1200ms is a common community value, unverified."
+      }
+    },
+    {
+      "type": "number",
+      "name": "endValue",
+      "min": 0,
+      "max": 99999,
+      "step": 1,
+      "default": 2026,
+      "effect": {
+        "zh": "计数终值(起点恒为 0;起始/终值在 css-tricks 的可调维度之列)。默认 2026 是本站演示用值,非官方数值。",
+        "en": "Target value of the count (start is always 0; start/target are among css-tricks' adjustable dimensions). The default 2026 is this site's demo value, not an official number."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "decimals",
+      "options": [
+        { "value": "0", "label": { "zh": "0 位小数", "en": "0 digits" } },
+        { "value": "1", "label": { "zh": "1 位小数", "en": "1 digit" } },
+        { "value": "2", "label": { "zh": "2 位小数", "en": "2 digits" } }
+      ],
+      "default": "0",
+      "effect": {
+        "zh": "小数位。纯 CSS 方案用 calc() 拆整数/小数位分别渲染(css-tricks);demo 的 rAF 方案对连续值直接 toFixed。默认 0 为演示用值。",
+        "en": "Fractional digits. The pure-CSS approach splits integer/decimal parts via calc() (css-tricks); the demo's rAF path applies toFixed to the continuous value. Default 0 is a demo value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "rAF 与 CSS counter 全浏览器可用;@property 属 CSS Houdini Properties and Values API,已 Baseline widely available(调研 09§1.2/§1.6)。demo 采用 rAF 计数,不依赖 @property。",
+      "en": "rAF and CSS counters work everywhere; @property belongs to the CSS Houdini Properties and Values API and is Baseline widely available (research 09 §1.2/§1.6). The demo counts via rAF and does not rely on @property."
+    },
+    "baseline": "Widely available"
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时直出终值(css-tricks 评论区实测建议:屏读读到的是中间值,故 reduce 应跳过滚动);同时给读屏一条只含终值的 sr-only 文本,动画节点 aria-hidden。",
+    "en": "Under prefers-reduced-motion, output the final value directly (css-tricks' comment-thread recommendation: screen readers hear intermediate values, so reduce should skip the roll); additionally provide an sr-only text with the final value and keep the animated node aria-hidden."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "仪表盘指标首次载入后的数值揭晓", "en": "Revealing a dashboard metric right after its data arrives" },
+      { "zh": "年度报告/战绩页的总量与涨幅数字", "en": "Totals and deltas on annual reports or stats pages" },
+      { "zh": "计数器类落地页的「里程碑」展示(播放一次)", "en": "One-shot milestone counters on marketing pages" }
+    ],
+    "avoid": [
+      { "zh": "高频刷新的实时数据——持续滚动让读数永远对不上真实值", "en": "Frequently refreshed live data — a perpetually rolling number never matches reality" },
+      { "zh": "表格/密集数据列——逐格滚动制造持续视觉噪声", "en": "Tables and dense data columns — cell-by-cell rolls create constant visual noise" },
+      { "zh": "把滚动作为数值的唯一信息载体——读屏听到的是初值或中间值", "en": "Letting the roll be the sole carrier of the value — screen readers hear the start or a mid value" }
+    ]
+  },
+  "a11y": {
+    "zh": "屏幕阅读器读到的是初值或中间值(css-tricks 评论区实测:VoiceOver 读出 8/61 而视觉停在 100)→ 动画节点 aria-hidden,另给 sr-only 终值;prefers-reduced-motion 直出终值;hover 触发需补 :focus 与 tabindex(css-tricks 建议)。",
+    "en": "Screen readers read the start or an intermediate value (css-tricks comment thread, measured: VoiceOver read 8/61 while the visual settled at 100) → keep the animated node aria-hidden and add an sr-only final value; under prefers-reduced-motion output the final value directly; if hover-triggered, add :focus and tabindex (css-tricks' advice)."
+  },
+  "sources": [
+    "https://css-tricks.com/animating-number-counters/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块仪表盘指标卡:数值从 0 滚到参数快照的终值,时长与小数位按快照,千位分隔、等宽数字,动画节点对读屏隐藏并另给静态终值。",
+      "en": "Replicate a dashboard stat card: the value rolls from 0 to the snapshot target over the snapshot duration and digits, with thousands separators and tabular numerals; hide the animated node from screen readers and provide a static final value."
+    },
+    "acceptance": [
+      { "zh": "用 @property --num(<integer>) 或 rAF 实现计数,起点 0、终点为快照终值", "en": "Count via @property --num (<integer>) or rAF, from 0 to the snapshot target" },
+      { "zh": "时长与缓动按参数快照,结束后精确停在终值(fill forwards / 终帧强制)", "en": "Duration and easing follow the snapshot and land exactly on the target (fill forwards / forced final frame)" },
+      { "zh": "数字用 tabular-nums + 千位分隔,小数位按快照", "en": "Numerals are tabular with thousands separators; fractional digits follow the snapshot" },
+      { "zh": "prefers-reduced-motion: reduce 时跳过滚动直出终值", "en": "Under prefers-reduced-motion: reduce, skip the roll and show the final value" },
+      { "zh": "动画节点 aria-hidden,sr-only 文本携带终值供读屏", "en": "Animated node is aria-hidden; an sr-only text carries the final value for screen readers" }
+    ]
+  }
+}

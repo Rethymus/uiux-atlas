@@ -1,0 +1,67 @@
+## Structure & DOM
+
+The native form is SwiftUI's declarative API: `glassEffect(_:in:)` turns a view into Liquid Glass, defaulting to the `.regular` variant in a Capsule shape (research 02 §1 A2). A web recreation stacks "content layer → glass pod → state layers":
+
+```swift
+// Official API (iOS 26+, research 02 §1 A2/A3)
+HStack { Image(systemName: "play.fill"); Image(systemName: "pause.fill") }
+  .padding()
+  .glassEffect(.regular, in: .capsule)   // defaults: .regular, Capsule
+  .tint(.blue)                            // optional tinting: Glass.tint(_:)
+```
+
+```html
+<div class="scene">
+  <img class="content-layer" src="photo.jpg" alt="" /> <!-- content: scrolls through -->
+  <div class="glass-pod"> <!-- glass pod: the functional layer -->
+    <button>…</button>
+  </div>
+</div>
+```
+
+Key points: the pod belongs only to the **functional layer** of controls and nav, with content scrolling through beneath it; Apple explicitly says **not to use Liquid Glass for content layers and not to overuse it** (research 02 §1 A1).
+
+## Styling & Parameters
+
+The web approximation is driven by `--lg-*` variables: blur samples what's behind, the variant decides the state layers, and refraction comes from an SVG `feDisplacementMap`:
+
+```css
+.glass-pod {
+  border-radius: 999px;                     /* official default shape: Capsule (A2) */
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55); /* 1px inner highlight */
+  -webkit-backdrop-filter: blur(var(--lg-blur));
+  backdrop-filter: blur(var(--lg-blur));    /* 20px: classic glass recipe approximation (06§16) */
+}
+.glass-scene[data-refraction="on"] .glass-pod {
+  backdrop-filter: url(#lg-refraction) blur(var(--lg-blur)); /* Chromium only */
+}
+.glass-veil { opacity: var(--lg-dimming); }  /* default 35% */
+.glass-scene[data-variant="regular"] .glass-veil { background: rgb(255 255 255 / 0.92); } /* luminosity approx */
+.glass-scene[data-variant="clear"]   .glass-veil { background: rgb(8 10 18 / 0.92); }     /* official dark dimming */
+```
+
+Where the numbers come from:
+
+- `dimming` default **35%**: the official HIG recommendation for the clear variant (research 06 §IV §16 and summary item 18) — when content under clear is bright, stack a 35%-opacity dark dimming layer;
+- `variant` two options, default regular: the official definition (research 02 §1 A1) plus the glassEffect default (A2);
+- `tint` default 0: `Glass.tint(_:)` is optional and glass ships untinted (A3);
+- `blur` 20px: Apple publishes no number — borrowed from the classic glass recipe as an approximation (unverified);
+- Refraction: an SVG `feTurbulence → feDisplacementMap` filter, **Chromium only** — Firefox/Safari reject `url()` references inside backdrop-filter, so they fall back to pure blur.
+
+## Motion & Interaction
+
+- Variant switch: the dimming veil cross-fades over 0.25s; transitions are removed under `prefers-reduced-motion`;
+- The "live content" behind (the demo's drifting color blobs) animates only `transform`, so the pod's blur/refraction re-samples a changing scene each frame — the official picture of content scrolling through the glass;
+- The pod itself never translates: it is a stable functional layer, and hover feedback belongs to system behaviors like `Glass.interactive(_:)` (A3);
+- Live tuning: the blur/dimming/tint variables reshape the transmitted view instantly.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `variant` → clear | highly transparent, media reads straight through — more "liquid"; bright backdrops then depend on the dimming layer | regular is the safe default: blur plus luminosity adjustment keeps text readable |
+| `dimming` | a firmer dark layer on clear, steadier text contrast on bright backdrops; past 50% the glass turns murky | text punches through 4.5:1 on bright backdrops; 0% is bare clear — the official 35% exists to rescue bright backdrops |
+| `blur` | a "thicker" pod, less legible content; past 30px it smears into mush | below 8px the glass degrades into a pale block and the refraction texture loses its substrate |
+| `tint` | stronger tint reads more branded, like colored acrylic; past 60% it masks the glass quality | 0% is the official default — untinted glass holds its shape through highlights and refraction |
+
+Working ranges: start dimming at the official 35% and raise it only over bright backdrops; blur 12–24px; tint ≤30% for light branding. Native first: with SwiftUI/UIKit available use `glassEffect` — web approximation is always the downgrade path.

@@ -1,0 +1,77 @@
+// 构建产物核验:双语三层路由(首页/分类/条目)全部产出且含关键内容标记。
+// 用法: node uiux-atlas/scripts/verify-dist.mjs  (exit 0 = 通过)
+import { readFileSync, existsSync } from "node:fs";
+import { join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const root = resolve(scriptDir, "..");
+const dist = join(root, "dist");
+
+const EXPECTED = {
+  styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid"],
+  materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api"],
+  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing"],
+  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation"],
+  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
+  layout: ["container-queries"],
+};
+
+const missing = [];
+const contentFails = [];
+let checked = 0;
+
+function checkPage(rel, mustContain, label) {
+  checked += 1;
+  const p = join(dist, rel);
+  if (!existsSync(p)) {
+    missing.push(rel);
+    return;
+  }
+  const html = readFileSync(p, "utf8");
+  for (const marker of mustContain) {
+    if (!html.includes(marker)) contentFails.push(`${label} [${rel}] missing marker: "${marker}"`);
+  }
+}
+
+if (!existsSync(dist)) {
+  console.error(`dist missing: ${dist} — run "pnpm -C uiux-atlas run build" first`);
+  process.exit(1);
+}
+
+// 首页 ×2
+checkPage("index.html", ["UI/UX 设计全解图集"], "zh home");
+checkPage(join("en", "index.html"), ["UI/UX Design Atlas"], "en home");
+
+// 分类列表页 ×2 ×6
+for (const cat of Object.keys(EXPECTED)) {
+  checkPage(join(cat, "index.html"), [cat], `zh category ${cat}`);
+  checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
+}
+
+// 条目页 ×2 ×43
+for (const [cat, slugs] of Object.entries(EXPECTED)) {
+  for (const slug of slugs) {
+    const schemaPath = join(root, "src", "content", "entries", cat, slug, "schema.json");
+    let name = slug;
+    try {
+      name = JSON.parse(readFileSync(schemaPath, "utf8")).name ?? slug;
+    } catch {
+      contentFails.push(`cannot read schema name for ${cat}/${slug}`);
+    }
+    checkPage(join(cat, slug, "index.html"), [name, "复制复刻 Prompt"], `zh entry ${cat}/${slug}`);
+    checkPage(join("en", cat, slug, "index.html"), [name, "Copy replication prompt"], `en entry ${cat}/${slug}`);
+  }
+}
+
+console.log(JSON.stringify({ checked, missing: missing.length, contentFails: contentFails.length }));
+if (missing.length > 0) {
+  console.error(`\n=== ${missing.length} page(s) missing ===`);
+  for (const m of missing) console.error(" -", m);
+}
+if (contentFails.length > 0) {
+  console.error(`\n=== ${contentFails.length} content marker failure(s) ===`);
+  for (const c of contentFails) console.error(" -", c);
+}
+if (missing.length > 0 || contentFails.length > 0) process.exit(1);
+console.log("verify-dist: PASS");

@@ -1,0 +1,99 @@
+{
+  "name": "Fluent Acrylic",
+  "aliases": ["亚克力", "Acrylic", "Fluent 亚克力"],
+  "category": "materials",
+  "system": "fluent",
+  "star": 3,
+  "tagline": {
+    "zh": "Microsoft Fluent 的半透明材质画刷:背景模糊 + 亮度混合 + 色调层 + 噪点,分 background(透出桌面)与 in-app(应用内)两型;Web 复刻用 tintOpacity / tintLuminosityOpacity 近似。",
+    "en": "Microsoft Fluent's translucent material brush: backdrop blur + luminosity blend + tint layer + noise, in background (desk-through) and in-app variants; the web recreation approximates it via tintOpacity / tintLuminosityOpacity."
+  },
+  "origin": {
+    "zh": "Microsoft Learn 官方文档:Acrylic 材质画刷与两型(background acrylic 透出桌面壁纸与其他窗口、in-app acrylic 应用内层次);官方 API 参数 TintOpacity / TintLuminosityOpacity / TintColor / AlwaysUseFallback / TintTransitionDuration(WinUI AcrylicBrush,调研 02 §3 C1);WinUI 3 经 Window.SystemBackdrop / DesktopAcrylicBackdrop 使用。调研仅记载参数名,未记载官方默认数值。",
+    "en": "Microsoft Learn's official docs: the Acrylic material brush and its two variants (background acrylic sees through the desktop wallpaper and other windows; in-app acrylic is in-app layering); official API parameters TintOpacity / TintLuminosityOpacity / TintColor / AlwaysUseFallback / TintTransitionDuration (WinUI AcrylicBrush, research 02 §3 C1); WinUI 3 uses it via Window.SystemBackdrop / DesktopAcrylicBackdrop. The research records the parameter names only — no official default values."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "tintOpacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.6,
+      "cssVar": "--fa-tint-opacity",
+      "effect": {
+        "zh": "色调层不透明度(官方参数名 AcrylicBrush.TintOpacity,调研 02 §3 C1)。官方未公布默认数值——默认 0.6 为社区常见值(未证实):调大色调更实、背景更不可见;调小更透,深色背景上文字对比度更难守住。",
+        "en": "Opacity of the tint layer (official parameter name AcrylicBrush.TintOpacity, research 02 §3 C1). No official default is published — the default 0.6 is a community-common value (unverified): raising it firms the tint and hides the backdrop; lowering it turns the surface more transparent and text contrast harder to hold over dark backdrops."
+      }
+    },
+    {
+      "type": "number",
+      "name": "tintLuminosityOpacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.35,
+      "cssVar": "--fa-lum-opacity",
+      "effect": {
+        "zh": "亮度色调不透明度(官方参数名 TintLuminosityOpacity,与背景做亮度混合,调研 02 §3 C1)。官方未公布默认数值——默认 0.35 为社区常见值(未证实):调大整体越亮越『雾』,亮背景上更稳;0 关闭亮度补偿,深底上亚克力发闷。",
+        "en": "Opacity of the luminosity tint (official parameter name TintLuminosityOpacity, blended against the backdrop's luminosity, research 02 §3 C1). No official default is published — the default 0.35 is a community-common value (unverified): raising it brightens and 'fogs' the surface, steadier over bright backdrops; 0 disables luminosity compensation and muddies acrylic over dark content."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "fallback",
+      "options": [
+        { "value": "off", "label": { "zh": "亚克力(正常)", "en": "acrylic (normal)" } },
+        { "value": "on", "label": { "zh": "纯色回退", "en": "solid fallback" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "对应官方 AlwaysUseFallback 强制回退开关(调研 02 §3 C1):on 时跳过模糊/亮度/噪点层,改用纯色表面。真实环境还会在无 backdrop-filter 支持或省电模式下自动触发回退;demo 手动切换便于对照两种状态。",
+        "en": "Maps to the official AlwaysUseFallback switch (research 02 §3 C1): when on, the blur/luminosity/noise layers are skipped in favor of a solid surface. Real environments also trigger the fallback automatically without backdrop-filter support or in power-saving mode; the demo toggle makes both states comparable."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "真身仅 Windows(XAML/WinUI 的 AcrylicBrush 与 DesktopAcrylicBackdrop,调研 02 §3 C1)。Web 复刻:backdrop-filter 支持 Chrome 76 / Firefox 103 / Safari 9(-webkit- 前缀,调研 02 §4 D2);噪点层用 SVG feTurbulence(调研 06 §四 §15 配方),全浏览器可用。",
+      "en": "The native material is Windows-only (AcrylicBrush and DesktopAcrylicBackdrop in XAML/WinUI, research 02 §3 C1). Web recreation: backdrop-filter works in Chrome 76 / Firefox 103 / Safari 9 (-webkit- prefix, research 02 §4 D2); the noise layer uses SVG feTurbulence (recipe in research 06 §IV §15), available in all browsers."
+    }
+  },
+  "fallback": {
+    "zh": "AlwaysUseFallback(或无 backdrop-filter 支持/省电模式)时改纯色表面——本 demo 以 fallback=on 演示,并用 @supports 在不支持 backdrop-filter 的浏览器自动落回纯色;TintTransitionDuration(官方参数)可用 0.25s 过渡近似切换过程。",
+    "en": "AlwaysUseFallback (or missing backdrop-filter support / power-saving mode) switches to a solid surface — the demo shows it via fallback=on and auto-drops to solid via @supports in browsers without backdrop-filter; TintTransitionDuration (an official parameter) is approximated with a 0.25s transition."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "in-app acrylic:应用内侧栏、命令栏、浮出面板等支撑层(官方适用)", "en": "in-app acrylic: sidebars, command bars, flyouts and other supporting surfaces (official use)" },
+      { "zh": "background acrylic:transient UI——菜单、弹出层短暂透出桌面(官方适用)", "en": "background acrylic: transient UI — menus and popovers briefly seeing through the desktop (official use)" },
+      { "zh": "需要『表面有材质感但不抢内容』的卡片与容器", "en": "Cards and containers that need a material feel without competing with content" }
+    ],
+    "avoid": [
+      { "zh": "正文阅读区与密集数据——色调+噪点层会稀释对比度", "en": "Body-reading areas and dense data — tint + noise layers dilute contrast" },
+      { "zh": "高流动性内容上大面积使用——每帧重采样代价高", "en": "Large areas over fast-moving content — per-frame re-sampling gets expensive" },
+      { "zh": "把 Web 复刻的 tintOpacity 数值当官方默认——调研仅记载参数名,数值未证实", "en": "Treating the web tintOpacity numbers as official defaults — the research records parameter names only, values unverified" }
+    ]
+  },
+  "a11y": {
+    "zh": "亚克力上的文字按『透出背景最亮/最暗』两端核对 4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17);噪点层对比度极低、仅质感用途,不得承担信息(调研 06 §四 §15 把噪点定位为消 banding 的质感层);fallback 纯色态必须同样可读。",
+    "en": "Check text on acrylic against the brightest/darkest transmitted backdrop for 4.5:1 (WCAG 2.1 SC 1.4.3, research 06 §V §17); the noise layer is extremely low-contrast and texture-only, never an information carrier (research 06 §IV §15 positions noise as a banding-killing texture); the solid fallback state must be equally readable."
+  },
+  "sources": [
+    "https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic",
+    "https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块 in-app acrylic 面板:背景模糊 + 白色亮度层 + 色调层(tintOpacity)+ feTurbulence 噪点,带 AlwaysUseFallback 纯色回退开关与 @supports 自动降级。",
+      "en": "Recreate an in-app acrylic panel: backdrop blur + white luminosity layer + tint layer (tintOpacity) + feTurbulence noise, with an AlwaysUseFallback solid switch and @supports auto-degradation."
+    },
+    "acceptance": [
+      { "zh": "tintOpacity / tintLuminosityOpacity 严格使用快照默认值 0.6 / 0.35,并在 UI 注明『社区常见值,官方未公布默认(未证实)』", "en": "tintOpacity / tintLuminosityOpacity use the exact snapshot defaults 0.6 / 0.35, labeled 'community-common values, no official default published (unverified)' in the UI" },
+      { "zh": "层次顺序正确:模糊背景 → 亮度层 → 色调层 → 噪点层 → 内容", "en": "Layer order is correct: blurred backdrop → luminosity layer → tint layer → noise layer → content" },
+      { "zh": "fallback=on 时全部材质层退为纯色表面,两种状态同样可读", "en": "With fallback=on every material layer collapses to a solid surface, both states equally readable" },
+      { "zh": "@supports 不支持 backdrop-filter 时自动落入纯色回退(模拟真实 AlwaysUseFallback 行为)", "en": "@supports auto-falls back to solid without backdrop-filter (mirroring real AlwaysUseFallback behavior)" },
+      { "zh": "噪点用 SVG feTurbulence(baseFrequency≈0.9、numOctaves=2,轻量配方),层透明度 ≤0.05", "en": "Noise via SVG feTurbulence (baseFrequency≈0.9, numOctaves=2, lightweight recipe), layer opacity ≤0.05" }
+    ]
+  }
+}

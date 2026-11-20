@@ -1,0 +1,76 @@
+## 结构与 DOM
+
+赛博朋克 UI 是「三层叠印」:近黑底在最下,霓虹内容层在中间,扫描线/色差等**装饰层**用伪元素盖在最上(且必须 `aria-hidden`,不承载信息)。
+
+```html
+<section class="cy-scene">
+  <div class="cy-hud">
+    <h1 class="cy-title">NEON DISTRICT</h1>
+    <div class="cy-readout" role="status">LINK: STABLE · 98.2%</div>
+    <button class="cy-btn">JACK IN</button>
+  </div>
+</section>
+```
+
+关键点:
+
+- 底色必须是**近黑**(暗底是硬性前提),电光青/品红/酸黄只在这个底上成立;
+- 霓虹感 = 双层 `text-shadow` 辉光 + 品红/青 RGB 分离;色差是「故障即氛围」的核心手法;
+- HUD 语言:等宽压缩字体、遥测读数、角标框线——装饰框线全部 `aria-hidden`;
+- 内容层仍是常规 DOM,读数用 `role="status"` 承载真实状态。
+
+## 样式与参数
+
+四个参数对应扫描线间距、扫描线透明度、RGB 位移与霓虹亮度,经 `--cy-*` 变量注入:
+
+```css
+.cy-title {
+  color: #fcee0a;                    /* 酸黄,demo 示例色 */
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+  text-shadow:
+    calc(-1 * var(--cy-rgb)) 0 rgb(255 43 214 / 0.8),   /* 品红左错位 */
+    var(--cy-rgb) 0 rgb(0 240 255 / 0.8),               /* 电光青右错位 */
+    0 0 calc(10px * var(--cy-glow)) rgb(252 238 10 / calc(0.55 * var(--cy-glow))),
+    0 0 calc(28px * var(--cy-glow)) rgb(252 238 10 / calc(0.30 * var(--cy-glow)));
+}
+
+/* 扫描线:1px 暗线,周期 = scanGap,透明度 = scanAlpha */
+.cy-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / var(--cy-scan-alpha)) 0 1px,
+    transparent 1px var(--cy-scan-gap)
+  );
+}
+```
+
+数值出处与诚实标注:
+
+- 调研(enlighten cyberpunk 页)记载的可调变量:**扫描线间距与透明度、RGB 位移量、霓虹色板对暗底亮度比**——但**未记载任何具体数值**;
+- 因此四个参数的默认值(4px / 0.25 / 2px / 1)均为**本条目基准设定**,不是官方默认;色板取社区惯用的青 `#00f0ff`/品红 `#ff2bd6`/酸黄 `#fcee0a`(demo 示例色,同样未证实为官方值);
+- 代表参照:Cyberpunk 2077 官网(扫描线+霓虹+全屏视频)、攻壳机动队电影站、AI Utility Grid(克制的终端美学)。
+
+## 动效与交互
+
+故障是氛围,不是通知——动效必须全部可降级:
+
+- **glitch 抖动**:标题周期性横移 1–2 个 RGB 位移并短暂加强分离,4s 周期内只闪 2–3 次,避免高频频闪;
+- **光标闪烁**:遥测读数行尾方块光标 1.2s 步进闪烁;`prefers-reduced-motion` 时改为常亮;
+- **降级链**:reduced-motion 下关闭全部动画,保留静态 RGB 分离与扫描线——核心识别不依赖动效;
+- 按钮 hover 辉光增强 0.15s;按压下沉 1px。装饰层永远 `pointer-events: none`,不拦截交互。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `scanGap` | 百叶窗感,底色纹理变粗;>8px 开始干扰正文 | 密集 CRT 质感;2px 时整屏发灰,亮度损失明显 |
+| `scanAlpha` | 扫描线更狠,CRT 味更重;>0.4 压暗霓虹,对比度开始失守 | 趋近 0 扫描线消失,回到纯暗底 |
+| `rgbShift` | 故障感与「印刷错版」味增强;>4px 文字边缘发散,可读性骤降 | 色差收敛;0 时变成干净的霓虹字,故障感全靠动画 |
+| `glow` | 泛光晕染,霓虹管灯感;2 时文字边缘开始糊 | 辉光收敛;0 时只剩平色文字,霓虹感消失 |
+
+经验区间:scanGap 3–6px、scanAlpha 0.15–0.3、rgbShift 1–3px、glow 0.8–1.4。所有参数都在装饰层上生效,正文读数区务必留一个「关灯也清晰」的版本。

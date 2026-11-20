@@ -1,0 +1,115 @@
+{
+  "name": "Gradient Interpolation Space",
+  "aliases": ["渐变插值空间", "in oklab", "hue 插值策略", "color interpolation"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "同一对端色,换个插值空间就是另一条渐变:in srgb/oklab/oklch/display-p3 与四种 hue 策略,治好 sRGB 插值长距离过渡的脏灰带。",
+    "en": "One pair of endpoints, a different gradient per interpolation space: in srgb/oklab/oklch/display-p3 plus the four hue strategies — the cure for sRGB's muddy gray band on long transitions."
+  },
+  "origin": {
+    "zh": "插值空间与 hue 策略由 CSS Color 4 §13 定义(调研 06§4);工业落地参照 Tailwind CSS v4(2025-01):调色板整体改用 oklch、渐变默认 OKLAB 插值、可用 /srgb 等修饰符切换(调研 06§4/§六5)。",
+    "en": "Interpolation spaces and hue strategies are defined by CSS Color 4 §13 (research 06 §4); the industrial reference is Tailwind CSS v4 (2025-01): palette wholesale moved to oklch, gradients default to OKLAB interpolation with /srgb modifiers to switch (research 06 §4/§6-5)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "space",
+      "options": [
+        { "value": "srgb", "label": { "zh": "sRGB(兼容旧内容)", "en": "sRGB (legacy)" } },
+        { "value": "oklab", "label": { "zh": "Oklab(感知均匀)", "en": "Oklab (perceptual)" } },
+        { "value": "oklch", "label": { "zh": "OKLCH(保 chroma)", "en": "OKLCH (chroma-rich)" } },
+        { "value": "display-p3", "label": { "zh": "Display P3(广色域基色)", "en": "Display P3 (wide gamut)" } }
+      ],
+      "default": "oklab",
+      "effect": {
+        "zh": "JS 型参数:插值色彩空间。默认 oklab——Tailwind v4 渐变默认即 OKLAB 插值(调研 06§4);CSS Color 4 §13.1 亦规定宿主语法未定义兜底时用 Oklab。不写 in 时旧式 hex/命名色按兼容条款在 gamma sRGB 插值——长距离色相过渡易出脏灰带。oklch 保 chroma 最鲜艳;srgb 是兼容之选;display-p3 在 P3 基色上插值。",
+        "en": "JS-type param: the interpolation color space. Default oklab — Tailwind v4's gradients default to OKLAB (research 06 §4); CSS Color 4 §13.1 also names Oklab as the fallback when a host syntax defines none. Without `in`, legacy hex/named colors interpolate in gamma sRGB per the compat clause — long hue transitions go muddy. oklch maximizes chroma; srgb is the compatibility pick; display-p3 interpolates on P3 primaries."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "hueStrategy",
+      "options": [
+        { "value": "shorter", "label": { "zh": "shorter(短弧)", "en": "shorter (short arc)" } },
+        { "value": "longer", "label": { "zh": "longer(长弧)", "en": "longer (long arc)" } },
+        { "value": "increasing", "label": { "zh": "increasing(递增)", "en": "increasing" } },
+        { "value": "decreasing", "label": { "zh": "decreasing(递减)", "en": "decreasing" } }
+      ],
+      "default": "shorter",
+      "effect": {
+        "zh": "JS 型参数:色相插值策略,**仅对柱坐标空间有效**——本条目四个选项中只有 oklch 是柱坐标(srgb/oklab/display-p3 是直角空间,写 hue 关键词整条声明无效)。默认 shorter 取规范缺省:柱坐标空间未指定时按短弧插值(调研 06§4 仅列四策略清单未记载默认值,写作时已抓取 W3C CSS Color 4 §13.1 原文复核确认)。",
+        "en": "JS-type param: hue interpolation strategy, **valid only for polar spaces** — among this entry's four options only oklch is polar (srgb/oklab/display-p3 are rectangular; a hue keyword there invalidates the whole declaration). Default shorter is the spec default: unspecified hue methods on polar spaces take the short arc (research 06 §4 lists the four strategies without recording the default; re-verified against the W3C CSS Color 4 §13.1 text while writing)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "from",
+      "format": "hex",
+      "default": "#FF0000",
+      "cssVar": "--gi-from",
+      "effect": {
+        "zh": "渐变起点色。默认 #FF0000 = CSS 命名色 red,取自调研/spec 例证 `linear-gradient(in oklab, red, blue)` 的起点(调研 06§4)——红蓝对撞正是展示 sRGB 插值脏灰带的经典用例。",
+        "en": "Gradient start color. Default #FF0000 = the CSS named color red, the start of the research/spec example `linear-gradient(in oklab, red, blue)` (research 06 §4) — the red-blue clash is the classic showcase of sRGB's muddy midband."
+      }
+    },
+    {
+      "type": "color",
+      "name": "to",
+      "format": "hex",
+      "default": "#0000FF",
+      "cssVar": "--gi-to",
+      "effect": {
+        "zh": "渐变终点色。默认 #0000FF = CSS 命名色 blue,同上例证。demo 同时以 color-mix(in 空间, from, to) 显示各空间 50% 中点色,脏灰带在 sRGB 的中点上最直观。",
+        "en": "Gradient end color. Default #0000FF = the CSS named color blue, same example. The demo also shows each space's 50% midpoint via color-mix(in space, from, to) — sRGB's muddy band is most visible right at the midpoint."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "in 空间渐变语法出自 CSS Color 4 §13(调研 06§六4,一手来源 W3C 规范);调研未逐浏览器记载该语法的支持年份,实施前请以 MDN/Can I Use 复核。底层颜色函数 oklch() 自 2023-05 起全主流支持(调研 06§1);color-mix() 为 CSS Color 5 函数。",
+      "en": "The in-space gradient syntax comes from CSS Color 4 §13 (research 06 §6-4; primary source is the W3C spec); the research does not record per-browser support years for the syntax — re-check MDN/Can I Use before shipping. The underlying oklch() is supported by all mainstream browsers since 2023-05 (research 06 §1); color-mix() is a CSS Color 5 function."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 in 语法的浏览器整条声明失效:先写不带 in 的普通渐变兜底,再覆写 in 版本;demo 即采用该结构——样式表里的普通渐变是兜底,内联 in 渐变仅在可解析时生效(无效内联声明被丢弃后自动落回样式表)。",
+    "en": "Browsers without the in syntax drop the whole declaration: ship a plain gradient without `in` first, then override with the in-space version. The demo is built exactly that way — the stylesheet's plain gradient is the fallback, and the inline in-gradient only applies when parseable (an invalid inline declaration is discarded, falling back to the stylesheet)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长距离色相过渡(红→蓝、橙→紫):显式 in oklab/in oklch,避免 sRGB 默认插值的中段脏灰(调研 06§4)", "en": "Long hue transitions (red→blue, orange→purple): explicit in oklab/in oklch to dodge sRGB's default muddy midband (research 06 §4)" },
+      { "zh": "极坐标空间保鲜艳:in oklch 让 chroma 全程不塌,Tailwind v4 默认渐变即 OKLAB 插值(调研 06§4)", "en": "Keeping vividness across polar spaces: in oklch holds chroma the whole way; Tailwind v4 defaults its gradients to OKLAB (research 06 §4)" },
+      { "zh": "绕远路的色相旅行:in oklch longer hue 让红→黄走蓝紫一侧,适合 Aurora/mesh 光斑的色相编排(调研 06§14)", "en": "Deliberate long-way hue journeys: in oklch longer hue sends red→yellow around the blue side — handy for Aurora/mesh hue choreography (research 06 §14)" },
+      { "zh": "P3 屏渐变增强:in display-p3 配 @media (color-gamut: p3) 覆写更鲜艳版本(调研 06§3)", "en": "P3-screen gradient enhancement: in display-p3 with @media (color-gamut: p3) overrides for extra vividness (research 06 §3)" }
+    ],
+    "avoid": [
+      { "zh": "对直角空间写 hue 策略——语法表只允许柱坐标空间(hsl/hwb/lch/oklch)携带 hue 关键词,写错整条声明无效", "en": "Attaching hue strategies to rectangular spaces — the grammar only lets polar spaces (hsl/hwb/lch/oklch) carry a hue keyword; a mistake invalidates the whole declaration" },
+      { "zh": "默认(不写 in)直接上线的长距渐变——旧式颜色在 sRGB 插值,中段发灰发脏;这是规范的兼容条款,不是 bug(调研 06§4)", "en": "Shipping long gradients without `in` — legacy colors interpolate in sRGB and the middle turns gray; that is the spec's compatibility clause, not a bug (research 06 §4)" },
+      { "zh": "同一渐变既无兜底声明又只有 in 语法——不支持的老浏览器会整条丢弃,必须有普通渐变在前", "en": "Shipping an in-only gradient with no fallback declaration — old browsers drop it wholesale; a plain gradient must come first" },
+      { "zh": "渐变上叠小字不核对对比度:按最亮/最暗两端分别查(Aurora 配方建议光斑亮度保持 0.6–0.75,既发光又不炸文字对比度,调研 06§14)", "en": "Small text over gradients without checking both the brightest and darkest ends (the Aurora recipe keeps blob lightness at 0.6–0.75 — glowing without wrecking text contrast, research 06 §14)" }
+    ]
+  },
+  "a11y": {
+    "zh": "渐变本身不传达信息时无 a11y 义务;渐变上的文字要按『最亮端与最暗端』两种极端分别核对 4.5:1(正文)/3:1(大字),UI 组件边界 3:1(SC 1.4.11)——插值空间的选择会改变中段亮度,从而改变最差点位。Aurora/mesh 配方以光斑亮度 0.6–0.75 控制对比度风险(调研 06§14);渐变不得作为传达关键信息的唯一手段。",
+    "en": "A decorative gradient carries no a11y duty by itself; text over one must be checked at both the brightest and darkest extremes for 4.5:1 (body) / 3:1 (large), with UI boundaries at 3:1 (SC 1.4.11) — the choice of interpolation space shifts mid-band lightness and therefore the worst point. Aurora/mesh recipes hold blob lightness at 0.6–0.75 to bound the risk (research 06 §14); never let a gradient be the sole carrier of key information."
+  },
+  "sources": [
+    "https://www.w3.org/TR/css-color-4/",
+    "https://tailwindcss.com/blog/tailwindcss-v4",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Using_CSS_gradients"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现同一对端色在不同插值空间下的渐变对比:主条带用 in 空间(+柱坐标空间选 hue 策略)语法,并排展示 sRGB/oklab/oklch/display-p3 四条与各自 50% 中点色,提供无 in 兜底。",
+      "en": "Implement a same-endpoints comparison of gradients across interpolation spaces: a main strip using the in-space syntax (+ hue strategy on polar spaces), side-by-side sRGB/oklab/oklch/display-p3 rows with their 50% midpoints, and a no-in fallback."
+    },
+    "acceptance": [
+      { "zh": "渐变以 in <space> [hue 策略] 显式声明,hue 策略只施加给柱坐标空间(oklch)", "en": "Gradients declare in <space> [hue strategy] explicitly; hue strategies apply only to polar spaces (oklch)" },
+      { "zh": "四个空间并排对比,当前选中项高亮,参数改动即时重绘", "en": "The four spaces render side by side with the selected one highlighted, redrawing live on param changes" },
+      { "zh": "各空间 50% 中点用 color-mix(in 空间, from, to) 展示,sRGB 的脏灰中点一目了然", "en": "Each space's 50% midpoint shows via color-mix(in space, from, to), exposing sRGB's muddy midband" },
+      { "zh": "无 in 的普通渐变兜底声明在前,内联 in 渐变仅在其可解析时生效", "en": "A plain no-in gradient fallback comes first; the inline in-gradient applies only when parseable" },
+      { "zh": "默认端色取调研/spec 例证 red(#FF0000)→blue(#0000FF)", "en": "Default endpoints follow the research/spec example red (#FF0000) → blue (#0000FF)" }
+    ]
+  }
+}

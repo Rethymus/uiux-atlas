@@ -1,0 +1,76 @@
+## Structure & DOM
+
+A minimalist DOM is startlingly thin: one column, one headline, one paragraph, one button — hierarchy comes entirely from **size, weight and whitespace**, never borders or cards.
+
+```html
+<main class="min-page">
+  <p class="min-eyebrow">Product</p>
+  <h1 class="min-h1">One idea, one screen</h1>
+  <p class="min-body">Whitespace is the design system.</p>
+  <a class="min-cta" href="#">Get started</a>
+</main>
+```
+
+Key points:
+
+- `main` is capped at `65ch` (the documented readable measure) — the page has a single column;
+- The hierarchy kit: type scale (stepped by the ratio), weight (400/600), whitespace (integer multiples of the spacing base);
+- The accent appears only on CTAs/links/key figures — "one idea per screen" pairs with "one hue per page".
+
+## Styling & Parameters
+
+Three parameters map to the type ratio, spacing base and accent; the five palette tokens come from the research (superdesign.dev minimalist-web-design page):
+
+```css
+:root {
+  /* Five palette tokens (documented values): budget = 2 neutrals + 1 ink + 1 muted ink + 1 accent */
+  --bg: #fafaf9;        /* page base */
+  --surface: #f0efec;   /* surface, only where something must lift */
+  --ink: #1c1917;       /* primary ink */
+  --ink-muted: #57534e; /* muted ink: secondary text */
+  --accent: #2563eb;    /* the only accent (parameter) */
+  --min-space: 8px;     /* spacing base (parameter): 8/16/24/32/48/64/96 */
+}
+
+.min-page {
+  max-width: 65ch;
+  margin: 0 auto;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;             /* base size */
+  line-height: 1.6;
+}
+.min-h1  { font-size: calc(16px * RATIO * RATIO * RATIO); }  /* ratio^3, computed in JS */
+.min-body { color: var(--ink-muted); margin: calc(var(--min-space) * 4) 0; }
+.min-cta {
+  color: #ffffff;
+  background: var(--min-accent);
+  padding: calc(var(--min-space) * 1.5) calc(var(--min-space) * 3);
+  border-radius: calc(var(--min-space));
+}
+```
+
+Where the numbers come from:
+
+- The five tokens `#fafaf9 / #f0efec / #1c1917 / #57534e / #2563eb`: recorded verbatim in the research;
+- Ratio default 1.25 (Major Third), the 8px spacing base, `--measure: 65ch`: same page;
+- Body contrast ≥4.5:1, with the research sample hitting 7.4:1 (AAA).
+
+## Motion & Interaction
+
+The minimalist motion principle: **almost invisible, never abrupt**.
+
+- CTA hover: a slight brightness shift (`filter: brightness(0.96)`) or an underline appearing, 120ms; no translation, no scaling;
+- Page transitions fade (120ms); under `prefers-reduced-motion` all of it is dropped, rendering final states directly;
+- Interaction affordances stay statically visible: permanent link underlines, a 2px solid focus ring — "stripped accessibility cues" is a top trap named in the research;
+- Parallax and stacked fade-ins smuggled in to look premium are maximalism sneaking back in.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `ratio` | a louder scale (1.5+ approaches Swiss posters) — vivid hierarchy, but long titles overflow | flatter hierarchy; at 1.1 it nears a uniform wall of text and weight must carry the levels |
+| `space` | more generous whitespace, stronger "editorial confidence"; a 16px base wastes heavily on small screens | tighter pages; a 4px scale feels cramped in long-form and blurs paragraph relationships |
+| `accent` | brighter accents need dark text checked at 4.5:1; deeper ones can carry white | more accent usage is "overspending"; the budget line: one hue per page |
+
+Working ranges: ratio 1.2–1.333, space 8px (4 for 4pt-grid contexts), accent coverage under 5% of the canvas. Check gray-on-white stepwise: the muted ink #57534e on #fafaf9 sits near 7:1 — one step deeper gray skirts the line.

@@ -1,0 +1,116 @@
+{
+  "name": "State Layers (M3)",
+  "aliases": ["状态层", "M3 state layer", "state-layer token"],
+  "category": "materials",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "Material 3 状态层:在控件上叠一层「内容色」的低不透明度覆盖,用固定百分比区分 hover/focus/press/drag,而不是临时发明颜色。",
+    "en": "Material 3 state layers: a low-opacity overlay of the content color on top of a control, with fixed percentages distinguishing hover/focus/press/drag instead of ad-hoc colors."
+  },
+  "origin": {
+    "zh": "M3 官方 interaction/states 体系:状态层取内容色(on-* 色)按官方 token 百分比叠加(调研 02§B5),是 Material 2「相同颜色 + 不透明度递增」惯例的 token 化续作。",
+    "en": "M3's official interaction/states system: the state layer takes the content color (on-* color) at official token percentages (research 02 §B5), the tokenized successor of Material 2's 'same color, rising opacity' convention."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "hover",
+      "unit": "%",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--m3-hover-opacity",
+      "effect": {
+        "zh": "hover 状态层不透明度。官方 token:Hover +8%(内容色覆盖)(m3.material.io state-layers,调研 02§B5 一手抓取 grep 命中「Hover +8% opacity」)。",
+        "en": "Hover state-layer opacity. Official token: Hover +8% of the content color (m3.material.io state-layers; research 02 §B5 grep-hit 'Hover +8% opacity')."
+      }
+    },
+    {
+      "type": "number",
+      "name": "focus",
+      "unit": "%",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 10,
+      "cssVar": "--m3-focus-opacity",
+      "effect": {
+        "zh": "focus 状态层不透明度。官方 token:Focus +10%。焦点态通常另配键盘焦点环,本层只负责覆盖亮度变化。",
+        "en": "Focus state-layer opacity. Official token: Focus +10%. The focused state usually also gets a keyboard focus ring; this layer only handles the luminance overlay."
+      }
+    },
+    {
+      "type": "number",
+      "name": "press",
+      "unit": "%",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 10,
+      "cssVar": "--m3-press-opacity",
+      "effect": {
+        "zh": "press(按下)状态层不透明度。官方 token:Press +10%。按下可与 hover/focus 叠加,M3 组件在 press 时还会附带形状/高度反馈。",
+        "en": "Press state-layer opacity. Official token: Press +10%. Press can stack on hover/focus; M3 components additionally attach shape/elevation feedback on press."
+      }
+    },
+    {
+      "type": "number",
+      "name": "drag",
+      "unit": "%",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--m3-drag-opacity",
+      "effect": {
+        "zh": "drag(拖拽)状态层不透明度,四态中最深。官方 token:Drag +16%——持续被手指遮挡的控件需要更强的状态反馈。",
+        "en": "Drag state-layer opacity, the deepest of the four. Official token: Drag +16% — a control held under a finger needs stronger state feedback."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 CSS 透明度叠加,全浏览器可用;无需任何新特性。demo 用 pointer/keyboard 事件切换 data 属性,事件本身也是全浏览器基线。",
+      "en": "Pure CSS opacity stacking, available everywhere; no modern features required. The demo toggles data attributes via pointer/keyboard events, which are baseline too."
+    }
+  },
+  "fallback": {
+    "zh": "不支持伪元素/自定义属性的古旧环境,可直接退回 background-color 换色(把「内容色 × 不透明度」预混进底色);状态必须同时由颜色以外的线索承载(文字、图标、焦点环)。",
+    "en": "On legacy environments without pseudo-elements/custom properties, fall back to swapping background-color directly (pre-mix content color × opacity into the base); states must also be carried by cues other than color (text, icon, focus ring)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "填充型按钮、卡片、列表项的 hover/press 反馈——与 M3 组件同构的任何控件", "en": "Filled buttons, cards and list items — any control that mirrors M3 component anatomy" },
+      { "zh": "可拖拽的手柄与重排条目:drag +16% 是四态中最深的官方档位", "en": "Draggable handles and reorderable rows: drag +16% is the officially deepest of the four states" },
+      { "zh": "需要统一「手感」的设计系统:四个百分比全系统共用,新控件不再逐个发明 hover 色", "en": "Design systems needing a uniform feel: four shared percentages mean new controls never invent their own hover colors" },
+      { "zh": "深浅主题通吃:状态层取内容色而非固定色值,主题切换后自动适配", "en": "Theming across light/dark: the layer takes the content color rather than a fixed value, so it adapts after theme swap" }
+    ],
+    "avoid": [
+      { "zh": "对内容色本身已接近背景色的控件(如 on-surface ≈ surface)——8% 的叠加几乎不可见,应改用边框/位移等其他线索", "en": "Controls whose content color is already near the surface — an 8% overlay is nearly invisible; use borders/offsets instead" },
+      { "zh": "叠加在渐变/照片上的控件——低不透明度覆盖会被底图吞掉,M3 状态层默认假设纯色 surface", "en": "Controls sitting on gradients or photos — a low-opacity overlay gets swallowed; M3 state layers assume a flat surface" },
+      { "zh": "把四个百分比再自行放大(如 press 用 30%)——偏离官方 token 后各控件手感不再一致", "en": "Inflating the percentages yourself (e.g. press at 30%) — drifting off the official tokens breaks cross-control consistency" },
+      { "zh": "高频微控件(checkbox、slider)——M3 对此类控件以形状/位置反馈为主,不要一律糊状态层", "en": "High-frequency micro controls (checkboxes, sliders) — M3 relies on shape/position feedback there; don't blanket-apply state layers" }
+    ]
+  },
+  "a11y": {
+    "zh": "状态层是亮度线索,不能是唯一线索:focus 必须保留键盘焦点指示(WCAG 2.1 SC 2.4.7),hover 信息在触屏上不存在,press/drag 状态需有文字或形状佐证;仅用颜色区分状态同时受 SC 1.4.1(不依赖颜色)约束。demo 中焦点环始终保留。",
+    "en": "State layers are luminance cues and must not be the only cue: focus needs a visible keyboard indicator (WCAG 2.1 SC 2.4.7); hover does not exist on touch; press/drag states need text or shape corroboration; distinguishing states by color alone also hits SC 1.4.1 (use of color). The demo always keeps the focus ring."
+  },
+  "sources": [
+    "https://m3.material.io/foundations/interaction/states/state-layers"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一枚 M3 filled button(hover/focus/press/drag 四态):内容色状态层按官方百分比叠加,四层可同时存在并按层级堆叠,焦点另有 3px 焦点环。",
+      "en": "Implement an M3 filled button with hover/focus/press/drag states: content-colored state layers at official percentages, all four stackable at once, plus a 3px focus ring for focus."
+    },
+    "acceptance": [
+      { "zh": "四个状态层取内容色(如 on-primary),不透明度严格用快照值 8/10/10/16%,不要自行改色", "en": "The four state layers use the content color (e.g. on-primary) with opacities exactly at the snapshot 8/10/10/16%; do not recolor them" },
+      { "zh": "四层可同时叠加(如 hover+focus+press),层序 press 在 hover 之上", "en": "The four layers can stack simultaneously (e.g. hover+focus+press), press above hover in z-order" },
+      { "zh": "focus 态保留可见焦点环,不只靠状态层", "en": "The focus state keeps a visible focus ring; never rely on the state layer alone" },
+      { "zh": "状态层用单个绝对定位覆盖层 + data 属性驱动,不逐状态换 background-image", "en": "Implement state layers as one absolutely positioned overlay per state driven by data attributes — not by swapping background-image per state" }
+    ]
+  }
+}

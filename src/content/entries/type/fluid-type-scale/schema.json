@@ -1,0 +1,128 @@
+{
+  "name": "Fluid Type Scale",
+  "aliases": ["流式字阶", "Utopia 字阶", "clamp() 字阶"],
+  "category": "type",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "字号随视口在断点之间线性插值:clamp(下限, rem+vw, 上限) 生成 --step-0..5 字阶,小屏不小于下限、大屏不超过上限,中间平滑缩放。",
+    "en": "Font sizes interpolate linearly with the viewport: clamp(floor, rem+vw, ceiling) builds a --step-0..5 ladder — never below the floor, never above the ceiling, smooth in between."
+  },
+  "origin": {
+    "zh": "机制 = CSS clamp()(MDN 标注 Baseline Widely available 自 2020-07,调研 05§12);主流工作流 = Utopia 流式字阶生成器,输出 --step-N: clamp(rem, rem+vw, rem)(调研 05§13 一手实测输出);比率词表出自 Tim Brown modularscale 的模数标尺(调研 05§17)。",
+    "en": "Mechanism = CSS clamp() (MDN Baseline Widely available since 2020-07, research 05 §12); the canonical workflow is Utopia's fluid type scale calculator emitting --step-N: clamp(rem, rem+vw, rem) (research 05 §13, first-hand measured output); the ratio vocabulary comes from Tim Brown's modularscale (research 05 §17)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "minViewport",
+      "unit": "px",
+      "min": 320,
+      "max": 800,
+      "step": 1,
+      "default": 480,
+      "effect": {
+        "zh": "插值起点视口宽度:低于它,字号停在每级 clamp 的 min 值。斜率 =(max−min)/(maxVw−minVw) 以此为分母起点。默认 480px 为本条目任务规格取值;调研 05§13 的 Utopia 实测输出样本反推其默认约 360px(Utopia 未直接记录视口默认值,两说并列)。",
+        "en": "The viewport where interpolation starts: below it, sizes sit at each step's clamp floor; the slope = (max−min)/(maxVw−minVw) anchors here. Default 480px is this entry's task-spec value; Utopia's recorded output sample (research 05 §13) back-solves to ≈360px (Utopia does not document the viewport default directly — both stated side by side)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxViewport",
+      "unit": "px",
+      "min": 800,
+      "max": 1920,
+      "step": 1,
+      "default": 1440,
+      "effect": {
+        "zh": "插值终点视口宽度:高于它,字号停在每级 clamp 的 max 值。默认 1440px 为任务规格取值;Utopia 输出样本反推约 1240px(未直接记录,两说并列)。区间越宽斜率越缓,桌面端缩放越不明显。",
+        "en": "The viewport where interpolation ends: above it, sizes sit at each step's clamp ceiling. Default 1440px is the task-spec value; Utopia's sample back-solves to ≈1240px (not directly documented — both stated). A wider range flattens the slope, making desktop scaling subtler."
+      }
+    },
+    {
+      "type": "number",
+      "name": "minSize",
+      "unit": "rem",
+      "min": 0.8,
+      "max": 1.2,
+      "step": 0.01,
+      "default": 1,
+      "effect": {
+        "zh": "--step-0 的下限字号,也是字阶基准(正文下限)。默认 1rem(=16px 根字号)是常见正文基准;Utopia 实测样本用 1.125rem。以 rem 计价保证浏览器字号设置与页面缩放仍然生效。",
+        "en": "The floor of --step-0 and the base of the ladder (body-size floor). Default 1rem (16px root) is the common body baseline; Utopia's measured sample uses 1.125rem. Pricing in rem keeps browser font-size settings and zoom working."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxSize",
+      "unit": "rem",
+      "min": 1,
+      "max": 2,
+      "step": 0.01,
+      "default": 1.25,
+      "effect": {
+        "zh": "--step-0 的上限字号(大视口下的正文尺寸)。默认 1.25rem 与 Utopia 实测输出 --step-0 的 max 值一致(调研 05§13 一手核对)。",
+        "en": "The ceiling of --step-0 (body size on large viewports). Default 1.25rem matches the max of --step-0 in Utopia's first-hand measured output (research 05 §13)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "ratio",
+      "min": 1.1,
+      "max": 1.5,
+      "step": 0.01,
+      "default": 1.25,
+      "effect": {
+        "zh": "模数比率:每升一级 step 同时乘到该级 min 与 max 上(min/ratio 同向放大)。默认 1.25 是 Utopia 可选比率之一(modularscale 记作 4:5 大三度,调研 05§13/§17)。Utopia 支持最小/最大两侧各设比率(其样本为 1.2/1.25),本条目简化为单比率双乘。",
+        "en": "The modular ratio: each step multiplies both that step's min and max by it. Default 1.25 is one of Utopia's selectable ratios (modularscale's 4:5 major third, research 05 §13/§17). Utopia allows separate min/max ratios (its sample used 1.2/1.25); this entry simplifies to one ratio for both."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "clamp() 为 Baseline Widely available(自 2020-07 起,MDN,调研 05§12),三大引擎当前版本均支持;调研未记录分浏览器首发版本号,此处不作逐版本断言。",
+      "en": "clamp() is Baseline Widely available (since 2020-07, MDN, research 05 §12) and supported in all three engines today; the research did not record per-browser release numbers, so none are claimed here."
+    },
+    "baseline": "Baseline Widely available (2020-07)"
+  },
+  "fallback": {
+    "zh": "不支持 clamp() 的旧环境回退为级联两段声明:先写固定 font-size(如 1rem),再写 clamp() 声明——新浏览器以后者覆盖;或用 @supports (font-size: clamp(1rem, 1vw, 2rem)) 包裹全部流式规则,旧浏览器整组跳过,保留固定字阶。",
+    "en": "On environments without clamp(), fall back through cascade: write a fixed font-size (e.g. 1rem) first, then the clamp() declaration — modern browsers override with the latter; or wrap the whole fluid rule set in @supports (font-size: clamp(1rem, 1vw, 2rem)) so old browsers skip it and keep the fixed scale."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "全站字阶:一套 --step-0..5 变量接管正文到 display 标题,断点之间不再跳变", "en": "Site-wide scale: one --step-0..5 ladder drives body through display headlines with no breakpoint jumps" },
+      { "zh": "长文页与营销页标题随屏宽伸缩,替代成摞的媒体查询字号覆盖", "en": "Article and marketing headlines that scale with the viewport, replacing stacks of media-query font-size overrides" },
+      { "zh": "hero/display 大字在移动端自动收敛到可读下限,不会撑破版心", "en": "Hero/display type collapsing to a readable floor on mobile without blowing the measure" },
+      { "zh": "设计令牌层:与 Utopia 流式间距同构,组成整套流式设计系统", "en": "As a token layer: isomorphic with Utopia fluid spacing, forming a whole fluid design system" }
+    ],
+    "avoid": [
+      { "zh": "纯 vw 字号(无 rem 下限)——用户放大系统字号无法补救,违反 WCAG 1.4.4 调整文本", "en": "Pure-vw sizes with no rem floor — zooming the OS font cannot rescue them (WCAG 1.4.4 Resize Text)" },
+      { "zh": "正文 --step-0 也大幅流式——正文两端差应控制在 1–2 级,否则小屏过大、大屏过小", "en": "Strongly fluid body text — keep --step-0 within 1–2 steps of range or it reads huge on phones, tiny on desktops" },
+      { "zh": "行高不随字阶收紧——大标题沿用正文行高会松散,正文行高低于 1.5 违反 WCAG 1.4.12", "en": "Line-height not tightening per step — display sizes inherit body leading; body under 1.5 violates WCAG 1.4.12" },
+      { "zh": "视口区间取过宽(如 320–2560)——斜率被摊平,桌面端几乎看不到缩放,白做流式", "en": "An overly wide viewport range (e.g. 320–2560) flattens the slope until desktop scaling is invisible" }
+    ]
+  },
+  "a11y": {
+    "zh": "字号必须以 rem 计价并保留 rem 下限:纯 vw 字号会破坏 WCAG 2.1 SC 1.4.4(调整文本)与用户浏览器字号设置;clamp 的 min 写成 rem 即可在系统放大时跟随。WCAG 2.2 SC 1.4.12 Text Spacing 要求行高 ≥1.5× 字号、段落间距 ≥2× 字号(调研 05§18)——大字号梯级要相应收紧行高而非放大行距。",
+    "en": "Sizes must be priced in rem with a rem floor: pure-vw sizes break WCAG 2.1 SC 1.4.4 (Resize Text) and user browser font settings; writing clamp's min in rem keeps OS-level zoom working. WCAG 2.2 SC 1.4.12 Text Spacing requires line-height ≥1.5× the size and paragraph spacing ≥2× (research 05 §18) — tighten leading for display steps rather than inflating it."
+  },
+  "sources": [
+    "https://utopia.fyi/type/calculator/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/clamp()",
+    "https://www.modularscale.com/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一篇文章页面生成 --step-0..5 流式字阶:六个 clamp() CSS 变量,字号在指定视口区间内从正文平滑放大到 display 标题,并应用到标题与正文。",
+      "en": "Generate a --step-0..5 fluid type scale for an article page: six clamp() CSS variables interpolating from body copy to display headline across the given viewport range, applied to headings and paragraphs."
+    },
+    "acceptance": [
+      { "zh": "六个变量严格使用参数快照生成的 clamp() 字符串,不要另行发明数值", "en": "The six variables use exactly the clamp() strings generated from the parameter snapshot; do not invent numbers" },
+      { "zh": "中间值写为「Xrem + Yvw」双单位形式:斜率 =(max−min)/(maxVw−minVw),视口按 16px 根字号折 rem", "en": "Preferred value as dual-unit 'Xrem + Yvw': slope = (max−min)/(maxVw−minVw), viewports converted to rem at a 16px root" },
+      { "zh": "min/max 字号均为 rem——保证浏览器缩放与用户字号设置生效", "en": "min/max sizes are both in rem so browser zoom and user font settings keep working" },
+      { "zh": "应用时配对收紧 line-height(标题 < 1.2,正文 ≥ 1.5,呼应 WCAG 1.4.12)", "en": "Pair with tightened line-height per step: headings under 1.2, body at least 1.5 (echoing WCAG 1.4.12)" },
+      { "zh": "先写固定字号声明再写 clamp 声明,旧浏览器按级联回退", "en": "Declare a fixed font-size before the clamp() declaration so legacy browsers fall back through the cascade" }
+    ]
+  }
+}

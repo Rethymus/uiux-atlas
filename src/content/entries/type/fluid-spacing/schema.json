@@ -1,0 +1,115 @@
+{
+  "name": "Fluid Spacing",
+  "aliases": ["流式间距", "Utopia 间距", "间距标尺"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "间距令牌也走 clamp:--space-3xs…3xl 沿视口线性伸缩,一端定值、中间插值,布局留白随屏宽呼吸而非断点跳变。",
+    "en": "Spacing tokens ride clamp too: --space-3xs…3xl stretch linearly with the viewport — fixed at both ends, interpolated between — so whitespace breathes instead of jumping at breakpoints."
+  },
+  "origin": {
+    "zh": "机制与流式字阶同构(clamp 线性插值);工作流 = Utopia 流式间距生成器,输出 --space-3xs… 令牌并支持倍数(0.75/0.5/0.25 与 1.5/2/3/4/6)派生间距标尺(调研 05§14 一手实测输出)。实测样本:--space-s: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem);--space-2xs: clamp(0.5625rem, 0.5369rem + 0.1136vw, 0.625rem)。",
+    "en": "Mechanism is isomorphic with the fluid type scale (linear clamp interpolation); the workflow is Utopia's fluid space calculator, emitting --space-3xs… tokens with multipliers (0.75/0.5/0.25 and 1.5/2/3/4/6) to derive the scale (research 05 §14, first-hand measured output). Sample: --space-s: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem); --space-2xs: clamp(0.5625rem, 0.5369rem + 0.1136vw, 0.625rem)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "minViewport",
+      "unit": "px",
+      "min": 320,
+      "max": 800,
+      "step": 1,
+      "default": 480,
+      "effect": {
+        "zh": "插值起点视口:低于它,各间距令牌停在 min 值。默认 480px 为本条目任务规格取值;由调研 05§14 Utopia 实测输出样本反推其默认约 360px(Utopia 未直接记录,两说并列)。",
+        "en": "The viewport where interpolation starts: below it, every spacing token sits at its min. Default 480px is this entry's task-spec value; Utopia's recorded output sample (research 05 §14) back-solves to ≈360px (not directly documented — both stated)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxViewport",
+      "unit": "px",
+      "min": 800,
+      "max": 1920,
+      "step": 1,
+      "default": 1440,
+      "effect": {
+        "zh": "插值终点视口:高于它,各间距令牌停在 max 值。默认 1440px 为任务规格取值;Utopia 样本反推约 1240px(未直接记录,两说并列)。间距的 max−min 跨度通常远小于字号,斜率天然更缓。",
+        "en": "The viewport where interpolation ends: above it, every token sits at its max. Default 1440px is the task-spec value; Utopia's sample back-solves to ≈1240px (not directly documented — both stated). Spacing spans are far smaller than type spans, so slopes are naturally gentler."
+      }
+    },
+    {
+      "type": "number",
+      "name": "minSpace",
+      "unit": "rem",
+      "min": 0.5,
+      "max": 2,
+      "step": 0.01,
+      "default": 1.125,
+      "effect": {
+        "zh": "基准间距(--space-s,倍数 1)的视口下限值。默认 1.125rem 直接取自 Utopia 实测输出样本的 --space-s min(调研 05§14 一手核对);其余令牌按倍数缩小(3xs=0.25×、2xs=0.5×、xs=0.75×)。",
+        "en": "The viewport floor of the base token (--space-s, multiplier 1). Default 1.125rem is taken directly from Utopia's measured --space-s min (research 05 §14, first-hand); other tokens scale down by multiplier (3xs=0.25×, 2xs=0.5×, xs=0.75×)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxSpace",
+      "unit": "rem",
+      "min": 1,
+      "max": 4,
+      "step": 0.01,
+      "default": 1.25,
+      "effect": {
+        "zh": "基准间距(--space-s)的视口上限值。默认 1.25rem 取自 Utopia 实测输出的 --space-s max(调研 05§14);大令牌(m=1.5×…3xl=6×)按倍数放大,3xl 在大视口下可达 7.5rem。",
+        "en": "The viewport ceiling of the base token (--space-s). Default 1.25rem comes from Utopia's measured --space-s max (research 05 §14); larger tokens amplify by multiplier (m=1.5×…3xl=6×), reaching 7.5rem at large viewports for 3xl."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "依赖 clamp():Baseline Widely available 自 2020-07(MDN,调研 05§12);spacing 令牌本身是普通自定义属性,无额外兼容性要求。调研未记录分浏览器首发版本,不作逐版本断言。",
+      "en": "Relies on clamp(): Baseline Widely available since 2020-07 (MDN, research 05 §12); the spacing tokens are ordinary custom properties with no extra compatibility requirements. No per-browser release numbers are claimed."
+    },
+    "baseline": "Baseline Widely available (2020-07)"
+  },
+  "fallback": {
+    "zh": "与流式字阶同理:先写固定间距(如 padding: 1rem),再写使用 clamp 令牌的声明,旧浏览器按级联回退;或把整套 --space-* 定义包进 @supports,失败时提供一份静态间距令牌。",
+    "en": "Same pattern as the fluid type scale: declare fixed spacing (e.g. padding: 1rem) first, then the clamp-token declaration so legacy browsers cascade back; or wrap the whole --space-* set in @supports and provide a static spacing ladder on failure."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "区块留白:section padding 随视口在 24–40px 间呼吸,省掉一堆断点", "en": "Section whitespace: padding breathing across 24–40px with the viewport, no breakpoint pile-ups" },
+      { "zh": "卡片内边距与栅格 gap:一套 --space-* 令牌同时驱动 padding/gap/margin", "en": "Card padding and grid gaps: one --space-* ladder driving padding, gap and margin alike" },
+      { "zh": "与流式字阶同源生成,组成整套流式设计系统令牌", "en": "Generated from the same source as the fluid type scale, forming a full fluid design-system token set" },
+      { "zh": "阅读型页面:正文区间留白克制,展示区区间留白放大(m/l/xl 令牌)", "en": "Editorial pages: restrained whitespace around body copy, amplified around display sections (m/l/xl tokens)" }
+    ],
+    "avoid": [
+      { "zh": "让 3xs/2xs 这类微间距也大幅流式——3–10px 的微间距两端几乎无差,白做插值", "en": "Strongly fluid micro-spacing (3xs/2xs) — the 3–10px range has almost no span, so interpolation buys nothing" },
+      { "zh": "间距斜率大过字阶斜率——留白比字号变得更快会让版面比例失衡", "en": "Spacing slope steeper than the type slope — whitespace moving faster than text unbalances composition" },
+      { "zh": "随意手写间距值绕过令牌——流式令牌的前提是所有留白都走同一标尺", "en": "Hand-written spacing values bypassing the tokens — the whole premise is that every gap rides one scale" },
+      { "zh": "在极宽视口(如 2560px+)继续放大留白——超过 maxViewport 后已是定值,无需更长区间", "en": "Growing whitespace past 2560px+ — beyond maxViewport tokens are already fixed; a longer range adds nothing" }
+    ]
+  },
+  "a11y": {
+    "zh": "间距影响可读性而非对比度:WCAG 2.2 SC 1.4.12 Text Spacing 要求用户覆盖行距/段距/字距时内容仍可用(行高 ≥1.5× 字号、段距 ≥2× 字号,调研 05§18)——流式间距令牌应允许被用户样式覆盖,不要写 !important;触控目标之间的间距随令牌缩小后仍须保证可点性,密集列表用 2xs 及以上。",
+    "en": "Spacing affects readability, not contrast: WCAG 2.2 SC 1.4.12 Text Spacing requires content to survive user overrides of line/paragraph/letter spacing (line-height ≥1.5×, paragraph spacing ≥2×, research 05 §18) — fluid spacing tokens must remain overridable, never !important; when token shrinkage closes gaps between touch targets, targets must stay hittable — dense lists use 2xs and above."
+  },
+  "sources": [
+    "https://utopia.fyi/space/calculator/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/clamp()"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为页面生成一套流式间距令牌:--space-3xs…3xl 九个 clamp() 变量,随视口在指定区间线性伸缩,并应用到区块 padding 与栅格 gap。",
+      "en": "Generate a fluid spacing ladder: nine clamp() variables --space-3xs…3xl stretching linearly across the viewport range, applied to section padding and grid gaps."
+    },
+    "acceptance": [
+      { "zh": "九个令牌严格使用参数快照生成的 clamp() 字符串,倍数梯 0.25/0.5/0.75/1/1.5/2/3/4/6", "en": "The nine tokens use exactly the generated clamp() strings with the multiplier ladder 0.25/0.5/0.75/1/1.5/2/3/4/6" },
+      { "zh": "中间值写为「Xrem + Yvw」双单位形式,视口按 16px 根字号折 rem", "en": "Preferred values as dual-unit 'Xrem + Yvw', viewports converted to rem at a 16px root" },
+      { "zh": "min/max 间距均为 rem,保证用户字号设置放大时间距跟随", "en": "min/max spacing are in rem so tokens follow user font-size settings" },
+      { "zh": "先写固定间距声明再写令牌声明,旧浏览器按级联回退", "en": "Declare fixed spacing before token-based spacing so legacy browsers cascade back" },
+      { "zh": "所有留白统一走令牌,不出现手写 px 混用(除 1px 细线)", "en": "All whitespace rides the tokens — no hand-written px mixing (except 1px hairlines)" }
+    ]
+  }
+}

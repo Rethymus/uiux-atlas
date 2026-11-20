@@ -1,0 +1,117 @@
+{
+  "name": "Liquid Glass",
+  "aliases": ["液态玻璃", "苹果玻璃材质", "Glass Effect"],
+  "category": "materials",
+  "system": "apple",
+  "star": 3,
+  "tagline": {
+    "zh": "Apple iOS 26 全平台统一动态材质:为控件与导航形成独立『功能层』浮在内容之上;regular/clear 两变体,clear 在亮背景上叠 35% 深色 dimming 层。",
+    "en": "Apple's unified dynamic material from iOS 26: forms a separate 'functional layer' for controls and nav floating above content; two official variants — regular and clear, the latter stacking a 35% dark dimming layer over bright backdrops."
+  },
+  "origin": {
+    "zh": "Apple HIG Materials 官方定义(iOS 26,调研 02 §1 A1;调研 06 §四 §16 与 §六条目18);SwiftUI glassEffect(_:in:) 默认变体 .regular、默认形状 Capsule(A2);Glass.tint(_:) 为可选着色(A3)。Web 复刻仅近似,折射用 SVG feDisplacementMap(仅 Chromium 生效)。",
+    "en": "Officially defined in Apple HIG Materials (iOS 26, research 02 §1 A1; research 06 §IV §16 and summary item 18); SwiftUI glassEffect(_:in:) defaults to .regular in a Capsule shape (A2); Glass.tint(_:) is optional tinting (A3). Web recreations are approximations; refraction uses SVG feDisplacementMap (Chromium only)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "regular", "label": { "zh": "标准玻璃 regular", "en": "regular" } },
+        { "value": "clear", "label": { "zh": "通透玻璃 clear", "en": "clear" } }
+      ],
+      "default": "regular",
+      "effect": {
+        "zh": "官方两变体(调研 02 §1 A1 / 06 条目18):regular 模糊背景并调整亮度保文字可读,绝大多数系统组件使用,是 glassEffect 的默认值(A2);clear 高透,仅用于媒体等丰富背景之上的浮动组件。demo 订阅后切换 data-variant——regular 叠白色亮度薄层近似、clear 叠加深色 dimming 层。",
+        "en": "The two official variants (research 02 §1 A1 / 06 item 18): regular blurs the backdrop and adjusts luminosity for readability — used by most system components and the glassEffect default (A2); clear is highly transparent, reserved for floating controls over rich media. The demo subscribes and toggles data-variant — regular gets a white luminosity veil approximation, clear stacks the dark dimming layer."
+      }
+    },
+    {
+      "type": "number",
+      "name": "dimming",
+      "unit": "%",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 35,
+      "cssVar": "--lg-dimming",
+      "effect": {
+        "zh": "clear 变体深色 dimming 层的不透明度;官方建议值 35%(HIG Materials:clear 上底层内容偏亮时加 35% 不透明度的深色 dimming 层,调研 06 §四 §16 与 §六条目18)。regular 的『调整亮度』官方未公布数值,demo 以同值白色薄层近似演示(近似,非官方数值)。",
+        "en": "Opacity of the clear variant's dark dimming layer; the official recommendation is 35% (HIG Materials: when content under clear is bright, add a 35%-opacity dark dimming layer — research 06 §IV §16 and summary item 18). The luminosity adjustment of regular has no published official number, so the demo approximates it with a white veil of the same value (approximation, not an official figure)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--lg-blur",
+      "effect": {
+        "zh": "背景模糊半径。Apple 未公布 Liquid Glass 的具体模糊数值;默认 20px 借用调研 06 §四 §16 记载的经典玻璃配方(glassmorphism.com),作为 Web 近似起点(未证实为 Apple 官方值)。",
+        "en": "Backdrop blur radius. Apple does not publish Liquid Glass blur numbers; the default 20px borrows the classic glass recipe recorded in research 06 §IV §16 (glassmorphism.com) as the web approximation starting point (not verified as an Apple official value)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "tint",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--lg-tint",
+      "effect": {
+        "zh": "玻璃 tint 着色强度。官方 API Glass.tint(_:) 为可选实例方法(调研 02 §1 A3),默认玻璃不着色——故 0 = 关闭;demo 以蓝色薄层的透明度呈现强度(演示用颜色,非官方值)。",
+        "en": "Tinting strength of the glass. The official API Glass.tint(_:) is an optional instance method (research 02 §1 A3) and glass ships untinted by default — hence 0 = off; the demo renders strength as the alpha of a blue veil (demo color, not an official value)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "官方能力仅 Apple 平台:iOS/iPadOS/macOS/tvOS/watchOS 26+ 的 SwiftUI glassEffect / UIKit UIGlassEffect(调研 02 §1 A1–A6)。Web 近似:backdrop-filter 支持 Chrome 76 / Firefox 103 / Safari 9(-webkit- 前缀,调研 02 §4 D2);SVG feDisplacementMap 折射仅在 Chromium 生效(Firefox/Safari 不支持 backdrop-filter 中的 url() 滤镜引用),其余环境回退纯模糊。",
+      "en": "The official capability is Apple-only: SwiftUI glassEffect / UIKit UIGlassEffect on iOS/iPadOS/macOS/tvOS/watchOS 26+ (research 02 §1 A1–A6). Web approximation: backdrop-filter works in Chrome 76 / Firefox 103 / Safari 9 (-webkit- prefix, research 02 §4 D2); the SVG feDisplacementMap refraction renders in Chromium only (Firefox/Safari do not support url() filter references inside backdrop-filter) — everything else falls back to pure blur."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 SVG 背景折射时,回退『纯模糊 + 1px 内侧高光』近似玻璃感(本 demo 的默认降级路径);不支持 backdrop-filter 时改用较实的半透明表面;非 Apple 26+ 平台本就没有真身,近似是唯一路径。",
+    "en": "Without SVG backdrop refraction, fall back to pure blur plus a 1px inner highlight to approximate the glass feel (this demo's default downgrade); without backdrop-filter, use a firmer translucent surface; off Apple 26+ platforms there is no native version at all — approximation is the only path."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "浮动控件层:tab bar、工具条、媒体播放控件——官方定位为控件与导航的『功能层』(调研 02 §1 A1)", "en": "Floating control layers: tab bars, toolbars, media transport — officially positioned as the 'functional layer' for controls and nav (research 02 §1 A1)" },
+      { "zh": "照片/视频等丰富背景之上的浮动按钮(clear 变体的官方适用场景)", "en": "Floating buttons over photos/videos and other rich backdrops (the official clear-variant use case)" },
+      { "zh": "滚动内容之上的常驻操作入口,内容可从其下方穿透滚动", "en": "Persistent entry points over scrolling content, which passes through beneath them" }
+    ],
+    "avoid": [
+      { "zh": "内容层:官方明确『不要把 Liquid Glass 用于内容层』(调研 02 §1 A1)", "en": "Content layers: Apple explicitly says not to use Liquid Glass for content (research 02 §1 A1)" },
+      { "zh": "过度使用:官方明确不要滥用;玻璃叠玻璃会让透出层互相发浑", "en": "Overuse: Apple warns against it; glass stacked on glass turns muddy" },
+      { "zh": "正文阅读区与密集数据——半透明材质稀释对比度", "en": "Body-reading areas and dense data — translucent materials dilute contrast" },
+      { "zh": "纯色平面背景——没有可折射/模糊的内容时玻璃感不成立", "en": "Flat solid backdrops — with nothing to refract or blur the glass feel collapses" }
+    ]
+  },
+  "a11y": {
+    "zh": "玻璃上的文字保持高对比:4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17);clear 变体在亮背景上必须按官方建议先叠 35% 深色 dimming 层再放文字;材质不得作为传达关键信息的唯一手段。",
+    "en": "Text on the glass keeps high contrast: 4.5:1 (WCAG 2.1 SC 1.4.3, research 06 §V §17); on bright backdrops the clear variant must stack the official 35% dark dimming layer before placing text; the material must never be the sole carrier of key information."
+  },
+  "sources": [
+    "https://developer.apple.com/design/human-interface-guidelines/materials",
+    "https://developer.apple.com/documentation/swiftui/glass",
+    "https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个 Liquid Glass 浮动控件舱:胶囊形状,regular/clear 两变体切换;clear 在亮背景上叠加 35% 深色 dimming 层;Chromium 上用 SVG feDisplacementMap 加折射,其余环境回退纯模糊。",
+      "en": "Recreate a Liquid Glass floating control cluster: capsule-shaped, switchable between regular and clear; clear stacks the 35% dark dimming layer over bright backdrops; add SVG feDisplacementMap refraction on Chromium with a pure-blur fallback elsewhere."
+    },
+    "acceptance": [
+      { "zh": "variant 切换 regular/clear,快照默认 regular(官方默认)", "en": "variant toggles regular/clear with the snapshot default regular (the official default)" },
+      { "zh": "clear 变体深色 dimming 层不透明度严格取 dimming 快照值(默认 35%,HIG 建议)", "en": "The clear variant's dark dimming layer uses the exact dimming snapshot value (default 35%, the HIG recommendation)" },
+      { "zh": "折射用 SVG feDisplacementMap:仅 Chromium 启用,其余环境回退纯模糊并如实告知用户", "en": "Refraction via SVG feDisplacementMap: enabled only in Chromium, with an honest pure-blur fallback elsewhere" },
+      { "zh": "控件舱保持 Capsule 形状(官方默认形状)+ 1px 内侧高光", "en": "The control cluster keeps a Capsule shape (the official default) plus a 1px inner highlight" },
+      { "zh": "文字/图标对比 4.5:1;动效只动 transform/opacity;prefers-reduced-motion 时停用", "en": "Text/icons at 4.5:1; animate only transform/opacity; disabled under prefers-reduced-motion" }
+    ]
+  }
+}

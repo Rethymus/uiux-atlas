@@ -1,0 +1,72 @@
+{
+  "name": "Cubic Bézier Easing",
+  "aliases": ["贝塞尔缓动", "cubic-bezier()", "自定义缓动曲线"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "cubic-bezier(x1,y1,x2,y2) 用两个控制点定义进度-时间映射:x 必须落在 [0,1],y 可以越界制造过冲回弹——CSS 缓动的通用底层表达。",
+    "en": "cubic-bezier(x1,y1,x2,y2) maps time to progress via two control points: x stays within [0,1] while y may overshoot for bounce — the universal building block of CSS easing."
+  },
+  "origin": {
+    "zh": "CSS Easing Functions 规范定义的 <cubic-bezier-easing-function>;四个关键字预设 ease/ease-in/ease-out/ease-in-out 各对应一组官方固定数值,其中 ease = cubic-bezier(0.25, 0.1, 0.25, 1) 即本条目默认(MDN 原文数值,调研 04§1.1)。",
+    "en": "The <cubic-bezier-easing-function> defined by CSS Easing Functions; the four keyword presets ease/ease-in/ease-out/ease-in-out each map to fixed official values, with ease = cubic-bezier(0.25, 0.1, 0.25, 1) as this entry's default (MDN wording, research 04 §1.1)."
+  },
+  "params": [
+    {
+      "type": "cubicBezier",
+      "name": "curve",
+      "default": [0.25, 0.1, 0.25, 1],
+      "cssVar": "--cb-curve",
+      "effect": {
+        "zh": "缓动曲线本体,写入 animation-timing-function / transition-timing-function。默认 (0.25, 0.1, 0.25, 1) 即关键字 ease 的官方数值(MDN);x∈[0,1],y 可越界(面板限 -0.5–1.5)产生 overshoot 回弹(MDN 示例 cubic-bezier(0, 1.1, 0.8, 4))。四个关键字预设官方数值:ease (0.25,0.1,0.25,1)、ease-in (0.42,0,1,1)、ease-out (0,0,0.58,1)、ease-in-out (0.42,0,0.58,1)。",
+        "en": "The easing curve itself, consumed by animation-timing-function / transition-timing-function. Default (0.25, 0.1, 0.25, 1) is the official value of the ease keyword (MDN); x∈[0,1], y may overshoot (panel-limited to -0.5–1.5) for bounce (MDN example cubic-bezier(0, 1.1, 0.8, 4)). Official keyword preset values: ease (0.25,0.1,0.25,1), ease-in (0.42,0,1,1), ease-out (0,0,0.58,1), ease-in-out (0.42,0,0.58,1)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "cubic-bezier() 属 CSS Transitions/Easing 基础能力,全主线浏览器自 CSS3 时代起可用,无版本风险,y 越界回弹同样全支持。要把弹簧类曲线导出为纯 CSS 时,改用 linear() 分段采样(Baseline 2023-12 起全浏览器可用,调研 04§1.2)。",
+      "en": "cubic-bezier() is a CSS Transitions/Easing baseline capability available in all mainstream browsers since the CSS3 era — no version risk, and y-overshoot works everywhere. To export spring-like curves as pure CSS, use linear() segment sampling instead (Baseline since 2023-12, research 04 §1.2)."
+    },
+    "baseline": "Widely available (long-standing CSS Transitions/Easing feature; no modern support risk)"
+  },
+  "fallback": {
+    "zh": "无需降级:cubic-bezier() 不支持的场景仅存在于禁用 CSS 的极端环境,元素直接呈起止态,信息不丢失——缓动只改变过程观感,不改变起止值。装饰性动画本身仍须响应 prefers-reduced-motion(demo 内建)。",
+    "en": "No degradation needed: cubic-bezier() is unsupported only where CSS itself is disabled — elements then sit at their start/end states and no information is lost, since easing changes the journey, not the endpoints. Decorative animations must still honor prefers-reduced-motion (built into the demo)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "通用 UI 过渡的默认手感(ease);小控件配 150–200ms 时长(调研 04§2.1)", "en": "The default feel for general UI transitions (ease); pair with 150–200ms on small controls (research 04 §2.1)" },
+      { "zh": "进入屏幕用 ease-out 系减速收尾、永久退出用 ease-in 系加速离场(M3 缓动选型同构,调研 04§1.4)", "en": "ease-out family to decelerate entrances, ease-in family to accelerate permanent exits (same shape logic as M3's easing selection, research 04 §1.4)" },
+      { "zh": "强调性到位与轻回弹:y1 或 y2 > 1(如 (0.34, 1.56, 0.64, 1)),宜短行程小幅度", "en": "Emphatic arrival and light bounce: y1 or y2 > 1 (e.g. (0.34, 1.56, 0.64, 1)), best on short travels" },
+      { "zh": "对齐官方体系曲线,如 M3 Standard = cubic-bezier(0.2, 0, 0, 1)(调研 04§1.4)", "en": "Aligning with official system curves, e.g. M3 Standard = cubic-bezier(0.2, 0, 0, 1) (research 04 §1.4)" }
+    ],
+    "avoid": [
+      { "zh": "进度条、滚动同步等连续量——用 linear,不该有加减速(调研 04 清单#1)", "en": "Continuous quantities like progress bars and scroll sync — use linear; no acceleration belongs there (research 04 list #1)" },
+      { "zh": "需要可打断、速度继承的真弹簧——单段贝塞尔表达不了,只能 linear() 采样近似(调研 04§1.2/1.3)", "en": "True interruptible springs with velocity inheritance — a single Bézier segment cannot express them; approximate via linear() sampling (research 04 §1.2/1.3)" },
+      { "zh": "长行程大幅度的 y 越界回弹——位移类动效是前庭触发源,必须提供 reduced-motion 降级(调研 04§6)", "en": "Large-travel y-overshoot bounce — displacement motion is a vestibular trigger and must ship a reduced-motion fallback (research 04 §6)" },
+      { "zh": "逐帧/步骤化状态切换——用 steps() 而非贝塞尔(调研 04§1.1)", "en": "Frame-by-frame or stepped state changes — use steps(), not a Bézier (research 04 §1.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "缓动曲线本身不承载信息,但过冲与大幅位移是前庭障碍的常见触发源:装饰性动画必须响应 prefers-reduced-motion 降级(demo 已内建);y 越界回弹避免用于持续循环;信息不得依赖动画完成才可读(HIG:动效可取消、不作关键信息唯一渠道,调研 04§1.6/§6)。",
+    "en": "The curve itself carries no information, but overshoot and large displacement are common vestibular triggers: decorative animation must degrade under prefers-reduced-motion (built into the demo); avoid y-overshoot bounce in endless loops; never gate information on animation completion (HIG: motion is cancellable and never the sole carrier of key info, research 04 §1.6/§6)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function",
+    "https://drafts.csswg.org/css-easing-1/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 cubic-bezier(var(--cb-curve)) 驱动一段过渡动画:小球按参数快照曲线往返,并排一块实时曲线预览(路径 + 同步示踪点),参数改动即时反映在球与曲线上。",
+      "en": "Drive a transition with cubic-bezier(var(--cb-curve)): a ball shuttles along the snapshot curve next to a live curve preview (path + synchronized tracer dot), with parameter changes reflected on both instantly."
+    },
+    "acceptance": [
+      { "zh": "animation-timing-function 严格使用 cubic-bezier 快照值,四个控制点不得自行调整", "en": "animation-timing-function uses the exact cubic-bezier snapshot values; do not adjust the four control points" },
+      { "zh": "只动画 transform(球位移与示踪点),不动 top/left 等布局属性(web.dev 性能底线,调研 04§1.5)", "en": "Animate only transform (ball travel and tracer dot), never layout properties like top/left (web.dev performance floor, research 04 §1.5)" },
+      { "zh": "曲线预览画出 y>1 / y<0 的越界带,过冲曲线在预览中可见", "en": "The preview marks the y>1 / y<0 overshoot bands so overshooting curves are visible" },
+      { "zh": "prefers-reduced-motion: reduce 时停用循环动画,静态呈现终态与曲线", "en": "Under prefers-reduced-motion: reduce, stop the looping animation and present the final state and curve statically" }
+    ]
+  }
+}

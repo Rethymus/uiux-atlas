@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+动态取色是「一条流水线」,不是某个 CSS 属性:source color → 5 个关键色调色板 → 角色色 token。Web 端的落地形态是两组同名的 CSS 变量(亮/暗各一套),组件只引用角色名:
+
+```html
+<body data-scheme="light">
+  <button class="md-btn">Continue</button>
+</body>
+```
+
+```css
+body { background: var(--md-surface); color: var(--md-on-surface); }
+.md-btn { background: var(--md-primary); color: var(--md-on-primary); }
+body[data-scheme="dark"] { --md-surface: #141218; /* …整组换映射 */ }
+```
+
+- 角色命名分三类:**accent 类**(primary/secondary/tertiary/error)、**surface 类**(surface/surface-variant/…)、**container 类 + on-X 反色**(primary-container ↔ on-primary-container)(调研 06§六7);
+- 组件永远不写具体色值——这正是「语义 token 而非具体值」的 Android 官方表述(调研 06§二10 同构佐证);
+- on-X 类角色跟随其底色:换 scheme 或 variant 后必须整组重算,不允许只换 primary 不换 on-primary。
+
+## 样式与参数
+
+变体决定调色板、scheme 决定每档角色的 tone(库内 contrastLevel 0):
+
+```ts
+// 变体配方(常量取自 material-color-utilities 0.3.0 scheme_*.js)
+tonalSpot:  primary(h,36) secondary(h,16) tertiary(h+60,24) neutral(h,6) nv(h,8)
+neutral:    primary(h,12) secondary(h,8)  tertiary(h,16)    neutral(h,2) nv(h,2)
+vibrant:    primary(h,200→可达截断) secondary(rot(h),24) tertiary(rot(h),32) neutral(h,10) nv(h,12)
+expressive: primary(h+240,40) secondary(rot(h),24) tertiary(rot(h),32) neutral(h+15,8) nv(h+15,12)
+// 角色 tone 映射(material_dynamic_colors.js,contrastLevel 0)
+primary 40/80 · on-primary 100/20 · primary-container 90/30 · on-primary-container 30/90
+surface 98/6 · on-surface 10/90 · surface-variant(NV) 90/30 · outline(NV) 50/60
+```
+
+数值出处:
+
+- **官方手调基线**(调研 06§六7,Android 文档 colors.xml 原文):亮 primary `#6750A4`、on-primary `#FFFFFF`、primary-container `#EADDFF`、error `#B3261E`、surface `#FFFBFE`、on-surface `#1C1B1F`;暗 primary `#D0BCFF`(≈tone 80)、on-primary `#381E72`、primary-container `#4F378B`、surface-variant `#49454F`;
+- **变体管线的生成值与手调基线接近但不逐值相等**:基线 primary 调色板 chroma≈48,tonal-spot 变体为 36;基线 neutral≈4,变体为 6(demo 用两套值并排呈现,不冒充);
+- error 调色板固定 (hue 25, chroma 84)(dynamic_scheme.js 构造器);
+- 壁纸→source 的取色链(quantize Celebi = Wu + WSMeans → score)见调研 06§六6,demo 从 source hue 起步;
+- 原流程中同一壁纸派生 **5 套配色方案**构成亮/暗主题基础(调研 06§六6);demo 简化为 source hue + variant + scheme 三个输入,便于观察生成规则本身;
+- 品牌色保留:HarmonizedColors 在 HCT 中把自定义色向系统色相调和,保持对比与视觉平衡(运行时 `applyToContextIfAvailable()`,调研 06§六6)。
+
+## 动效与交互
+
+- 三个参数任一变化,整套角色色即时重算;亮暗切换是**同角色换 tone**,不是颜色反转(Apple HIG 暗色模式页立场:暗色主题「not necessarily inversions」,Android Force Dark 为兜底反例——调研 06 条目13);
+- 色块过渡只动 `background-color/color`(0.18s),`prefers-reduced-motion` 时取消;
+- 迷你界面卡用生成的 surface/on-surface/primary/secondary-container 拼装——角色语义对不对,一眼可验;
+- 本条目展示的角色 tone 表是库内 contrastLevel 0 的取值;contrastLevel ±1 会按 contrastCurve 与 toneDeltaPair 再调整(含把 tone 50–59 的「尴尬区」推开),本条目不暴露该参数(源码 dynamic_color.js);
+- 亮暗切换不应引起布局位移:角色色只影响 color/background,不牵动尺寸——把主题层与组件层解耦的又一理由;
+- 变体间最敏感的是 vibrant(primary chroma 200,按各 tone 可达值截断)与 expressive(primary 色相 +240°)——拖 sourceHue 看角色整体「跳档」。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `sourceHue` | 整套方案绕 HCT 色环转动;各角色相对关系(accent vs surface 的 tone 差)不变 | 同上反向;299 是基线紫,±60° 就会进入 HCT 的蓝/品红区 |
+| `variant` | vibrant:角色最鲜艳,近端 tone 可能被截断降饱和 | neutral:近乎灰阶,只剩明度差异 |
+| `scheme` | dark:accent 上浮到 tone 80(更亮更低饱和),surface 沉到 6——层级靠「提亮」表达 | light:accent 在 tone 40,surface 98,层级靠「加深」表达 |

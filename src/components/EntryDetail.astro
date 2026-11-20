@@ -1,0 +1,129 @@
+---
+import Base from "@/layouts/Base.astro";
+import WorkbenchPanel from "@/components/WorkbenchPanel";
+import DemoHost from "@/components/DemoHost";
+import { getCollection, render } from "astro:content";
+import { CATEGORIES, SYSTEMS } from "@/lib/types";
+import type { EntrySchema, Locale } from "@/lib/types";
+import { t } from "@/i18n/ui";
+import { categoryUrl, entryUrl, homeUrl } from "@/lib/urls";
+
+interface Props {
+  entryId: string;
+  schema: EntrySchema;
+  locale: Locale;
+}
+
+const { entryId, schema, locale } = Astro.props;
+const dict = t(locale);
+const [category] = entryId.split("/");
+const cat = CATEGORIES.find((c) => c.id === category)!;
+const sys = SYSTEMS.find((s) => s.id === schema.system);
+const catName = locale === "en" ? cat.en : cat.zh;
+const systemLabel = sys ? (locale === "en" ? sys.en : sys.zh) : schema.system;
+
+// 对应语言的 MDX 正文(entryBody id 形如 "styles/glassmorphism/zh")
+const bodies = await getCollection("entryBody", (b) => b.id === `${entryId}/${locale}`);
+const body = bodies[0];
+const { Content } = body ? await render(body) : { Content: null };
+
+// Demo 组件:DemoHost 岛屿(client:load)按 entryId 动态解析
+// src/content/entries/{category}/{slug}/demo/Demo.tsx 并传入 entryId / schema
+const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
+---
+
+<Base
+  locale={locale}
+  title={schema.name}
+  description={schema.tagline[locale]}
+  altUrl={altUrl}
+  activeCategory={category}
+>
+  <nav class="crumbs" aria-label="breadcrumb">
+    <a href={homeUrl(locale)}>{dict.nav.home}</a>
+    <span aria-hidden="true"> / </span>
+    <a href={categoryUrl(locale, category)}>{catName}</a>
+    <span aria-hidden="true"> / </span>
+    <span>{schema.name}</span>
+  </nav>
+
+  <header class="entry-head">
+    <h1>{schema.name}</h1>
+    {
+      schema.aliases.length > 0 && (
+        <p class="entry-sub">
+          {dict.entry.aliases}: {schema.aliases.join(" · ")}
+        </p>
+      )
+    }
+    <p class="entry-sub">{schema.tagline[locale]}</p>
+    <div class="entry-meta-row">
+      <span class="chip">{systemLabel}</span>
+      <span class="chip"><span class="stars">{"★".repeat(schema.star)}</span></span>
+    </div>
+    <p class="entry-sub">
+      {dict.entry.origin}: {schema.origin[locale]}
+    </p>
+  </header>
+
+  <div class="workbench">
+    <div class="demo-panel">
+      <div class="demo-panel-head">
+        <span>{dict.entry.demo}</span>
+        <span>{dict.entry.officialDefault}</span>
+      </div>
+      <div class="demo-stage-wrap">
+        <DemoHost client:load entryId={entryId} schema={schema} />
+      </div>
+    </div>
+    <WorkbenchPanel client:visible entryId={entryId} schema={schema} locale={locale} />
+  </div>
+
+  {
+    Content && (
+      <div class="prose">
+        <Content />
+      </div>
+    )
+  }
+
+  <div class="entry-sections">
+    <section class="info-card">
+      <h2>{dict.entry.scenarios}</h2>
+      <ul>{schema.scenarios.use.map((s) => <li>{s[locale]}</li>)}</ul>
+    </section>
+    <section class="info-card">
+      <h2>{dict.entry.avoid}</h2>
+      <ul>{schema.scenarios.avoid.map((s) => <li>{s[locale]}</li>)}</ul>
+    </section>
+    <section class="info-card">
+      <h2>{dict.entry.a11y}</h2>
+      <p>{schema.a11y[locale]}</p>
+    </section>
+    <section class="info-card">
+      <h2>{dict.entry.support}</h2>
+      <p>
+        {schema.browserSupport.note[locale]}
+        {schema.browserSupport.baseline && <span> · {schema.browserSupport.baseline}</span>}
+      </p>
+    </section>
+    <section class="info-card">
+      <h2>{dict.entry.fallback}</h2>
+      <p>{schema.fallback[locale]}</p>
+    </section>
+    <section class="info-card">
+      <h2>{dict.entry.sources}</h2>
+      <ul>
+        {
+          schema.sources.map((u) => (
+            <li>
+              <a href={u} rel="noopener noreferrer">
+                {u}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</Base>

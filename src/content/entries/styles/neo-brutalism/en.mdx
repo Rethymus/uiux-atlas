@@ -1,0 +1,76 @@
+## Structure & DOM
+
+Neo-brutalism has no layering, no blur, no gradients — only **flat blocks** plus a print-style silhouette. The DOM is an ordinary card and form:
+
+```html
+<div class="nb-card">
+  <h3 class="nb-title">Loud title</h3>
+  <button class="nb-btn">Primary action</button>
+</div>
+```
+
+Key points:
+
+- Every interactive element = solid fill + solid black outline + zero-blur hard offset shadow; drop any one and the style collapses;
+- The shadow color is fixed `#000` (or matches the outline), with blur and spread always 0;
+- daisyUI's tell: **a `4px 4px 0 #000` hard shadow marks neo-brutalism**;
+- Control behavior stays conventional — the style "wraps conventional UX in loud geometric blocks" without usability experiments.
+
+## Styling & Parameters
+
+Four parameters map to shadow offset, outline width, radius and accent, injected via `--nb-*` variables:
+
+```css
+.nb-card {
+  background: #fffdf5;               /* cream paper, demo sample color */
+  border: var(--nb-border) solid #000; /* default 3px, research range 2–4px */
+  border-radius: var(--nb-radius);   /* default 0 = square */
+  box-shadow: var(--nb-shadow) var(--nb-shadow) 0 #000; /* signature recipe: 4px 4px 0 #000 */
+  color: #111111;
+}
+
+.nb-btn {
+  background: var(--nb-accent);      /* single saturated accent */
+  border: var(--nb-border) solid #000;
+  border-radius: var(--nb-radius);
+  box-shadow: var(--nb-shadow) var(--nb-shadow) 0 #000;
+  font-weight: 700;
+}
+
+/* Press: translate to the shadow origin and swallow the shadow (not a shadow animation) */
+.nb-btn:active {
+  translate: var(--nb-shadow) var(--nb-shadow);
+  box-shadow: none;
+}
+.nb-btn:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 3px;
+}
+```
+
+Where the numbers come from:
+
+- `box-shadow: 4px 4px 0 #000` and the 2–4px outline: the superdesign.dev brutalism page (the tell, verbatim) and daisyUI trend entry 059 ("dark outlines, hard offset shadows");
+- Square/minimal radii: daisyUI entry 059; type typically uses geometric sans display faces like Space Grotesk / Archivo (superdesign.dev);
+- The accent default `#ff90e8` is a **community-common candy sample (unverified)** — the research records only "a single saturated accent" without a specific hex;
+- Component reference: neobrutalism.dev (a 64-component React library on a shadcn/ui base).
+
+## Motion & Interaction
+
+One rule governs motion: stay **hard** — any softening dilutes the style:
+
+- **Press**: the element `translate`s to the shadow origin while the shadow zeroes out — like pressing the block into the paper; 0s (no transition) or a ≤0.1s micro-transition;
+- **Hover**: double the shadow (`calc(var(--nb-shadow) * 2)`) or invert the fill, both without easing;
+- **Focus**: `outline: 3px solid #000; outline-offset: 3px` — a ring outside the outline; never encode focus in the shadow alone;
+- `prefers-reduced-motion`: drop all transitions; press jumps straight to the final state.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `shadowOffset` | stronger dislocation and volume, more "sticker"; past 8px it turns clunky and layouts must reserve shadow space | near 0 it degrades to an outlined card and the identity fades |
+| `borderWidth` | a fiercer print silhouette; past 4px small controls lose clickable area to the border | a thin weak outline; at 0 only the shadow remains, reading as a plain flat card |
+| `radius` | the rounded neo-brutal variant, friendlier — but rounding and the hard shadow undercut each other | back to square orthodoxy, maximum dislocation |
+| `accent` | brighter candy needs black text, deeper candy white text — verify each at 4.5:1 | a smaller accent share reads "restrained brutalism"; remove it entirely and the style drifts back to web brutalism |
+
+Working ranges: shadowOffset 3–6px, borderWidth 2–4px, radius 0–8px, exactly one accent. The black in outline, shadow and text must match — mixed blacks read cheap immediately.

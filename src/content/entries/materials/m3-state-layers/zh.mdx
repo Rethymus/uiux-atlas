@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+状态层不是「换一个背景色」,而是**在控件内容之下、底色之上**插一层绝对定位的覆盖层。M3 组件的标准解剖:容器(承载形状与底色)→ 状态层(内容色 × 官方百分比)→ 内容(文字/图标)。demo 用四个独立覆盖层,分别对应四种状态,因此可以任意叠加:
+
+```html
+<button class="m3-btn">
+  <span class="layer" data-state="hover"></span>
+  <span class="layer" data-state="focus"></span>
+  <span class="layer" data-state="press"></span>
+  <span class="layer" data-state="drag"></span>
+  <span class="label">Button</span>
+</button>
+```
+
+关键点:
+
+- 状态层颜色取**内容色**(on-primary / on-surface 等语义角色),不是写死的灰或黑——主题与动态色切换后自动适配;
+- 每层 `border-radius: inherit`,跟随容器形状;内容层 `position: relative` 保证在覆盖层之上;
+- 四个百分比是**全系统共用 token**,单个控件不自行调整。
+
+## 样式与参数
+
+四个参数各对应一层覆盖层,`opacity` 直接由 `--m3-*` 变量注入:
+
+```css
+.layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--m3-state-color, #ffffff); /* on-primary,M3 基线亮色(调研 06§7) */
+  opacity: 0;
+  pointer-events: none;
+}
+/* 官方 token:Hover +8% / Focus +10% / Press +10% / Drag +16%(m3.material.io state-layers) */
+.m3-btn[data-hover]  .layer[data-state="hover"] { opacity: var(--m3-hover-opacity); }  /* 8%  */
+.m3-btn[data-focus]  .layer[data-state="focus"] { opacity: var(--m3-focus-opacity); }  /* 10% */
+.m3-btn[data-press]  .layer[data-state="press"] { opacity: var(--m3-press-opacity); }  /* 10% */
+.m3-btn[data-drag]   .layer[data-state="drag"]  { opacity: var(--m3-drag-opacity); }   /* 16% */
+```
+
+数值出处:
+
+- **8 / 10 / 10 / 16%** 全部为 m3.material.io《State layers》官方 token(调研 02§B5,抓取正文 grep 命中「Hover +8% opacity … Drag +16% opacity」);
+- 层色取内容色(on-* 色)同样是该页原文约定;demo 的底色 `#6750A4` / 文字 `#FFFFFF` 取 Android 文档记载的 M3 基线亮色 primary / on-primary(调研 06§7);
+- demo 里四种状态由 pointer 事件(hover/press)、`:focus-visible`(focus)与开关(drag)驱动,便于把四层**同时**点亮看叠加结果。
+
+## 动效与交互
+
+状态层属于「即时反馈」,动效应短促克制:
+
+- 覆盖层 opacity 过渡约 **100ms**(线性)——M3 的状态反馈量级;`prefers-reduced-motion` 时去掉过渡,状态直出;
+- press 可附带回弹/缩放,但属于组件级动效,不是状态层职责;
+- hover 进出、focus 进出都要**可打断**:事件驱动 data 属性,CSS 只负责表现,焦点环永远保留,状态切换绝不阻塞输入。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hover` | 悬停反馈更明显,但 >10% 开始偏离官方 token,与 press 难以区分 | 悬停几乎不可感知,指针用户失去「可点」暗示 |
+| `focus` | 焦点态过重,视觉上像被选中;>12% 时与 press 混淆 | 键盘用户找不到焦点位置——focus 必须另有焦点环兜底 |
+| `press` | 按下过重,叠加 hover 时整体发灰;>16% 追平 drag 档位 | 按压感消失,点击「没有着落」 |
+| `drag` | 拖拽中控件发暗发闷,盖过文字 | 拖拽态与 press 难以区分;低于 12% 时被遮挡的手指位置更难读 |
+
+经验法则:四个百分比成组使用,不要单点改;内容色越深(暗色主题 on-* 为亮色)同样的百分比看起来越「亮」,跨主题验收要在明暗两套下都核对。

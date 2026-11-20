@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+SwiftUI 的 API 是三层:`glassEffect(_:in:)` 给**单个视图**上玻璃;`GlassEffectContainer(spacing:content:)` 把**一组玻璃**合并进同一渲染场并支持互相 morph;`glassEffectID(_:in:)` 给每块玻璃登记身份供 morph 匹配。Web 近似按同一层级搭:
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <div class="container">                 <!-- ≈ GlassEffectContainer -->
+    <button class="glass">A</button>      <!-- ≈ glassEffect(.regular, in: Capsule) -->
+    <div class="bridge"></div>            <!-- spacing 驱动的融合桥(合并渲染的近似截面) -->
+    <button class="glass">B</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- 官方默认形状是 **Capsule**(`glassEffect` 的默认 `in:` 参数,调研 02§A2),demo 两枚控件一律胶囊;
+- 「合并渲染」在 Web 里近似为**融合桥的渐显**:spacing 逼近两块玻璃的实际间距时,桥把两块玻璃连成一体;真正的共享 blur 场与 morph 需要原生 API;
+- 变体、interactive 由 JS 写到 `data-variant` / `data-interactive` 上,材质全部由 CSS 消费。
+
+## 样式与参数
+
+四个参数对应 API 面:variant(Glass 正则/高透)、tintIntensity(tint 的强度映射)、interactive(interactive(_:))、spacing(container 融合距离):
+
+```css
+.glass {
+  border-radius: 999px;                      /* 官方默认形状 Capsule */
+  /* regular 近似:blur + 提亮 + 细亮边(Web 取值,非官方数值) */
+  background: oklch(1 0 0 / 0.22);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 1px solid oklch(1 0 0 / 0.45);
+}
+.scene[data-variant="clear"] .glass {
+  background: oklch(1 0 0 / 0.06);
+  backdrop-filter: blur(3px) saturate(1.2);
+}
+.scene[data-variant="clear"] .glass::after {  /* HIG:亮背景上 35% 暗层 */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: rgb(0 0 0 / 0.35);
+}
+.glass::before {                              /* tint(_:):固定强调色 × 强度 */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: oklch(0.62 0.17 250); opacity: var(--liquid-tint);
+}
+.scene[data-interactive="on"] .glass:hover { filter: brightness(1.12); }
+.scene[data-interactive="on"] .glass:active { transform: scale(0.96); }
+.bridge {                                     /* spacing:两块玻璃间距 24px */
+  width: 24px; height: 44px; margin: 0 -12px;
+  opacity: clamp(0, calc((var(--liquid-spacing) - 8) / 16), 1); /* 逼近间距时渐显 */
+}
+```
+
+数值出处:
+
+- 变体语义、默认 .regular、默认 Capsule、interactive(_:)/tint(_:)、container spacing 的融合规则:全部取自 Apple API 文档与 HIG Materials(调研 02§A1–A6 一手);
+- clear 变体亮背景加 **35% 不透明度暗层**:HIG Materials 原文(调研 06§16/§18);
+- blur(14px)/saturate(1.6)/白 22% 填充等为 **Web 近似演示值**——Apple 未公开材质的 blur 数值,不得当官方值引用;
+- spacing 默认 8 与融合渐显斜率 (s−8)/16 为演示拟合(官方无数值默认),已在 effect 标注。
+
+## 动效与交互
+
+Liquid Glass 的动效核心是 **morph**:两块玻璃间距小于 container spacing 时融合、`glassEffectID` 匹配身份后可在形态间连续变形。Web 近似只能呈现「融合桥渐显」这一静态截面:
+
+- spacing 滑杆改变桥接层不透明度(clamp 曲线),演示「spacing 越大融合越早」(A4 原文);
+- interactive=on 时 hover 提亮、按下 0.96 缩放,过渡 0.15s;`prefers-reduced-motion` 时去掉 transform 过渡只留亮度变化;
+- 变体切换用 0.2s opacity 过渡;真实 Liquid Glass 的折射/滚动边缘效果(scroll edge effect)在 Web 无法复刻,demo 不假装。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant`(→clear) | clear 高透几乎无模糊,底图细节全透出,只适合媒体浮层 | 回到 regular:模糊+提亮保读,是绝大多数场景的默认(HIG) |
+| `tintIntensity` | 玻璃染上强调色,>40% 开始像实色按钮而失去玻璃感 | 0% 为无着色纯玻璃(演示默认);品牌色低调存在感 |
+| `interactive`(→on) | 指针反馈显现:hover 提亮 + 按压缩放,传达「可点」 | 关闭反馈,视觉静默——但键盘焦点指示必须始终存在 |
+| `spacing` | ≥24px(逼近/超过固定间距)时融合桥全显,两块玻璃读成一体,呼应「spacing 越大越早融合」 | &lt;8px 桥消失,两块玻璃完全独立;morph 匹配还需 glassEffectID,Web 近似不含 |
+| (固定语义) | — | clear 上不叠暗层时,亮背景(雪面/天空)上的白字对比度必然失守——35% 暗层不是可选项而是保读前提 |
+
+经验法则:功能层用 regular 起步;只有垫在照片/视频上且内容极简时才换 clear;一次 morph 只发生在同一 GlassEffectContainer 内,跨容器不融合。

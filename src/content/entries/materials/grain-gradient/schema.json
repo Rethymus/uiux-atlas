@@ -1,0 +1,112 @@
+{
+  "name": "Grain Gradient",
+  "aliases": ["噪点渐变", "Grainy gradients", "feTurbulence noise"],
+  "category": "materials",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "噪点渐变:SVG feTurbulence 生成灰噪点铺在渐变上,再推 contrast/brightness 变成颗粒——主作用是杀死廉价屏上的渐变色带(banding)。",
+    "en": "Grainy gradients: SVG feTurbulence generates gray noise laid over the gradient, then contrast/brightness pushes it into grain — whose main job is killing gradient banding on cheap panels."
+  },
+  "origin": {
+    "zh": "社区配方,出处 CSS-Tricks《Grainy Gradients》(调研 06§四15 一手抓取);轻量变体(低 opacity 噪点层消色带)与层 opacity 0.16 取自 CodeFronts 同页实例。",
+    "en": "A community recipe from CSS-Tricks' 'Grainy Gradients' (research 06 §15, primary fetch); the lightweight variant (low-opacity noise layer against banding) and the 0.16 layer opacity come from CodeFronts' example on the same page."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "baseFrequency",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.65,
+      "effect": {
+        "zh": "feTurbulence 噪点频率,控制颗粒粗细。默认 0.65 为 CSS-Tricks 配方原文(fractalNoise + baseFrequency='0.65');CodeFronts 轻量变体用 0.9。JS 型参数:demo 改值后重写 SVG 属性并重建 data-URI。",
+        "en": "feTurbulence noise frequency, setting grain coarseness. Default 0.65 is the CSS-Tricks recipe verbatim (fractalNoise + baseFrequency='0.65'); CodeFronts' lightweight variant uses 0.9. JS-type param: the demo rebuilds the data-URI with the rewritten SVG attribute."
+      }
+    },
+    {
+      "type": "number",
+      "name": "numOctaves",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "湍流倍频数,越大细节越碎、渲染越贵。默认 3 为 CSS-Tricks 配方原文(numOctaves='3')。JS 型参数:demo 改值后重写 SVG 属性并重建 data-URI。",
+        "en": "Turbulence octave count — more octaves means finer detail and higher render cost. Default 3 is the CSS-Tricks recipe verbatim (numOctaves='3'). JS-type param: the demo rebuilds the data-URI with the rewritten SVG attribute."
+      }
+    },
+    {
+      "type": "number",
+      "name": "contrast",
+      "unit": "%",
+      "min": 50,
+      "max": 250,
+      "step": 5,
+      "default": 170,
+      "cssVar": "--grain-contrast",
+      "effect": {
+        "zh": "把灰噪点推向颗粒感的 contrast 滤镜值。默认 170% 为 CSS-Tricks 配方原文(filter: contrast(170%) brightness(1000%));原配方同时 brightness(1000%),本条目把它固定在 demo 内不再单列。",
+        "en": "The contrast filter value pushing gray noise into grain. Default 170% is the CSS-Tricks recipe verbatim (filter: contrast(170%) brightness(1000%)); the recipe's brightness(1000%) is fixed inside the demo rather than listed as its own param."
+      }
+    },
+    {
+      "type": "number",
+      "name": "grainOpacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "default": 0.16,
+      "cssVar": "--grain-opacity",
+      "effect": {
+        "zh": "噪点层整体不透明度。默认 0.16 取自 CodeFronts 轻量变体(内联 data-URI feTurbulence baseFrequency='0.9' numOctaves='2',噪点层 opacity: .16)——足以杀死色带又不显脏(调研 06§15)。",
+        "en": "Overall opacity of the noise layer. Default 0.16 comes from CodeFronts' lightweight variant (inline data-URI feTurbulence baseFrequency='0.9' numOctaves='2', noise layer opacity: .16) — enough to kill banding without looking dirty (research 06 §15)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "SVG 滤镜 feTurbulence 与 CSS filter 均为老基线能力(全主流浏览器多年支持);data-URI SVG 作 background-image 通用。本次调研未逐浏览器核验 feTurbulence 的兼容矩阵,按 MDN 惯例视为基线。",
+      "en": "Both the feTurbulence SVG filter and CSS filter are baseline capabilities (long supported across mainstream browsers); data-URI SVG as background-image is universal. This research pass did not audit a per-browser matrix for feTurbulence; treated as baseline per MDN convention."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 SVG 滤镜的环境直接退回纯渐变(少一层质感,不丢信息);contrast 滤镜缺失时噪点保持灰色平铺——仍保留消色带作用;噪点层永远 aria-hidden 装饰,可整层移除。",
+    "en": "Without SVG filter support fall back to the plain gradient (loses texture, not information); without the contrast filter the noise stays flat gray — still enough to break banding; the noise layer is always an aria-hidden decoration and can be removed wholesale."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "大面积单色渐变上的消色带层:0.16 级低透明度噪点在廉价屏上效果最明显", "en": "Anti-banding layer over large flat gradients: 0.16-class low opacity shows most on cheap panels" },
+      { "zh": "海报感/印刷感的氛围纹理——contrast 推高后成为可见颗粒风格", "en": "Poster/print-flavored ambience — high contrast turns the noise into a visible grain style" },
+      { "zh": "深色 UI 的『哑光』处理:细颗粒弱化 OLED 深底的色带与烧屏观感", "en": "Matte treatment for dark UIs: fine grain softens banding and the glossy feel of deep OLED surfaces" },
+      { "zh": "渐变 hero、按钮、卡片的背景增质,成本几乎为零(data-URI 内联)" , "en": "Texturing gradient heroes, buttons and cards at near-zero cost (inline data-URI)" }
+    ],
+    "avoid": [
+      { "zh": "文字正上方的高对比噪点——contrast/brightness 极端值会吃掉色彩并干扰小字(CSS-Tricks 评论区提示)", "en": "High-contrast grain right under text — extreme contrast/brightness eats color and disturbs small type (noted in the CSS-Tricks comments)" },
+      { "zh": "box-shadow 上直接套用——该技术不作用于阴影,需要另行处理(CSS-Tricks 原文)", "en": "Applying it to box-shadow — the technique does not reach shadows and needs separate handling (per the CSS-Tricks article)" },
+      { "zh": "numOctaves 拉满 + 大面积铺满——渲染成本随倍频数上涨,大画布会卡", "en": "numOctaves maxed out over large canvases — cost climbs with octaves and large areas stutter" },
+      { "zh": "期待噪点改善可访问性——它是纯装饰,对比度验收仍按无噪点底色计算", "en": "Expecting grain to improve accessibility — it is pure decoration; contrast sign-off still uses the ungrained base" }
+    ]
+  },
+  "a11y": {
+    "zh": "噪点是纯装饰:层上 aria-hidden、不承载任何信息;消色带作用属于视觉舒适度而非可访问性指标;其上文字对比度按未加噪点的底色核算(WCAG 2.1 SC 1.4.3);对前庭敏感用户无动效负担(本条目默认静止)。",
+    "en": "Grain is pure decoration: the layer is aria-hidden and carries no information; banding relief is visual comfort, not an accessibility metric; text contrast is computed against the ungrained base (WCAG 2.1 SC 1.4.3); no vestibular burden since the entry is static by default."
+  },
+  "sources": [
+    "https://css-tricks.com/grainy-gradients/",
+    "https://codefronts.com/design-styles/css-gradient-ui/animated-mesh-aurora-gradient-background/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "给一块大渐变加消色带噪点:内联 SVG feTurbulence(fractalNoise,stitchTiles='stitch')生成灰噪点铺满,层 opacity 0.16、filter contrast/brightness 推颗粒,渐变一端透明让噪点透出。",
+      "en": "Add an anti-banding grain to a large gradient: inline SVG feTurbulence (fractalNoise, stitchTiles='stitch') fills a noise layer at opacity 0.16 with a contrast/brightness filter pushing grain, the gradient ending transparent so noise shows through."
+    },
+    "acceptance": [
+      { "zh": "feTurbulence 用 type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'(快照值)", "en": "feTurbulence uses type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch' (snapshot values)" },
+      { "zh": "噪点层 opacity 0.16,filter contrast(170%) brightness(1000%),只作用噪点层不动渐变本体", "en": "Noise layer at opacity 0.16 with filter contrast(170%) brightness(1000%) applied to the noise layer only, never the gradient itself" },
+      { "zh": "噪点以 data-URI SVG 作 background-image 平铺,不引入外部请求", "en": "Noise tiles as a data-URI SVG background-image — no external request" },
+      { "zh": "噪点层 aria-hidden,移除后页面信息完整", "en": "The noise layer is aria-hidden; removing it loses no information" }
+    ]
+  }
+}

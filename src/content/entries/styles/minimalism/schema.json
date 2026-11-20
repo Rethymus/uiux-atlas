@@ -1,0 +1,97 @@
+{
+  "name": "Minimalism",
+  "aliases": ["极简主义", "Minimal Web Design", "极简网页"],
+  "category": "styles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "用最少的元素完成任务:2 个字族、受限调色板(中性色+一个强调色)、统一间距刻度、留白替代边框与卡片——不是趋势而是基线。",
+    "en": "Do more with less: two typefaces, a restrained palette (neutrals + one accent), a uniform spacing scale, whitespace instead of borders and cards — not a trend but the baseline."
+  },
+  "origin": {
+    "zh": "以最少元素完成界面任务的语言,谱系上受瑞士风格/包豪斯/现代主义影响;是 Superdesign 20.8 万次生成中被请求最多的风格(全年占 9–12%),「不是趋势而是基线」(调研 03§7)。",
+    "en": "The language of completing interface tasks with the fewest elements, descended from Swiss style, Bauhaus and modernism; the most requested style in Superdesign's 208k generations (9–12% all year) — 'not a trend but the baseline' (research 03 §7)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "ratio",
+      "min": 1.1,
+      "max": 1.6,
+      "step": 0.01,
+      "default": 1.25,
+      "effect": {
+        "zh": "字阶比率(modular scale)。默认 1.25=Major Third(大三度),出处 superdesign.dev minimalist-web-design 页;JS 型参数(demo 订阅后逐级换算字阶标本)。比率是极简里替代边框的层级工具:层级靠字号差,不靠装饰。",
+        "en": "Type-scale ratio (modular scale). Default 1.25 = Major Third, per the superdesign.dev minimalist-web-design page; a JS-type param (the demo subscribes and derives the scale specimen). The ratio is minimalism's hierarchy tool in place of borders: levels come from size differences, not decoration."
+      }
+    },
+    {
+      "type": "number",
+      "name": "space",
+      "unit": "px",
+      "min": 4,
+      "max": 16,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--min-space",
+      "effect": {
+        "zh": "间距刻度基值,全部间距取其整数倍。默认 8px=8pt 刻度(8/16/24/32/48/64/96px),出处 superdesign.dev;「留白即设计系统」,刻度一旦失守,极简的秩序感立刻瓦解。",
+        "en": "Spacing scale base value; every gap is an integer multiple. Default 8px = the 8pt scale (8/16/24/32/48/64/96px), per superdesign.dev. 'Whitespace is the design system' — once the scale slips, minimalism's sense of order collapses."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#2563eb",
+      "cssVar": "--min-accent",
+      "effect": {
+        "zh": "唯一的强调色,只给 CTA、链接与关键数字。默认 #2563eb 出自调研记载的五枚调色 token(--accent);极简的调色预算是「2 中性+1 墨+1 弱墨+1 强调」,多一个强调色即超支。",
+        "en": "The single accent, reserved for CTAs, links and key figures. Default #2563eb comes from the five documented palette tokens (--accent); the minimalist color budget is '2 neutrals + 1 ink + 1 muted ink + 1 accent' — one more accent is overspending."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯排版与间距,无任何新 API 依赖;65ch 行宽单位全平台可用。",
+      "en": "Pure typography and spacing — no new API dependencies; the 65ch measure works everywhere."
+    }
+  },
+  "fallback": {
+    "zh": "极简没有技术回退问题,风险全在可读性:若对比不足,把弱墨色 #57534e 加深直至正文过 4.5:1;若层级不清,恢复字阶比率逐级放大而不是加边框。",
+    "en": "No technical fallback exists — the risk is entirely readability: if contrast fails, darken the muted ink #57534e until body text passes 4.5:1; if hierarchy is unclear, scale type up step by step instead of adding borders."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "内容优先的落地页、文档站与编辑型网站——一个想法一个屏幕", "en": "Content-first landing pages, docs and editorial sites — one idea per screen" },
+      { "zh": "单一 CTA 的转化页:留白把视线推向唯一动作", "en": "Single-CTA conversion pages: whitespace pushes the eye to the one action" },
+      { "zh": "以字阶做层级的界面——层级来自字号差而非装饰", "en": "Interfaces with type-driven hierarchy — levels from size differences, not decoration" }
+    ],
+    "avoid": [
+      { "zh": "仪表盘等数据密集场景——调研明示极简不适用于数据密集界面", "en": "Dashboards and data-dense scenes — the research explicitly rules minimalism out for dense data" },
+      { "zh": "多任务并行的工具界面——弱层级导致扫描成本上升", "en": "Multi-task tool UIs — weak hierarchy raises scanning cost" },
+      { "zh": "依赖边框/卡片区分区域的密集表单——留白层级撑不住复杂结构", "en": "Dense forms relying on borders/cards to zone content — whitespace cannot carry the complexity" }
+    ]
+  },
+  "a11y": {
+    "zh": "正文对比≥4.5:1(调研示例 7.4:1 达 AAA);灰字白底是头号陷阱——弱墨色 #57534e 在 #fafaf9 上约 7:1,自行加深灰会立刻跌破 4.5:1。可及性线索不得被当作「装饰」剥除:链接保留下划线,焦点环必须可见;细体小字号是第二陷阱,正文不细于 400。",
+    "en": "Body contrast ≥4.5:1 (the research sample hits 7.4:1, AAA); gray-on-white is the top trap — the muted ink #57534e on #fafaf9 sits near 7:1, and any deeper gray instantly drops below 4.5:1. Accessibility affordances must not be stripped as 'decoration': keep link underlines and visible focus rings; thin weights at small sizes are the second trap — body text no lighter than 400."
+  },
+  "sources": [
+    "https://superdesign.dev/styles/minimalist-web-design",
+    "https://en.wikipedia.org/wiki/Flat_design"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个极简落地页片段:五枚调色 token 定色、1.25 模数字阶做层级、8px 刻度做间距、65ch 行宽、单一强调色 CTA,无卡片无边框,留白即层级。",
+      "en": "Replicate a minimalist landing fragment: five palette tokens, a 1.25 modular type scale for hierarchy, the 8pt spacing scale, a 65ch measure and a single-accent CTA — no cards, no borders, whitespace as hierarchy."
+    },
+    "acceptance": [
+      { "zh": "只用五枚调色 token:#fafaf9 / #f0efec / #1c1917 / #57534e / #2563eb", "en": "Use only the five palette tokens: #fafaf9 / #f0efec / #1c1917 / #57534e / #2563eb" },
+      { "zh": "字阶比率取参数快照值(默认 1.25),逐级推导标题字号", "en": "Type scale derives stepwise from the parameter snapshot ratio (default 1.25)" },
+      { "zh": "全部间距为间距基值的整数倍(默认 8px:8/16/24/32/48/64/96)", "en": "Every spacing value is an integer multiple of the base (default 8px: 8/16/24/32/48/64/96)" },
+      { "zh": "正文行宽 ≤65ch,正文对比≥4.5:1,链接保留下划线", "en": "Body measure ≤65ch, body contrast ≥4.5:1, link underlines kept" },
+      { "zh": "强调色只出现在 CTA/链接/关键数字,全页不超过一个色相", "en": "The accent appears only on CTA/links/key figures — never more than one hue on the page" }
+    ]
+  }
+}

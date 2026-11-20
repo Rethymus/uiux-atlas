@@ -1,0 +1,122 @@
+{
+  "name": "Physics Spring (Motion)",
+  "aliases": ["弹簧动效", "Spring animation", "type: spring"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "Motion(前 Framer Motion)的 type:\"spring\" 物理弹簧:可打断、从当前速度继续,由 stiffness/damping/mass 决定手感。",
+    "en": "Motion's (formerly Framer Motion) type:\"spring\" physics spring: interruptible, continues from current velocity, with stiffness/damping/mass defining the feel."
+  },
+  "origin": {
+    "zh": "motion.dev 文档定义的 type:\"spring\";参数体系与 Apple SwiftUI Animation.spring 的 stiffness/damping/mass 同族——两者为当前两大主流弹簧参数体系(调研 04§1.3)。",
+    "en": "type:\"spring\" as defined in the motion.dev docs; the parameter system is kin to Apple SwiftUI's Animation.spring stiffness/damping/mass — the two mainstream spring parameter systems (research 04 §1.3)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "physics", "label": { "zh": "物理弹簧", "en": "Physics" } },
+        { "value": "durationBased", "label": { "zh": "时长弹簧", "en": "Duration-based" } }
+      ],
+      "default": "physics",
+      "effect": {
+        "zh": "physics=由 stiffness/damping/mass 驱动,继承手势/既有动画的速度(可打断且从当前速度继续);durationBased=由 bounce+duration 驱动,更好理解也可导出纯 CSS,但打断后速度归零(文档明示不继承速度)。",
+        "en": "physics = driven by stiffness/damping/mass and inherits gesture/animation velocity (interruptible, continues from current velocity); durationBased = driven by bounce+duration, easier to reason about and exportable as pure CSS, but velocity resets to zero on interruption (documented)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 1,
+      "max": 800,
+      "step": 1,
+      "default": 1,
+      "effect": {
+        "zh": "弹簧刚度,越大越突然。默认 1 是 motion.dev 文档页标注值(本站核实);社区旧说与已装的 motion-dom@12.43.0 运行时回退均为 100——差异在正文如实并列。",
+        "en": "Spring stiffness; higher = more sudden. Default 1 is the value annotated on the motion.dev docs page (verified here); the community rule-of-thumb and the installed motion-dom@12.43.0 runtime fallback both say 100 — the discrepancy is documented in the article body."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "反向阻力强度,文档标注默认 10;设 0 会无限振荡(文档警告),故本条目下限 1。调大更快吸收振荡、转向过阻尼。",
+        "en": "Opposing-force strength; documented default 10. Setting 0 oscillates forever (documented warning), so this entry floors it at 1. Higher values absorb oscillation sooner and turn the spring overdamped."
+      }
+    },
+    {
+      "type": "number",
+      "name": "mass",
+      "min": 0.1,
+      "max": 5,
+      "step": 0.1,
+      "default": 1,
+      "effect": {
+        "zh": "运动物体质量,文档标注默认 1;越大越迟缓(文档原文),布局动画另有 mass:\"auto\" 按元素尺寸取重。",
+        "en": "Mass of the moving object; documented default 1. Higher = more lethargic (docs wording); layout animations additionally offer mass:\"auto\" to weigh by element size."
+      }
+    },
+    {
+      "type": "number",
+      "name": "bounce",
+      "min": -1,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.25,
+      "effect": {
+        "zh": "仅 durationBased 模式生效(文档标注默认 0.25,取值 [-1,1]):0=临界阻尼无回弹,1=极弹,负值=过阻尼(启动更快、收尾更慢,只改形状不改总时长)。physics 模式下设置 stiffness/damping/mass 会覆盖它。",
+        "en": "Effective only in durationBased mode (documented default 0.25, range [-1,1]): 0 = critically damped, no bounce; 1 = extremely bouncy; negative = overdamped (faster start, slower settle — changes shape, not total duration). In physics mode, stiffness/damping/mass override it."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "客户端 JS 动效库,不依赖新 CSS 特性;需 JS 可执行,禁用 JS 时元素停在初始位置。本次调研未逐浏览器核验其支持矩阵。",
+      "en": "A client-side JS animation library with no reliance on new CSS features; requires JS, and elements stay at their initial position without it. Its per-browser matrix was not audited in this research pass."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时直出终态(demo 用 useReducedMotion 检测并跳过动画);降级本身不丢信息——动效不作为传达关键信息的唯一手段(HIG 动效原则)。",
+    "en": "Output the final state directly under prefers-reduced-motion (the demo detects it via useReducedMotion and skips animation); the fallback must not lose information — never let motion be the sole carrier of key information (HIG motion principles)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "手势衔接:拖拽释放、滑动跟手后的吸附,速度必须连续", "en": "Gesture hand-off: drag release and snap-to-target where velocity must stay continuous" },
+      { "zh": "高频打断的反馈:点按切换、卡片翻面,随时被下一次点击改向", "en": "Frequently interrupted feedback: toggles and flips retargeted mid-flight by the next click" },
+      { "zh": "需要『活的』物理感的入场与状态切换(开关、抽屉、浮层)", "en": "Entrances and state changes that need a 'live' physical feel (switches, drawers, overlays)" },
+      { "zh": "固定时长的编排场景:改用 bounce+duration,便于与其他时长动画对齐", "en": "Orchestration on a fixed timeline: use bounce+duration to align with other timed animations" }
+    ],
+    "avoid": [
+      { "zh": "进度条、滚动同步等连续量——用 linear/时长缓动,不该有回弹", "en": "Progress bars and scroll-synced quantities — use linear/duration easing, never a bounce" },
+      { "zh": "高频小控件(checkbox 等)——HIG:高频交互避免加动效", "en": "High-frequency small controls (checkboxes etc.) — Apple HIG: avoid motion on frequent interactions" },
+      { "zh": "durationBased 模式下指望打断后续接速度——其速度被刻意归零", "en": "Expecting velocity continuation after interruption in durationBased mode — its velocity is deliberately zeroed" },
+      { "zh": "必须与 CSS transition 生态混用且要导出纯 CSS 的场景——物理弹簧无法表达为 cubic-bezier,只能经 linear() 采样近似", "en": "Cases that must export as pure CSS alongside the transition ecosystem — a physics spring cannot be a cubic-bezier and only approximates via linear() sampling" }
+    ]
+  },
+  "a11y": {
+    "zh": "弹簧属于位移类动效,是前庭障碍的常见触发源:必须响应 prefers-reduced-motion(直接呈现终态);速度读数等动画衍生的信息要同步给非动画路径;不要让『等动画播完』成为操作的前置条件(HIG:动效可取消)。",
+    "en": "Springs are displacement motion — a common vestibular trigger: they must honor prefers-reduced-motion (present the final state directly); any information derived from the animation (like velocity readouts) needs a non-animated path; never make users wait out an animation (HIG: motion is cancellable)."
+  },
+  "sources": [
+    "https://motion.dev/docs/react-transitions",
+    "https://motion.dev/docs/react-spring"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 Motion 的 type:\"spring\" 复刻一颗在两堵墙之间弹跳的球:参数快照决定弹簧手感,点击改目标时动画可打断并从当前速度继续。",
+      "en": "Replicate a ball bouncing between two walls using Motion's type:\"spring\": the parameter snapshot defines the feel, and retargeting by click must interrupt the animation and continue from the current velocity."
+    },
+    "acceptance": [
+      { "zh": "physics 模式传 stiffness/damping/mass(快照值),durationBased 模式传 bounce+duration:0.3s", "en": "physics mode passes stiffness/damping/mass (snapshot values); durationBased passes bounce + duration: 0.3s" },
+      { "zh": "打断后从当前位置与当前速度继续(velocity 默认取当前值速度),不得跳回起点", "en": "After interruption, continue from the current position and current velocity (velocity defaults to the current value's velocity); never restart from the origin" },
+      { "zh": "prefers-reduced-motion: reduce 时跳过动画直出终态", "en": "Under prefers-reduced-motion: reduce, skip animation and output the final state directly" },
+      { "zh": "文案与状态不依赖动画完成才可理解", "en": "Copy and state remain understandable without waiting for the animation to finish" }
+    ]
+  }
+}

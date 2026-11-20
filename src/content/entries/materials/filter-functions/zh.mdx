@@ -1,0 +1,57 @@
+## 结构与 DOM
+
+`filter` 作用于元素**自身**的渲染结果——这是它与 `backdrop-filter` 的分界线。同图多滤镜对比就是一组瓦片:每块瓦片共用同一张源图,各自链入一个(或一串)函数。
+
+```html
+<div class="grid">
+  <figure><img src="photo.jpg" alt="原图" /></figure>
+  <figure><img class="f-blur" src="photo.jpg" alt="模糊" /></figure>
+  <figure><img class="f-combo" src="photo.jpg" alt="组合" /></figure>
+</div>
+```
+
+关键点:
+
+- 滤镜链的**书写顺序**就是像素处理顺序:`blur() brightness() contrast()` 与反序结果不同;
+- 函数作用于整张元素渲染(含子元素、含边框阴影);只想模糊背景请用 `backdrop-filter`;
+- 每个函数都有恒等点(blur 0 / brightness 100% / contrast 100% / hue-rotate 0deg),恒等时元素与原图一致。
+
+## 样式与参数
+
+四个参数对应四条独立声明与一条组合链,全部经 `--ff-*` 变量注入:
+
+```css
+.f-blur  { filter: blur(var(--ff-blur)); }               /* 0–20px,默认 0 */
+.f-bri   { filter: brightness(var(--ff-brightness)); }    /* 0–200%,默认 100% */
+.f-con   { filter: contrast(var(--ff-contrast)); }        /* 0–200%,默认 100% */
+.f-hue   { filter: hue-rotate(var(--ff-hue)); }           /* 0–360deg,默认 0 */
+.f-combo {
+  filter: blur(var(--ff-blur)) brightness(var(--ff-brightness))
+    contrast(var(--ff-contrast)) hue-rotate(var(--ff-hue));
+}
+```
+
+数值出处:
+
+- 四个默认值(0px / 100% / 100% / 0deg)全部是 **Filter Effects L1 规定的恒等点**(调研 02 §4 D1)——即『不施加任何滤镜』的规范初始值;
+- 函数族清单(blur/brightness/contrast/grayscale/hue-rotate/invert/opacity/saturate/sepia/drop-shadow)同样出自 D1;
+- 社区配方参考:颗粒噪点 `contrast(170%) brightness(1000%)`(调研 06 §四 §15)、Aurora 渐变整层 `blur(42px) saturate(1.15)`(调研 06 §四 §14);
+- 支持:Chrome 18 / Firefox 49 / Safari 6 / Edge 12(BCD,调研 02 §4 D1),无前缀。
+
+## 动效与交互
+
+- 瓦片入场:淡入 + 轻微上移错峰,只动 `opacity/translate`;`prefers-reduced-motion` 时取消;
+- 滤镜值本身**不适合做逐帧动画**(每帧重绘)——过渡用 `transition: filter 0.3s` 短促呼应即可,连续动画只保留在 transform/opacity 上;
+- 调参即时可见:拖动任一滑杆,对应单函数瓦片与组合瓦片同时变化,原图瓦片恒定不动,充当参照系;
+- hover 场景常用 `filter` 微调(如 brightness 1.06),注意给 `transition` 留 150ms 量级时长。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `blur` | 细节糊化、边缘晕开;>10px 结构感明显损失,>16px 只剩色块轮廓 | 0 恢复原图;低于 2px 只剩下采样噪感,几乎没有视觉收益 |
+| `brightness` | >150% 高光溢出发白,200% 接近过曝;会连带丢失色相信息 | 50% 以下明显变暗,0% 全黑——叠加文字会瞬间失去对比基准 |
+| `contrast` | 明暗拉开、颜色变浓,>120% 逐渐海报化,200% 下暗部成块 | 50% 以下发灰发闷,0% 全灰(只剩明度),照片像蒙了一层雾 |
+| `hue-rotate` | 沿色相环转动:90°/180°/270° 分别得到三类互补配色,360° 回原色 | 低于 30° 的微调只对高饱和源图可感知;低饱和照片几乎看不出变化 |
+
+经验区间:图像修饰 blur 0–6px、brightness 90–110%、contrast 95–115%;hue-rotate 用作主题派生时取 30° 步进;两个『重手』函数(contrast 170% / brightness 1000%)只用于噪点纹理,不用于照片。

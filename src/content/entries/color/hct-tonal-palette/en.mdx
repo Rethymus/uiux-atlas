@@ -1,0 +1,60 @@
+## Structure & DOM
+
+The Tonal Palette is the smallest color unit of the Material system: fix hue + chroma and expand a column of colors along **tone (= CIE L\*)**. It has no DOM shape of its own — the output is a list of hex values, usually emitted at build time as CSS variables:
+
+```html
+<div class="tone" style="--tone-color: #cfbdfa; --tone: 80">
+  <span class="tone-num">80</span>
+</div>
+```
+
+```css
+.tone { background-color: var(--tone-color); }
+```
+
+- A palette is a **column**, not a wheel: tone is the only degree of freedom; hue/chroma are shared by the whole column;
+- Android generates **13 tones** for each key color (Primary/Secondary/Tertiary/Neutral/Error — research 06 §5); the demo uses the common 13-tone set 0,10,…,90,95,99,100 (the individual 95/99 values were not verified against the fetched sources; the count follows the research). This entry shows one column; how five palettes become role colors is the sibling entry m3-dynamic-color;
+- The demo embeds a TS mini-port of material-color-utilities 0.3.0 (CAM16 forward + HCT solver, constants copied verbatim), so what you see is the real algorithm;
+- Difference from oklch: HCT's tone is CIE L\* (0–100) while oklch's L is Oklab lightness (0–1) — both perceptually uniform but numerically incompatible; switching systems means recomputing the whole column, not transplanting values;
+- Two consumption shapes on the output side: the full hex table (for human comparison) and semantic step variables (`--hct-primary-80`, for UI use) — the demo shows both.
+
+## Styling & Parameters
+
+Three inputs decide the whole column. HCT = **CAM16 H/C × CIE L\***, and its scales match neither oklch nor HSL:
+
+```ts
+// material-color-utilities core pipeline (TS mini-port, see demo)
+const argb = solveToInt(hue, chroma, tone);      // HCT → sRGB (CAM16 solve + critical-plane bisection)
+const cam = camFromInt(argb);                    // read back the actually achieved hue/chroma
+// When a step's requested chroma exceeds the gamut, solveToInt clamps to the max achievable chroma (official behavior)
+// Emit CSS variables at build time: the output is plain hex, zero runtime dependencies
+for (const t of TONES) vars[`--hct-primary-${t}`] = hexOf(solveToInt(hue, chroma, t));
+```
+
+- Viewing conditions are the library defaults (D65 white point, 200 lux, background L\*=50, surround=2, no illuminant discounting — the `make()` defaults in viewing_conditions.js), the typical setting for self-lit displays; HCT values are relative to them;
+- The tone↔contrast bridge: tone IS CIE L\*, so WCAG ratios follow directly from Y (relative luminance) — the tone 80 vs tone 20 pairing gives ≈7.7:1 (≥7, AAA); the library's Contrast.ratioOfTones is implemented exactly this way.
+
+- **The tone contrast guarantee** (stated in the library docs): any two steps of one column with a 40-tone gap guarantee ≥3:1 contrast, and a 50-tone gap guarantees ≥4.5:1 — so an on-color ≥50 tones from its base is sufficient for body-text AA;
+- **Role = tone** (library convention at contrastLevel 0): light accent 40 / dark accent 80; containers 90/30; on-colors 100/20; outline 50/60;
+- **One column serves both themes**: the official dark primary is tone 80 of the same palette (≈#D0BCFF) and the light primary is tone 40 — only the reading step changes, never the palette (baseline values from research 06 §7 + the library's material_dynamic_colors.js convention);
+- **Solver pivot tone 50**: the step with the highest available chroma on average — material-color-utilities' keyColor search starts at 50 (source `pivotTone = 50`);
+- Defaults hue 299 / chroma 48 / tone 80 align with the M3 baseline: #6750A4 (official light primary) measures HCT ≈ (298.98, 47.86, 40.08), and the official dark primary #D0BCFF measures tone≈80 (values from research 06 §7, re-verified with this entry's algorithm).
+
+## Motion & Interaction
+
+- Changing hue/chroma recomputes the full 13-step column instantly; a single solve is constant-cost (Newton iteration ≤5 rounds, falling back to critical-plane bisection ≤8 rounds per axis per hct_solver.js), so demo-level performance is a non-issue;
+- Tone endpoints (≤0.0001 or ≥99.9999) take the pure-gray path (argbFromLstar) where requested chroma is meaningless — the demo readout honestly shows the achieved chroma≈0;
+- Swatch transitions animate only `background-color` (0.18s); removed under `prefers-reduced-motion`;
+- When requested chroma exceeds a step's achievable maximum, that step shows the **actually clamped color** plus a "requested C / achieved C" readout — the graying-out near tone 0/100 is an sRGB physical limit, presented honestly rather than hidden;
+- Each step exposes its hex so values can be copied into design tokens directly;
+- Changing hue/chroma is a "new generation" of the scale: generations must not be mixed (same tone steps, entirely different hues) — regenerate the whole token column, or the UI shows a hidden hue discontinuity.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hue` | rotates the whole column around the CAM16 wheel with every tone unchanged — why tone systems keep contrast stable | rotates the other way; HCT blue sits near ≈300°, so do not reuse oklch angles (blue ≈ 220°) |
+| `chroma` | a more vivid column; requests past each step's achievable max clamp, with the tone ends graying first | a gray column; chroma=0 renders a pure L\* ramp (perceptually linear 0–100 lightness) |
+| `tone` (selected) | moves the highlight; above 90 approaches white where achievable chroma collapses | below 10 approaches black; the selection only moves the highlight, never the column |
+
+Practice: convert a brand color to its HCT hue/chroma first, then expand the five palettes per a variant recipe; once the column exists, light/dark themes only read different steps. Never simulate tone steps by mixing black/white into hex — L\* uniformity is lost and steps feel uneven.

@@ -1,0 +1,69 @@
+## Structure & DOM
+
+The structural difference from neumorphism is visible at a glance: the element **floats above** the page with its own fill — not the same color as the background — so the real element-to-background contrast survives.
+
+```html
+<div class="clay-page">
+  <div class="clay-card">
+    <h3>Clay card</h3>
+    <button class="clay-btn">Press me</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- The page background (pale pastel) and the clay element (a more saturated pastel) are two different colors; hierarchy is expressed by "floating";
+- The inflated illusion is composed from a **three-part shadow**: the outer shadow lifts the element, the dark bottom inner shadow presses out the underside, the light top inner shadow bulges the lit face;
+- Order is critical: outer shadow first, dark inner second, light inner last — swapped, the highlight gets eaten by the dark face.
+
+## Styling & Parameters
+
+Three parameters map to radius, outer-shadow y-offset and the inner-shadow alphas, injected via `--clay-*` variables:
+
+```css
+.clay-card {
+  background: #b3a4ee;              /* pastel fill, demo sample color */
+  border-radius: var(--clay-radius); /* default 32px, card rule of thumb */
+  box-shadow:
+    0 var(--clay-shadow-y) 68px rgba(112, 100, 176, 0.30),          /* outer: hue-tinted, never black */
+    inset 0 -8px 16px rgb(95 70 140 / calc(0.22 * var(--clay-inner-alpha))),  /* dark bottom inner */
+    inset 0 8px 16px rgb(255 255 255 / calc(0.65 * var(--clay-inner-alpha))); /* light top inner */
+}
+
+/* Press feedback: displacement instead of animated shadows (superdesign.dev) */
+.clay-btn:active {
+  transform: translateY(2px) scale(0.98);
+}
+.clay-btn:focus-visible {
+  outline: 3px solid #6a5acd;       /* explicit focus ring */
+  outline-offset: 2px;
+}
+```
+
+Where the numbers come from (superdesign.dev claymorphism page):
+
+- Radius range 20–40px, ≈25% of element height: cards 32px / buttons 24px / inputs 20px; the default takes 32px;
+- Outer shadow `0 35px 68px rgba(112,100,176,.30)` — tinted with the element hue, never pure black;
+- Dual inner shadows: dark bottom `rgba(95,70,140,.22)` + light top `rgba(255,255,255,.65)`; the dual-inner-shadow technique was popularized by the clay.css library and a LogRocket tutorial;
+- Press feedback `translateY(2px) scale(0.98)`; explicit 3px `:focus-visible` outline;
+- Representative cases: Duolingo (thick extruded buttons), Fall Guys (inflatable characters → UI), Joon (kids' habit app).
+
+## Motion & Interaction
+
+The motion language of clay is "squish", not "move":
+
+- **Press**: the button sinks `translateY(2px) scale(0.98)` over 0.15s ease; animating the three-part shadows to fake a press is explicitly wrong — expensive and muddy;
+- **Release**: the transform snap-back can carry a slight overshoot like `cubic-bezier(0.34, 1.56, 0.64, 1)`, echoing the inflated feel;
+- **Entrance**: card fade-in + rise; under `prefers-reduced-motion` drop transitions and entrance animation, rendering the final state directly;
+- No hover displacement — the fat shadow already carries volume, and extra motion reads jittery.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `radius` | maximum inflation, approaching a balloon; past 40px small elements lose their content area to corners | back to an ordinary rounded card; below 20px the clay signature disappears |
+| `shadowY` | the element floats higher with stronger layering; past 50px it reads like a hovering sticker and the page loses gravity | the element hugs the page; near 0 only inner shadows remain — a thick flat block |
+| `innerAlpha` | above 1 both highlight and dark face strengthen — more inflation, but highlights turn dirty | at 0 the inner shadows vanish, leaving a plain card with a tinted shadow |
+
+Working ranges: radius 20–40px (cards 32), shadowY 30–40px, innerAlpha 0.8–1.2. The shadow color must always follow the element's hue — a gray-black shadow turns the clay into plastic instantly.

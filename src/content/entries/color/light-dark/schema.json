@@ -1,0 +1,99 @@
+{
+  "name": "light-dark()",
+  "aliases": ["light-dark 双值取色", "双值颜色函数", "CSS dual-value color"],
+  "category": "color",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "CSS 内建双值取色函数:light-dark(浅色值, 深色值) 一行声明随系统外观自动切换,免写媒体查询——前提是元素声明了 color-scheme。",
+    "en": "CSS's built-in two-value color function: light-dark(light, dark) declares both appearances in one line with no media queries — provided the element declares a color-scheme."
+  },
+  "origin": {
+    "zh": "light-dark() 由 CSS Color 5 定义,自 2024-05 起成为 Baseline 广泛可用(MDN,调研 06§11);配套的 prefers-color-scheme 媒体查询 Baseline 2020-01。",
+    "en": "light-dark() is defined in CSS Color 5 and has been Baseline widely available since 2024-05 (MDN, research 06 §11); the companion prefers-color-scheme query is Baseline since 2020-01."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "lightValue",
+      "format": "hex",
+      "default": "#6750A4",
+      "cssVar": "--ld-light",
+      "effect": {
+        "zh": "浅色方案取用的颜色(light-dark() 第一参数)。默认 #6750A4 = M3 亮色主题 primary 官方基线值(Android 开发者文档,调研 06§7)。",
+        "en": "The color used in light scheme (first argument of light-dark()). Default #6750A4 = the official M3 light-theme primary baseline from the Android developer docs (research 06 §7)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "darkValue",
+      "format": "hex",
+      "default": "#D0BCFF",
+      "cssVar": "--ld-dark",
+      "effect": {
+        "zh": "深色方案取用的颜色(第二参数)。默认 #D0BCFF = M3 暗色主题 primary 官方基线值(调研 06§7)——比亮色更亮更低饱和,体现『暗色 accent 提亮降饱和』惯例(调研 06§14)。",
+        "en": "The color used in dark scheme (second argument). Default #D0BCFF = the official M3 dark-theme primary baseline (research 06 §7) — brighter and less saturated than its light twin, exemplifying the 'dark accents brighten and desaturate' convention (research 06 §14)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "scheme",
+      "options": [
+        { "value": "system", "label": { "zh": "跟随系统", "en": "System" } },
+        { "value": "light", "label": { "zh": "浅色", "en": "Light" } },
+        { "value": "dark", "label": { "zh": "深色", "en": "Dark" } }
+      ],
+      "default": "system",
+      "effect": {
+        "zh": "JS 型参数:demo 订阅后改写舞台元素的 color-scheme——system 映射 `color-scheme: light dark`(跟随系统偏好),light/dark 钉死单侧。light-dark() 取哪个值完全由元素的 color-scheme 决定(MDN,调研 06§11);未声明 color-scheme 时两个值都无法取用。",
+        "en": "JS-type param: the demo subscribes and rewrites the stage's color-scheme — system maps to `color-scheme: light dark` (follow the OS preference), light/dark pin one side. Which value light-dark() picks is decided solely by the element's color-scheme (MDN, research 06 §11); without a color-scheme declaration neither value is ever used."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "light-dark():Chrome 123+、Edge 123+、Firefox 120+、Safari 17.5+,Baseline 2024-05(MDN,调研 06§11)。必须配合 color-scheme 使用;prefers-color-scheme 媒体查询本身 Baseline 2020-01。",
+      "en": "light-dark(): Chrome 123+, Edge 123+, Firefox 120+, Safari 17.5+ — Baseline 2024-05 (MDN, research 06 §11). Requires color-scheme; the prefers-color-scheme media query itself is Baseline 2020-01."
+    },
+    "baseline": "2024-05"
+  },
+  "fallback": {
+    "zh": "不支持 light-dark() 的浏览器让整条声明失效:先用普通颜色声明兜底,再用 @supports (color: light-dark(#fff, #000)) 覆写;老浏览器的退路是 @media (prefers-color-scheme: dark) 翻转自定义变量(调研 06§11 记载的传统策略)。demo 已内置该回退。",
+    "en": "Browsers without light-dark() drop the whole declaration: ship a plain color first, then override under @supports (color: light-dark(#fff, #000)); the legacy escape hatch is flipping custom properties under @media (prefers-color-scheme: dark) (the traditional strategy recorded in research 06 §11). The demo includes this fallback."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "主色/文字色/边框色随系统亮暗自动切换:一行一处,无需 JS、无需媒体查询", "en": "Accent, text and border colors that follow the OS appearance automatically: one line per site, no JS, no media queries" },
+      { "zh": "配 :root { color-scheme: light dark } 让滚动条、表单控件等原生 UI 一并跟随外观", "en": "Pair with :root { color-scheme: light dark } so native UI (scrollbars, form controls) follows the appearance too" },
+      { "zh": "同一对语义变量在组件多处取色,主题层只换一对值;light-dark() 也接受 <image>(可整段换渐变背景)", "en": "One semantic pair consumed across a component, swapped at the theme layer; light-dark() also accepts <image>, so whole gradient backdrops can switch" },
+      { "zh": "嵌入式 SVG/iframe 继承父元素 color-scheme,嵌入内容也能双态(调研 06§11)", "en": "Embedded SVG/iframes inherit the parent's color-scheme, so embedded content dual-modes too (research 06 §11)" }
+    ],
+    "avoid": [
+      { "zh": "忘写 color-scheme——light-dark() 的两个参数全都不取用,颜色直接失效(MDN 原文)", "en": "Forgetting color-scheme — neither argument is ever used and the color collapses (MDN's own wording)" },
+      { "zh": "硬编码文字色/背景色/图标色不随主题翻转——Android 文档列出的暗色翻车点(调研 06§12)", "en": "Hard-coded text/background/icon colors that never flip — the dark-mode failure list from the Android docs (research 06 §12)" },
+      { "zh": "app 级手动外观开关与系统设置冲突,Apple HIG 不建议(调研 06§12);若必须提供,应改写 color-scheme 而不是另写一套硬编码色", "en": "App-level manual appearance toggles clash with the OS setting and are discouraged by Apple HIG (research 06 §12); if you must offer one, rewrite color-scheme instead of a second hard-coded palette" }
+    ]
+  },
+  "a11y": {
+    "zh": "亮暗两侧要各自过对比度:正文 AA≥4.5:1、AAA≥7:1,大字减半,UI 组件边界≥3:1(SC 1.4.11)。M3 基线值演示了惯例:暗色 accent 提亮降饱和(#6750A4→#D0BCFF,实测对暗底 10.0:1、配 on-primary #381E72 达 7.7:1)以保住对比度;Apple HIG 要求底线 4.5:1,小字力争 7:1(调研 06§12/§13)。",
+    "en": "Both sides must pass contrast independently: body text AA≥4.5:1, AAA≥7:1, large text halved, UI boundaries≥3:1 (SC 1.4.11). The M3 baseline values demonstrate the convention: dark accents brighten and desaturate (#6750A4→#D0BCFF, measured 10.0:1 on a dark surface and 7.7:1 against on-primary #381E72) to hold contrast; Apple HIG requires 4.5:1 minimum and aims for 7:1 on small text (research 06 §12/§13)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme",
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 light-dark() 实现随系统外观自动切换的组件配色:声明 color-scheme,每个取色点写 light-dark(浅值, 深值),提供浅色/深色/跟随系统三态演示与 @supports 回退。",
+      "en": "Implement appearance-adaptive component colors with light-dark(): declare color-scheme, write light-dark(light, dark) at every pick point, and provide a light/dark/system demo plus an @supports fallback."
+    },
+    "acceptance": [
+      { "zh": "根元素(或组件根)声明 color-scheme: light dark,light-dark() 才会取值", "en": "The root (or component root) declares color-scheme: light dark — only then does light-dark() pick a value" },
+      { "zh": "所有随外观切换的颜色都用 light-dark(浅值, 深值) 一行表达,不写媒体查询", "en": "Every appearance-switching color is written as light-dark(light, dark) in one line, no media queries" },
+      { "zh": "提供浅色/深色/跟随系统三态演示(demo 通过改写 color-scheme 实现)", "en": "Provide a light/dark/system three-state demo (done by rewriting color-scheme)" },
+      { "zh": "提供 @supports 回退:不支持时回退到 prefers-color-scheme 翻转变量", "en": "Provide an @supports fallback: flip custom properties via prefers-color-scheme when unsupported" },
+      { "zh": "浅/深两侧取值各自满足 WCAG AA 对比度(正文 4.5:1)", "en": "Both light and dark values satisfy WCAG AA contrast (4.5:1 for body text)" }
+    ]
+  }
+}

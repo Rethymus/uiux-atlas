@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+`backdrop-filter` 的结构是三层:**背景**(照片/渐变 + 彩色大字)在最底下,**磨砂面板**浮在中间,内容在最上层。与 `filter` 的本质区别:它模糊的是面板**身后透出的所有内容**,面板自身不受影响。
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <h2 class="display">彩色大字标题</h2>
+  <section class="frost">
+    <h3>磨砂面板</h3>
+    <p>正文与控件在普通文档流中,不参与模糊。</p>
+  </section>
+</div>
+```
+
+关键点:
+
+- 磨砂面板必须与背景是**兄弟层**——它采样的是自己身后的渲染结果;
+- 背景越丰富(色彩、明暗跨度大),磨砂的『厚度感』越强;纯色底上磨砂直接失效;
+- 面板上的文字要同时经受『透出背景最亮/最暗』两端的对比度检验。
+
+## 样式与参数
+
+三个参数对应一条链式声明,全部经 `--bf-*` 变量注入:
+
+```css
+.frost {
+  background-color: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(var(--bf-blur))
+    saturate(var(--bf-saturate)) brightness(var(--bf-brightness));
+  backdrop-filter: blur(var(--bf-blur))
+    saturate(var(--bf-saturate)) brightness(var(--bf-brightness));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or
+  (-webkit-backdrop-filter: blur(1px))) {
+  .frost { background-color: #e8ecf3; } /* 提高填充保可读 */
+}
+```
+
+数值出处:
+
+- `blur(20px)`:glassmorphism.com 生成器经典配方(调研 06 §四 §16),Apple 全局导航生产实测同为 20px;
+- `saturate(180%)`:Apple 全局导航生产 CSS 实测 `blur(20px)+saturate(180%)`(superdesign.dev);100% 为恒等值;
+- `brightness(100%)`:Filter Effects L1 定义的恒等点(调研 02 §4 D1),深色玻璃配方才压到 100% 以下;
+- 支持:Chrome 76 / Edge 17 / Firefox 103 / Safari 9(BCD,调研 02 §4 D2);Safari 9–17 需 `-webkit-` 前缀,Safari 18 起无前缀。
+
+## 动效与交互
+
+- 入场:面板淡入 + 10px 上移,只动 `opacity/translate`;`prefers-reduced-motion` 时取消;
+- 磨砂是静态材质——背景内容移动(滚动、视频)时 `backdrop-filter` **每帧重采样**,大面积面板代价高,动效只落在 `transform/opacity`(web.dev 性能准则);
+- 调参即时可见:三个变量改动直接反映在透出层的模糊/鲜艳度/明暗上,无需重渲染面板内容;
+- hover 加深阴影等属于可选项,高频控件上应省略(Apple HIG:高频交互避免动效)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `blur` | 磨砂更『厚』,透出内容更不可辨;>30px 糊成一片且采样开销上升 | 趋近透明色块;低于 6px 失去磨砂感(生产实测下限约 4px) |
+| `saturate` | 透出色彩更浓、玻璃更『鲜活』;>250% 出现塑料感色偏 | 颜色被背景吃掉,玻璃发灰发闷;100% 为恒等点(生产配方一律 >100%) |
+| `brightness` | 透出层提亮,深底上容易把文字对比度顶穿;>150% 开始发白 | 压暗透出层,深色玻璃的常规手法;50% 以下玻璃近乎变黑 |
+
+经验区间:blur 10–25px、saturate 120–200%、brightness 80–110%;`saturate` 与 `blur` 通常是成对出现的一组(Apple 导航配方),单独调一个容易失衡。

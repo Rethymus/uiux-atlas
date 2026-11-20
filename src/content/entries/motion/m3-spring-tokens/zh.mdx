@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+演示是「动画 + 读数」一体的小工作台:一颗芯片沿轨道位移(消费当前 token 的 Web 换算曲线与时长),右侧 SVG 画出同一条曲线并带同步示踪点,下方读数条并列展示 Web 曲线/时长与 Compose 侧 damping/stiffness。核心 DOM:
+
+```html
+<div class="m3-track"><div class="m3-chip"></div></div>
+<svg viewBox="0 -40 100 180">
+  <path class="m3-curve" d="M 0 100 C …" />          <!-- 当前 token 曲线 -->
+  <g class="m3-dot-x"><circle class="m3-dot-y" /></g> <!-- 外层线性X + 内层贝塞尔Y -->
+</svg>
+<dl class="m3-readout">cubic-bezier / duration / damping / stiffness</dl>
+```
+
+关键点:
+
+- 三个参数都是 JS 型枚举,demo 订阅 store 后查 12 枚 token 表,把「曲线 + 时长」喂给动画——**切换即换动画**,没有过渡态;
+- Compose 的 damping/stiffness 是**并排参照**而非驱动源:同一枚 token 在 Android 上是物理弹簧、在 Web 上是官方换算曲线,两套数值来自两份官方材料。
+
+## 样式与参数
+
+Web 端消费方式就是把官方换算写进普通 CSS:
+
+```css
+.m3-chip {
+  animation: m3-run var(--m3-dur) cubic-bezier(var(--m3-curve)) both;
+}
+@keyframes m3-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--m3-dist)); }
+}
+```
+
+12 枚 token 的官方数值(曲线为 Web cubic-bezier 换算,时长为 ms;demo 内置同表,出处 m3.material.io/styles/motion/overview/specs,调研 02§B2):
+
+| Token | 曲线 | 时长 |
+| --- | --- | --- |
+| Expressive fast spatial | (0.42, 1.67, 0.21, 0.90) | 350ms |
+| Expressive default spatial | (0.38, 1.21, 0.22, 1.00) | 500ms |
+| Expressive slow spatial | (0.39, 1.29, 0.35, 0.98) | 650ms |
+| Expressive fast/default/slow effects | (0.31, 0.94, 0.34, 1) / (0.34, 0.80, 0.34, 1) / (0.34, 0.88, 0.34, 1) | 150/200/300ms |
+| Standard fast/default spatial | (0.27, 1.06, 0.18, 1.00) | 350/500/750ms |
+| Standard fast/default/slow effects | 同 Expressive effects 三枚曲线 | 150/200/300ms |
+
+Compose MotionScheme 侧的 damping/stiffness(官方 androidx 源码 ExpressiveMotionTokens.kt / StandardMotionTokens.kt,调研 02§B3):Expressive spatial default 0.8/380、fast 0.6/800、slow 0.8/200;Expressive effects 1.0/1600(default)、1.0/3800(fast)、1.0/800(slow);Standard spatial 0.9/700、0.9/1400、0.9/300;Standard effects 1.0/1600、1.0/3800、1.0/800。
+
+如实标注:Standard spatial 在官方表中以同一曲线行覆盖(fast/default 列出、slow 时长 750ms 在同一行),调研未捕获 slow spatial 的独立曲线;demo 对 standard+slow+spatial 沿用 (0.27, 1.06, 0.18, 1.00) 配 750ms,并在读数条注明。Expressive emphasized easing 在旧体系无 CSS 等价贝塞尔(官方标注 N/A,Standard 兜底,调研 04§1.4)——本条目用的是被官方取代旧体系后的新 spring 换算表,不受该限制。
+
+## 动效与交互
+
+- **切换即换动画**:任一枚枚举改动,`element.animate()` 以新曲线/时长立即重跑一次——没有残留的旧动画(先 `controls.cancel()`);
+- **曲线可视化**:示踪点与芯片共享曲线形状,y>1 的过冲在预览中直观可见(expressive spatial 的 (0.42, 1.67, …) 起步即冲出);
+- **读数对齐**:读数条显示 token 全名(如 Expressive fast spatial)、cubic-bezier、时长、Compose damping/stiffness——参数轴与数值轴一一对应;
+- **重播**:点轨道或「重播」重跑当前 token;
+- **reduced-motion**:跳过动画直出终态,读数照常;
+- 性能:芯片只动 `transform`。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `scheme` | expressive:曲线带过冲(y1 最高 1.67)、动效张扬,spatial 弹簧低 stiffness(380)更「弹」 | standard:曲线过冲收敛(y1=1.06)、更克制,spatial 弹簧高 stiffness(700/1400/300)更「利落」 |
+| `speed` | slow:时长升到 300–750ms,Compose stiffness 降到 200–800,适合大面积少频次转场 | fast:压到 150–350ms,stiffness 升到 800–3800,适合小控件即时反馈;default 居中 |
+| `type` | spatial:允许过冲、时长更长,服务位移/尺寸 | effects:damping=1.0 临界阻尼无过冲、时长更短,服务颜色/透明度等状态反馈 |
+| 组合整感 | 三枚全 expressive+slow = 最具表达力的大面积转场,500–750ms | 三枚全 standard+fast = 最克制的快速反馈,150–350ms |
+
+选型口诀:空间属性走 spatial(可过冲),状态反馈走 effects(不过冲);面积大/频次低升 speed 档,小控件一律 fast;Web 交付直接抄官方换算表,不要手拟合曲线。

@@ -1,0 +1,111 @@
+{
+  "name": "Scroll-driven Animations",
+  "aliases": ["滚动驱动动画", "animation-timeline", "scroll()/view()"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "animation-timeline: scroll()/view() 把动画进度交给滚动位置或元素可见进度:阅读进度条、reveal 揭示、视差图层都能离开主线程运行(Chrome 官方指南)。",
+    "en": "animation-timeline: scroll()/view() hands animation progress to scroll position or an element's visibility progress: reading progress bars, reveals and parallax layers can run off the main thread (Chrome's official guide)."
+  },
+  "origin": {
+    "zh": "CSS Scroll-animations Level 1 规范能力,由 Chrome for Developers 官方指南体系化(两类时间轴 + animation-range,调研 04§4);range 默认组合 entry 25% cover 50% 直接取官方 Reveal 示例;浏览器支持版本取 mdn/browser-compat-data 实测(调研 02§D6)。",
+    "en": "A CSS Scroll-animations Level 1 capability systematized by Chrome for Developers' official guide (two timeline types + animation-range, research 04 §4); the default range pair entry 25% cover 50% is taken verbatim from the official Reveal example; support versions come from mdn/browser-compat-data (research 02 §D6)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "timeline",
+      "options": [
+        { "value": "scroll()", "label": { "zh": "scroll()", "en": "scroll()" } },
+        { "value": "view()", "label": { "zh": "view()", "en": "view()" } }
+      ],
+      "default": "view()",
+      "cssVar": "--sd-timeline",
+      "effect": {
+        "zh": "时间轴类型:scroll()=以滚动容器的滚动进度(0–100%)为时间轴,进度条/视差的教科书用例;view()=以元素自身在滚动容器内的可见进度为时间轴(类似 IntersectionObserver),reveal 卡片用它。注意:entry/exit/contain 等 named range 仅对 view progress timeline 有定义(MDN animation-range),demo 在 scroll() 模式下把 entry/exit 档按 cover 全程处理并注明。",
+        "en": "Timeline type: scroll() uses the scroll container's scroll progress (0–100%) as the timeline — the textbook case for progress bars/parallax; view() uses the element's own visibility progress inside the scroll container (IntersectionObserver-like) — the reveal card's choice. Note: named ranges like entry/exit/contain are defined only for view progress timelines (MDN animation-range); the demo substitutes cover full-range under scroll() and says so."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "rangeStart",
+      "options": [
+        { "value": "cover 0%", "label": { "zh": "cover 0%", "en": "cover 0%" } },
+        { "value": "entry 0%", "label": { "zh": "entry 0%", "en": "entry 0%" } },
+        { "value": "entry 25%", "label": { "zh": "entry 25%", "en": "entry 25%" } },
+        { "value": "entry 50%", "label": { "zh": "entry 50%", "en": "entry 50%" } },
+        { "value": "contain 0%", "label": { "zh": "contain 0%", "en": "contain 0%" } }
+      ],
+      "default": "entry 25%",
+      "cssVar": "--sd-range-start",
+      "effect": {
+        "zh": "animation-range 起点:named range + 偏移百分比组合(官方取值档 cover/entry/exit/contain,Chrome 指南与 MDN,调研 04§4)。默认 entry 25% = Chrome 官方 Reveal 示例起点:元素进入视口 25% 处才开始动画。",
+        "en": "animation-range start: a named range + offset percentage pair (official tiers cover/entry/exit/contain, Chrome guide & MDN, research 04 §4). Default entry 25% = the Chrome docs' Reveal example start: the animation begins once the element is 25% into entering the viewport."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "rangeEnd",
+      "options": [
+        { "value": "cover 100%", "label": { "zh": "cover 100%", "en": "cover 100%" } },
+        { "value": "cover 50%", "label": { "zh": "cover 50%", "en": "cover 50%" } },
+        { "value": "exit 50%", "label": { "zh": "exit 50%", "en": "exit 50%" } },
+        { "value": "exit 100%", "label": { "zh": "exit 100%", "en": "exit 100%" } },
+        { "value": "contain 100%", "label": { "zh": "contain 100%", "en": "contain 100%" } }
+      ],
+      "default": "cover 50%",
+      "cssVar": "--sd-range-end",
+      "effect": {
+        "zh": "animation-range 终点。默认 cover 50% = 官方 Reveal 示例终点:滚至元素覆盖视口 50% 时动画完成。终点早于起点的组合行为依实现而定,应避免。range 名义档可视化见官方工具 goo.gle/view-timeline-range-tool(调研 04§4)。",
+        "en": "animation-range end. Default cover 50% = the official Reveal example end: the animation completes when the element has covered 50% of the viewport. Combinations with the end before the start behave inconsistently across implementations — avoid them. Range visualization: goo.gle/view-timeline-range-tool (research 04 §4)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "animation-timeline:Chrome/Edge 115+、Firefox 159+、Safari 26(mdn/browser-compat-data 2026-11 实测,调研 02§D6);Chrome 官方文章快照(调研 04§4)只确证了 Chrome/Edge 115+,Firefox/Safari 现状以调研 02 的 BCD 数据为准。animation-range 在 MDN 标注 Limited availability(非 Baseline)。demo 以 @supports 检测并静态兜底。",
+      "en": "animation-timeline: Chrome/Edge 115+, Firefox 159+, Safari 26 (mdn/browser-compat-data measured 2026-11, research 02 §D6); the Chrome guide snapshot (research 04 §4) only confirmed Chrome/Edge 115+, with Firefox/Safari status per research 02's BCD data. MDN marks animation-range as Limited availability (not Baseline). The demo feature-detects with @supports and falls back statically."
+    },
+    "baseline": "Limited availability (Chrome 115+ / Firefox 159+ / Safari 26; not yet Baseline)"
+  },
+  "fallback": {
+    "zh": "@supports (animation-timeline: view()) 不通过时,卡片直接可见、进度条呈静态——内容永远不被动画藏起来;reduced-motion 时取消卡片揭示动画(始终可见),保留进度条:它反映滚动位置,是信息而非装饰。scroll() 模式下 entry/exit 档被显式替换为 cover 全程(见 timeline 参数)。",
+    "en": "When @supports (animation-timeline: view()) fails, the card is simply visible and the progress bar static — content is never hidden by the animation; under reduced-motion the reveal is disabled (always visible) while the progress bar stays: it reflects scroll position and is information, not decoration. Under scroll(), entry/exit ranges are explicitly substituted with full-range cover (see the timeline param)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "阅读进度条:顶栏 scaleX(scroll() 官方示例,调研 04§4)——transform 走合成器", "en": "Reading progress bars: top bar scaleX (the scroll() official example, research 04 §4) — transform rides the compositor" },
+      { "zh": "图片/卡片进入视口的 reveal 揭示(view() + animation-range,官方示例 entry 25% cover 50%)", "en": "Revealing images/cards as they enter the viewport (view() + animation-range; official example entry 25% cover 50%)" },
+      { "zh": "视差图层:前景/背景挂不同 timeline/range(官方列出的典型用例,调研 04§4)", "en": "Parallax layers: foreground/background on different timelines/ranges (an official use case, research 04 §4)" },
+      { "zh": "替代 scroll 事件 + IntersectionObserver 的手写进度逻辑——声明式、可在主线程外运行(调研 04§4)", "en": "Replacing hand-rolled scroll-event + IntersectionObserver progress logic — declarative and able to run off the main thread (research 04 §4)" }
+    ],
+    "avoid": [
+      { "zh": "把 entry/exit 档配到 scroll() 时间轴——这些 named range 只对 view progress timeline 有定义(MDN)", "en": "Pairing entry/exit ranges with a scroll() timeline — those named ranges are defined only for view progress timelines (MDN)" },
+      { "zh": "把会隐藏内容的 reveal 用在关键信息上——不支持动画的浏览器/reduced-motion 用户必须仍能读到内容", "en": "Putting content-hiding reveals on key information — users on unsupported browsers or reduced-motion must still read the content" },
+      { "zh": "在 animation 简写内内联 animation-timeline——该属性不在简写里,须在简写之后单独声明(调研 04§4)", "en": "Inlining animation-timeline inside the animation shorthand — the property is not part of the shorthand and must be declared after it (research 04 §4)" },
+      { "zh": "用 width 驱动进度条——用 transform: scaleX 才能留在合成器(官方示例做法,调研 04§4)", "en": "Driving the progress bar with width — use transform: scaleX to stay on the compositor (the official example's approach, research 04 §4)" }
+    ]
+  },
+  "a11y": {
+    "zh": "滚动驱动动画锁在滚动位置上、不随时间自动播放,对前庭刺激低于时长型动画;但内容隐藏型 reveal 必须双降级:reduced-motion 时始终可见、不支持时始终可见(内容由 reveal 揭示 ≠ 内容依赖动画才存在);进度条保留——它是滚动位置的信息映射;键盘用户用 Tab 聚焦滚动区后可用方向键滚动(demo 已支持)。",
+    "en": "Scroll-driven animations are locked to scroll position rather than playing over time, so vestibular load is lower than time-based animation; but content-hiding reveals must degrade twice: always visible under reduced-motion and always visible when unsupported (a reveal unveiling content ≠ content existing only through animation); the progress bar stays — it is an informational map of scroll position; keyboard users can Tab-focus the scroll area and scroll with arrow keys (supported in the demo)."
+  },
+  "sources": [
+    "https://developer.chrome.com/docs/css-ui/scroll-driven-animations",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/animation-range"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在一个可滚动容器内同时实现:顶栏阅读进度条(animation-timeline: scroll(),transform: scaleX)与进入视口的 reveal 卡片(timeline/range 用参数快照值),reduced-motion 与不支持环境双降级。",
+      "en": "Inside one scrollable container, build both a reading progress bar (animation-timeline: scroll(), transform: scaleX) and an in-viewport reveal card (timeline/range from the parameter snapshot), with dual degradation for reduced-motion and unsupported browsers."
+    },
+    "acceptance": [
+      { "zh": "animation-timeline 与 animation-range 严格使用快照值;timeline 声明在 animation 简写之后", "en": "animation-timeline and animation-range use the exact snapshot values; animation-timeline is declared after the animation shorthand" },
+      { "zh": "进度条用 transform: scaleX 而非 width(合成器友好,官方示例)", "en": "The progress bar uses transform: scaleX, not width (compositor-friendly, per the official example)" },
+      { "zh": "scroll() 模式下 entry/exit 档显式替换为 cover 全程并在 UI 注明(named range 仅适用 view 时间轴)", "en": "Under scroll(), entry/exit ranges are explicitly substituted with full-range cover and noted in the UI (named ranges apply only to view timelines)" },
+      { "zh": "@supports 不通过或 prefers-reduced-motion: reduce 时,卡片始终可见、内容可达", "en": "When @supports fails or prefers-reduced-motion: reduce, the card is always visible and content reachable" }
+    ]
+  }
+}

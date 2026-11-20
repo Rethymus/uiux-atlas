@@ -1,0 +1,65 @@
+## Structure & DOM
+
+linear-easing is a tooling entry for "JS samples once, the browser interpolates forever": JS samples the spring ODE into a progress-point sequence and compiles it into a linear() string; the animation then runs entirely in pure CSS — no JS at runtime:
+
+```css
+/* the generated artifact, ready to use */
+--spring-easing: linear(0, 0.014, 0.106, 0.352 18%, 1.08 31%, …, 1);
+.box {
+  animation: slide 1.42s var(--spring-easing) both;
+}
+```
+
+- linear() interpolates piecewise-linearly through ≥2 progress points, each optionally carrying 0–2 percentages marking its time position; **progress values may leave [0,1]** (e.g. 1.08), so overshoot survives verbatim (MDN, research 04 §1.2);
+- **Baseline across all browsers since 2023-12** (research 04 §1.2); older browsers drop the entire timing-function, so declare a cubic-bezier fallback before the linear(…) value (cubic-bezier's y values may overshoot — 1.2-style values carry a little overshoot of their own, research 04 §1.1):
+
+```css
+.box {
+  /* fallback: browsers without linear() keep the previous line */
+  animation-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1);
+  animation-timing-function: var(--spring-easing);
+}
+```
+
+- The demo's `<pre>` shows exactly the linear() text being applied — move a slider and it recompiles instantly.
+
+## Styling & Parameters
+
+Both parameters are JS-type spring inputs (the demo samples at mass=1), following Jake Archibald's linear() easing generator (research 04 §1.2, 09 §1.6):
+
+- `stiffness` (k) and `damping` (c): the demo integrates `a = −k(x−1) − c·v` with semi-implicit Euler, taking a point every 8ms until settled;
+- **The defaults 170 / 26 are common community feel values (react-spring's traditional defaults), unverified as official** — css-easing-2 has no spring(), and linear() has no official default parameters (research 09 §1.6);
+- Simplification and rounding follow the generator's published knobs: simplify=0.0017, round=3 (visible in README link params, research 04 §8); the demo outputs at round=3 and adds % stops wherever the surviving points are unevenly spaced;
+- mass is fixed at 1 (Motion's documented mass default, research 04 §1.3); for a "heavier" feel, scale both k and c by a factor < 1 — the damping ratio ζ = c/(2√k) stays constant while frequency drops — then resample;
+- Artifact size (measured with a standalone script against the demo): the default 170/26 → 18 points, ~230 characters; the extreme k=600/c=5 → 96 points, ~1.3KB — site-wide artifacts should be simplified before being committed.
+
+```tsx
+// sampling core (semi-implicit Euler, mass = 1)
+let x = 0, v = 0, t = 0;
+while (t < 6) {
+  const a = -k * (x - 1) - c * v;   // target normalized to 1
+  v += a * dt; x += v * dt; t += dt;
+  if (t >= nextSample) points.push({ t, p: x });
+}
+```
+
+Total duration: linear() defines only the shape; duration remains an ordinary `animation-duration` — the demo uses the simulated settle time; to pin a fixed duration (say M3's 500ms tier), fix duration first and compress the sample timeline proportionally.
+
+## Motion & Interaction
+
+- **Compile = apply**: moving a slider recomputes linear() and the demo replays its CSS animation with the new timing-function — what you see is what you generated;
+- **Comparison track**: the second track plays the same animation with `ease`, making the presence or absence of overshoot obvious;
+- **The boundary with physics springs**: linear() is a **fixed curve** — no velocity state, no interruptible continuation; for "follows the hand and stays interruptible" use Motion (see the motion-spring entry), and bake linear() only when you need a pure-CSS artifact (Motion's duration+bounce mode is officially "compilable to pure CSS" — the same path, research 09 §1.6);
+- **reduced-motion**: under reduce the demo skips playback and shows the end state; the generated text in `<pre>` keeps updating — this entry's value is the artifact, not the demo animation;
+- Zero runtime: the artifact ships no JS and drops into any framework or static site.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stiffness` | higher frequency, faster arrival, sharper overshoot; at 600 it flutters like a needle and samples densify | softer curve crawling to target; at 50 it behaves like a slow snap with a longer settle |
+| `damping` | oscillation absorbed sooner; past critical (≈ >26 at the default stiffness) it turns overdamped — a smooth approach with no overshoot, near-none by 40 | more oscillations; at 5 it bounces back and forth repeatedly, and the overshoot segments survive simplification almost whole — the artifact text grows noticeably |
+
+Sampling note: preserving overshoot requires a small tolerance (0.0017) and dense points; round=3 is imperceptible on nearly all UI travel distances (the generator default documented in research 04 §8). Values beyond 1 in the artifact are legal and necessary — that is the overshoot itself.
+
+Measured on this site (verified with a standalone script): the default 170/26 at mass=1 gives ζ = 26/(2√170) ≈ 1.0 — nearly critically damped, settling crisply in 0.7s with no overshoot; drag damping below 15 (ζ < 0.58) and the overshoot immediately crosses the target line.

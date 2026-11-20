@@ -1,0 +1,103 @@
+{
+  "name": "Blend Modes",
+  "aliases": ["混合模式", "mix-blend-mode", "background-blend-mode"],
+  "category": "materials",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "CSS 混合模式:Compositing and Blending Level 1 定义的 16 种命名模式,经 mix-blend-mode(元素与其背景)或 background-blend-mode(同一元素的多层背景)叠加。",
+    "en": "CSS blend modes: the 16 named modes of Compositing and Blending Level 1, applied via mix-blend-mode (element vs backdrop) or background-blend-mode (layers within one element)."
+  },
+  "origin": {
+    "zh": "W3C CSS Compositing and Blending Level 1 规范(https://drafts.csswg.org/compositing-1/,调研 02§D3 一手核验页面标题与 10.1.x/10.2.x 混合模式章节);同族算法源自 PDF/Photoshop 混合模式。",
+    "en": "The W3C CSS Compositing and Blending Level 1 spec (https://drafts.csswg.org/compositing-1/; research 02 §D3 verified the page title and the 10.1.x/10.2.x blend-mode sections); the algorithm family descends from PDF/Photoshop blend modes."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "normal", "label": { "zh": "normal 正常", "en": "normal" } },
+        { "value": "multiply", "label": { "zh": "multiply 正片叠底", "en": "multiply" } },
+        { "value": "screen", "label": { "zh": "screen 滤色", "en": "screen" } },
+        { "value": "overlay", "label": { "zh": "overlay 叠加", "en": "overlay" } },
+        { "value": "darken", "label": { "zh": "darken 变暗", "en": "darken" } },
+        { "value": "lighten", "label": { "zh": "lighten 变亮", "en": "lighten" } },
+        { "value": "color-dodge", "label": { "zh": "color-dodge 颜色减淡", "en": "color-dodge" } },
+        { "value": "color-burn", "label": { "zh": "color-burn 颜色加深", "en": "color-burn" } },
+        { "value": "hard-light", "label": { "zh": "hard-light 强光", "en": "hard-light" } },
+        { "value": "soft-light", "label": { "zh": "soft-light 柔光", "en": "soft-light" } },
+        { "value": "difference", "label": { "zh": "difference 差值", "en": "difference" } },
+        { "value": "exclusion", "label": { "zh": "exclusion 排除", "en": "exclusion" } },
+        { "value": "hue", "label": { "zh": "hue 色相", "en": "hue" } },
+        { "value": "saturation", "label": { "zh": "saturation 饱和度", "en": "saturation" } },
+        { "value": "color", "label": { "zh": "color 颜色", "en": "color" } },
+        { "value": "luminosity", "label": { "zh": "luminosity 明度", "en": "luminosity" } }
+      ],
+      "default": "normal",
+      "cssVar": "--blend-mode",
+      "effect": {
+        "zh": "混合模式枚举,取 Compositing 1 §10.1 全部 16 个命名值。默认 normal 为规范 initial value(不混合,直接遮住下层)。前 12 种按分量混合明暗,后 4 种(hue/saturation/color/luminosity)按 non-separable 亮度/色相分量混合。",
+        "en": "The blend-mode enum: all 16 named values of Compositing 1 §10.1. The default normal is the spec's initial value (no blending, simply covering). The first 12 mix per-component light/dark; the last 4 (hue/saturation/color/luminosity) mix non-separable hue/luminosity components."
+      }
+    },
+    {
+      "type": "number",
+      "name": "opacity",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 100,
+      "cssVar": "--blend-opacity",
+      "effect": {
+        "zh": "混合层的整体不透明度,默认 100% 对应 CSS opacity 的 initial value(1)。降不透明度 = 混合结果与原样按 alpha 插值,常用于把强混合(multiply/difference)调到可用强度。",
+        "en": "Overall opacity of the blending layer; the 100% default matches CSS opacity's initial value (1). Lowering it interpolates between the blended and unblended result by alpha — the usual way to tame strong modes like multiply/difference."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "BCD(调研 02§D3/§D4 表):mix-blend-mode Chrome 41 / Firefox 32 / Safari 8;background-blend-mode Chrome 35 / Firefox 30 / Safari 8。isolation 同族支持。全部为多年基线能力。",
+      "en": "BCD (research 02 §D3/§D4 tables): mix-blend-mode Chrome 41 / Firefox 32 / Safari 8; background-blend-mode Chrome 35 / Firefox 30 / Safari 8. isolation ships with the same family. All are long-baseline capabilities."
+    }
+  },
+  "fallback": {
+    "zh": "不支持混合模式的环境退回 normal 叠放(上层遮住下层)——信息不丢,只损失色彩融合;需要保底观感时,把关键配色预先混进下层渐变本身,而不是依赖运行时混合。",
+    "en": "Without blend-mode support the layers fall back to normal stacking (top covers bottom) — no information lost, only the color fusion; when a guaranteed look matters, pre-mix the key palette into the lower gradient instead of relying on runtime blending."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "文字与彩色底的可控反色:difference/排除 让文字在任意底上自动可读的『反色标题』", "en": "Controllable inversion: difference/exclusion 'inverted headings' that self-adapt over any backdrop" },
+      { "zh": "双层渐变/光斑的色彩融合:multiply/overlay 压出深度,screen 提亮氛围(极光、玻璃底衬的常用搭档)", "en": "Fusing gradient/blob layers: multiply/overlay for depth, screen for glow — a common aurora/glass-backdrop companion" },
+      { "zh": "同一元素多层背景的混合:background-blend-mode 让照片与品牌色一次成型", "en": "Blending an element's own background layers: background-blend-mode fuses photos with brand color in one declaration" },
+      { "zh": "色相/明度分离式调色:hue/color/luminosity 做『保持明度只换色相』的风格化", "en": "Hue/luminance-split grading: hue/color/luminosity restyle while preserving luminance" }
+    ],
+    "avoid": [
+      { "zh": "跨 stacking context 的意外混合:上层元素意外混到页面背景——用 isolation: isolate 限定混合范围", "en": "Accidental blending across stacking contexts: elements blend with the page background unexpectedly — bound the scope with isolation: isolate" },
+      { "zh": "正文文字上叠 difference/强混合——对比度随下层内容实时变化,无法静态验收", "en": "difference/heavy modes under body text — contrast shifts with the backdrop in real time and cannot be signed off statically" },
+      { "zh": "高频重绘区域(拖拽、滚动跟随)上用混合——每次合成都要重算混合,代价高于普通合成", "en": "Blend over high-repaint regions (dragging, scroll-following) — every composite recomputes the blend, costlier than plain compositing" },
+      { "zh": "需要精确品牌色的输出——混合结果取决于两层的具体色值,不可移植" , "en": "Outputs needing exact brand colors — the result depends on both layers' values and does not port" }
+    ]
+  },
+  "a11y": {
+    "zh": "混合模式改变实际呈现的对比度:文字经混合后的前景/背景对比必须按最终合成结果核算 WCAG 2.1 SC 1.4.3(4.5:1)/SC 1.4.11(3:1),不能按原色声明;混合是纯视觉手段,信息必须有非混合的呈现路径(如 hover 后的实色版)。",
+    "en": "Blending changes the actually-rendered contrast: text contrast must be computed on the final composite per WCAG 2.1 SC 1.4.3 (4.5:1) / SC 1.4.11 (3:1), never on the source colors; blending is purely visual, so information needs a non-blended path too (e.g. a solid-color variant on hover/focus)."
+  },
+  "sources": [
+    "https://drafts.csswg.org/compositing-1/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/mix-blend-mode"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现两层渐变的混合舞台:底层彩色渐变、上层白色系渐变以参数快照的混合模式与不透明度叠加,混合范围用 isolation 限定,可一键切换全部 16 种模式对比。",
+      "en": "Build a two-gradient blending stage: a colorful lower gradient with an off-white upper gradient applied at the snapshot's blend mode and opacity, scope bounded by isolation, with one-click switching across all 16 modes."
+    },
+    "acceptance": [
+      { "zh": "mode 与 opacity 严格用快照值,枚举覆盖 Compositing 1 全部 16 种命名模式", "en": "mode and opacity use the exact snapshot values; the enum covers all 16 named modes of Compositing 1" },
+      { "zh": "上层用 mix-blend-mode: var(--mode) + opacity: var(--op),并写 isolation: isolate 限定混合背景范围", "en": "The upper layer uses mix-blend-mode: var(--mode) + opacity: var(--op) inside an isolation: isolate wrapper bounding the backdrop" },
+      { "zh": "提供不依赖混合的降级(normal 叠放),信息与构图完整", "en": "Ship a blend-independent fallback (normal stacking) that keeps composition and information intact" },
+      { "zh": "叠加文字时按最终合成结果核对对比度,不按原色", "en": "When text sits on the blend, contrast is checked against the final composite, not the source colors" }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "name": "60-30-10 Rule",
+  "aliases": ["60-30-10 法则", "三分色占比", "60/30/10 rule"],
+  "category": "color",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "三色配比口诀:60% 主导色铺画布、30% 辅助色撑表面、10% 强调色做焦点——源自室内设计的指导原则,不是硬性规定。",
+    "en": "The three-color proportion heuristic: 60% dominant paints the canvas, 30% secondary carries surfaces, 10% accent makes the focus — an interior-design guideline, not a hard rule."
+  },
+  "origin": {
+    "zh": "法则源自室内设计,由 LogRocket UX 与 hype4.academy 两篇文章交叉印证引入 UI 领域;两篇均明示它是指导原则而非硬性规定(调研 06§9)。",
+    "en": "The rule originates in interior design and entered UI practice via the LogRocket UX and hype4.academy articles, which cross-confirm each other and both call it a guideline rather than a rule (research 06 §9)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "dominant",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 60,
+      "effect": {
+        "zh": "主导色占比。默认 60 = 法则定义值(LogRocket/hype4 双源一致,调研 06§9):大面积基调,UI 中即背景画布,通常用中性色。demo 内与另两参数归一化为 100 后驱动布局,故总和不必等于 100。",
+        "en": "Dominant-color share. Default 60 = the rule's defining value (consistent across LogRocket and hype4, research 06 §9): the large-area base tone, i.e. the background canvas in UI, usually a neutral. The demo normalizes all three params to 100 before driving the layout, so the sum need not be 100."
+      }
+    },
+    {
+      "type": "number",
+      "name": "secondary",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 30,
+      "effect": {
+        "zh": "辅助色占比。默认 30 = 法则定义值(调研 06§9):侧边栏、卡片、面板、搜索栏等次级表面的用色,与主导色同族但拉开一档。",
+        "en": "Secondary-color share. Default 30 = the rule's defining value (research 06 §9): the color of secondary surfaces — sidebars, cards, panels, search bars — a same-family step away from the dominant."
+      }
+    },
+    {
+      "type": "number",
+      "name": "accent",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "强调色占比。默认 10 = 法则定义值(调研 06§9):CTA、链接、图标等最鲜艳的少数元素,是界面的『焦点/行动号召』(hype4 原文表述)。",
+        "en": "Accent-color share. Default 10 = the rule's defining value (research 06 §9): the most vivid minority — CTAs, links, icons — the interface's 'focus / call to action' in hype4's wording."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "设计法则,不依赖特定 CSS 特性;demo 仅用 flex 布局与普通颜色声明,所有现代浏览器可用。",
+      "en": "A design heuristic with no CSS feature dependency; the demo uses only flex layout and plain color declarations, available in all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容问题。demo 用 JS 归一化(三值相加后折算百分比)驱动 flex 比例;flex-grow 本身也按比例自动分配,天然完成归一化,二者互为印证。",
+    "en": "No compatibility concern. The demo normalizes the three values in JS (sum, then convert to percentages) and drives flex proportions; flex-grow itself allocates proportionally, so both paths normalize for free and corroborate each other."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "内容型产品首屏:中性画布 60% + 卡片/侧栏 30% + 主 CTA 10%(LogRocket 例证:Material 白底/浅灰组件/亮蓝按钮)", "en": "Content-product first screens: 60% neutral canvas + 30% cards/sidebar + 10% primary CTA (LogRocket's example: Material white canvas / light-gray components / bright-blue button)" },
+      { "zh": "给新团队定『色彩预算』时当沟通语言:先分主导/辅助/强调三个角色,再填具体色值", "en": "As the shared language for a team's 'color budget': split dominant/secondary/accent roles first, then fill in concrete values" },
+      { "zh": "审计现有页面的色彩构成:截图估算三色占比,超过 10% 的强调色通常意味着焦点被稀释", "en": "Auditing an existing page's color composition: estimate the three shares from a screenshot; accent creeping past 10% usually means the focus has been diluted" }
+    ],
+    "avoid": [
+      { "zh": "让所有颜色都鲜艳——hype4 原文告诫:大面积高饱和会让画面『吵』起来", "en": "Making every color vivid — hype4's own warning: large high-saturation areas turn the page 'noisy'" },
+      { "zh": "单色阶方案:只有一档灰时按钮会『消失』(hype4 提醒)——辅助/强调至少要拉开一档可感知差异", "en": "Single-scale schemes: with only one gray step the button 'disappears' (hype4's caution) — secondary and accent need at least one perceptible step apart" },
+      { "zh": "暗色模式下过度饱和——对比过高造成视觉疲劳(hype4 原文,调研 06§13);M3 暗色 accent 提亮降饱和(#6750A4→#D0BCFF)是同一告诫的官方注脚", "en": "Oversaturated accents in dark mode — excessive contrast causes visual fatigue (hype4's exact wording, research 06 §13); M3 brightening/desaturating dark accents (#6750A4→#D0BCFF) is the official footnote to the same warning" },
+      { "zh": "把 60/30/10 当硬性指标逐像素抠——两篇来源都明示它只是指导原则", "en": "Treating 60/30/10 as a hard metric to pixel-chase — both sources explicitly call it a guideline" }
+    ]
+  },
+  "a11y": {
+    "zh": "占比本身不产生可访问性,三个角色之间的**对比**才产生:辅助/强调与画布的边界对比要过 SC 1.4.11 的 3:1(非文本),强调色上的文字按 wcag-contrast 条目四项阈值复核;LogRocket 例证 Spotify(黑 60/深灰 30/活力绿 10)说明暗色下同样成立,但强调色要控饱和(调研 06§9/§13)。",
+    "en": "The proportions themselves are not accessibility; the **contrast between roles** is: secondary/accent boundaries against the canvas must pass SC 1.4.11's 3:1 (non-text), and text on the accent goes through the wcag-contrast entry's four thresholds. LogRocket's Spotify example (black 60 / deep gray 30 / vibrant green 10) shows the rule holds in dark mode too — with accent saturation kept in check (research 06 §9/§13)."
+  },
+  "sources": [
+    "https://blog.logrocket.com/ux-design/60-30-10-rule/",
+    "https://hype4.academy/articles/design/60-30-10-rule-in-ui"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "按 60-30-10 法则为界面配色:主导色(中性)铺画布、辅助色撑次级表面、强调色只留给 CTA/链接;给出三色占比的演示与归一化读数,并提示暗色下控制饱和度。",
+      "en": "Color an interface by the 60-30-10 rule: a neutral dominant on the canvas, a secondary for surfaces, an accent reserved for CTAs/links; include a share demo with normalized readouts and a dark-mode saturation caution."
+    },
+    "acceptance": [
+      { "zh": "三色严格按 60/30/10 的角色分工落位,强调色只出现在少数焦点元素上", "en": "The three colors take exactly the 60/30/10 roles; the accent appears only on a few focus elements" },
+      { "zh": "主导色为中性色;辅助色与主导色同族但拉开一档可感知差异", "en": "The dominant is a neutral; the secondary is same-family but one perceptible step away" },
+      { "zh": "三个占比参数在 demo 内归一化为 100 后驱动布局,总和不必等于 100", "en": "The three share params are normalized to 100 in the demo before driving the layout; the sum need not be 100" },
+      { "zh": "不把所有颜色都调成鲜艳;暗色模式下强调色降饱和以避免视觉疲劳", "en": "Do not make every color vivid; desaturate the accent in dark mode to avoid visual fatigue" },
+      { "zh": "强调色上的文字与强调色边界的对比度分别满足正文与非文本阈值", "en": "Text on the accent and the accent's boundary meet the text and non-text contrast thresholds respectively" }
+    ]
+  }
+}

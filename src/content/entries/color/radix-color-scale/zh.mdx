@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+Radix Colors 的核心抽象是「一条 hue = 一条 12 步色阶」,发布形态就是一组 CSS 自定义属性,直接可抄进项目:
+
+```html
+<div class="card">
+  <h3>标题 / Heading</h3>
+  <p>正文 / Body</p>
+  <button>操作 / Action</button>
+</div>
+```
+
+```css
+.card {
+  /* 步位即语义:背景 2 · 边框 6 · 标题 12 · 正文 11 · 按钮 9(配对文字见官方分档) */
+  background: var(--blue-2);
+  border: 1px solid var(--blue-6);
+}
+.card h3 { color: var(--blue-12); }
+.card p { color: var(--blue-11); }
+.card button { background: var(--blue-9); }
+```
+
+- 12 步语义(Radix 官方,调研 06§二8):**1** app 背景、**2** 次级/微妙背景、**3** 组件表面背景、**4** hover 背景、**5** pressed/selected 背景、**6** 非交互微妙边框、**7** 交互边框/焦点环、**8** hover 边框/强边框、**9** 纯色 solid(全阶 chroma 最高、「混入白/黑最少」)、**10** solid hover、**11** 低对比文本、**12** 高对比文本;
+- 官方目录:6 种中性色(Gray/Mauve/Slate/Sage/Olive/Sand)+ 26 个 accent + alpha 透明变体 + 独立调校的 -dark 暗色阶;
+- demo 的 8 组色值逐值取自官方发行包 @radix-ui/colors@3.0.0(亮色阶 sRGB hex)。
+
+## 样式与参数
+
+色阶是「编号即用法」的体系——不需要计算,只需要按步位取色:
+
+```css
+/* 官方保证:步 11/12 在同类步 2 背景上达 APCA Lc 60 / Lc 90 */
+:root {
+  --scale-step-9-text: white;  /* 多数 hue 的 9 步配白字 */
+}
+:root[data-hue="sky"], :root[data-hue="mint"], :root[data-hue="lime"],
+:root[data-hue="yellow"], :root[data-hue="amber"] {
+  /* 官方例外:Sky/Mint/Lime/Yellow/Amber 5 阶的 9 步配深色字 */
+  --scale-step-9-text: #2b2118;
+}
+```
+
+- 对比度保证是「步位对」而非单色:11/12 对 2 的 APCA Lc 60/90 由官方定标;自定义色阶要自己重建这套配对;
+- 工程落地:把 12 步映射进 CSS 变量(--blue-1…--blue-12)后,组件按语义槽位引用而非直接写步号——换 hue 时只改变量绑定,不动组件;
+- hover 反馈用相邻步位表达:背景 3→4、边框 7→8、solid 9→10——步位体系让「交互变色」不需要另设计新颜色;
+- 暗色主题不是亮色加深:官方 -dark 阶独立调校;亮色可用白色作 app 背景,暗色改用步 1/2 的灰或彩色,并为 AppBg 建 mutable alias 按模式重映射;
+- alpha 变体(-alpha 文件)解决彩色叠层的白边/灰边问题,阴影/遮罩用它而不是手调 rgba。
+
+## 动效与交互
+
+- 切 hue,整条 12 步 + 语义示例卡同步重算;步 9 的文字色按官方分档自动切换(amber → 深字);
+- 高亮步位用 2px outline 标示,`prefers-reduced-motion` 时取消过渡直接跳变;
+- 不做颜色动画之外的动效:色阶演示里唯一该动的是「哪个步位在讲解」;
+- 与 Material tone 体系的分工:Radix 步位是**语义槽位**(每步一个用途),Material tone 是**连续标尺**(角色从标尺上取值)——两者常被混为一谈,demo 并排呈现就是为了让差别可见。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hue` | 更暖/更冷取决于所选 accent;同一布局换 hue 时所有步位语义不变,视觉重量也大体不变(官方按 APCA 定标) | gray 是唯一无彩阶:9 步是纯灰 CTA,适合克制型界面;换 hue 不改变对比度保证的成立性 |
+| `step` | 高于 9:进入文本档(11/12)——颜色变深变「墨」;hover 状态(10)属于交互反馈 | 低于 9:进入表面/背景档(1–5)与边框档(6–8)——颜色变浅变「面」;选中步只是高亮位置,不影响色阶本身 |

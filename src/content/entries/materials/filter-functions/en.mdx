@@ -1,0 +1,57 @@
+## Structure & DOM
+
+`filter` operates on the element's **own** rendered output — that is the dividing line from `backdrop-filter`. A same-image comparison is simply a set of tiles: every tile shares one source image, each chaining a single function (or a full chain).
+
+```html
+<div class="grid">
+  <figure><img src="photo.jpg" alt="original" /></figure>
+  <figure><img class="f-blur" src="photo.jpg" alt="blurred" /></figure>
+  <figure><img class="f-combo" src="photo.jpg" alt="combined" /></figure>
+</div>
+```
+
+Key points:
+
+- The **written order** of the chain is the pixel-processing order: `blur() brightness() contrast()` differs from the reverse;
+- Functions hit the whole element render (children, borders and shadows included); to blur only the backdrop use `backdrop-filter`;
+- Every function has an identity point (blur 0 / brightness 100% / contrast 100% / hue-rotate 0deg); at identity the element equals the original.
+
+## Styling & Parameters
+
+Four parameters map to four standalone declarations plus one chained declaration, injected through `--ff-*` variables:
+
+```css
+.f-blur  { filter: blur(var(--ff-blur)); }               /* 0–20px, default 0 */
+.f-bri   { filter: brightness(var(--ff-brightness)); }    /* 0–200%, default 100% */
+.f-con   { filter: contrast(var(--ff-contrast)); }        /* 0–200%, default 100% */
+.f-hue   { filter: hue-rotate(var(--ff-hue)); }           /* 0–360deg, default 0 */
+.f-combo {
+  filter: blur(var(--ff-blur)) brightness(var(--ff-brightness))
+    contrast(var(--ff-contrast)) hue-rotate(var(--ff-hue));
+}
+```
+
+Where the numbers come from:
+
+- All four defaults (0px / 100% / 100% / 0deg) are the **identity points defined by Filter Effects L1** (research 02 §4 D1) — the spec's initial values for "no filter applied";
+- The function list (blur/brightness/contrast/grayscale/hue-rotate/invert/opacity/saturate/sepia/drop-shadow) also comes from D1;
+- Community recipe references: grainy noise at `contrast(170%) brightness(1000%)` (research 06 §IV §15), whole-layer aurora gradients at `blur(42px) saturate(1.15)` (research 06 §IV §14);
+- Support: Chrome 18 / Firefox 49 / Safari 6 / Edge 12 (BCD, research 02 §4 D1), unprefixed.
+
+## Motion & Interaction
+
+- Tile entrance: fade + slight staggered rise, animating only `opacity/translate`; disabled under `prefers-reduced-motion`;
+- Filter values are **poor candidates for per-frame animation** (each frame repaints) — prefer a short `transition: filter 0.3s`; keep continuous animation on transform/opacity only;
+- Live tuning: dragging any slider moves both its single-function tile and the combined tile while the original tile stays fixed as the reference frame;
+- Hover micro-shifts (e.g. brightness 1.06) are common — give them a `transition` around 150ms.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `blur` | detail smears and edges bloom; past 10px structure visibly collapses, past 16px only color blobs remain | 0 restores the original; below 2px there is little visible payoff beyond sampling noise |
+| `brightness` | past 150% highlights clip to white, 200% approaches overexposure; hue information erodes along the way | below 50% it darkens noticeably, 0% is pure black — overlaid text instantly loses its contrast baseline |
+| `contrast` | pulls shadows and highlights apart and deepens color; past 120% it trends posterized, blocking up shadows at 200% | below 50% it turns flat and hazy, 0% is uniform gray (luminance only) — the photo reads as fogged |
+| `hue-rotate` | spins the wheel: 90°/180°/270° give three complementary palettes, 360° lands back at the start | micro-shifts under 30° are only perceptible on high-saturation sources; low-saturation photos barely change |
+
+Working ranges: retouching uses blur 0–6px, brightness 90–110%, contrast 95–115%; step hue-rotate by 30° when deriving themes; the two "heavy-handed" values (contrast 170% / brightness 1000%) belong to noise textures, not photos.

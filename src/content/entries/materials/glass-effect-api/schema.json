@@ -1,0 +1,116 @@
+{
+  "name": "Glass Effect API (Liquid Glass)",
+  "aliases": ["液态玻璃 API", "glassEffect", "GlassEffectContainer"],
+  "category": "materials",
+  "system": "apple",
+  "star": 3,
+  "tagline": {
+    "zh": "Apple Liquid Glass 的声明式 API 面:glassEffect(_:in:) / Glass(variant、tint、interactive) / GlassEffectContainer(spacing) / glassEffectID morph;本条目用 CSS 近似呈现其参数语义。",
+    "en": "Apple Liquid Glass' declarative API surface: glassEffect(_:in:) / Glass (variant, tint, interactive) / GlassEffectContainer(spacing) / glassEffectID morphing — presented here as a CSS approximation of the parameter semantics."
+  },
+  "origin": {
+    "zh": "Apple SwiftUI/API 文档一手核验(调研 02§A1–A6):glassEffect(_:in:) 默认 .regular、默认形状 Capsule;Glass 结构体含 regular/clear/identity 与 tint(_:)/interactive(_:);GlassEffectContainer init(spacing:content:) 控制融合;HIG Materials 定义 regular/clear 两变体并警示勿用于内容层。",
+    "en": "Verified firsthand against Apple's SwiftUI/API docs (research 02 §A1–A6): glassEffect(_:in:) defaults to .regular with a Capsule default shape; the Glass struct carries regular/clear/identity plus tint(_:)/interactive(_:); GlassEffectContainer's init(spacing:content:) governs blending; HIG Materials defines the regular/clear variants and warns against content-layer use."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "regular", "label": { "zh": "regular 常规", "en": "regular" } },
+        { "value": "clear", "label": { "zh": "clear 高透", "en": "clear" } }
+      ],
+      "default": "regular",
+      "effect": {
+        "zh": "Liquid Glass 官方两变体。regular=模糊背景并调整亮度保文字可读,绝大多数系统组件用它,也是 glassEffect 的官方默认参数(A2);clear=高透,仅用于媒体等丰富背景之上的浮动组件,HIG 明示其上内容偏亮时要加深色 dimming(调研 02§A1、06§16:35% 不透明度暗层)。JS 型参数,demo 切 data-variant。",
+        "en": "The two official Liquid Glass variants. regular = blurs the backdrop and tunes luminance for legibility, used by most system components and the documented default of glassEffect (A2); clear = highly transparent, reserved for floating controls over rich media, and HIG says to dim it when underlying content is bright (research 02 §A1, 06 §16: a 35%-opacity dark layer). JS-type param toggled via data-variant in the demo."
+      }
+    },
+    {
+      "type": "number",
+      "name": "tintIntensity",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--liquid-tint",
+      "effect": {
+        "zh": "着色强度映射。官方 API 是 Glass.tint(_:) / UIGlassEffect.tintColor 接受任意 Color(调研 02§A3/A6),没有数值强度参数——本条目把它映射为固定强调色的叠加不透明度,0=不着色(演示默认);Web 近似,非官方 API 面。",
+        "en": "Tint-strength mapping. The official APIs Glass.tint(_:) / UIGlassEffect.tintColor accept an arbitrary Color (research 02 §A3/A6) with no numeric-strength parameter — this entry maps tint to the overlay opacity of one fixed accent color, 0 = untinted (demo default); a Web approximation, not the official API surface."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "interactive",
+      "options": [
+        { "value": "off", "label": { "zh": "off 关", "en": "off" } },
+        { "value": "on", "label": { "zh": "on 开", "en": "on" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "交互反馈开关,对应 Glass.interactive(_:) 与 UIGlassEffect.isInteractive(调研 02§A3/A6):开启后玻璃对指针/触摸给出发光与按压反馈。off 对应未调用 interactive(_:) 的基础玻璃;默认行为按 API 页为准,demo 用 data-interactive 切换。",
+        "en": "The interactive-feedback switch, mapping to Glass.interactive(_:) and UIGlassEffect.isInteractive (research 02 §A3/A6): when on, glass gives glow/press feedback to pointer and touch. off corresponds to glass without interactive(_:) applied; treat the API pages as authoritative for defaults. The demo toggles data-interactive."
+      }
+    },
+    {
+      "type": "number",
+      "name": "spacing",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--liquid-spacing",
+      "effect": {
+        "zh": "GlassEffectContainer(spacing:content:) 的形状融合距离:两块玻璃间距小于 spacing 时开始融合 morph(A4 原文:spacing 越大形状越早开始融合)。官方未记载具体默认数值——默认 8 为本条目演示取值;demo 用固定 24px 间距的两块胶囊,spacing 逼近间距时桥接层渐显。",
+        "en": "The blend distance of GlassEffectContainer(spacing:content:): glass shapes begin blending when closer than spacing (A4 verbatim: larger spacing makes shapes blend earlier). Apple records no numeric default — 8 is this entry's demo value; the demo fixes a 24px gap between two capsules and fades in a liquid bridge as spacing approaches it."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "glassEffect/GlassEffectContainer 是 iOS 26+/macOS 26+ 等 SwiftUI/UIKit API,不在浏览器中(调研 02§A2–A6);Web demo 用 backdrop-filter + 渐变近似(backdrop-filter:Chrome 76/Firefox 103/Safari 9 带 -webkit- 前缀,BCD 调研 02§D2)。API 可用性矩阵以 Apple 平台版本为准。",
+      "en": "glassEffect/GlassEffectContainer are SwiftUI/UIKit APIs on iOS 26+/macOS 26+ class platforms, not in browsers (research 02 §A2–A6); the Web demo approximates with backdrop-filter plus gradients (backdrop-filter: Chrome 76 / Firefox 103 / Safari 9 with the -webkit- prefix per BCD, research 02 §D2). API availability follows Apple's platform versions."
+    }
+  },
+  "fallback": {
+    "zh": "Web 近似的玻璃不具备 Liquid Glass 的动态折射/实时亮度调整——交付跨端设计时把变体语义(regular 保读/clear 限媒体)与 spacing 语义作为规格,而非具体渲染值;不支持 backdrop-filter 的浏览器按 glassmorphism 的回退策略提高填充不透明度。",
+    "en": "A Web-approximated glass lacks Liquid Glass' dynamic refraction/real-time luminance tuning — when shipping cross-platform, deliver the variant semantics (regular for legibility, clear over media only) and the spacing semantics as the spec, not rendered values; browsers without backdrop-filter follow the glassmorphism fallback of raising fill opacity."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "iOS 26+/对应平台系统组件的导航栏、标签栏、工具栏(功能层,浮于内容之上)", "en": "Nav bars, tab bars and toolbars of system components on iOS 26+-class platforms (functional layers above content)" },
+      { "zh": "照片/视频之上的浮动控件用 clear 变体(内容偏亮时加 35% 暗层)", "en": "Floating controls over photos/video with the clear variant (add the 35% dim layer over bright content)" },
+      { "zh": "一组相邻控件需要玻璃间融合 morph:GlassEffectContainer + glassEffectID 匹配身份", "en": "Clusters of adjacent controls blending/morphing: GlassEffectContainer plus glassEffectID identity matching" },
+      { "zh": "Web 端复刻同类观感:双层胶囊玻璃 + 高透媒体浮层,以本条目参数近似" , "en": "Web recreations of the same look: paired capsule glass and high-transparency media overlays approximated by these params" }
+    ],
+    "avoid": [
+      { "zh": "内容层(列表正文、表单)套 Liquid Glass——HIG 明示勿用于内容层且勿过度使用", "en": "Applying Liquid Glass to content layers (list bodies, forms) — HIG explicitly forbids content-layer use and overuse" },
+      { "zh": "clear 变体放在平色/浅色背景上——高透玻璃在非丰富底上失效(与 glassmorphism 同理)", "en": "The clear variant over flat/pale backdrops — high-transparency glass collapses without a rich backdrop (same as glassmorphism)" },
+      { "zh": "把 Web 近似当成官方渲染——动态折射、scroll edge effect、亮度自适应均无法用静态 CSS 复刻", "en": "Treating the Web approximation as official rendering — dynamic refraction, scroll edge effect and luminance adaptation cannot be replicated in static CSS" },
+      { "zh": "大段文字直接压在 clear 上——保读责任在 regular;clear 的文字对比度要按最亮背景核算", "en": "Long text directly on clear — legibility is regular's job; on clear, text contrast must be checked against the brightest backdrop" }
+    ]
+  },
+  "a11y": {
+    "zh": "玻璃是功能层材质:其上文字按透出内容的极端明暗核对 4.5:1(WCAG 2.1 SC 1.4.3),clear 变体必须叠暗层或换 regular 才能保读;interactive 反馈不得取代焦点指示(SC 2.4.7);HIG 警示勿让玻璃成为内容层——文字信息的载体永远是内容层本身。",
+    "en": "Glass is a functional-layer material: text on it must hold 4.5:1 against the brightest/darkest transmitted content (WCAG 2.1 SC 1.4.3); the clear variant needs the dim layer or a switch to regular to stay legible; interactive feedback never replaces focus indicators (SC 2.4.7); per HIG, glass is never the content layer — text always lives on the content layer itself."
+  },
+  "sources": [
+    "https://developer.apple.com/documentation/swiftui/view/glasseffect(_:in:)",
+    "https://developer.apple.com/documentation/swiftui/glass",
+    "https://developer.apple.com/documentation/swiftui/glasseffectcontainer",
+    "https://developer.apple.com/design/human-interface-guidelines/materials"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在照片背景上复刻 Liquid Glass 控件组:两枚胶囊玻璃置于共享玻璃场中(regular/clear 可切,tint 强度、interactive、container spacing 可调),clear 时对亮背景叠 35% 暗层,并注明这是 CSS 近似。",
+      "en": "Recreate a Liquid Glass control cluster over a photo: two capsule glass shapes inside a shared glass field (regular/clear switchable, tint strength, interactive and container spacing tunable), a 35% dim layer on clear over bright content, annotated as a CSS approximation."
+    },
+    "acceptance": [
+      { "zh": "变体语义正确:regular 模糊+调亮度保读;clear 高透且亮背景上叠 35% 暗层(HIG 数值)", "en": "Variant semantics correct: regular blurs + tunes luminance for legibility; clear is high-transparency with the HIG's 35% dark dim layer over bright content" },
+      { "zh": "形状用胶囊(官方默认形状 Capsule),两块玻璃间距由 spacing 参数驱动并在逼近时呈现融合桥", "en": "Shapes are capsules (the documented default Capsule), the gap between them driven by spacing, showing a blend bridge as spacing approaches the gap" },
+      { "zh": "interactive=on 时有可感知的按压/发光反馈,且不取代键盘焦点指示", "en": "With interactive=on there is perceivable press/glow feedback that never replaces the keyboard focus indicator" },
+      { "zh": "标注「CSS 近似,非 Liquid Glass 本体」;不模拟折射/滚动边缘效果", "en": "Annotate 'CSS approximation, not Liquid Glass itself'; do not fake refraction or the scroll edge effect" }
+    ]
+  }
+}

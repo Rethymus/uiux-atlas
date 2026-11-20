@@ -1,0 +1,60 @@
+## Structure & DOM
+
+The consumer side of inertia is just "a lane + a draggable ball": during the drag the ball tracks the pointer directly (pointermove writes the MotionValue in real time), and on release control is handed to inertia — all the physics lives inside the MotionValue and depends on no DOM structure:
+
+```tsx
+const x = useMotionValue(0);
+
+// drag: x.set(clamp(start + pointer delta, -limit, limit))
+// release: the same path framer-motion's drag takes (VisualElementDragControls.startAnimation)
+animate(x, 0, {
+  type: "inertia",
+  power,           // default 0.8: multiplier on the release velocity
+  timeConstant,    // default 700ms: time constant of the exponential decay
+  min: -limit, max: limit,                  // out-of-bounds triggers the boundary spring
+  bounceStiffness: 500, bounceDamping: 10,  // doc-annotated defaults (research 04 §1.3)
+});
+```
+
+- When `velocity` is omitted, animateMotionValue injects `value.getVelocity()` (motion-dom@12.43.0 animation/interfaces/motion-value.mjs:29) — that is where "flick harder, fly farther" comes from;
+- The event foundation is Pointer Events: pointerdown/move/up/cancel + `setPointerCapture()`, with `touch-action` deciding whether the browser treats the gesture as a scroll (Baseline 2020-07, research 04 §5.1); `pointercancel` (incoming call, system gesture takeover) must also route through release so inertia takes over as usual;
+- The demo adds a keyboard path: the lane is focusable, Enter triggers a fixed-velocity "flick".
+
+## Styling & Parameters
+
+Both parameters are JS-type, assembled straight into the transition — no CSS variables. Where the numbers come from (motion.dev transitions docs, research 04 §1.3):
+
+- `power`: official default **0.8**; the generator's landing formula is `target = origin + power × release velocity` (motion-dom@12.43.0 animation/generators/inertia.mjs: `ideal = origin + power * velocity`) — the demo renders its predicted-landing marker with the same formula;
+- `timeConstant`: official default **700ms** (milliseconds); the decay trajectory is `value(t) = target − amplitude × e^(−t/timeConstant)`, and τ is exactly this.
+- **The discrepancy, stated plainly**: the docs annotate 700, but motion-dom@12.43.0's inertia generator falls back to **325** at runtime, and framer-motion's drag passes **750** — like the stiffness=1/100 split in the motion-spring entry, this site adopts the doc-annotated 700 as the official default per the research protocol;
+- The stop condition is the generator's `restDelta` (runtime default 0.5, in the value's own units, per the motion-dom@12.43.0 inertia.mjs signature) — the glide ends once the remaining delta to the landing point drops under the threshold.
+
+The lane's DOM is three pieces plus one predicted-landing marker; inertia depends on none of it:
+
+```tsx
+<div className="ig-lane" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+  <div className="ig-wall ig-wall-l" />
+  <div className="ig-wall ig-wall-r" />
+  <div className="ig-marker" style={{ transform: `translateX(${predicted}px)` }} /> {/* predicted landing */}
+  <motion.div className="ig-ball" style={{ x }} />  {/* x is the useMotionValue above */}
+</div>
+```
+
+## Motion & Interaction
+
+- **Tracking phase** (during drag): no animation library involved, `x.set()` writes directly — this part is direct manipulation, not an omittable decoration;
+- **Glide phase** (after release): the release velocity is scaled into glide distance by `power`, and `timeConstant` sets the decay; the trajectory is an exponential approach that always stops "just short" — here lies the difference from a spring: **inertia has no settle-bounce**, it only hands off to a boundary spring when out of bounds;
+- **Boundary rebound**: when the predicted landing exceeds min/max, the generator spawns a spring toward the nearest boundary at the crossing instant (checkCatchBoundary in motion-dom's inertia.mjs); the demo pins the marker to the wall and flags it;
+- **Snapping**: pass `modifyTarget` to rewrite the free landing point — snapping the ideal target onto a grid/tier is the standard snap-to-grid carousel move (research 04 §1.3);
+- **Parameters apply live**: moving the power/timeConstant sliders re-fires the inertia from the current value and current velocity;
+- **reduced-motion**: tracking stays, the release lands directly (clamped inside the walls) without gliding;
+- Performance: only `transform` (ball translation) is animated, honoring web.dev's "transform/opacity only" floor (research 04 §1.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `power` | the same flick glides farther — the flick feels more present; at 2.0 a light flick hits the wall | the glide shrinks sharply, feeling like a dead stop on release; at 0.1 inertia is barely perceptible |
+| `timeConstant` | slower exponential decay — a long, smooth tail; at 1500ms it drifts like jelly | extremely fast decay, a hard brake; at 100ms there is effectively no inertia |
+
+Rule of thumb: power sets "how far", timeConstant sets "how long"; glide distance ≈ power × release velocity, tail duration ≈ 3–4 × timeConstant. Use modifyTarget for grid snapping and type:"spring" for bounce — inertia itself only glides and catches boundaries.

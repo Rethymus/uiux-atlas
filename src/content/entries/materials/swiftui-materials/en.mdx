@@ -1,0 +1,69 @@
+## Structure & DOM
+
+In official SwiftUI terms a material is **not a view** — it is a translucent layer between foreground and background, "like heavily frosted glass", and the foreground above it automatically receives vibrancy (A8). The web approximation stacks "backdrop → veil (pseudo-material) → vibrancy text tiers":
+
+```swift
+// Official API (iOS 15+, research 02 §1 A8)
+ScrollView { … }
+  .background(.ultraThinMaterial)   // one of six: ultraThin/thin/regular/thick/ultraThick/bar
+  .foregroundStyle(.secondary)      // or rely on the material's automatic vibrancy
+```
+
+```html
+<div class="scene">
+  <img class="bg" src="photo.jpg" alt="" />
+  <section class="mat"> <!-- veil: pseudo-material -->
+    <p class="v-default">default tier</p>
+    <p class="v-secondary">secondary tier</p>
+    <hr class="v-sep" />
+  </section>
+</div>
+```
+
+Key points: material thickness encodes a **hierarchy promise** — thicker approaches solid and steadier text; vibrancy is a contrast strategy granted by the material, not arbitrary opacity tuning.
+
+## Styling & Parameters
+
+The web side approximates the six tiers with CSS variables for alpha and blur (**community approximations — Apple publishes no numbers**):
+
+```css
+.mat {
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(var(--sm-blur));
+  backdrop-filter: blur(var(--sm-blur));
+  background: rgb(255 255 255 / var(--sm-alpha));
+}
+/* Community approximation table (unverified): ultraThin .08/12px · thin .18/16px · regular .30/20px
+   thick .44/24px · ultraThick .60/28px · bar .36/16px */
+.mat[data-material="thick"]     { --sm-alpha: 0.44; --sm-blur: 24px; }
+.mat[data-material="ultraThick"]{ --sm-alpha: 0.60; --sm-blur: 28px; }
+
+/* Vibrancy tiers: decreasing contrast (A10), approximated as foreground alpha */
+.v-default    { color: rgb(0 0 0 / 1); }
+.v-secondary  { color: rgb(0 0 0 / 0.65); }
+.v-tertiary   { color: rgb(0 0 0 / 0.45); }
+.v-quaternary { color: rgb(0 0 0 / 0.30); } /* officially disallowed on ultraThin/thin */
+```
+
+Where the numbers come from:
+
+- The six tier names and semantics: the SwiftUI Material docs (A8, research 02 §1); bar is the toolbar-specific tier;
+- The vibrancy hierarchy default→quaternary, a single separator tier, and **quaternary disallowed on ultraThin/thin**: HIG Materials (A10);
+- **Alpha/blur numbers: not published by Apple** — the table above is a community approximation showing the trend (thicker = darker = steadier contrast); on real devices the system render is authoritative.
+
+## Motion & Interaction
+
+- Material switch: the veil's alpha/blur transition over 0.25s, giving a continuous "thickening" feel; removed under `prefers-reduced-motion`;
+- Tier switch: the four vibrancy rows fade in over 0.25s with a leading indicator bar on the selected row;
+- When the disallowed combination (quaternary + ultraThin/thin) appears, the warning fades in and other motion stops — it is a state the user must read, not one to be animated away;
+- The demo backdrop stays static: tier comparison does not need motion, and static is the friendliest state for contrast checks.
+
+## Parameter Sensitivity
+
+| Parameter | Turning up (a thicker tier)… | Turning down (a thinner tier)… |
+| --- | --- | --- |
+| `material` | thicker is more opaque: steadier text contrast but a weaker "material" feel — ultraThick is nearly a solid card | thinner is more transparent: more transmitted color and more "liquid", but text leans entirely on vibrancy/bold — ultraThin even loses quaternary by official rule |
+| `vibrancy` | lower tiers (→quaternary) weaken contrast: right for timestamps and placeholders, safe only on thick materials | higher tiers (→default) strengthen contrast: body copy and key information belong at default/secondary |
+| Combination (material × tier) | thick material × low tier: readable but noisy — keep decorative tiers out of body copy | thin material × low tier: the officially disallowed pairing — the demo warns, production should simply avoid it |
+
+Rule of thumb: align the hierarchy promise with content importance — bar for toolbars, regular or thicker for body-bearing surfaces, ultraThin only for decorative floats; every vibrancy step down needs a fresh 4.5:1 check on real devices across both backdrop extremes (WCAG 2.1 SC 1.4.3).

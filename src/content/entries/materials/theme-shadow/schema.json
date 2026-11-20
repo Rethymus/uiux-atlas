@@ -1,0 +1,87 @@
+{
+  "name": "ThemeShadow (Fluent)",
+  "aliases": ["主题阴影", "Fluent elevation shadow", "ThemeShadow"],
+  "category": "materials",
+  "system": "fluent",
+  "star": 2,
+  "tagline": {
+    "zh": "Fluent ThemeShadow:以元素的 z 坐标(elevation)驱动一套预配置阴影——光照、主题、环境自动适配;非 Popup 场景需显式指定 Receivers,且只支持矩形投影。",
+    "en": "Fluent ThemeShadow: a preset shadow driven by the element's z coordinate (elevation), auto-adapting to light, theme and surroundings; non-Popup usage must declare Receivers, and only rectangular shadows are supported."
+  },
+  "origin": {
+    "zh": "Microsoft WinUI `ThemeShadow` API(调研 02§C5:learn.microsoft.com API 页一手抓取);Fluent 的深度模型以 x/y/z 坐标表达,z 即 elevation。旧的 Depth/depth-shadow 设计指南页已 404 迁移(调研 02§7),深度语义以 API 文档为准。",
+    "en": "Microsoft WinUI's `ThemeShadow` API (research 02 §C5: fetched firsthand from the learn.microsoft.com API page); Fluent's depth model expresses depth as x/y/z coordinates, z being elevation. The old Depth/depth-shadow design-guide pages have 404-migrated (research 02 §7), so semantics come from the API docs."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "elevation",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--theme-shadow-elevation",
+      "effect": {
+        "zh": "投影元素的 z 坐标(DIP,elevation)。z 越大阴影越弥散越淡——具体曲线由系统随光照/主题/环境自动调整,Fluent 不公开逐档数值表。默认 8 是本批任务规格给定的演示档:调研未记载官方默认 z 值,勿当作官方数值引用。",
+        "en": "The shadow-casting element's z coordinate (DIP, elevation). Larger z = more diffuse, fainter shadow — the exact curve is auto-adjusted by the system per light/theme/surroundings, and Fluent publishes no per-step numeric table. The default 8 is the demo scale set by this batch's spec: research records no official default z; never cite it as an official value."
+      }
+    },
+    {
+      "type": "number",
+      "name": "opacity",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 100,
+      "cssVar": "--theme-shadow-opacity",
+      "effect": {
+        "zh": "阴影整体增益。ThemeShadow API 本身不暴露阴影不透明度——阴影浓淡完全由系统按 z 与环境决定;本参数是 Web 近似 demo 的增益旋钮,用于对照不同强度下的观感,非官方 API 面。",
+        "en": "Overall shadow gain. The ThemeShadow API itself exposes no shadow opacity — strength is decided entirely by the system from z and surroundings; this parameter is a Web-approximation demo knob for comparing strengths, not part of the official API surface."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "ThemeShadow 是 WinUI/XAML 能力,不在浏览器中;Web demo 用 box-shadow 近似(全浏览器基线)。WinUI 3 经 Windows App SDK 提供;UWP 同名 API 面向旧平台。本次调研未核验各 Windows 版本的可用性矩阵。",
+      "en": "ThemeShadow is a WinUI/XAML capability and does not exist in browsers; the Web demo approximates it with box-shadow (baseline everywhere). WinUI 3 ships it via Windows App SDK; the UWP namesake targets the older platform. This research pass did not audit a per-Windows-version availability matrix."
+    }
+  },
+  "fallback": {
+    "zh": "Web 近似公式只是「z 越大越弥散越淡」的趋势拟合,不是 Fluent 实际光照算法——跨平台设计请把 z 语义(而非具体阴影值)作为交付物;WinUI 端非 Popup 场景忘记设置 Receivers 时阴影不显示,这是最常见的接坑点。",
+    "en": "The Web approximation fits the 'larger z = more diffuse, fainter' trend, not Fluent's real lighting algorithm — for cross-platform work, deliver the z semantics rather than specific shadow values; on WinUI, forgetting Receivers in non-Popup scenarios silently hides the shadow, the most common pitfall."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "WinUI/UWP 浮层与卡片层级:popup、flyout、dialog 用 ThemeShadow 自动接环境", "en": "WinUI/UWP overlays and card hierarchies: popups, flyouts and dialogs take ThemeShadow's environment-awareness for free" },
+      { "zh": "跨平台设计系统里用 z 值做层级语言:0/4/8/16/32 分档,与 Web 端阴影近似公式对齐", "en": "z values as the elevation language in cross-platform systems: 0/4/8/16/32 steps aligned with a Web shadow approximation" },
+      { "zh": "拖拽抬升:被拖起的元素临时提高 z,落点恢复——Fluent 深度模型的典型交互", "en": "Drag lift: temporarily raise z while dragging, restore on drop — the canonical Fluent depth interaction" },
+      { "zh": "主题/明暗自动适配的场景:ThemeShadow 随主题调整阴影参数,无需手写两套阴影", "en": "Theme-adaptive surfaces: ThemeShadow retunes itself per theme, no hand-written dual shadow sets" }
+    ],
+    "avoid": [
+      { "zh": "非矩形投影需求——ThemeShadow 仅支持矩形阴影,异形投影必须改用 DropShadow(调研 02§C5)", "en": "Non-rectangular shadows — ThemeShadow is rectangle-only; irregular shapes require DropShadow (research 02 §C5)" },
+      { "zh": "非 Popup 元素不设 Receivers 就期望阴影出现——必须显式指定投影接收元素", "en": "Expecting shadows on non-Popup elements without setting Receivers — the receiving elements must be declared explicitly" },
+      { "zh": "把 Web demo 的近似公式当成 Fluent 输出——两者数值不可互换" , "en": "Treating the Web demo's approximation as Fluent output — the two are not numerically interchangeable" },
+      { "zh": "用加深阴影表达可点击——Fluent 深度表达层级,不表达可交互性" , "en": "Using heavier shadows to mean clickable — Fluent depth encodes hierarchy, not interactivity" }
+    ]
+  },
+  "a11y": {
+    "zh": "阴影是纯装饰深度线索:不可作为传达层级或状态信息的唯一手段(需配合位置/尺寸/文字);深色主题下阴影可感知度下降,Fluent 靠系统自动适配,demo 的暗底形态仅供对照;阴影不承载交互语义,焦点仍需可见指示(WCAG 2.1 SC 2.4.7)。",
+    "en": "Shadows are decorative depth cues: never the sole carrier of hierarchy or state (pair with position/size/text); on dark themes shadows lose legibility — Fluent adapts automatically, and the demo's dark-canvas form is for comparison only; shadows carry no interaction semantics, so focus still needs a visible indicator (WCAG 2.1 SC 2.4.7)."
+  },
+  "sources": [
+    "https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.themeshadow"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在浅色画布上摆放一排 z 值 0/4/8/16/32 的矩形卡片,阴影由统一公式从 z 计算(越高的 z 越弥散越淡),另有一张卡片由 elevation/opacity 参数实时驱动;注明这是 Web 近似而非 ThemeShadow 本体。",
+      "en": "Lay out rectangular cards at z 0/4/8/16/32 on a light canvas, shadows computed from z by one formula (higher z = more diffuse, fainter), plus one card driven live by the elevation/opacity parameters — annotated as a Web approximation, not ThemeShadow itself."
+    },
+    "acceptance": [
+      { "zh": "z 语义正确:阴影 blur/offset 随 z 增大而增大,alpha 随 z 增大而减小(弥散变淡)", "en": "z semantics correct: shadow blur/offset grow with z while alpha falls (diffuse = fainter)" },
+      { "zh": "快照值直接驱动:elevation 映射到模糊/偏移,opacity 作为阴影 alpha 增益", "en": "Snapshot values drive everything: elevation maps to blur/offset, opacity is the shadow-alpha gain" },
+      { "zh": "所有投影均为矩形(遵循 ThemeShadow 矩形限定),文字标注这是 Web 近似", "en": "Every shadow is rectangular (respecting ThemeShadow's constraint) and the UI states this is a Web approximation" },
+      { "zh": "z=0 的卡片无阴影,且阴影不作为层级唯一线索(卡片标注 z 值)", "en": "The z=0 card has no shadow, and z values are labeled on cards — shadow is never the only hierarchy cue" }
+    ]
+  }
+}

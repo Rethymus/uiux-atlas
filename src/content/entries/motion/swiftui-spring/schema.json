@@ -1,0 +1,102 @@
+{
+  "name": "SwiftUI Spring",
+  "aliases": ["Apple 弹簧", "response/dampingFraction", ".spring()"],
+  "category": "motion",
+  "system": "apple",
+  "star": 3,
+  "tagline": {
+    "zh": "SwiftUI .spring(response:dampingFraction:blendDuration:) 两参数弹簧:response 是刚度的时间尺度(秒),dampingFraction 是相对临界阻尼的比例——iOS 原生手感的来源。",
+    "en": "SwiftUI's .spring(response:dampingFraction:blendDuration:) two-parameter spring: response is the time-scale of stiffness (seconds), dampingFraction the ratio of critical damping — the source of iOS' native feel."
+  },
+  "origin": {
+    "zh": "Apple DocC 官方默认值:response = 0.5s、dampingFraction = 0.825、blendDuration = 0(经官方文档 JSON 数据接口核实,调研 02§A11 与 04§1.3B 双源一致);预设族 bouncy/snappy/smooth 官方定义为 duration 0.5s + 基础 bounce 0.3/0.15/0(调研 02§A13)。",
+    "en": "Apple DocC official defaults: response = 0.5s, dampingFraction = 0.825, blendDuration = 0 (verified via the official docs JSON data endpoint; research 02 §A11 and 04 §1.3B agree); the preset family bouncy/snappy/smooth is officially defined as duration 0.5s + base bounce 0.3/0.15/0 (research 02 §A13)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "response",
+      "unit": "s",
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.5,
+      "effect": {
+        "zh": "弹簧刚度的时间尺度,以近似时长(秒)表达(Apple 原文:『response 是以近似时长表达的刚度』,0 表示无限刚、适合交互驱动)。官方默认 0.5s(Apple DocC)。调大更慢更黏;调小更急促,趋近 interactiveSpring 的交互区间。",
+        "en": "The time-scale of the spring's stiffness, expressed as an approximate duration in seconds (Apple: 'response is... the stiffness expressed as an approximate duration'; 0 means infinitely stiff, suited to interactive driving). Official default 0.5s (Apple DocC). Higher = slower and stickier; lower = snappier, approaching interactiveSpring territory."
+      }
+    },
+    {
+      "type": "number",
+      "name": "dampingFraction",
+      "min": 0.1,
+      "max": 1.2,
+      "step": 0.01,
+      "default": 0.825,
+      "effect": {
+        "zh": "相对临界阻尼所需阻尼量的比例(Apple 原文:『dampingFraction 是相对临界阻尼所需阻尼量的比例』)。官方默认 0.825:略欠阻尼,到位时带一丝回弹。1=临界阻尼无回弹;<1 回弹随数值减小而增多;<0.5 明显振荡;>1 过阻尼,缓慢爬向目标。",
+        "en": "The fraction of the damping needed for critical damping (Apple: 'dampingFraction is... the fraction of the amount of damping needed to achieve critical damping'). Official default 0.825: slightly under-damped, with a hint of overshoot on arrival. 1 = critically damped, no bounce; below 1 the bounce grows as the value drops; under 0.5 oscillates visibly; above 1 overdamped, crawling to the target."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "preset",
+      "options": [
+        { "value": "bouncy", "label": { "zh": "bouncy(回弹)", "en": "bouncy" } },
+        { "value": "snappy", "label": { "zh": "snappy(利落)", "en": "snappy" } },
+        { "value": "smooth", "label": { "zh": "smooth(平滑)", "en": "smooth" } }
+      ],
+      "default": "snappy",
+      "effect": {
+        "zh": "Apple 弹簧预设族,官方定义均为 duration 0.5s + 基础 bounce:bouncy=0.3、snappy=0.15、smooth=0(Apple DocC,调研 02§A13)。demo 上轨按此官方定义以 Motion 的 duration+bounce 弹簧驱动,与下轨 response/dampingFraction 自定义弹簧同跑对照。默认选中 snappy 是演示选择,并非官方『默认预设』。",
+        "en": "Apple's spring preset family, officially defined as duration 0.5s + base bounce: bouncy = 0.3, snappy = 0.15, smooth = 0 (Apple DocC, research 02 §A13). The demo's top lane drives it with Motion's duration+bounce spring exactly per that definition, racing the bottom lane's custom response/dampingFraction spring. Defaulting to snappy is a demo choice, not an official 'default preset'."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "原生 API 属 SwiftUI(iOS 13+);Web 端等价物由 Motion(前 Framer Motion)的物理弹簧承载——两套参数体系为当前主流(调研 04§1.3)。demo 为 Web 演示:依赖 JS 执行,禁用 JS 时元素停在初始位置。",
+      "en": "The native API belongs to SwiftUI (iOS 13+); the Web-side equivalent rides on Motion's (formerly Framer Motion) physics springs — the two mainstream spring parameter systems (research 04 §1.3). The demo is a Web rendition: it requires JS, and elements stay at their initial position without it."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时直出终态(demo 以 useReducedMotion 检测并跳过动画);动效不作传达关键信息的唯一手段(HIG 动效原则);连续 spring 动画接力会保留速度——打断不是重置(调研 04§1.3B)。",
+    "en": "Output the final state directly under prefers-reduced-motion (the demo detects via useReducedMotion and skips animation); motion is never the sole carrier of key information (HIG motion principles); consecutive spring animations keep their velocity — interruption is not a reset (research 04 §1.3B)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "iOS 原生手感的跨端复刻:用 response/dampingFraction 对齐系统控件", "en": "Cross-platform replication of iOS' native feel: match system controls via response/dampingFraction" },
+      { "zh": "默认 0.5s/0.825 适合大多数浮层、卡片与切换;想要更利落先调小 response", "en": "The 0.5s/0.825 default suits most overlays, cards and toggles; lower response first for snappier feel" },
+      { "zh": "预设族选型:回弹选 bouncy、通用交互选 snappy、无回弹选 smooth(官方定义见参数说明)", "en": "Preset picking: bouncy for bounce, snappy for general interaction, smooth for none (official definitions in the param note)" },
+      { "zh": "交互驱动的跟手动画:response 调小(趋近 0=无限刚),Apple 明示 0 适合交互驱动", "en": "Interactive, hand-following animation: lower response (0 = infinitely stiff, explicitly recommended for interactive driving)" }
+    ],
+    "avoid": [
+      { "zh": "进度条等连续量——不该有回弹(参考 motion 弹簧条目同款告诫)", "en": "Continuous quantities like progress bars — no bounce belongs there (same caveat as the Motion spring entry)" },
+      { "zh": "Web 端把 response/dampingFraction 当官方互换参数直接传给 Motion——两者参数体系不同,必须换算", "en": "Passing response/dampingFraction straight into Motion on the Web as if interchangeable — the parameter systems differ and must be converted" },
+      { "zh": "高频小控件(checkbox 等)加弹簧——HIG:高频交互避免加动效(调研 04§2.1)", "en": "Springs on high-frequency small controls (checkboxes etc.) — Apple HIG: avoid motion on frequent interactions (research 04 §2.1)" },
+      { "zh": "把预设(bouncy/snappy/smooth)与 response/dampingFraction 混为一谈——预设的官方定义是 duration+bounce 体系", "en": "Conflating the presets (bouncy/snappy/smooth) with response/dampingFraction — the presets are officially defined in the duration+bounce system" }
+    ]
+  },
+  "a11y": {
+    "zh": "弹簧属位移类动效,是前庭障碍的常见触发源:必须响应 prefers-reduced-motion(demo 直出终态);不要让『等弹簧播完』成为操作前置条件(HIG:动效可取消);回弹幅度(dampingFraction 调小)会放大位移不适,弱跌用户与 0.2Hz 振荡敏感人群尤甚(调研 04§1.6/§6)。",
+    "en": "Springs are displacement motion — a common vestibular trigger: they must honor prefers-reduced-motion (the demo outputs the final state directly); never make users wait out a spring (HIG: motion is cancellable); stronger bounce (lower dampingFraction) amplifies displacement discomfort, especially for motion-sensitive users (research 04 §1.6/§6)."
+  },
+  "sources": [
+    "https://developer.apple.com/documentation/swiftui/animation/spring(response:dampingfraction:blendduration:)",
+    "https://developer.apple.com/documentation/swiftui/animation/bouncy(duration:extrabounce:)",
+    "https://developer.apple.com/documentation/swiftui/animation/snappy(duration:extrabounce:)",
+    "https://developer.apple.com/documentation/swiftui/animation/smooth(duration:extrabounce:)"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 Motion 的物理弹簧复刻 SwiftUI .spring(response:dampingFraction:) 手感:response/dampingFraction 经二阶阻尼谐振子等价换算为 stiffness/damping(mass=1)驱动下轨,上轨按 Apple 官方预设定义(duration 0.5s + bounce 0.3/0.15/0)驱动,两轨同跑对照。",
+      "en": "Replicate SwiftUI's .spring(response:dampingFraction:) feel with Motion's physics spring: convert response/dampingFraction into stiffness/damping via the damped-oscillator equivalence (mass=1) for the bottom lane, and drive the top lane exactly per Apple's preset definitions (duration 0.5s + bounce 0.3/0.15/0), racing both lanes together."
+    },
+    "acceptance": [
+      { "zh": "response/dampingFraction 使用快照值;换算 stiffness = (2π/response)²、damping = 4π·dampingFraction/response,mass 固定 1", "en": "Use the response/dampingFraction snapshot; convert stiffness = (2π/response)², damping = 4π·dampingFraction/response, with mass fixed at 1" },
+      { "zh": "预设轨严格按官方定义:duration 0.5s + bounce(bouncy 0.3 / snappy 0.15 / smooth 0)", "en": "The preset lane follows Apple's official definitions exactly: duration 0.5s + bounce (bouncy 0.3 / snappy 0.15 / smooth 0)" },
+      { "zh": "两轨同时出发、同目标,便于对照手感差异", "en": "Both lanes launch together toward the same target so the feel difference is directly comparable" },
+      { "zh": "prefers-reduced-motion: reduce 时跳过动画直出终态", "en": "Under prefers-reduced-motion: reduce, skip animation and output the final state directly" }
+    ]
+  }
+}

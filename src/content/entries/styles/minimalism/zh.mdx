@@ -1,0 +1,76 @@
+## 结构与 DOM
+
+极简的 DOM 往往薄得惊人:一栏、一行标题、一段正文、一个按钮——层级全靠**字号、字重与留白**,不靠边框与卡片。
+
+```html
+<main class="min-page">
+  <p class="min-eyebrow">产品名</p>
+  <h1 class="min-h1">一个想法一个屏幕</h1>
+  <p class="min-body">留白即设计系统。</p>
+  <a class="min-cta" href="#">开始使用</a>
+</main>
+```
+
+关键点:
+
+- `main` 限宽 `65ch`(调研记载的可读行宽),整页只有一列;
+- 层级三件套:字阶(比率逐级放大)、字重(400/600)、留白(间距刻度的整数倍);
+- 强调色只出现在 CTA/链接/关键数字上——「一个想法一个屏幕」对应「一个色相一个页面」。
+
+## 样式与参数
+
+三个参数对应字阶比率、间距基值与强调色;五枚调色 token 出自调研(superdesign.dev minimalist-web-design 页):
+
+```css
+:root {
+  /* 五枚调色 token(调研原值):调色预算 = 2 中性 + 1 墨 + 1 弱墨 + 1 强调 */
+  --bg: #fafaf9;        /* 页面底 */
+  --surface: #f0efec;   /* 面层,需要抬起时才用 */
+  --ink: #1c1917;       /* 主墨色 */
+  --ink-muted: #57534e; /* 弱墨:次级文本 */
+  --accent: #2563eb;    /* 唯一强调色(参数) */
+  --min-space: 8px;     /* 间距刻度基值(参数):8/16/24/32/48/64/96 */
+}
+
+.min-page {
+  max-width: 65ch;
+  margin: 0 auto;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;             /* 基准字号 */
+  line-height: 1.6;
+}
+.min-h1  { font-size: calc(16px * RATIO * RATIO * RATIO); }  /* 比率 3 次幂,JS 换算 */
+.min-body { color: var(--ink-muted); margin: calc(var(--min-space) * 4) 0; }
+.min-cta {
+  color: #ffffff;
+  background: var(--min-accent);
+  padding: calc(var(--min-space) * 1.5) calc(var(--min-space) * 3);
+  border-radius: calc(var(--min-space));
+}
+```
+
+数值出处:
+
+- 五枚 token `#fafaf9 / #f0efec / #1c1917 / #57534e / #2563eb`:调研逐字记载;
+- 字阶比率默认 1.25(Major Third)、间距刻度 8px 基值、`--measure: 65ch`:同一页;
+- 正文对比≥4.5:1,调研示例 7.4:1(AAA)。
+
+## 动效与交互
+
+极简的动效原则:**少到几乎看不见,但不生硬**。
+
+- CTA 悬停:亮度微调(`filter: brightness(0.96)`)或下划线出现,120ms;不位移、不缩放;
+- 页面切换用淡入(120ms);`prefers-reduced-motion` 时全部取消,直出终态;
+- 交互线索优先静态可见:链接常驻下划线,焦点环 2px 实色——「可及性线索被剥除」是调研明载的头号陷阱之一;
+- 禁止为「显得高级」加入视差、渐显堆叠——那是在往极简里偷运极繁。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `ratio` | 字阶对比变猛(1.5+ 接近 Swiss 海报),层级响亮但长标题易溢出 | 层级变平,1.1 时接近「均匀文本墙」,需靠字重补层级 |
+| `space` | 留白更豪,「编辑自信」感强;16px 基值在小屏上浪费严重 | 版面更紧凑;4px 刻度在长文里显得局促、段落关系变糊 |
+| `accent` | 更亮的强调色需配深字核对 4.5:1;更深的可白字 | 强调色用量越大越「超支」;预算红线:全页一个色相 |
+
+经验区间:ratio 1.2–1.333、space 8px(4pt 网格场景用 4)、强调色占比 < 5% 版面。灰字白底必须逐级核对:弱墨 #57534e 在 #fafaf9 上约 7:1,再深一档的灰就近乎踩线。

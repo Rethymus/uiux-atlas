@@ -1,0 +1,60 @@
+## Structure & DOM
+
+A count-up is two layers: "one visually updating number" + "one screen-reader text holding only the final value", independent of each other:
+
+```html
+<p class="stat">
+  <span class="stat-label">Annual visitors</span>
+  <span class="stat-value" aria-hidden="true">1,247</span>  <!-- updated per frame -->
+  <span class="visually-hidden">2,026</span>                <!-- what screen readers read -->
+</p>
+```
+
+Key points:
+
+- Screen readers hear the start or an intermediate value (css-tricks comment thread, measured: VoiceOver read 8/61 while the visual settled at 100) — the animated node must be `aria-hidden`, with an sr-only final value beside it;
+- Numerals use `font-variant-numeric: tabular-nums`: equal-width digits prevent per-frame width jitter;
+- If hover-triggered, add `:focus` and `tabindex` (css-tricks' advice) so the keyboard can reach it.
+
+## Styling & Parameters
+
+The skeleton of the pure-CSS approach (css-tricks' primary technique): register an `<integer>` variable, interpolate it, display it with a counter:
+
+```css
+@property --num {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+.stat-value::after {
+  counter-reset: num var(--num);
+  content: counter(num);
+  transition: --num 1.2s ease-out;  /* duration/easing/start/target all adjustable */
+  animation-fill-mode: forwards;    /* hold the final value */
+}
+```
+
+Fractional digits split integer/decimal parts with `calc()` for separate rendering (css-tricks). The demo takes the equivalent JS route: rAF evaluates the eased value per frame and formats it with `toLocaleString`; `prefers-reduced-motion` is detected with matchMedia + a change listener (web.dev convention, research 04 §6.2), and reduce skips the roll to output the final value.
+
+All three parameters are JS-type (the demo subscribes to the store; no CSS variables). Where the numbers come from:
+
+- `duration`: css-tricks documents only the adjustable dimensions (duration and easing, fill-mode forwards holding the target) — **no default is recorded**; this entry's 1200ms is a common community value, unverified;
+- `endValue`: the target (start is always 0; start/target are among the adjustable dimensions); the default 2026 is this site's demo value, not official;
+- `decimals`: 0/1/2; default 0 is a demo value.
+
+## Motion & Interaction
+
+- **Easing choice**: counters almost always use ease-out — the fast-start, slow-settle "landing" feel; the demo uses ease-out cubic with `endValue × easeOutCubic(p)` per frame and forces the exact target on the final frame (avoiding a float-truncation off-by-one);
+- **When to fire**: once, after the data arrives; repeated rolls belong to reveal moments (Apple HIG: avoid motion on frequent interactions, research 04 §1.6);
+- **reduced-motion**: output the final value directly — the css-tricks comment-thread recommendation, and this entry's mandatory fallback;
+- **Performance**: only a text node changes, plus one `scaleX` progress bar (a transform property); no layout is touched. Versus the pure-CSS approach, rAF costs one text write per frame — negligible for a single stat card.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `duration` | more suspense and ceremony; past 2s users start suspecting the page is stuck, worse with several cards rolling at once | near-instant flicker; under 300ms the process is unreadable — just "the number jumped" |
+| `endValue` | larger targets mean larger per-frame deltas at the same duration — the roll feels "rushed"; pair 5-digit values with longer durations or a steeper decel | small values roll gently; at 0 the whole animation is a no-op |
+| `decimals` | more digits mean more frequent width changes; tabular-nums turns from optional to required | integers stay clean; 0 is the dashboard default |
+
+Rule of thumb: within 200–4000ms, the working spot is 800–1600ms; fix thousands separators and fractional digits before the roll starts — changing them mid-flight causes jumping.

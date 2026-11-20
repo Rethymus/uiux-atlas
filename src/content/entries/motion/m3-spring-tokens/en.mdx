@@ -1,0 +1,66 @@
+## Structure & DOM
+
+The demo is a compact "animation + readout" workbench: a chip travels along a track (consuming the current token's Web conversion curve and duration), an SVG beside it draws the same curve with a synchronized tracer dot, and readouts below pair the Web curve/duration with the Compose-side damping/stiffness. Core DOM:
+
+```html
+<div class="m3-track"><div class="m3-chip"></div></div>
+<svg viewBox="0 -40 100 180">
+  <path class="m3-curve" d="M 0 100 C …" />          <!-- current token curve -->
+  <g class="m3-dot-x"><circle class="m3-dot-y" /></g> <!-- outer linear-X + inner Bézier-Y -->
+</svg>
+<dl class="m3-readout">cubic-bezier / duration / damping / stiffness</dl>
+```
+
+Key points:
+
+- The three parameters are JS enums; the demo subscribes to the store, looks the token up in the 12-row table, and feeds "curve + duration" straight into the animation — **switching swaps the animation instantly**, with no blended transition state;
+- The Compose damping/stiffness figures are a **side-by-side reference**, not the driver: one token is a physics spring on Android and the official converted curve on the Web, and the two number sets come from two official sources.
+
+## Styling & Parameters
+
+On the Web, consuming a token means writing its official conversion into plain CSS:
+
+```css
+.m3-chip {
+  animation: m3-run var(--m3-dur) cubic-bezier(var(--m3-curve)) both;
+}
+@keyframes m3-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--m3-dist)); }
+}
+```
+
+The 12 official tokens (curves are the Web cubic-bezier conversions, durations in ms; the demo embeds the same table, from m3.material.io/styles/motion/overview/specs, research 02 §B2):
+
+| Token | Curve | Duration |
+| --- | --- | --- |
+| Expressive fast spatial | (0.42, 1.67, 0.21, 0.90) | 350ms |
+| Expressive default spatial | (0.38, 1.21, 0.22, 1.00) | 500ms |
+| Expressive slow spatial | (0.39, 1.29, 0.35, 0.98) | 650ms |
+| Expressive fast/default/slow effects | (0.31, 0.94, 0.34, 1) / (0.34, 0.80, 0.34, 1) / (0.34, 0.88, 0.34, 1) | 150/200/300ms |
+| Standard fast/default spatial | (0.27, 1.06, 0.18, 1.00) | 350/500/750ms |
+| Standard fast/default/slow effects | same three curves as Expressive effects | 150/200/300ms |
+
+The Compose MotionScheme damping/stiffness values (official androidx sources ExpressiveMotionTokens.kt / StandardMotionTokens.kt, research 02 §B3): Expressive spatial default 0.8/380, fast 0.6/800, slow 0.8/200; Expressive effects 1.0/1600 (default), 1.0/3800 (fast), 1.0/800 (slow); Standard spatial 0.9/700, 0.9/1400, 0.9/300; Standard effects 1.0/1600, 1.0/3800, 1.0/800.
+
+Stated honestly: in the official table the Standard spatial row covers one curve (fast/default listed, with the slow 750ms duration on the same row); the research did not capture a separate slow-spatial curve. The demo reuses (0.27, 1.06, 0.18, 1.00) at 750ms for standard+slow+spatial and says so in the readout. The legacy Emphasized easing has no CSS Bézier equivalent (officially N/A, Standard as fallback, research 04 §1.4) — this entry uses the post-replacement spring conversion table and is not affected by that limit.
+
+## Motion & Interaction
+
+- **Switch = new animation**: any enum change cancels the running animation (`controls.cancel()`) and re-runs `element.animate()` with the new curve/duration immediately;
+- **Curve visualization**: the tracer shares the chip's curve shape, making y>1 overshoot obvious (expressive spatial's (0.42, 1.67, …) leaps out of the gate);
+- **Aligned readouts**: the readout shows the full token name (e.g. Expressive fast spatial), the cubic-bezier, the duration, and the Compose damping/stiffness — parameter axes mapped to number axes;
+- **Replay**: clicking the track or "Replay" re-runs the current token;
+- **Reduced motion**: the animation is skipped and the final state shown directly; readouts persist;
+- Performance: the chip animates `transform` only.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `scheme` | expressive: curves overshoot (y1 up to 1.67), the look is exuberant, and spatial springs run low stiffness (380) for extra bounce | standard: overshoot reined in (y1 = 1.06), more restrained, spatial springs run high stiffness (700/1400/300) for crispness |
+| `speed` | slow: durations rise to 300–750ms while Compose stiffness drops to 200–800 — for large, infrequent transitions | fast: compressed to 150–350ms with stiffness up to 800–3800 — instant feedback for small controls; default sits between |
+| `type` | spatial: overshoot allowed and durations longer, serving position/size | effects: damping 1.0 = critically damped, no overshoot, shorter durations, serving color/opacity state feedback |
+| Combined feel | all expressive + slow = the most expressive large-area transition at 500–750ms | all standard + fast = the most restrained quick feedback at 150–350ms |
+
+Selection rule: position/size goes spatial (overshoot allowed), state feedback goes effects (no overshoot); raise the speed tier for large/infrequent surfaces, keep fast for small controls; hand off to Web by copying the official conversion table, never by fitting curves by hand.

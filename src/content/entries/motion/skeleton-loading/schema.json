@@ -1,0 +1,88 @@
+{
+  "name": "Skeleton Loading",
+  "aliases": ["骨架屏", "加载骨架", "Skeleton screen"],
+  "category": "motion",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "用几何色块复刻即将出现的内容布局,叠加一道扫光脉动表示「加载中」;内容就绪后快速淡入覆盖,布局零跳动。",
+    "en": "Geometric placeholder blocks replicate the upcoming content layout, topped by a sweeping shimmer pulse meaning \"loading\"; content fades in fast once ready, with zero layout shift."
+  },
+  "origin": {
+    "zh": "Luke Wroblewski《Avoid The Spinner》确立了骨架屏对 spinner 的替代(注意力落在「内容正在到来」);M3 把 skeleton loaders 列为六大转场模式之一:微妙脉动(视觉走向左上→右下)+ 完成后快速淡入(调研 04§2.2);选型阈值来自 NN/g 进度指示研究(调研 04§2.2)。",
+    "en": "Luke Wroblewski's \"Avoid The Spinner\" established skeletons as the spinner replacement (attention lands on \"content is coming\", not waiting); M3 lists skeleton loaders among its six transition patterns: a subtle pulse (visually travelling top-left → bottom-right) plus a fast fade-in of content (research 04 §2.2); the selection thresholds come from NN/g's progress-indicator research (research 04 §2.2)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "pulse",
+      "min": 600,
+      "max": 3000,
+      "step": 50,
+      "default": 1200,
+      "unit": "ms",
+      "cssVar": "--skeleton-duration",
+      "effect": {
+        "zh": "扫光脉动的周期,CSS 型参数(demo 经 --skeleton-duration 注入)。M3 只要求「微妙脉动」,未记载数值——1200ms 为社区常见值,未证实。",
+        "en": "Period of the shimmer sweep, a CSS-type param (injected via --skeleton-duration). M3 only requires a \"subtle pulse\" and records no number — 1200ms is a common community value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "direction",
+      "options": [
+        { "value": "horizontal", "label": { "zh": "水平扫光", "en": "Horizontal sweep" } },
+        { "value": "diagonal", "label": { "zh": "对角扫光", "en": "Diagonal sweep" } }
+      ],
+      "default": "horizontal",
+      "effect": {
+        "zh": "JS 型参数(demo 切换 data-dir):horizontal=经典左→右扫光,社区最常见形态;diagonal=120° 渐变对角扫过,对应 M3 记载的「微妙脉动,视觉走向从屏幕左上到右下」(调研 04§2.2)。两者只改视觉走向,不改语义。",
+        "en": "JS-type param (the demo toggles data-dir): horizontal = the classic left→right sweep, the community's most common form; diagonal = a 120° gradient crossing the card diagonally, matching M3's documented \"subtle pulse, visually travelling from top-left to bottom-right\" (research 04 §2.2). Either changes only the visual direction, not the semantics."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 CSS 渐变 + transform 动画 + data 属性切换,全浏览器可用,无新特性依赖;不支持时骨架退化为静态色块,语义不受影响。",
+      "en": "Pure CSS gradients, transform animation and data-attribute switching — available everywhere with no modern-feature dependency; without support the skeleton degrades to static blocks, semantics intact."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时停用脉动(色块保持静态基色)、内容切换不做淡入直接呈现;「正在加载」的语义不得只靠动画传达——同时用 aria-busy / 状态文字兜底。",
+    "en": "Under prefers-reduced-motion the pulse is disabled (blocks keep their static base color) and content appears without the fade-in; the \"loading\" semantics must never ride on motion alone — back it with aria-busy / status text."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "内容型列表/卡片的首屏加载(Feed、详情页、仪表盘卡片)", "en": "First paint of content lists/cards (feeds, detail pages, dashboard cards)" },
+      { "zh": "预期加载 1s 以上且布局已知的页面——先按 NN/g 阈值选型再做骨架", "en": "Pages expected to load over 1s with a known layout — pick via NN/g thresholds first, skeleton second" },
+      { "zh": "局部刷新的区块(换页、筛选),保持布局稳定降低跳动", "en": "Locally refreshing regions (pagination, filters) where layout stability matters" }
+    ],
+    "avoid": [
+      { "zh": "预期 <1s 的请求——NN/g:用即时状态变化(按压态)即可,骨架反而制造等待感", "en": "Requests expected under 1s — NN/g: instant state changes suffice; a skeleton manufactures waiting" },
+      { "zh": "预期 ≥10s 的长任务——改用百分比进度条 + 文字说明", "en": "Long tasks at 10s+ — switch to a percent-done progress bar with descriptive text" },
+      { "zh": "布局未知的动态内容——占位块与实际内容对不上时,切换瞬间跳动反而更明显", "en": "Content whose layout is unknown — mismatched placeholders make the swap-in jump more visible" }
+    ]
+  },
+  "a11y": {
+    "zh": "骨架色块是纯装饰,对读屏隐藏;加载状态用 aria-busy 与文字状态(如「正在加载…」)同步传达,不依赖脉动动画;reduced-motion 下停用扫光;内容淡入期间保持布局稳定,避免焦点元素移动。",
+    "en": "Skeleton blocks are purely decorative and hidden from screen readers; the loading state is conveyed via aria-busy and status text (e.g. \"Loading…\"), never via the pulse alone; the sweep is disabled under reduced motion; keep layout stable during the fade so focusable elements do not move."
+  },
+  "sources": [
+    "https://www.nngroup.com/articles/progress-indicators/",
+    "https://m3.material.io/styles/motion/transitions/transition-patterns",
+    "https://www.lukew.com/ff/entry.asp?1797"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张「骨架 → 内容」的卡片:占位态用色块复刻头像/标题/正文行布局并叠加按快照周期的扫光,内容就绪后以 200ms + M3 Standard easing 快速淡入覆盖,切换零布局跳动。",
+      "en": "Replicate a skeleton→content card: the placeholder state mirrors the avatar/title/body-line layout with a shimmer at the snapshot period, and the ready content fades in fast at 200ms + M3 Standard easing with zero layout shift."
+    },
+    "acceptance": [
+      { "zh": "占位块与内容块尺寸对齐,切换时不发生布局位移", "en": "Placeholder and content blocks align in size; the swap causes no layout shift" },
+      { "zh": "扫光只动 transform(translateX),周期取参数快照 --skeleton-duration", "en": "The sweep animates only transform (translateX) at the snapshot period --skeleton-duration" },
+      { "zh": "内容淡入 200ms cubic-bezier(0.2, 0, 0, 1)(M3 short4 + Standard easing)", "en": "Content fades in at 200ms cubic-bezier(0.2, 0, 0, 1) (M3 short4 + Standard easing)" },
+      { "zh": "prefers-reduced-motion: reduce 时停用扫光与淡入,加载状态用文字/aria-busy 兜底", "en": "Under prefers-reduced-motion: reduce, disable the sweep and fade; the loading state rides on text/aria-busy" },
+      { "zh": "加载语义同时经 aria-busy 与可见文字传达,不依赖动画", "en": "The loading semantics are conveyed via aria-busy and visible text, never via motion alone" }
+    ]
+  }
+}

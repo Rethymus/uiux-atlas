@@ -1,0 +1,92 @@
+{
+  "name": "Radix Color Scale",
+  "aliases": ["Radix 12 步色阶", "语义色阶", "Radix Colors"],
+  "category": "color",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "每个 hue 一条 12 步色阶,步位即语义:1–2 背景、3–5 交互表面、6–8 边框、9–10 solid、11–12 文本——非 Material 路线的工业标杆。",
+    "en": "Every hue is a 12-step scale where position means semantics: 1–2 backgrounds, 3–5 interactive surfaces, 6–8 borders, 9–10 solids, 11–12 text — the industrial standard outside Material."
+  },
+  "origin": {
+    "zh": "Radix Colors 官方将每步语义写入文档(调研 06§二8):步 11/12 在步 2 背景上保证 APCA Lc 60 / Lc 90 对比度;官方以 APCA 定目标、支持 P3 广色域,并提供 6 种中性色 + 26 个 accent + alpha 透明变体。demo 的 8 组亮色阶 12 步 hex 逐值取自官方发行包 @radix-ui/colors@3.0.0(本次会话从 npm 包读取 gray/blue/green/amber/red/violet/cyan/pink.css)。",
+    "en": "Radix Colors documents the semantics of every step (research 06 §8): steps 11/12 guarantee APCA Lc 60 / Lc 90 contrast on step-2 backgrounds; targets are set in APCA, P3 gamut supported, with 6 neutrals + 26 accents + alpha variants. The demo's 8 light-scale 12-step hex values were read value-by-value from the official @radix-ui/colors@3.0.0 package (gray/blue/green/amber/red/violet/cyan/pink.css) this session."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "hue",
+      "options": [
+        { "value": "gray", "label": { "zh": "Gray(中性)", "en": "Gray (neutral)" } },
+        { "value": "blue", "label": { "zh": "Blue", "en": "Blue" } },
+        { "value": "green", "label": { "zh": "Green", "en": "Green" } },
+        { "value": "amber", "label": { "zh": "Amber(9 步配深字)", "en": "Amber (dark text on 9)" } },
+        { "value": "red", "label": { "zh": "Red", "en": "Red" } },
+        { "value": "violet", "label": { "zh": "Violet", "en": "Violet" } },
+        { "value": "cyan", "label": { "zh": "Cyan", "en": "Cyan" } },
+        { "value": "pink", "label": { "zh": "Pink", "en": "Pink" } }
+      ],
+      "default": "blue",
+      "effect": {
+        "zh": "整条 12 步色阶的色相。官方目录含 6 种中性色(Gray/Mauve/Slate/Sage/Olive/Sand)+ 26 个 accent;本条目取 8 个代表(1 中性 + 7 accent)演示结构。注意例外:Sky/Mint/Lime/Yellow/Amber 5 个色阶的 9 步官方配深色文字(调研 06§二8),其余多数配白字。",
+        "en": "The hue of the whole 12-step scale. The official catalog holds 6 neutrals (Gray/Mauve/Slate/Sage/Olive/Sand) + 26 accents; this entry picks 8 representatives (1 neutral + 7 accents) to demonstrate the structure. Mind the exception: steps 9 of Sky/Mint/Lime/Yellow/Amber officially pair with dark text (research 06 §8), while most others take white."
+      }
+    },
+    {
+      "type": "number",
+      "name": "step",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 9,
+      "effect": {
+        "zh": "高亮查看的步位,默认 9(solid——按钮/徽标等 CTA 用色,全阶 chroma 最高、混入白/黑最少)。12 步语义(Radix 官方):1 app 背景、2 次级/微妙背景、3 组件表面背景、4 hover 背景、5 pressed/selected 背景、6 非交互微妙边框、7 交互边框/焦点环、8 hover 边框/强边框、9 solid、10 solid hover、11 低对比文本、12 高对比文本。",
+        "en": "The step to highlight, default 9 (solid — CTA color for buttons/badges, the highest-chroma and least white/black-mixed step of the scale). Step semantics (Radix official): 1 app background, 2 subtle background, 3 component surface, 4 hover background, 5 pressed/selected background, 6 subtle non-interactive borders, 7 interactive borders & focus rings, 8 hover borders, 9 solid, 10 solid hover, 11 low-contrast text, 12 high-contrast text."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "色阶以 hex/CSS 自定义属性发布,无 CSS 特性依赖;官方另发布 -dark(暗色)与 -alpha(透明)变体文件,并为 P3 广色域做了调校。demo 直接使用亮色阶 sRGB hex,任何浏览器可用。",
+      "en": "Scales ship as hex/CSS custom properties with no CSS feature dependency; the official package also publishes -dark and -alpha variant files, tuned for P3 wide gamut. The demo uses light-scale sRGB hex, usable in any browser."
+    }
+  },
+  "fallback": {
+    "zh": "无需回退。工程实践:亮色主题可直接用白色作 app 背景,暗色主题改用步 1/2 的灰或彩色,并为 AppBg 建 mutable alias 按模式重映射(官方用法);缺色时用 Gray 步阶兜底。",
+    "en": "No fallback needed. Practice: light themes can keep a white app background, dark themes switch to step 1/2 grays or colors, with a mutable AppBg alias remapped per mode (official usage); fall back to the Gray scale when a hue is missing."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计系统底座:直接把步位当语义 token 用(1–2 页面底、3–5 交互面、6–8 描边、9–10 实色、11–12 文字)", "en": "Design-system foundation: use steps as semantic tokens directly (1–2 page base, 3–5 interactive surfaces, 6–8 strokes, 9–10 solids, 11–12 text)" },
+      { "zh": "状态色体系:info/warning/danger 各取一条 hue,同一步位跨色互换保持视觉秩序", "en": "Status color systems: one hue per info/warning/danger; same step positions swap across hues keeping visual order" },
+      { "zh": "暗色主题:官方 -dark 变体独立调校,不是亮色的简单加深", "en": "Dark themes: the official -dark scales are independently tuned, not a naive darkening of light" },
+      { "zh": "高对比需求:步 11/12 已按 APCA Lc 60/90 定标,正文/标题文本直接取用", "en": "High-contrast needs: steps 11/12 are APCA Lc 60/90 targeted — pick them for body/heading text directly" }
+    ],
+    "avoid": [
+      { "zh": "跨步位乱配:比如拿步 3(表面)当文字色——步位语义与对比度保证是一体的,拆开用就失效", "en": "Mixing steps arbitrarily: step 3 (surface) as text, say — step semantics and contrast guarantees are one system, splitting them breaks both" },
+      { "zh": "给 Amber/Lime 等亮黄类 9 步强行配白字——官方明确这 5 阶配深色字", "en": "Forcing white text on step 9 of Amber/Lime-type bright hues — the official docs pair those 5 scales with dark text" },
+      { "zh": "把步 9 当『品牌主色』直接全屏铺:9 是 CTA/强调实色,大面积背景该用 1–3", "en": "Painting full screens with step 9 as the 'brand color': 9 is for CTAs/accents; large backgrounds belong to steps 1–3" }
+    ]
+  },
+  "a11y": {
+    "zh": "官方保证:步 11 与步 12 在同类步 2 背景上达到 APCA Lc 60 / Lc 90(调研 06§二8 原文);步 9 的文字配色按官方分档(多数白字,Sky/Mint/Lime/Yellow/Amber 深字)。换 hue 或自定义色阶时需重新核对这些配对;APCA 为非对称算法,深字浅底与浅字深底阈值不同,不能用 WCAG 比值直接套算。",
+    "en": "Official guarantees: steps 11 and 12 reach APCA Lc 60 / Lc 90 on same-family step-2 backgrounds (research 06 §8); step-9 text color follows the official split (white for most scales, dark for Sky/Mint/Lime/Yellow/Amber). Re-verify these pairings when swapping hues or customizing scales; APCA is asymmetric — dark-on-light and light-on-dark have different thresholds, so WCAG ratios do not transfer directly."
+  },
+  "sources": [
+    "https://www.radix-ui.com/colors/docs/palette-composition/understanding-the-scale",
+    "https://www.radix-ui.com/colors"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现 Radix 式 12 步语义色阶:每步带官方语义注释(1–2 背景/3–5 交互面/6–8 边框/9–10 solid/11–12 文本),并按语义拼一张迷你卡片(背景 2、边框 6、按钮 9、正文 11、标题 12)。",
+      "en": "Implement a Radix-style 12-step semantic scale: each step annotated with the official semantics (1–2 backgrounds / 3–5 surfaces / 6–8 borders / 9–10 solids / 11–12 text), plus a mini card assembled by semantics (background 2, border 6, button 9, body text 11, heading 12)."
+    },
+    "acceptance": [
+      { "zh": "12 步 hex 取自 @radix-ui/colors 官方发布值,不自行调整", "en": "The 12 step hex values come from the official @radix-ui/colors release, unmodified" },
+      { "zh": "每步标注官方语义;步 11/12 注明 APCA Lc 60/90 保证", "en": "Each step is annotated with its official semantics; steps 11/12 note the APCA Lc 60/90 guarantee" },
+      { "zh": "步 9 的文字色遵循官方分档:Sky/Mint/Lime/Yellow/Amber 用深字,其余白字", "en": "Step-9 text color follows the official split: dark text for Sky/Mint/Lime/Yellow/Amber, white otherwise" },
+      { "zh": "切换 hue 整条色阶与语义示例同步更新", "en": "Switching hue updates the whole scale and the semantic example in sync" },
+      { "zh": "步位即语义:示例卡片严格按 步2 底 / 步6 边 / 步9 按钮 / 步11 正文 / 步12 标题 拼装", "en": "Position is semantics: the example card uses exactly step 2 base / step 6 border / step 9 button / step 11 body / step 12 heading" }
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+## 结构与 DOM
+
+bento 的 DOM 就是一个 grid 容器加若干格子,**DOM 顺序 = 阅读顺序**(最重要的事实放最前),层级全部交给 span 表达:
+
+```html
+<section class="bento">
+  <div class="bento-hero">最重要的事实</div>
+  <div class="bento-wide">次要事实(横向)</div>
+  <div class="bento-cell">规格数字</div>
+  <div class="bento-tall">次要事实(纵向)</div>
+  <div class="bento-cell">规格数字</div>
+</section>
+```
+
+关键点:
+
+- 每格**自包含一个事实**;格子大小编码信息优先级——最大格放最重要的事实;
+- bento 是**布局不是配色**:格子内部可以是任意风格(浅灰 `#f5f5f7` / 深灰 `#161617` 均出自 Apple 系灰);
+- 不对称但整体平衡:hero 占一角,小格在周边回填,`grid-auto-flow: dense` 负责填洞;
+- dense 会让视觉顺序偏离 DOM 顺序——纯内容网格慎用(见动效与交互)。
+
+## 样式与参数
+
+四个参数对应列数、行高、间隙与圆角,经 `--bento-*` 变量注入;默认值全部来自调研配方:
+
+```css
+.bento {
+  display: grid;
+  grid-template-columns: repeat(var(--bento-cols), minmax(0, 1fr)); /* 默认 4 列 */
+  grid-auto-rows: var(--bento-row);   /* 默认 180px */
+  gap: var(--bento-gap);              /* 默认 16px */
+  grid-auto-flow: dense;
+}
+.bento > * { border-radius: var(--bento-radius); }  /* 默认 24px,标志值 */
+
+.bento-hero { grid-column: span 2; grid-row: span 2; }  /* 2×2 hero */
+.bento-wide { grid-column: span 2; }
+.bento-tall { grid-row: span 2; }
+
+/* 响应式断点(调研:768px→2 列、480px→1 列并重置 span;demo 用容器查询) */
+@container bg-stage (max-width: 768px) {
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bento-hero { grid-column: span 2; grid-row: span 1; }
+  .bento-wide, .bento-tall { grid-column: span 2; grid-row: span 1; }
+}
+@container bg-stage (max-width: 480px) {
+  .bento { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .bento > * { grid-column: auto; grid-row: auto; }
+}
+```
+
+数值出处(superdesign.dev bento-grid 页):
+
+- 配方原文:`display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows: 180px; gap:16px; grid-auto-flow: dense`;
+- 圆角 20–28px,**24px 为标志值**,低于 16px 退化为普通卡片;浅色 `#f5f5f7` / 深色 `#161617`(Apple 系灰);
+- 断点 768px→2 列、480px→1 列并重置 span;`span 2×2` hero;
+- 代表案例:Apple MacBook Air「Get the highlights」区、Raycast、Amie、GitHub Copilot;画廊 bentogrids.com。
+
+## 动效与交互
+
+bento 是静态布局,动效只做「入场编排」与「可点击暗示」:
+
+- **入场**:逐格淡入+上移 8px,每格交错 40ms;只动 `opacity/transform`;`prefers-reduced-motion` 时改为整块淡入或直出终态;
+- **hover**:可点击格子微微上抬 2px+阴影加深,不可点击格子不动——hover 是可点击的承诺,装饰格加 hover 会误导;
+- **焦点顺序陷阱**:`grid-auto-flow: dense` 让视觉顺序≠DOM 顺序,Tab 会「乱跳」(WCAG 2.4.3/1.3.2);内容型 bento 要么不用 dense,要么保证 DOM 顺序即阅读顺序;
+- 移动端断点重置 span 后,层级随之变平——保持 h2/h3 语义,让结构而非格子大小承载信息。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `cols` | 6 列信息密度高,小格变碎,规格数字风格;4 列是黄金档;2–3 列更适合窄容器与移动优先 | 格子变大变少,接近「大卡片列表」;span 2 的格子可能占满整行 |
+| `rowHeight` | 格子更方更高,内容呼吸感强;>220px 时一屏放不下几个格子 | 格子更扁,接近横幅;低于 140px 时 hero(2 行)高度不足,层级感减弱 |
+| `gap` | 格子间缝隙明显,模块感强;>24px 开始松散,「紧凑网格」特征流失 | 趋近 0 时格子粘连,接近马赛克拼贴;可读性靠圆角勉强维持 |
+| `radius` | 胶囊感强,接近 Apple 发布会风格;>32px 小格内文字可用宽度受限 | 低于 16px 退化为普通卡片,这是调研明载的风格失效线 |
+
+经验区间:4 列、行高 160–200px、gap 12–20px、radius 20–28px。改列数后先检查 hero 是否仍是视觉重心,再检查小格文字是否溢出。

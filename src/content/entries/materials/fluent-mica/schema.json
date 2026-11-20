@@ -1,0 +1,86 @@
+{
+  "name": "Fluent Mica",
+  "aliases": ["云母", "Mica", "Mica Alt"],
+  "category": "materials",
+  "system": "fluent",
+  "star": 1,
+  "tagline": {
+    "zh": "Microsoft Fluent 的不透明动态材质:仅采样桌面壁纸一次,绘制长驻窗口背景——与逐元素实时透出的 Acrylic 相对;Mica Alt 是强着色变体。",
+    "en": "Microsoft Fluent's opaque dynamic material: samples the desktop wallpaper once to paint a long-lived window background — the counterpart to element-by-element live Acrylic; Mica Alt is the strongly-tinted variant."
+  },
+  "origin": {
+    "zh": "Microsoft Learn 官方文档:Mica 是不透明动态材质,仅采样桌面壁纸一次绘制长驻窗口背景(性能导向);Mica Alt 为强着色变体,适合 tab 式标题栏;Windows App SDK 1.1+(调研 02 §3 C2)。",
+    "en": "Microsoft Learn's official docs: Mica is an opaque dynamic material that samples the desktop wallpaper once to paint a long-lived window background (performance-driven); Mica Alt is the strongly-tinted variant suited to tabbed title bars; Windows App SDK 1.1+ (research 02 §3 C2)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "mica", "label": { "zh": "Mica 标准云母", "en": "Mica" } },
+        { "value": "mica-alt", "label": { "zh": "Mica Alt 强着色", "en": "Mica Alt" } }
+      ],
+      "default": "mica",
+      "effect": {
+        "zh": "官方两变体(调研 02 §3 C2):mica 壁纸取样后调淡做长驻窗口背景;mica-alt 强着色变体,适合 tab 式标题栏等需要更强应用标识的场景。demo 订阅后切换 data-variant,alt 叠加强着色薄层。",
+        "en": "The two official variants (research 02 §3 C2): mica derives a softened wallpaper sample as the long-lived window background; mica-alt is the strongly-tinted variant for tabbed title bars and scenes needing a stronger app identity. The demo subscribes and toggles data-variant; alt stacks a stronger tint veil."
+      }
+    },
+    {
+      "type": "number",
+      "name": "tint",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 50,
+      "cssVar": "--fm-tint",
+      "effect": {
+        "zh": "取样壁纸层之上的着色薄层强度。官方未公布数值默认(调研 02 §3 C2 仅记载材质定义与 Mica Alt 变体)——默认 50% 为社区常见值(未证实):调大应用标识越强、壁纸感越弱;调小越接近裸取样。",
+        "en": "Strength of the tint veil above the wallpaper-sampled layer. No official default is published (research 02 §3 C2 records the material definition and the Mica Alt variant only) — the default 50% is a community-common value (unverified): raising it strengthens app identity and weakens the wallpaper; lowering it approaches the bare sample."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "真身仅 Windows:Windows App SDK 1.1+ / WinUI(调研 02 §3 C2)。Web 近似为纯 CSS(壁纸副本 + 滤镜 + 着色层),无需 backdrop-filter,因此不受 backdrop-filter 兼容性约束(Chrome 76 / Firefox 103 / Safari 9 亦非必需)。",
+      "en": "The native material is Windows-only: Windows App SDK 1.1+ / WinUI (research 02 §3 C2). The web approximation is pure CSS (a wallpaper copy + filters + tint veil) and needs no backdrop-filter, so it is unconstrained by backdrop-filter compatibility (Chrome 76 / Firefox 103 / Safari 9 not even required)."
+    }
+  },
+  "fallback": {
+    "zh": "Web 近似不依赖 backdrop-filter,无兼容性回退需求;真身不可用时(非 Windows App SDK 环境)直接以静态壁纸取样色/中性灰做窗口背景——Mica 本身就是不透明材质,回退到实色不损失可读性。",
+    "en": "The web approximation needs no backdrop-filter and thus no compatibility fallback; off Windows App SDK environments, fall back to a static wallpaper-derived fill or neutral gray — Mica is opaque by design, so a solid fallback loses no readability."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长驻主窗口背景:应用框架、设置页、文档工作区(官方场景)", "en": "Long-lived main-window backgrounds: app frames, settings pages, document workspaces (the official scene)" },
+      { "zh": "tab 式标题栏等需要强应用标识的场景(mica-alt 官方适用)", "en": "Tabbed title bars and scenes needing strong app identity (the official mica-alt use)" },
+      { "zh": "性能敏感的大面积表面——单次采样比逐元素实时透出便宜得多", "en": "Large performance-sensitive surfaces — one sample is far cheaper than element-by-element live transparency" }
+    ],
+    "avoid": [
+      { "zh": "transient UI(菜单、弹出层)——官方为这类场景保留的是 Acrylic(调研 02 §3 C1/C2)", "en": "Transient UI (menus, popovers) — Acrylic is the official material for those (research 02 §3 C1/C2)" },
+      { "zh": "需要内容透出窗口的浮层——Mica 不透明,做不到逐元素透视", "en": "Overlays that must transmit window content — Mica is opaque and cannot do per-element see-through" },
+      { "zh": "把 Web 近似的 tint 数值当官方默认——调研未记载官方数值", "en": "Treating the web tint numbers as official defaults — the research records no official figures" }
+    ]
+  },
+  "a11y": {
+    "zh": "Mica 是不透明材质,文字直接落在『取样壁纸 + 着色层』上:按壁纸最亮/最暗区域核对 4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17);mica-alt 强着色会整体改变表面色,深浅两套前景色都要重核。",
+    "en": "Mica is opaque, so text sits directly on the 'wallpaper sample + tint veil': check 4.5:1 against the wallpaper's brightest/darkest regions (WCAG 2.1 SC 1.4.3, research 06 §V §17); mica-alt's strong tint shifts the whole surface — re-check both light and dark foregrounds."
+  },
+  "sources": [
+    "https://learn.microsoft.com/en-us/windows/apps/design/style/mica"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个 Mica 主窗口:壁纸副本经重度模糊/降饱和后作为不透明窗口背景(单次采样、不随内容变化),叠 tint 着色层;mica/mica-alt 两变体可切,并用一块实时透视的 Acrylic 条对照两者差异。",
+      "en": "Recreate a Mica main window: a wallpaper copy, heavily blurred/desaturated, becomes the opaque window background (sampled once, unresponsive to content), with a tint veil above; switchable between mica and mica-alt, contrasted against a live see-through Acrylic strip."
+    },
+    "acceptance": [
+      { "zh": "窗口背景是不透明的『取样层』:壁纸副本 + 重度模糊/降饱和滤镜,而非 backdrop-filter 实时透视", "en": "The window background is an opaque 'sample layer': a wallpaper copy with heavy blur/desaturation filters, not live backdrop-filter see-through" },
+      { "zh": "variant 切换 mica/mica-alt,快照默认 mica;alt 叠加强着色薄层", "en": "variant toggles mica/mica-alt with the snapshot default mica; alt stacks the strong-tint veil" },
+      { "zh": "tint 着色层透明度严格取 tint 快照值(默认 50%),UI 注明『社区常见值,官方未公布(未证实)』", "en": "The tint veil uses the exact tint snapshot value (default 50%), labeled 'community-common value, no official figure published (unverified)' in the UI" },
+      { "zh": "同屏放一块 Acrylic 条(实时 backdrop-filter)演示两者差异,并配文字说明", "en": "Place an Acrylic strip (live backdrop-filter) side by side to demonstrate the difference, with explanatory text" },
+      { "zh": "窗口内内容动画只动 transform,prefers-reduced-motion 时停用", "en": "In-window content animation touches only transform; disabled under prefers-reduced-motion" }
+    ]
+  }
+}

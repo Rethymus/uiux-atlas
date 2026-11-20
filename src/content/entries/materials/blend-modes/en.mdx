@@ -1,0 +1,61 @@
+## Structure & DOM
+
+Blend modes have two entry points: `mix-blend-mode` blends the **entire element** with whatever is behind it; `background-blend-mode` blends only an element's **own background layers**. The demo uses the former: a colorful lower gradient plus an off-white upper gradient, with the blending scope bounded by `isolation: isolate`:
+
+```html
+<div class="stage">              <!-- isolation: isolate -->
+  <div class="layer-a"></div>    <!-- lower: colorful gradient -->
+  <div class="layer-b"></div>    <!-- upper: mix-blend-mode + opacity -->
+</div>
+```
+
+Key points:
+
+- Blending happens **within one stacking context** — without isolate, the upper layer blends all the way down to the page background, the most common failure mode;
+- `mix-blend-mode` makes the element composite as "source = the element's rendered result, destination = everything behind it", exactly as the spec defines;
+- All 16 modes are spec-named values — inventing others (`linear-burn` does not exist) is invalid.
+
+## Styling & Parameters
+
+The two parameters map to two declarations:
+
+```css
+.stage { isolation: isolate; }
+.layer-a {
+  background:
+    radial-gradient(60% 80% at 22% 24%, oklch(0.66 0.2 330 / 0.9), transparent 70%),
+    radial-gradient(55% 70% at 80% 22%, oklch(0.72 0.16 85 / 0.85), transparent 68%),
+    linear-gradient(140deg, oklch(0.4 0.12 250), oklch(0.34 0.1 190));
+}
+.layer-b {
+  background: linear-gradient(120deg,
+    oklch(0.96 0.03 260), oklch(0.93 0.05 320) 60%, oklch(0.9 0.04 200));
+  mix-blend-mode: var(--blend-mode);  /* normal (default) … luminosity, 16 total */
+  opacity: var(--blend-opacity);      /* 100% (default) = no alpha falloff */
+}
+```
+
+Where the numbers come from:
+
+- The **16 enum values** are taken one by one from Compositing 1 §10.1's named list: normal, multiply, screen, overlay, darken, lighten, color-dodge, color-burn, hard-light, soft-light, difference, exclusion, hue, saturation, color, luminosity (research 02 §D3; the spec page was verified firsthand);
+- `normal` and `opacity: 1` are the spec's initial values (hence the defaults);
+- The demo's gradient colors are demo oklch blobs following MDN's layered-overlay pattern in "Using CSS gradients" — not spec content.
+
+## Motion & Interaction
+
+Mode switching needs no animation — **the blended result applies instantly**, which is exactly why this suits interactive color work:
+
+- Switching `--blend-mode` is one style recalculation, immediately visible; avoid transitioning the mix-blend-mode value itself (the spec defines no interpolation between blend functions, so transition behavior is unpredictable);
+- opacity transitions normally (alpha interpolation is well defined) and suits fading the blend layer in;
+- difference-class modes plus a pointer-following upper layer is the classic "inverted flashlight" play, but mind repaint cost; under `prefers-reduced-motion` the follow animation is dropped — handled in the demo.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `mode` (by family) | darkening modes (multiply/color-burn/darken) press everything deeper; lightening modes (screen/color-dodge/lighten) bleach and glow; difference/exclusion produce high-contrast inversions; hue/saturation/color swap hue without guarding luminance, luminosity keeps only luminance | returning to normal is pure covering; soft-light/hard-light sit in the middle with gentle shifts — the safest starting points |
+| `opacity` | at 100% blending runs full-strength; multiply/difference can render text unreadable | toward 0% it degrades into "a fading normal", the blend falling off linearly by alpha; 50–70% is often the usable zone for strong modes |
+
+Rule of thumb: the whiter the upper layer, the more multiply/overlay read as "lighting" the base; the darker it is, the more screen reads as a cutout. When text must sit on the blend, start with soft-light at opacity ≤70%, then check contrast on the final composite with an eyedropper.
+
+Division of labor with `background-blend-mode`: when both layers belong to one element, prefer it — no stacking-context traps by construction; the demo uses `mix-blend-mode` because its layers are separate elements and need isolation to bound the scope.

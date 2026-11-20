@@ -1,0 +1,64 @@
+## Structure & DOM
+
+Official Acrylic is a XAML material brush: in WinUI it attaches to a window via `AcrylicBrush` or `Window.SystemBackdrop / DesktopAcrylicBackdrop` (research 02 §3 C1). It comes in two types: **background acrylic** sees through the desktop wallpaper and other windows (for transient UI), while **in-app acrylic** layers within the app. The web recreation stacks "blurred backdrop → luminosity layer → tint layer → noise layer → content":
+
+```html
+<div class="scene">
+  <img class="wallpaper" src="photo.jpg" alt="" />
+  <section class="acrylic">   <!-- in-app acrylic panel -->
+    <div class="lum"></div>   <!-- luminosity layer: TintLuminosityOpacity -->
+    <div class="noise"></div> <!-- noise layer: feTurbulence -->
+    <div class="content">…</div>
+  </section>
+</div>
+```
+
+Key points: the two types differ in their **sampling source** (desktop vs in-app); the web cannot see through the desktop, so a photo stands in for the wallpaper scene; `AlwaysUseFallback` is the official forced-fallback switch (C1).
+
+## Styling & Parameters
+
+Three parameters inject through `--fa-*` variables; fixed layer colors like `TintColor` are community approximations (WinUI light-theme base ≈ `#F3F3F3`):
+
+```css
+.acrylic {
+  position: relative;
+  /* blur radius unpublished; blur 24px + saturate 125% is a common web approximation */
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  backdrop-filter: blur(24px) saturate(1.25);
+  background: rgb(243 243 243 / var(--fa-tint-opacity)); /* TintColor × TintOpacity */
+}
+.acrylic .lum { position: absolute; inset: 0; background: #fff; opacity: var(--fa-lum-opacity); }
+.acrylic .noise {
+  position: absolute; inset: 0; opacity: 0.04;
+  background-image: url("data:image/svg+xml,…feTurbulence baseFrequency='0.9' numOctaves='2'…");
+}
+/* Fallback: the official AlwaysUseFallback switch + auto-triggered without backdrop-filter */
+.acrylic[data-fallback="on"] { background: #f3f3f3; }
+@supports not (backdrop-filter: blur(1px)) {
+  .acrylic { background: #f3f3f3; }
+}
+```
+
+Where the numbers come from:
+
+- `tintOpacity` / `tintLuminosityOpacity` / `AlwaysUseFallback` / `TintTransitionDuration`: official parameter names (research 02 §3 C1); **no official defaults are published — the demo's 0.6 / 0.35 are community-common values (unverified)**;
+- The two types (background / in-app): the official docs (C1);
+- The noise recipe `feTurbulence baseFrequency=0.9 numOctaves=2`: the lightweight noise layer from research 06 §IV §15 (banding killer);
+- Support: backdrop-filter in Chrome 76 / Firefox 103 / Safari 9 (BCD, research 02 §4 D2).
+
+## Motion & Interaction
+
+- Live tuning: the two opacity variables rewrite the tint/luminosity layers instantly — dragging a slider visibly firms or thins the material;
+- Fallback switch: material layers fade out over 0.25s while the solid fades in — echoing the official `TintTransitionDuration` (tint switch duration, C1) whose value is unpublished; the demo uses 0.25s;
+- Transitions are removed under `prefers-reduced-motion` and the switch becomes instant;
+- The demo backdrop is static: acrylic layering is easiest to judge in a static comparison, and per-frame animated backdrops blow up backdrop-filter sampling cost.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `tintOpacity` | a firmer tint layer: less visible backdrop, steadier text contrast; 1.0 degrades into a solid card | more transparent, more material; light text over dark backdrops punches through 4.5:1, 0 leaves only blur + noise |
+| `tintLuminosityOpacity` | brighter and "foggier": harmonizes over bright backdrops (daytime wallpaper) but turns gray in dark themes | luminosity compensation vanishes: acrylic muddies over dark content and the transition between the pale tint and the dark backdrop hardens; 0 disables it entirely |
+| `fallback` | on: a solid surface with maximum readability and performance, at the cost of the material feel | off: the full acrylic stack; the system still forces a fallback without backdrop-filter support or in power-saving mode |
+
+Working ranges: tintOpacity 0.5–0.8 for supporting surfaces, 0.3–0.5 for emphasis-transparent flyouts; tintLuminosityOpacity 0.2–0.5. **Aside from the parameter names, none of these values are officially verified** — production recreations should defer to real WinUI rendering.

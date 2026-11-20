@@ -1,0 +1,75 @@
+## 结构与 DOM
+
+新拟物只有一层结构,却要求页面与元素**完全同色**:塑形不在 DOM 里,而在阴影里。
+
+```html
+<div class="neu-page">
+  <div class="neu-card">
+    <input class="neu-input" type="text" />
+    <button class="neu-btn">按压我</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- `.neu-page` 与 `.neu-card` 用同一个底色(默认 `#e0e5ec`),之间**没有任何边框或描边**;
+- 凸起(raised)与压入(inset)是同一对阴影的两种朝向,靠切换 `box-shadow` 表达;
+- 元素内部的内容(文字、图标)是普通文档流——阴影只负责「外壳」。
+
+## 样式与参数
+
+四个参数对应底色、偏移、模糊与凸/压模式,经 `--neu-*` 变量注入:
+
+```css
+.neu-page { background-color: var(--neu-bg); }  /* #e0e5ec 经典值 */
+
+/* 凸起:经典配方 9px 9px 18px #bec3c9, -9px -9px 18px #ffffff */
+.neu-card {
+  border-radius: 20px;            /* 调研区间 16–24px */
+  color: #3a4453;                 /* 文本用高对比墨色 */
+  box-shadow:
+    var(--neu-offset) var(--neu-offset) var(--neu-blur)
+      color-mix(in srgb, var(--neu-bg) 85%, black),  /* 底色加深 15% */
+    calc(-1 * var(--neu-offset)) calc(-1 * var(--neu-offset)) var(--neu-blur)
+      #ffffff;                    /* 亮影=纯白,经典配方值 */
+}
+
+/* 压入:阴影翻入内侧(经典配方 inset 6px 6px 12px) */
+[data-mode="inset"] .neu-card {
+  box-shadow:
+    inset var(--neu-offset) var(--neu-offset) var(--neu-blur)
+      color-mix(in srgb, var(--neu-bg) 85%, black),
+    inset calc(-1 * var(--neu-offset)) calc(-1 * var(--neu-offset)) var(--neu-blur)
+      #ffffff;
+}
+```
+
+数值出处(superdesign.dev 新拟物页):
+
+- 基准色 `#e0e5ec`、凸起配方 `9px 9px 18px #bec3c9, -9px -9px 18px #ffffff`、压入配方 `inset 6px 6px 12px`;
+- **暗影=底色加深 15%**:`color-mix(in srgb, #e0e5ec 85%, black)` 精确等于经典暗影 `#bec3c9`;
+- **blur≈2×offset**:经典凸起 18px=2×9px、压入 12px=2×6px;
+- 圆角集中在 16–24px;暗色模式需**重调两个阴影**,不能反色了事。
+
+> ⚠️ **可访问性反例**:典型新拟物元件的边缘对比仅约 **1.4:1**,低于 WCAG 2.2 SC 1.4.11 要求的组件边界 3:1 非文本对比,且**在保留柔和质感的前提下不可修复**——调研明确记载这是该风格 2021 年退潮的核心原因。使用时文本一律用高对比墨色、控件边界补实色描边或直接退回常规卡片。
+
+## 动效与交互
+
+凸起⇄压入是这套语言里唯一的「动词」:
+
+- **按压反馈**:按钮 `:active` 时把凸起阴影换成 inset 阴影,0.15s 过渡;小元素上可以接受,大面积卡片避免过渡(阴影过渡走重绘,代价高于 transform);
+- **开关语义**:滑杆轨道常驻 inset(槽位),旋钮凸起;拖动只动 `transform`;
+- **入场**:整卡淡入即可;`prefers-reduced-motion` 时取消过渡与入场动画,直接呈现终态;
+- hover 位移、阴影加深一类的装饰动效应当省略——低对比材质经不起更多含糊线索。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `base` | 偏深或偏彩的底色让暗影差更明显,塑料感变「橡胶感」 | 更亮的底色整体更「奶油」,但亮影(纯白)与底色的差被拉大,质感变脆 |
+| `offset` | 浮雕更立体,控件显得更「厚」;超过 16px 后阴影占位感过强,布局变松 | 趋近 0 时退化为平面色块,凸/压几乎不可辨 |
+| `blur` | 软影更弥散、氛围更柔;远超 2×offset 后阴影发虚,边界更难读 | 硬边浮雕,接近「刻上去」的效果;低于偏移量会丢失软塑料质感 |
+| `mode` | inset 全局化让整个界面像「凹模」,只适合状态面板类演示 | raised 是默认形态;两者切换是最自然的按压反馈 |
+
+经验区间:offset 4–12px、blur 取 2×offset、圆角 16–24px。底色、暗影、亮影三者必须同源推导,混入无关灰色会立刻显得「脏」。

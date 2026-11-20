@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+官方 Acrylic 是 XAML 材质画刷:WinUI 里经 `AcrylicBrush` 或 `Window.SystemBackdrop / DesktopAcrylicBackdrop` 挂到窗口(调研 02 §3 C1)。分两型:**background acrylic** 透出桌面壁纸与其他窗口(用于 transient UI),**in-app acrylic** 只在应用内做层次。Web 复刻按『模糊背景 → 亮度层 → 色调层 → 噪点层 → 内容』叠层:
+
+```html
+<div class="scene">
+  <img class="wallpaper" src="photo.jpg" alt="" />
+  <section class="acrylic">   <!-- in-app acrylic 面板 -->
+    <div class="lum"></div>   <!-- 亮度层:TintLuminosityOpacity -->
+    <div class="noise"></div> <!-- 噪点层:feTurbulence -->
+    <div class="content">…</div>
+  </section>
+</div>
+```
+
+关键点:两型的差别在**采样源**(桌面 vs 应用内),Web 无法透出桌面,只能以照片模拟 wallpaper 场景;`AlwaysUseFallback` 是官方的强制回退开关(C1)。
+
+## 样式与参数
+
+三个参数经 `--fa-*` 变量注入;`TintColor` 等固定层色为社区近似(WinUI 浅色主题底 ≈ `#F3F3F3`):
+
+```css
+.acrylic {
+  position: relative;
+  /* 模糊半径未公布;blur 24px + saturate 125% 为 Web 社区常见近似 */
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  backdrop-filter: blur(24px) saturate(1.25);
+  background: rgb(243 243 243 / var(--fa-tint-opacity)); /* TintColor × TintOpacity */
+}
+.acrylic .lum { position: absolute; inset: 0; background: #fff; opacity: var(--fa-lum-opacity); }
+.acrylic .noise {
+  position: absolute; inset: 0; opacity: 0.04;
+  background-image: url("data:image/svg+xml,…feTurbulence baseFrequency='0.9' numOctaves='2'…");
+}
+/* 回退:官方 AlwaysUseFallback 开关 + 无 backdrop-filter 支持时自动触发 */
+.acrylic[data-fallback="on"] { background: #f3f3f3; }
+@supports not (backdrop-filter: blur(1px)) {
+  .acrylic { background: #f3f3f3; }
+}
+```
+
+数值出处:
+
+- `tintOpacity` / `tintLuminosityOpacity` / `AlwaysUseFallback` / `TintTransitionDuration`:官方参数名(调研 02 §3 C1);**官方未公布默认数值——demo 默认 0.6 / 0.35 为社区常见值(未证实)**;
+- 两型(background / in-app):官方文档(C1);
+- 噪点配方 `feTurbulence baseFrequency=0.9 numOctaves=2`:调研 06 §四 §15 的轻量噪点层(消 banding);
+- 支持:backdrop-filter Chrome 76 / Firefox 103 / Safari 9(BCD,调研 02 §4 D2)。
+
+## 动效与交互
+
+- 调参即时可见:两个 opacity 变量直接改写色调/亮度层,拖动滑杆立刻看到『材质变实/变透』;
+- fallback 切换:材质层 0.25s 淡出、纯色淡入——对应官方 `TintTransitionDuration`(色调切换动画时长,C1)的存在,数值未公布,demo 取 0.25s;
+- `prefers-reduced-motion` 时取消过渡,直接切换;
+- demo 背景静态:亚克力的层次感用静态对比最容易核对;大面积逐帧动画背景会让 backdrop-filter 采样开销失控。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `tintOpacity` | 色调层更实:背景更不可见、文字对比度更稳;1.0 退化为实色卡片 | 更透更显材质;深色背景上浅色文字会顶穿 4.5:1,0 等于只剩模糊+噪点 |
+| `tintLuminosityOpacity` | 整体越亮越『雾』:亮背景(白天壁纸)上更协调,暗色主题里会发灰 | 亮度补偿消失:深底上亚克力发闷,浅色色调层与暗背景的过渡变硬;0 完全关闭 |
+| `fallback` | on:纯色表面,可读性最高、性能最好,代价是失去材质感 | off:完整亚克力栈;不支持 backdrop-filter 或省电模式下系统仍会强制回退 |
+
+经验区间:tintOpacity 0.5–0.8(支撑层)、0.3–0.5(强调透出的浮层);tintLuminosityOpacity 0.2–0.5。**所有数值除参数名外均未获官方证实**,生产复刻以 WinUI 真机渲染为准。

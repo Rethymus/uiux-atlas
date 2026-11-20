@@ -1,0 +1,60 @@
+## Structure & DOM
+
+Dynamic color is a **pipeline**, not a CSS property: source color → five key palettes → role tokens. On the web it lands as two same-named sets of CSS variables (light/dark), with components referencing role names only:
+
+```html
+<body data-scheme="light">
+  <button class="md-btn">Continue</button>
+</body>
+```
+
+```css
+body { background: var(--md-surface); color: var(--md-on-surface); }
+.md-btn { background: var(--md-primary); color: var(--md-on-primary); }
+body[data-scheme="dark"] { --md-surface: #141218; /* …the whole mapping swaps */ }
+```
+
+- Role names come in three families: **accents** (primary/secondary/tertiary/error), **surfaces** (surface/surface-variant/…), and **containers + on-X inverses** (primary-container ↔ on-primary-container) (research 06 §7);
+- Components never write concrete colors — Android's own framing is "assign color roles via design tokens, not specific values" (matching the 3-layer token architecture in research 06 §2.10);
+- on-roles track their base: after switching scheme or variant the whole set must be recomputed — never swap primary without swapping on-primary.
+
+## Styling & Parameters
+
+The variant builds the palettes; the scheme decides each role's tone (library convention at contrastLevel 0):
+
+```ts
+// Variant recipes (constants from material-color-utilities 0.3.0 scheme_*.js)
+tonalSpot:  primary(h,36) secondary(h,16) tertiary(h+60,24) neutral(h,6) nv(h,8)
+neutral:    primary(h,12) secondary(h,8)  tertiary(h,16)    neutral(h,2) nv(h,2)
+vibrant:    primary(h,200→clamped) secondary(rot(h),24) tertiary(rot(h),32) neutral(h,10) nv(h,12)
+expressive: primary(h+240,40) secondary(rot(h),24) tertiary(rot(h),32) neutral(h+15,8) nv(h+15,12)
+// Role tone mapping (material_dynamic_colors.js, contrastLevel 0)
+primary 40/80 · on-primary 100/20 · primary-container 90/30 · on-primary-container 30/90
+surface 98/6 · on-surface 10/90 · surface-variant(NV) 90/30 · outline(NV) 50/60
+```
+
+Where the numbers come from:
+
+- **Official hand-tuned baseline** (research 06 §7, Android docs colors.xml values): light primary `#6750A4`, on-primary `#FFFFFF`, primary-container `#EADDFF`, error `#B3261E`, surface `#FFFBFE`, on-surface `#1C1B1F`; dark primary `#D0BCFF` (≈tone 80), on-primary `#381E72`, primary-container `#4F378B`, surface-variant `#49454F`;
+- **Variant-generated values sit close to but not exactly on the baseline**: the baseline primary palette has chroma≈48 while tonal-spot uses 36; baseline neutral≈4 vs variant 6 (the demo shows both side by side, without pretending);
+- The error palette is fixed at (hue 25, chroma 84) (dynamic_scheme.js constructor);
+- The wallpaper→source chain (quantize Celebi = Wu + WSMeans → score) is in research 06 §6; the demo starts at the source hue;
+- In the full flow one wallpaper derives **5 schemes** forming the light/dark theme basis (research 06 §6); the demo reduces this to three inputs — source hue + variant + scheme — to expose the generation rules themselves;
+- Brand-color retention: HarmonizedColors aligns custom colors toward the system hue in HCT, keeping contrast and visual balance (runtime `applyToContextIfAvailable()`, research 06 §6).
+
+## Motion & Interaction
+
+- Any of the three params recomputes the whole role set instantly; light/dark is **the same roles at different tones**, not an inversion (Apple HIG's dark-mode guidance: dark themes are "not necessarily inversions", with Android Force Dark as the counter-example — research 06, item 13);
+- Swatch transitions animate only `background-color/color` (0.18s); removed under `prefers-reduced-motion`;
+- A mini UI card assembled from the generated surface/on-surface/primary/secondary-container makes the role semantics verifiable at a glance;
+- The role tone table shown here is the library's contrastLevel 0; contrastLevel ±1 further adjusts via contrastCurve and toneDeltaPair (including pushing tones out of the awkward 50–59 zone) — a parameter this entry does not expose (dynamic_color.js source);
+- Light/dark switching should never shift layout: roles only affect color/background, never size — one more reason to keep theme and component layers decoupled;
+- Across variants the most sensitive are vibrant (primary chroma 200, clamped per achievable tone) and expressive (primary hue +240°) — drag sourceHue and watch roles "jump".
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `sourceHue` | rotates the whole scheme around the HCT wheel; role relationships (accent vs surface tone gaps) hold | same, in reverse; 299 is the baseline purple, ±60° enters HCT blue/magenta territory |
+| `variant` | vibrant: most vivid roles, near-end tones may clamp and desaturate | neutral: near-grayscale, only lightness differences remain |
+| `scheme` | dark: accents rise to tone 80 (brighter, less saturated), surfaces sink to 6 — hierarchy via brightening | light: accents at tone 40, surfaces at 98 — hierarchy via deepening |

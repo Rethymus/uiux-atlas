@@ -1,0 +1,99 @@
+{
+  "name": "WCAG Contrast",
+  "aliases": ["WCAG 对比度", "对比度比值", "Contrast ratio"],
+  "category": "color",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "WCAG 2.1 对比度四道阈值:正文 AA 4.5:1、AAA 7:1,大字减半,非文本组件 3:1——相对亮度公式实时判定,比值不得四舍五入达标。",
+    "en": "The WCAG 2.1 contrast gates: body text AA 4.5:1 and AAA 7:1, halved for large text, 3:1 for non-text UI — judged live by the relative-luminance formula, with no rounding up to pass."
+  },
+  "origin": {
+    "zh": "阈值出自 W3C WCAG 2.1 Understanding 文档原文:SC 1.4.3(4.5:1,依据约 20/40 视力的对比敏感度损失 3×1.5)、SC 1.4.6(7:1,对应约 20/80 视力)、SC 1.4.11(非文本 3:1)(调研 06§17)。",
+    "en": "The thresholds come verbatim from the W3C WCAG 2.1 Understanding documents: SC 1.4.3 (4.5:1, from the contrast-sensitivity loss of ~20/40 vision, 3×1.5), SC 1.4.6 (7:1, ~20/80 vision), SC 1.4.11 (non-text 3:1) (research 06 §17)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "foreground",
+      "format": "hex",
+      "default": "#1C1B1F",
+      "cssVar": "--wc-fg",
+      "effect": {
+        "zh": "前景色(文字/图形)。默认 #1C1B1F = M3 亮色主题 on-surface 官方基线值(Android 开发者文档,调研 06§7);对 M3 surface #FFFBFE 实测 16.7:1(本条目写作时按 WCAG 公式以 node 验算)。",
+        "en": "Foreground color (text/graphics). Default #1C1B1F = the official M3 light-theme on-surface baseline from the Android developer docs (research 06 §7); measured 16.7:1 against M3 surface #FFFBFE (computed with the WCAG formula via node while writing this entry)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "background",
+      "format": "hex",
+      "default": "#FFFBFE",
+      "cssVar": "--wc-bg",
+      "effect": {
+        "zh": "背景色。默认 #FFFBFE = M3 亮色主题 surface 官方基线值(调研 06§7)。对比度永远取 (较亮者+0.05)/(较暗者+0.05),参数前后景互换不影响比值。",
+        "en": "Background color. Default #FFFBFE = the official M3 light-theme surface baseline (research 06 §7). Contrast is always (lighter+0.05)/(darker+0.05), so swapping the two params does not change the ratio."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "textScale",
+      "options": [
+        { "value": "normal", "label": { "zh": "正文字号", "en": "Normal text" } },
+        { "value": "large", "label": { "zh": "大字号", "en": "Large text" } }
+      ],
+      "default": "normal",
+      "effect": {
+        "zh": "JS 型参数:demo 订阅后切换示例文字档位与适用阈值。WCAG 定义大字为 ≥18pt(≈24px)或 ≥14pt(≈18.66px)粗体,阈值减半:AA 3:1 / AAA 4.5:1(W3C WCAG 2.1 Understanding,调研 06§17)。演示样字取 24px/18.66px bold 对照。",
+        "en": "JS-type param: the demo subscribes and switches the sample text tier and applicable thresholds. WCAG defines large text as ≥18pt (≈24px) or ≥14pt (≈18.66px) bold, halving the thresholds: AA 3:1 / AAA 4.5:1 (W3C WCAG 2.1 Understanding, research 06 §17). The demo samples at 24px and 18.66px bold for reference."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "WCAG 2.1 为 W3C 正式推荐标准,对比度判定与浏览器特性无关;demo 的相对亮度公式按 WCAG 2.1 Understanding 文档定义用纯 JS 实现,无兼容性问题。",
+      "en": "WCAG 2.1 is a formal W3C Recommendation and contrast judgement is independent of browser features; the demo implements the relative-luminance formula from the WCAG 2.1 Understanding docs in plain JS with no compatibility concerns."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容问题(纯 JS 数学)。若想复用同一套判定,服务端/Node 环境同样适用——公式只依赖 hex 解析与幂运算。",
+    "en": "No compatibility concern (plain JS math). The same checker runs server-side/Node verbatim — the formula only needs hex parsing and exponentiation."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计/开发阶段核对新配色:文字对底色过 4.5:1(AA)、力争 7:1(AAA),大字减半", "en": "Verifying a new palette during design/dev: text on its ground passes 4.5:1 (AA), aims for 7:1 (AAA), halved for large text" },
+      { "zh": "图标、勾选标记、焦点环、输入框边框等 UI 组件对相邻色过 3:1(SC 1.4.11,仅默认状态)", "en": "Icons, checkmarks, focus rings, input borders — UI components pass 3:1 against adjacent colors (SC 1.4.11, default state only)" },
+      { "zh": "给色板定档:像 Radix Colors 那样为文本色阶指定对比度目标(Radix 用 APCA Lc60/Lc90,调研 06§8)", "en": "Setting palette targets: designate contrast goals per text step, as Radix Colors does (Radix targets APCA Lc60/Lc90, research 06 §8)" },
+      { "zh": "透明度/毛玻璃上的文字:按『透出的最亮与最暗背景』两种极端分别核对(glassmorphism 条目的 a11y 同款要求)", "en": "Text over translucency/glass: check both the brightest and darkest backdrop extremes (same requirement as the glassmorphism entry's a11y)" }
+    ],
+    "avoid": [
+      { "zh": "四舍五入达标——WCAG 原文明确 4.499:1 就是不达标;demo 判定用未舍入原值,仅显示值保留两位", "en": "Rounding up to pass — WCAG states 4.499:1 simply fails; the demo judges on the unrounded value and only displays two decimals" },
+      { "zh": "把 4.5:1 当『越大越好』的唯一指标堆到 15:1——过高对比在暗色下反而刺眼,Apple HIG 建议 4.5:1 底线、小字力争 7:1(调研 06§12/§13)", "en": "Treating 4.5:1 as 'higher is always better' and stacking 15:1 — excessive contrast glares in dark mode; Apple HIG sets 4.5:1 as the floor and 7:1 as the aim for small text (research 06 §12/§13)" },
+      { "zh": "对禁用组件、纯装饰、logo/品牌字标强推 3:1——SC 1.4.11 明文豁免;UA 默认样式与照片中的偶然文字同样豁免", "en": "Forcing 3:1 onto disabled controls, pure decoration, or logos/wordmarks — SC 1.4.11 exempts them explicitly, along with UA default styles and incidental text in photos" },
+      { "zh": "用 WCAG 比值冒充 APCA——两套体系输出不同:APCA 给 Lc 感知值且非对称,官方要求用 apca-w3 包不得自行实现公式(调研 06§18)", "en": "Passing WCAG ratios off as APCA — the systems differ: APCA emits perceptual Lc values asymmetrically, and its spec mandates the apca-w3 package over hand-rolled formulas (research 06 §18)" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目本身就是可访问性工具:AA(SC 1.4.3)正文 4.5:1 / 大字 3:1;AAA(SC 1.4.6)正文 7:1 / 大字 4.5:1;非文本(SC 1.4.11)3:1。适用范围含占位符、tooltip 与图片化文字;共同豁免:logotype、纯装饰、不可见元素。WCAG 3 候选的 APCA 采用感知对比度 Lc 且非对称(深字浅底与浅字深底阈值不同),Radix Colors 已用 Lc60/90 定文本色阶(调研 06§17/§18/§8)。",
+    "en": "This entry is itself the accessibility tool: AA (SC 1.4.3) body 4.5:1 / large 3:1; AAA (SC 1.4.6) body 7:1 / large 4.5:1; non-text (SC 1.4.11) 3:1. Scope includes placeholders, tooltips and images of text; shared exemptions: logotypes, pure decoration, invisible elements. WCAG 3's candidate APCA uses perceptual asymmetric Lc values (dark-on-light and light-on-dark thresholds differ), and Radix Colors already targets Lc60/90 for text steps (research 06 §17/§18/§8)."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/contrast-enhanced.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-contrast.html",
+    "https://webaim.org/resources/contrastchecker/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现 WCAG 2.1 对比度检查器:hex 前后景实时计算相对亮度与比值,并显示 AA(4.5)/AAA(7)/大字(3)/非文本(3:1)四项通过状态;判定不四舍五入。",
+      "en": "Build a WCAG 2.1 contrast checker: compute relative luminance and the ratio from hex foreground/background live, and show pass states for AA (4.5), AAA (7), large text (3) and non-text (3:1); never round to pass."
+    },
+    "acceptance": [
+      { "zh": "相对亮度按 WCAG 公式实现:通道线性化(c≤0.03928 ? c/12.92 : ((c+0.055)/1.055)^2.4)后 0.2126R+0.7152G+0.0722B,公式写进注释", "en": "Implement the WCAG formula: linearize channels (c≤0.03928 ? c/12.92 : ((c+0.055)/1.055)^2.4), then 0.2126R+0.7152G+0.0722B, with the formula in a comment" },
+      { "zh": "对比度 = (较亮亮度+0.05)/(较暗亮度+0.05),与前后景顺序无关", "en": "Contrast = (lighter luminance+0.05)/(darker luminance+0.05), order-independent" },
+      { "zh": "四项阈值(4.5/7/3/3:1)的通过状态实时刷新,大字档切换阈值生效", "en": "All four thresholds (4.5/7/3/3:1) refresh live; the large-text tier switches the applicable thresholds" },
+      { "zh": "判定用未舍入原值,4.499:1 必须显示为不达标", "en": "Judge on the unrounded value; 4.499:1 must display as failing" },
+      { "zh": "示例文字提供正文与大字(≥18pt 或 ≥14pt bold)两种档位演示", "en": "The sample text offers both normal and large (≥18pt or ≥14pt bold) tiers" }
+    ]
+  }
+}

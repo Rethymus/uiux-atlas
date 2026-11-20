@@ -1,0 +1,90 @@
+{
+  "name": "Container Queries",
+  "aliases": ["容器查询", "@container", "组件级响应式"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "组件按『自己容器的宽度』而非视口响应:@container 断点重排卡片,容器单位 cqw/cqi 让内部尺寸跟随宿主伸缩。",
+    "en": "Components respond to their container's width, not the viewport: @container breakpoints re-flow cards, and container units (cqw/cqi) let inner sizes track the host."
+  },
+  "origin": {
+    "zh": "出自 CSS Containment Module Level 3 的 size/style 容器查询:container-type: size | inline-size、container-name、@container 查询与容器单位 cqw/cqh/cqi/cqb/cqmin/cqmax;MDN container-type 标注 Baseline Widely available 自 2023-02(Chrome/Edge 105 与 Safari 16(2022)之后 Firefox 补齐的时间点,调研 05§6)。",
+    "en": "From CSS Containment Module Level 3's size/style container queries: container-type: size | inline-size, container-name, @container queries and the container units cqw/cqh/cqi/cqb/cqmin/cqmax; MDN marks container-type Baseline Widely available since 2023-02 — the point where Firefox caught up after Chrome/Edge 105 and Safari 16 (2022) (research 05 §6)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "width",
+      "unit": "px",
+      "min": 200,
+      "max": 800,
+      "step": 1,
+      "default": 400,
+      "cssVar": "--cq-width",
+      "effect": {
+        "zh": "演示容器的 inline-size(CSS 型,注入 --cq-width,demo 经 width: var(--cq-width) 消费)。默认 400px 为本条目任务规格演示值。也可直接拖动 demo 右缘手柄——拖拽与面板滑杆共享同一 store 值,双向同步;400px 恰好跨在默认断点两侧,便于观察重排。",
+        "en": "The demo container's inline-size (CSS-type, injected as --cq-width and consumed via width: var(--cq-width)). Default 400px is this entry's task-spec demo value. The right-edge grip drags the same value through the store, keeping handle and slider in sync; 400px straddles the default breakpoint so the re-flow is easy to see."
+      }
+    },
+    {
+      "type": "number",
+      "name": "breakpoint",
+      "unit": "px",
+      "min": 200,
+      "max": 600,
+      "step": 1,
+      "default": 320,
+      "effect": {
+        "zh": "@container 查询的宽度阈值(JS 型,无 cssVar):容器查询条件必须是字面量、不能用自定义属性,demo 订阅该值后重生成 @container (min-width: Npx) 规则。默认 320px 为任务规格示例值(约一部手机竖屏宽),生产断点应由组件自身内容决定——调研 05§6 的 MDN 示例用 40rem。",
+        "en": "The width threshold of the @container query (JS-type, no cssVar): container query conditions must be literals — custom properties are not allowed — so the demo subscribes to this value and regenerates @container (min-width: Npx). Default 320px is a task-spec example (roughly a phone portrait width); production breakpoints should follow the component's own content — MDN's example in research 05 §6 uses 40rem."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "@container 与 container-type 为 Baseline Widely available 自 2023-02(MDN,调研 05§6):Chrome/Edge 105、Safari 16(2022),Firefox 其后补齐(具体版本号调研未记录)。容器单位 cqw/cqi 随同一机制可用;style() 样式查询的各家支持矩阵调研未核实(未证实),demo 未使用 style()。",
+      "en": "@container and container-type are Baseline Widely available since 2023-02 (MDN, research 05 §6): Chrome/Edge 105, Safari 16 (2022), Firefox following (its exact version is not recorded in the research). Container units cqw/cqi ship with the same mechanism; the per-browser matrix for style() queries was not verified in the research (unverified) — the demo does not use style()."
+    },
+    "baseline": "Baseline Widely available (2023-02)"
+  },
+  "fallback": {
+    "zh": "渐进增强写法:先写纵排默认样式(不支持容器查询的环境直接可用),再在 @container 内叠加横排增强——旧浏览器保持纵排不报错;cqw/cqi 尺寸同样先写固定值(px)再写容器单位,不支持时按级联回退。页面级响应仍归媒体查询,两者分工而非替代。",
+    "en": "Progressive enhancement: write the stacked layout first (usable as-is where container queries are unsupported), then layer the horizontal layout inside @container — legacy browsers keep the stacked card without errors; give cqw/cqi sizes a fixed px declaration first so unsupported engines cascade back. Page-level responsiveness stays with media queries — the two divide labor rather than replace each other."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "卡片组件同时出现在侧栏、主栏与弹窗——按宿主宽度各自成形,一份组件三种形态", "en": "A card living in sidebars, main columns and dialogs — one component, three shapes by host width" },
+      { "zh": "设计系统组件:表单行、按钮组、媒体对象在窄容器内折叠为纵排", "en": "Design-system components: form rows, button groups and media objects collapsing to stacked in narrow hosts" },
+      { "zh": "标题字号用 cqi 随容器伸缩(clamp 包一层下限),替代视口级流式字阶的局部版本", "en": "Headlines sizing in cqi with a clamp floor — a container-local alternative to viewport fluid type" },
+      { "zh": "从『页面级断点』迁移到『组件级断点』的响应式架构(调研 05§11 演进链条第三段)", "en": "Migrating from page-level to component-level breakpoints (the third stage of research 05 §11's evolution chain)" }
+    ],
+    "avoid": [
+      { "zh": "把整个页面当容器宿主——页面级响应仍归媒体查询,容器查询管组件", "en": "Making the whole page a container — page-level response belongs to media queries; container queries manage components" },
+      { "zh": "常规组件用 container-type: size——它让容器脱离内容尺寸参与布局,易造成循环依赖;默认用 inline-size", "en": "container-type: size on ordinary components — it detaches the container from content sizing and risks circular dependencies; prefer inline-size" },
+      { "zh": "断点堆得和视口断点一样多——容器查询的意义是减少断点,按内容需要设一两个即可", "en": "Stacking as many container breakpoints as viewport breakpoints — the point is fewer breakpoints; one or two content-driven ones suffice" },
+      { "zh": "查询条件里写自定义属性——容器查询条件必须是字面量,demo 因此用 JS 重生成规则", "en": "Custom properties inside query conditions — conditions must be literals; the demo regenerates rules via JS for that reason" }
+    ]
+  },
+  "a11y": {
+    "zh": "断点重排只改视觉不改 DOM 顺序——Tab 顺序与读屏顺序保持稳定;纵排/横排切换后操作按钮仍须可达且不依赖 hover;cqi/cqw 驱动的字号要带下限(clamp 包住),防止容器过窄时文字小于可读尺寸;拖拽手柄提供键盘等价操作(demo 用方向键,呼应 WAI-ARIA separator 模式,调研 05§8)。",
+    "en": "Breakpoint re-flow changes visuals only, never DOM order — Tab and screen-reader order stay stable; after stacked/row switching, controls must remain reachable and hover-independent; cqi/cqw-driven font sizes need a clamp floor so an over-narrow container cannot push text below readable size; the drag grip needs a keyboard equivalent (arrow keys in the demo, echoing the WAI-ARIA separator pattern, research 05 §8)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/container-type",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_size_and_style_queries"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张容器查询驱动的自适应卡片:容器 inline-size 随宿主变化,跨过断点时从纵排翻转为横排,banner 与标题用 cqw/cqi 随容器伸缩。",
+      "en": "Replicate a container-query-driven adaptive card: the container's inline-size tracks its host, the card flips from stacked to horizontal across the breakpoint, and the banner and headline scale in cqw/cqi."
+    },
+    "acceptance": [
+      { "zh": "容器声明 container-type: inline-size 与 container-name,查询写作 @container <name> (min-width: 字面量)", "en": "The container declares container-type: inline-size with a container-name; the query reads @container <name> (min-width: literal)" },
+      { "zh": "断点与容器宽度严格使用参数快照值;查询条件内不出现自定义属性", "en": "Breakpoint and container width use the exact parameter snapshot values; no custom properties inside query conditions" },
+      { "zh": "先写纵排默认样式,再在 @container 内叠加横排增强(渐进增强)", "en": "Stacked layout first, horizontal enhancement layered inside @container (progressive enhancement)" },
+      { "zh": "banner 高度与标题字号先用固定值声明,再写 cqw/cqi 覆盖,留级联回退", "en": "Banner height and headline size declared with fixed values first, then cqw/cqi overrides for the cascade fallback" },
+      { "zh": "标题字号用 clamp(下限, Ncqi, 上限) 防止容器过窄时不可读", "en": "Headline size uses clamp(floor, Ncqi, ceiling) so an over-narrow container stays readable" }
+    ]
+  }
+}

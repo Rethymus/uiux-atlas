@@ -1,0 +1,64 @@
+## Structure & DOM
+
+A state layer is not "swap the background color" — it is an absolutely positioned overlay inserted **between the control's content and its base fill**. The standard M3 component anatomy: container (shape + fill) → state layer (content color × official percentage) → content (text/icon). The demo uses four separate overlays, one per state, so they can stack in any combination:
+
+```html
+<button class="m3-btn">
+  <span class="layer" data-state="hover"></span>
+  <span class="layer" data-state="focus"></span>
+  <span class="layer" data-state="press"></span>
+  <span class="layer" data-state="drag"></span>
+  <span class="label">Button</span>
+</button>
+```
+
+Key points:
+
+- The layer color is the **content color** (semantic roles like on-primary / on-surface), never a hard-coded gray or black — it adapts automatically after theme or dynamic-color switches;
+- Each layer takes `border-radius: inherit` to follow the container shape; content sits `position: relative` above the overlays;
+- The four percentages are **system-wide tokens** — an individual control never retunes them.
+
+## Styling & Parameters
+
+The four parameters each drive one overlay; `opacity` is injected through the `--m3-*` variables:
+
+```css
+.layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--m3-state-color, #ffffff); /* on-primary, M3 baseline light scheme (research 06 §7) */
+  opacity: 0;
+  pointer-events: none;
+}
+/* Official tokens: Hover +8% / Focus +10% / Press +10% / Drag +16% (m3.material.io state-layers) */
+.m3-btn[data-hover]  .layer[data-state="hover"] { opacity: var(--m3-hover-opacity); }  /* 8%  */
+.m3-btn[data-focus]  .layer[data-state="focus"] { opacity: var(--m3-focus-opacity); }  /* 10% */
+.m3-btn[data-press]  .layer[data-state="press"] { opacity: var(--m3-press-opacity); }  /* 10% */
+.m3-btn[data-drag]   .layer[data-state="drag"]  { opacity: var(--m3-drag-opacity); }   /* 16% */
+```
+
+Where the numbers come from:
+
+- **8 / 10 / 10 / 16%** are the official tokens of m3.material.io's "State layers" page (research 02 §B5; the fetched page grep-hits "Hover +8% opacity … Drag +16% opacity");
+- Taking the content color (on-* color) for the layer is that same page's convention; the demo's fill `#6750A4` and label `#FFFFFF` are the M3 baseline light primary / on-primary recorded in the Android docs (research 06 §7);
+- In the demo, hover/press come from pointer events, focus from `:focus-visible`, and drag from a switch — so all four layers can be lit **at once** to inspect the stacking.
+
+## Motion & Interaction
+
+State layers are instant feedback — keep motion short and restrained:
+
+- Overlay opacity transitions for about **100ms** (linear) — the M3 feedback scale; under `prefers-reduced-motion` drop the transition and snap states directly;
+- Press may add a spring/scale, but that is component-level motion, not the state layer's job;
+- Hover and focus transitions must stay **interruptible**: events toggle data attributes, CSS only renders, the focus ring is always kept, and state switching never blocks input.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hover` | makes hover more obvious, but past 10% you drift off the official tokens and hover gets hard to tell from press | leaves hover nearly imperceptible — pointer users lose the "clickable" cue |
+| `focus` | overweights the focused state, visually reading as "selected"; past 12% it blurs into press | leaves keyboard users unable to locate focus — focus must always have a ring as backstop |
+| `press` | makes pressing feel heavy and, stacked on hover, turns the whole control muddy; past 16% it reaches the drag level | removes the sense of contact — clicks feel like they "land nowhere" |
+| `drag` | dims and dulls the control while dragging, overpowering its label | makes drag hard to distinguish from press; below 12% the occluded finger position is harder to read |
+
+Rule of thumb: treat the four percentages as a set — never retune one alone. With darker content colors (light on-* colors in dark themes) the same percentage reads "brighter", so sign-off must check both light and dark schemes.

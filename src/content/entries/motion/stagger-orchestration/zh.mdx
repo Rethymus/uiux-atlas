@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+编排的主角是「一个容器变体 + N 个子项变体」:容器把 staggerChildren 写进自己的过渡配置,子项各自声明入场动画,时间差由容器统一下发:
+
+```tsx
+const listVariants: Variants = {
+  hidden: {},
+  // delay 也参与编排,且支持负值(= 从动画中段开始,调研 04§1.3)
+  show: { transition: { staggerChildren: 0.04 } },  // 单位是秒
+};
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+<motion.ul variants={listVariants} initial="hidden" animate="show">
+  {items.map((it) => (
+    <motion.li variants={itemVariants} key={it.id}>{it.label}</motion.li>
+  ))}
+</motion.ul>
+```
+
+- 子项各自跑满自己的 0.4s,错开的是**起点**:第 i 项的延迟 ≈ i × staggerChildren;
+- 重新播放 = 重挂载(改 key)或重发 animate;demo 在参数变化时重挂载,所见即所得;
+- 列表保持语义 DOM(ul/li),动画不改变可达性结构;
+- 读屏不受编排影响:动画只作用于 opacity/transform,DOM 与可访问性树从第一帧就是完整的,读屏立即读到全部列表项;
+- 子项变体彼此独立,各项可携带不同时长——错峰之外再叠「时长渐变」能去掉机械感,这只影响动画参数、不影响编排结构。
+
+与可打断弹簧是两种相反的语义:入场编排**不可打断续接**——要重来就整段重来(回到 hidden 再走一遍 show);需要中途改向并继承速度的弹簧见 motion-spring 条目。
+
+## 样式与参数
+
+两个参数都是 JS 型(demo 订阅 store,无 CSS 变量):
+
+- `stagger`:相邻子项的启动间隔,单位 ms,demo 换算成秒传给 staggerChildren(Motion 编排接口以秒为单位,面板层做 ms→s 换算,避免与 M3 时长档位混用时单位出错)。调研只记载 Motion transitions 文档页「含 delay and stagger 编排能力」(调研 04§1.3),staggerChildren 默认值未被截取——**40ms 为社区常见值,未证实**;
+- `items`:子项数量 3–8,演示用枚举;枚举封顶 8 项是有意为之——项数再多,总铺开时间线性失控,长列表应改用按滚动触发的 reveal(见 scroll-driven-animations 条目)而非一次性编排;
+- 入场曲线选 decelerate 系(M3:进入类动画峰值速度起、缓停收尾,调研 04§1.4),demo 的 easeOut 即对应这一族。
+
+入场动画本身的数值(位移 16px、时长 0.4s、easeOut)是 demo 演示值;M3 官方进入类时长档位可作参照:Standard decelerate 250ms / Emphasized decelerate 400ms(调研 04§1.4)。
+
+## 动效与交互
+
+- **锚定与错峰**:第一项 0 延迟立即入场,末项在 stagger × (n−1) 后启动——demo 用 chip 实时标出这个总铺开时间;
+- **delay 的另一面**:Motion 的 delay 支持负值(= 从动画中段开始,调研 04§1.3),与 stagger 组合可以做「接续入场」;编排三件套还有 repeat 与 repeatType(同页文档);
+- **性能**:只动 opacity 与 translate(合成器属性,web.dev 底线,调研 04§1.5);长列表(>20 项)慎用整段 stagger——尾部等待时间线性增长,确需时只对首屏可见的前几项做 stagger、其余直出;
+- **与退场的配合**:M3 官方原则「进入比退出更长」(示例进入 500ms / 退出 200ms,调研 04§1.4)——错峰入场适合配快速淡出的退场,把注意力留给下一任务;
+- **克制**:HIG 要求反馈动效「简短精确」(调研 04§1.6)——编排是强调手段,同一视图避免多组同时错峰入场;
+- **reduced-motion**:大平移是前庭障碍的常见触发源(调研 04§6.1)——reduce 时子项改用纯 opacity 交错淡入,保留节奏、去掉位移;
+- 参数改动即重播:stagger 滑杆每一步都会让整段编排从头再来,便于对比手感。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stagger` | 错峰感更强,列表像「点名入场」;>100ms 且项数多时末项要等 1s+,用户会错过尾部内容 | 接近齐发;0 时全部子项同时入场,编排感消失(只剩同步入场) |
+| `items` | 总铺开时间 = stagger × (n−1) 线性拉长,末项落定越来越晚 | 更紧凑;3 项时即使 200ms stagger 也不显拖沓 |
+
+选型口诀:先定「最后一项何时落地」,再回推 stagger = 允许铺开时长 ÷ (n−1);社区经验多落在 20–80ms(未证实),叙事型/展示型页面可以更宽。
+
+示例:8 项、允许 600ms 铺开 → stagger ≈ 600 ÷ 7 ≈ 85ms;5 项同预算 → 150ms 已偏慢,应缩短预算或减少项数。

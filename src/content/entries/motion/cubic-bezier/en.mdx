@@ -1,0 +1,64 @@
+## Structure & DOM
+
+The demo pairs two panels side by side: a **motion area** (a track with a ball) and a **curve preview** (an SVG coordinate system). The DOM needs only three pieces:
+
+```html
+<div class="cb-track">
+  <div class="cb-ball"></div>  <!-- animation-timing-function: var(--cb-curve) -->
+</div>
+<svg viewBox="0 -40 100 180">  <!-- headroom reserved for y>1 / y<0 -->
+  <path class="cb-curve" d="M 0 100 C …" />
+  <g class="cb-dot-x"><circle class="cb-dot-y" cx="0" cy="100" r="4.5" /></g>
+</svg>
+```
+
+Key points:
+
+- The ball's shuttle and the tracer dot's horizontal/vertical components all consume the **same** `cubic-bezier()` value — preview and motion stay in sync by construction;
+- The tracer is split into two nested layers: the outer `g` moves **linearly** horizontally, the inner circle moves vertically on the Bézier. Two CSS animations writing the same property would override each other, so nesting is the only clean way to compose two timing functions;
+- The preview maps the SVG y-axis to progress via `y = (1 - progress) × 100`; the bands above the top edge (y>1) and below the bottom (y&lt;0) mark the overshoot zones.
+
+## Styling & Parameters
+
+One parameter, `curve` (cubicBezier type, injected through `--cb-curve`) — the curve itself:
+
+```css
+.cb-ball {
+  animation: cb-run 1.6s var(--cb-curve) infinite alternate;
+}
+@keyframes cb-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--cb-dist)); } /* track width - ball size, measured by JS */
+}
+.cb-dot-x  { animation: cb-dot-x 1.6s linear infinite alternate; }            /* horizontal: linear = the time axis */
+.cb-dot-y  { animation: cb-dot-y 1.6s var(--cb-curve) infinite alternate; }   /* vertical: Bézier = progress */
+```
+
+Where the numbers come from (MDN `<easing-function>` wording, research 04 §1.1):
+
+- Default **ease = cubic-bezier(0.25, 0.1, 0.25, 1)**;
+- Official keyword preset values: `ease-in = cubic-bezier(0.42, 0, 1, 1)`, `ease-out = cubic-bezier(0, 0, 0.58, 1)`, `ease-in-out = cubic-bezier(0.42, 0, 0.58, 1)` (plus `linear = cubic-bezier(0, 0, 1, 1)`);
+- `x1` and `x2` must stay within [0,1] (otherwise the whole declaration is invalid); **y may overshoot** — MDN's own example `cubic-bezier(0, 1.1, 0.8, 4)` overshoots via y>1.
+
+Only `transform` is animated (ball travel, tracer dot), honoring the web.dev "transform/opacity only" performance floor (research 04 §1.5); the travel distance is measured by a JS `ResizeObserver` into `--cb-dist` so `left` is never animated.
+
+## Motion & Interaction
+
+- **Live coupling**: dragging the two control points in the parameter panel (or tapping the ease/ease-in/ease-out/ease-in-out presets) updates `--cb-curve` immediately — the running CSS animation re-interpolates on the new curve, and the ball and tracer reshape together with no restart;
+- **Replay**: tapping "Replay" remounts the animated elements via a React `key`, replaying the current curve from t=0 (useful for studying the start/end segments);
+- **Overshoot made visible**: whenever the curve crosses the top line (y=1) the tracer briefly exits past the 100% progress position and settles back;
+- **Reduced motion**: under `prefers-reduced-motion: reduce` all looping animations stop — the ball rests at the end, the tracer pins to the curve's end, and the preview still shows the full curve shape — no information lost.
+
+## Parameter Sensitivity
+
+One parameter, `curve`, but the four control points have distinct jobs — covered one by one:
+
+| Control point | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `curve` overall | both halves steepen, sharpening the "launch late, brake hard" contrast | approaches a straight line and reads as linear |
+| `x1` (P1 time) | delays the start, making the first half feel sluggish | starts earlier and harder; at 0 the max slope hits immediately |
+| `y1` (P1 progress) | >1 overshoots outright (overshoots then returns); a punchy opening | &lt;0 pulls back before advancing; a draggier opening |
+| `x2` (P2 time) | the closing acceleration starts later, lengthening the mid plateau | enters the closing earlier; at 1 the closing is squeezed to almost nothing |
+| `y2` (P2 progress) | >1 bounces at the end; &lt;1 decelerates to rest (ease-out feel) | the lower it goes, the longer the end "hovers"; at 0 it pauses before arriving |
+
+Working ranges: the four ease-family presets cover ~90% of transitions; light bounce lives at `y∈(1, 1.5)`; `y>2` heavy overshoot only suits very short travels. Remember a single Bézier segment **cannot express a true spring** — interruptibility and velocity inheritance need a JS physics spring or linear() sampling (research 04 §1.2/1.3).

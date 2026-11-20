@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+真身是 SwiftUI 的声明式 API:`glassEffect(_:in:)` 把视图变成一块 Liquid Glass,默认变体 `.regular`、默认形状 Capsule(调研 02 §1 A2)。Web 复刻的结构是『内容层 → 玻璃舱 → 状态层』:
+
+```swift
+// 官方 API(iOS 26+,调研 02 §1 A2/A3)
+HStack { Image(systemName: "play.fill"); Image(systemName: "pause.fill") }
+  .padding()
+  .glassEffect(.regular, in: .capsule)   // 默认 .regular、默认 Capsule
+  .tint(.blue)                            // 可选着色:Glass.tint(_:)
+```
+
+```html
+<div class="scene">
+  <img class="content-layer" src="photo.jpg" alt="" /> <!-- 内容层:可穿透滚动 -->
+  <div class="glass-pod"> <!-- 玻璃舱:功能层 -->
+    <button>…</button>
+  </div>
+</div>
+```
+
+关键点:玻璃舱只属于**控件与导航**这一『功能层』,内容可从其下方滚动穿透;官方明确**不要用于内容层、不要过度使用**(调研 02 §1 A1)。
+
+## 样式与参数
+
+Web 近似由 `--lg-*` 变量驱动:blur 采样身后内容,variant 决定状态层,折射用 SVG `feDisplacementMap`:
+
+```css
+.glass-pod {
+  border-radius: 999px;                     /* 官方默认形状 Capsule(A2) */
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55); /* 1px 内侧高光 */
+  -webkit-backdrop-filter: blur(var(--lg-blur));
+  backdrop-filter: blur(var(--lg-blur));    /* 20px:经典玻璃配方近似(06§16) */
+}
+.glass-scene[data-refraction="on"] .glass-pod {
+  backdrop-filter: url(#lg-refraction) blur(var(--lg-blur)); /* 仅 Chromium */
+}
+.glass-veil { opacity: var(--lg-dimming); }  /* 默认 35% */
+.glass-scene[data-variant="regular"] .glass-veil { background: rgb(255 255 255 / 0.92); } /* 亮度近似 */
+.glass-scene[data-variant="clear"]   .glass-veil { background: rgb(8 10 18 / 0.92); }     /* 官方深色 dimming */
+```
+
+数值出处:
+
+- `dimming` 默认 **35%**:HIG 对 clear 变体的官方建议(调研 06 §四 §16 与 §六条目18)——clear 上底层内容偏亮时,加 35% 不透明度深色 dimming 层;
+- `variant` 两档、默认 regular:官方定义(调研 02 §1 A1)+ glassEffect 默认值(A2);
+- `tint` 默认 0:`Glass.tint(_:)` 是可选方法,玻璃默认不着色(A3);
+- `blur` 20px:Apple 未公布数值,借经典玻璃配方作近似起点(未证实);
+- 折射:SVG 滤镜 `feTurbulence → feDisplacementMap`,**仅 Chromium 生效**,Firefox/Safari 不支持 backdrop-filter 的 `url()` 引用——回退纯模糊。
+
+## 动效与交互
+
+- 变体切换:dimming 薄层 0.25s opacity 过渡;`prefers-reduced-motion` 时取消过渡;
+- 背景『活体内容』(demo 的漂移色斑)只动 `transform`,让玻璃舱的模糊/折射每帧采样到变化——这正是 Liquid Glass『内容穿透滚动』的官方图景;
+- 玻璃舱本身不做位移动效:官方定位是稳定的功能层,hover 反馈交给 `Glass.interactive(_:)`(A3)一类的系统行为;
+- 调参即时可见:blur/dimming/tint 三个变量直接改写透出层的观感。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant` → clear | 高透:媒体直接透出,更『液态』;亮背景上必须靠 dimming 层兜底 | regular 是默认安全档:模糊+亮度调整保住文字可读 |
+| `dimming` | clear 下深色层更实,亮背景上的文字对比度更稳;>50% 玻璃发闷 | 亮背景上文字会顶穿 4.5:1;0% 等于裸 clear——官方 35% 是为亮背景兜底的 |
+| `blur` | 舱体更『厚』、内容更不可辨;>30px 糊成一片 | 低于 8px 玻璃感退化成淡色块,折射纹理也失去依托 |
+| `tint` | 着色越强品牌感越重,像彩色亚克力;>60% 掩盖玻璃质感 | 0% 是官方默认——不着色的玻璃靠高光和折射撑形态 |
+
+经验区间:dimming 用官方 35% 起步只在亮背景上加码;blur 12–24px;tint ≤30% 做轻品牌化。真身优先:有 SwiftUI/UIKit 环境时用 `glassEffect`,Web 近似永远是降级路径。

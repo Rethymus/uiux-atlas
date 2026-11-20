@@ -1,0 +1,118 @@
+{
+  "name": "Filter Functions",
+  "aliases": ["CSS 滤镜", "filter 函数族", "图像滤镜"],
+  "category": "materials",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "作用于元素自身的 filter 函数族:blur / brightness / contrast / hue-rotate 等十枚函数,链式叠加构成图像与材质调色层。",
+    "en": "The filter function family applied to an element itself: blur, brightness, contrast, hue-rotate and more — chained together they form the color-grading layer for imagery and materials."
+  },
+  "origin": {
+    "zh": "CSS Filter Effects Level 1 官方规范定义的参数化函数族:blur(px)、brightness()、contrast()、grayscale()、hue-rotate(deg)、invert()、opacity()、saturate()、sepia()、drop-shadow(调研 02 §4 D1)。",
+    "en": "The parameterized function family defined by the official CSS Filter Effects Level 1 spec: blur(px), brightness(), contrast(), grayscale(), hue-rotate(deg), invert(), opacity(), saturate(), sepia(), drop-shadow (research 02 §4 D1)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--ff-blur",
+      "effect": {
+        "zh": "高斯模糊半径,作用于元素自身(区别于 backdrop-filter 作用于身后)。默认 0px 为 Filter Effects L1 规定的恒等/插值初始值(调研 02 §4 D1);玻璃类配方常用 10–20px(调研 06 §四 §16 记 blur(20px))。",
+        "en": "Gaussian blur radius applied to the element itself (unlike backdrop-filter, which hits what's behind). Default 0px is the identity/interpolation initial value defined by Filter Effects L1 (research 02 §4 D1); glass-style recipes use 10–20px (blur(20px) recorded in research 06 §IV §16)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "brightness",
+      "unit": "%",
+      "min": 0,
+      "max": 200,
+      "step": 1,
+      "default": 100,
+      "cssVar": "--ff-brightness",
+      "effect": {
+        "zh": "线性乘法调亮:默认 100% 为恒等点(调研 02 §4 D1);0% 全黑,>150% 高光开始溢出发白。颗粒噪点配方以 brightness(1000%) 配合 contrast(170%) 推颗粒感(调研 06 §四 §15)。",
+        "en": "Linear multiplicative brightness: default 100% is the identity point (research 02 §4 D1); 0% is pure black, past 150% highlights clip to white. The grainy-gradient recipe pushes grain with brightness(1000%) against contrast(170%) (research 06 §IV §15)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "contrast",
+      "unit": "%",
+      "min": 0,
+      "max": 200,
+      "step": 1,
+      "default": 100,
+      "cssVar": "--ff-contrast",
+      "effect": {
+        "zh": "明暗两端拉开/收拢:默认 100% 为恒等点(调研 02 §4 D1);0% 全灰(明度归一到中灰),>120% 逐渐海报化。grainy gradients 配方取 contrast(170%)(调研 06 §四 §15)。",
+        "en": "Pulls the light/dark extremes apart or together: default 100% is the identity point (research 02 §4 D1); 0% is uniform mid-gray, past 120% it trends posterized. The grainy-gradients recipe uses contrast(170%) (research 06 §IV §15)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "hue-rotate",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--ff-hue",
+      "effect": {
+        "zh": "按色相环整体旋转底层颜色:默认 0deg 为恒等点(调研 02 §4 D1);180° 得到互补色,360° 回到原色。低饱和照片上效果弱,彩底/渐变上最直观。",
+        "en": "Rotates the underlying colors around the hue wheel: default 0deg is the identity point (research 02 §4 D1); 180° yields complementary colors and 360° lands back at the start. Weak on low-saturation photos, clearest on colorful fills and gradients."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "filter:Chrome 18 / Edge 12 / Firefox 49 / Safari 6(BCD 实测,调研 02 §4 D1);函数族在所有现代浏览器无前缀可用。",
+      "en": "filter: Chrome 18 / Edge 12 / Firefox 49 / Safari 6 (BCD-measured, research 02 §4 D1); the function family works unprefixed in all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "filter 函数族是渐进增强:不支持时元素直接以原样渲染,布局不受影响;对可读性敏感的滤镜(如 brightness 压暗文字)应在设计上保证 0% 滤镜态也可用。",
+    "en": "The filter family degrades gracefully: without support the element renders as-is and layout is unaffected; readability-sensitive filters (e.g. dimming text with brightness) should still be legible at their 0-filter state by design."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "图像状态表达:禁用态 grayscale(1)、hover 微调 brightness/contrast", "en": "Image states: grayscale(1) for disabled, gentle brightness/contrast shifts on hover" },
+      { "zh": "Aurora/Mesh 渐变背景:整层 filter: blur(42px) saturate(1.15)(调研 06 §四 §14 配方)", "en": "Aurora/mesh gradient backdrops: a whole-layer filter: blur(42px) saturate(1.15) (recipe in research 06 §IV §14)" },
+      { "zh": "颗粒噪点:feTurbulence 噪点层配 contrast(170%)+brightness(1000%)(调研 06 §四 §15)", "en": "Grain textures: feTurbulence noise pushed by contrast(170%)+brightness(1000%) (research 06 §IV §15)" },
+      { "zh": "同素材多主题:hue-rotate 一键派生冷/暖变体", "en": "Theming one asset many ways: hue-rotate derives cool/warm variants instantly" }
+    ],
+    "avoid": [
+      { "zh": "对正文文字使用 blur——文本可读性直接归零", "en": "blurring body text — legibility drops to zero" },
+      { "zh": "大面积逐帧动画的 filter——每帧触发重绘,只对 transform/opacity 合成器友好", "en": "per-frame animated filters on large areas — filter triggers repaints; only transform/opacity are compositor-friendly" },
+      { "zh": "把 brightness/contrast 当调色主题系统用——它们丢失色相信息,主题应换语义色 token", "en": "using brightness/contrast as a theming system — they lose hue; themes should swap semantic color tokens" },
+      { "zh": "在照片上叠 >200% 的极端组合——细节全灭只剩色块", "en": "stacking >200% extreme combos on photos — detail is annihilated, leaving flat color blobs" }
+    ]
+  },
+  "a11y": {
+    "zh": "滤镜后的图像信息不能成为唯一信息载体——滤镜状态(如 grayscale 禁用)要同时用文字/图标表达(WCAG 1.4.1 使用颜色之外);被压暗/提亮的图像上的叠加文字仍需 4.5:1(WCAG 2.1 SC 1.4.3,调研 06 §五 §17)。",
+    "en": "Filtered imagery must not be the sole carrier of information — filter states (e.g. grayscale disabled) need a text/icon twin (WCAG 1.4.1 use of color); overlay text on darkened/brightened images still needs 4.5:1 (WCAG 2.1 SC 1.4.3, research 06 §V §17)."
+  },
+  "sources": [
+    "https://drafts.fxtf.org/filter-effects-1/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/filter",
+    "https://css-tricks.com/grainy-gradients/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用同一张图做一组滤镜对照:原图、blur、brightness、contrast、hue-rotate 单函数瓦片 + 一块四函数链式组合瓦片,参数经 CSS 变量实时可调。",
+      "en": "Build a same-image filter comparison: an original tile, single-function tiles for blur, brightness, contrast and hue-rotate, plus one tile chaining all four — all tunable live through CSS variables."
+    },
+    "acceptance": [
+      { "zh": "四个参数严格使用快照默认值:blur 0px / brightness 100% / contrast 100% / hue-rotate 0deg(均为规范恒等点)", "en": "Use the exact snapshot defaults: blur 0px / brightness 100% / contrast 100% / hue-rotate 0deg (all spec identity points)" },
+      { "zh": "每个单函数瓦片只应用一个 filter 函数,组合瓦片按 blur→brightness→contrast→hue-rotate 链序书写", "en": "Each single-function tile applies exactly one function; the combined tile chains blur→brightness→contrast→hue-rotate in order" },
+      { "zh": "全部瓦片使用同一张源图,保证对比只反映滤镜差异", "en": "Every tile uses the same source image so the comparison isolates the filter difference" },
+      { "zh": "入场动画只动 opacity/transform,并在 prefers-reduced-motion 下停用", "en": "Entrance animation touches only opacity/transform and is disabled under prefers-reduced-motion" }
+    ]
+  }
+}

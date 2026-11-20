@@ -1,0 +1,68 @@
+## Structure & DOM
+
+ThemeShadow's mental model is "**elements float on a z axis, the system computes the shadow**": you declare only the element's elevation (z coordinate), while blur, offset and strength are auto-decided from light, theme and surroundings. Who receives the shadow must be stated explicitly:
+
+```xml
+<!-- WinUI: XAML side -->
+<Grid x:Name="RootGrid" Translation="0,0,8">
+  <Grid.Shadow>
+    <ThemeShadow />
+  </Grid.Shadow>
+</Grid>
+<!-- Non-Popup usage: the receiving element must be declared -->
+themeShadow.Receivers.Add(BackgroundGrid);
+```
+
+Key points:
+
+- z semantics: the third dimension of `Translation` (or `UiElement.Translation`) is elevation, in DIPs; Popup/Flyout/Dialog take ThemeShadow automatically, but **every other element must add receivers to the `Receivers` collection** or no shadow renders;
+- **Rectangular shadows only** — irregular shapes (circles, notched forms) need hand-tuned `DropShadow` (research 02 §C5);
+- The old Depth/depth-shadow design-guide pages have 404-migrated; depth semantics live in the ThemeShadow/DropShadow API pages (research 02 §7 erratum).
+
+## Styling & Parameters
+
+The Web has no ThemeShadow; the demo approximates the "larger z = more diffuse, fainter" trend with box-shadow — **an approximation, not Fluent's real lighting algorithm**:
+
+```css
+.demo-stage {
+  --theme-shadow-elevation: 8;   /* z value (unitless) */
+  --theme-shadow-opacity: 100%;  /* demo gain; the real API has no such parameter */
+}
+.fl-card {
+  /* blur/offset grow with z while alpha falls */
+  box-shadow:
+    0 calc(var(--z) * 0.4px)
+      calc(var(--z) * 2.2px + 2px)
+      color-mix(in srgb, black
+        calc(clamp(0, var(--z) * 0.035, 0.5) * var(--theme-shadow-opacity)),
+        transparent);
+  border-radius: 8px;            /* ThemeShadow projects rectangles */
+}
+/* The param card: --z comes straight from the parameter */
+.fl-card.param { --z: var(--theme-shadow-elevation); }
+/* Comparison cards: fixed z steps 0 / 4 / 8 / 16 / 32 (inline --z) */
+```
+
+Where the numbers come from:
+
+- The z-as-elevation semantics, the Receivers collection and the rectangle-only constraint all come from the WinUI ThemeShadow API page (research 02 §C5, fetched firsthand);
+- **No official "z → shadow parameter" table exists** — system adaptivity is the selling point; the demo's `0.4 / 2.2 / 0.035` coefficients are this entry's Web trend-fit, honestly flagged in the body and in fallback;
+- The default z=8 is the demo scale set by this batch's spec, not an official default.
+
+## Motion & Interaction
+
+Fluent's depth model treats z as an **animatable quantity**:
+
+- Lift/drop (z interpolation) is part of the hierarchy narrative: raise z temporarily while dragging, settle back on release; a smooth 150–250ms interpolation (the Web demo transitions the formula's output), with the final state shown directly under `prefers-reduced-motion`;
+- On theme switches (light ⇄ dark) ThemeShadow recomputes itself; the demo offers light/dark canvases for comparison;
+- Never animate the shadow's color/blur parameters directly — animate z (the semantic quantity) and let the formula derive the shadow; that is the Web-side echo of ThemeShadow's "system computes shadows" intent.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `elevation` | more diffuse, fainter, farther-offset shadow — "floating higher"; past 24 the weak-alpha large blur nearly vanishes on light canvases and offset alone carries the hierarchy | the shadow tightens and hardens; near 0 it is indistinguishable from "stuck to the canvas", and z=0 casts nothing (the first comparison card) |
+| `opacity` | full-strength shadow — clear but heavy on light backgrounds | the whole shadow fades; 0% removes it (for comparison only — in production change z, never crush opacity) |
+| (fixed semantics) | — | with Receivers unset, non-Popup elements get **no shadow at all** — not "fainter", absent; check Receivers first when debugging |
+
+Rule of thumb: use steps 0/4/8/16/32 (overlay > card > base) and never more than 4 z levels per screen; on dark themes weak shadows lose legibility, so hierarchy must ride surface-luminance differences (brighter = forward) together with shadows.

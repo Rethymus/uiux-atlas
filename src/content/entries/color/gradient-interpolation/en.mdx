@@ -1,0 +1,65 @@
+## Structure & DOM
+
+Gradients are `<image>`s; the `in` clause sits with the angle after the function name, before the stop list:
+
+```css
+/* angle first, in clause after (MDN's idiomatic form; the formal grammar joins them with ||, so either order parses) */
+.hero {
+  background: linear-gradient(90deg, red, blue);                 /* fallback: legacy colors default to sRGB interpolation */
+}
+@supports (background: linear-gradient(90deg in oklab, red, blue)) {
+  .hero {
+    background: linear-gradient(90deg in oklab, red, blue);      /* perceptually even interpolation */
+  }
+}
+```
+
+- **Syntax order**: the formal grammar `[ <angle> || <color-interpolation-method> ]` lets the angle and the in clause swap places; the idiomatic form leads with the angle: `linear-gradient(90deg in oklch longer hue, red, blue)`;
+- **Hue strategies belong to polar spaces only**: the grammar lists `<polar-color-space> = hsl | hwb | lch | oklch` (CSS Color 4 §13.1, re-verified against the spec text while writing); srgb/oklab/display-p3 are rectangular, and carrying a hue keyword invalidates the whole declaration — the demo shows "hue n/a" for non-oklch spaces;
+- Structurally each comparison strip is a div whose background is a JS-composed `linear-gradient(90deg in <space> [hue], var(--gi-from), var(--gi-to))` set inline; the stylesheet's **no-in plain gradient is the fallback** — when the inline declaration is invalid (unsupported) it is discarded and the fallback shows.
+
+## Styling & Parameters
+
+Four params: two enums (JS-type) + two colors (CSS-type, `--gi-from/--gi-to`):
+
+```css
+.mid-srgb    { background: color-mix(in srgb,      var(--gi-from), var(--gi-to)); }
+.mid-oklab   { background: color-mix(in oklab,     var(--gi-from), var(--gi-to)); }
+.mid-oklch   { background: color-mix(in oklch shorter hue, var(--gi-from), var(--gi-to)); }
+.mid-display { background: color-mix(in display-p3, var(--gi-from), var(--gi-to)); }
+```
+
+Where the numbers come from:
+
+- The default endpoints are **red `#FF0000` → blue `#0000FF`**, from the CSS Color 4 example quoted in the research, `linear-gradient(in oklab, red, blue)` (research 06 §4) — the red-blue clash passes through a muddy gray-purple midpoint under sRGB interpolation, and is the example the spec itself uses;
+- **space defaults to oklab**: Tailwind v4 (2025-01) defaults its gradients to OKLAB (research 06 §4); CSS Color 4 §13.1 also names Oklab as the fallback space when a host syntax defines none (re-verified against the spec while writing);
+- **hueStrategy defaults to shorter**: research 06 §4 records the four strategies (shorter/longer/increasing/decreasing) but not the default; the W3C CSS Color 4 §13.1 text fetched while writing confirms — "For a `<polar-color-space>` if the `<hue-interpolation-method>` is not specified, it defaults to shorter";
+- The four hue strategies (spec §13.4): shorter takes the short arc, longer the long arc, increasing walks upward, decreasing walks downward — the latter two never flip arcs mid-animation when the difference crosses 180°;
+- Missing components: achromatic colors like white have no hue, and in polar interpolation **the hue is taken from the other endpoint** (research 06 §4), so `color-mix(in oklch, white, green)` yields a true white→green transition instead of veering red;
+
+For achromatic endpoints like white the spec's handling inherits the partner's hue (the spec itself uses `color-mix(in hsl, white 30%, green 70%)` as its example):
+
+```css
+/* white's hue is missing in oklch → it takes green's hue, a clean white-to-green ramp */
+color-mix(in oklch, white, green);   /* not 0° for white's hue, which would veer red */
+```
+
+The Tailwind v4 engineering footnote: palettes wholesale rgb→oklch, gradients default to OKLAB interpolation, `bg-linear-to-r/srgb` and `/oklch` modifiers switch spaces, and opacity goes through `color-mix(in oklab, var(--color-blue-500) 50%, transparent)` (research 06 §4).
+
+## Motion & Interaction
+
+- Any param change redraws the main strip, the four comparison rows and the four midpoints **instantly** — the browser does the interpolation; JS only composes strings;
+- Switching spaces keeps the strip's width constant while changing the color route: the same gradient runs vivid all the way in oklch and turns gray mid-band in srgb — **an immediate visual comparison with no animation needed**;
+- The hue strategy applies only when space = oklch; for the rest the demo states "hue n/a (rectangular space)" and omits the keyword from the composed string;
+- The strips carry no entrance animation — motion would mask the color differences; likewise no transitions under `prefers-reduced-motion` (the demo has none);
+- Text over a gradient gets checked at both the brightest and darkest ends (see the wcag-contrast entry) — the interpolation space shifts where the worst mid-band point lands.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `space` | oklch: chroma held high throughout — the most vivid (holding chroma is its design goal); display-p3: interpolates on wider primaries, slightly richer on P3 screens, though subtle next to srgb | oklab: perceptually even with smooth mid-band lightness; back to srgb and legacy behavior returns — red/blue-style long transitions immediately grow the muddy band |
+| `hueStrategy` | longer: the long way around — red→yellow travels through blue/purple, great for deliberate choreography; increasing/decreasing fix a direction and never flip arcs past 180° mid-animation | shorter (the default): the most economical arc; the short/long difference peaks when the endpoints sit near-antipodal on the hue circle |
+| `from` / `to` | the wider the hue angle between endpoints, the more visible the space differences — red/blue antipodes are the best showcase | the closer the endpoints, the more the spaces converge and the strips lose their teaching value; lightness ramps within one hue barely differ across spaces |
+
+The default pairing (oklab + red→blue) is the "safe and good-looking" setting. For maximum drama: switch to srgb to see the muddy band, then to oklch with hue = longer to watch the hue travel around through blue/purple — those two switches stage every idea in this entry.

@@ -1,0 +1,71 @@
+## Structure & DOM
+
+Glassmorphism is a three-layer structure with a strict order: a **rich backdrop** (photo or multi-stop gradient) at the bottom, the **glass panel** (carrying `backdrop-filter`) floating above it, and content on top.
+
+```html
+<div class="scene">
+  <img class="backdrop" src="photo.jpg" alt="" />
+  <div class="glass-card">
+    <h3>Title</h3>
+    <p>Body</p>
+  </div>
+</div>
+```
+
+Key points:
+
+- The glass panel must be a **sibling layer** of the backdrop — `backdrop-filter` blurs everything showing through behind the panel;
+- The richer the backdrop (color, wide light/dark range), the stronger the sense of glass "thickness"; on a flat color the effect collapses entirely;
+- Text and controls inside the panel are normal document flow and are not blurred.
+
+## Styling & Parameters
+
+Five parameters map to four CSS declarations plus a `data-variant` switch, all injected through `--glass-*` variables:
+
+```css
+.glass-card {
+  background-color: var(--glass-fill);        /* oklch(1 0 0 / 0.15) ≈ rgba(255,255,255,.15) */
+  border: 1px solid var(--glass-border);      /* oklch(1 0 0 / 0.3) ≈ rgba(255,255,255,.3) */
+  border-radius: var(--glass-radius);         /* 20px */
+  -webkit-backdrop-filter: blur(var(--glass-blur)); /* Safari 9–17 prefix */
+  backdrop-filter: blur(var(--glass-blur));   /* 20px */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /* soft shadow, production-measured */
+}
+
+/* Dark variant: production-measured recipe rgba(17,25,40,0.55) (superdesign.dev) */
+.glass-card[data-variant="dark"] { color: #f5f7fa; }
+.glass-card[data-variant="dark"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(17, 25, 40, 0.55);
+}
+```
+
+Where the numbers come from:
+
+- `blur(20px)` + 15% white fill + `1px rgba(255,255,255,.3)` border + 20px radius = the **classic recipe of the glassmorphism.com generator**;
+- Production CSS audited via superdesign.dev: Apple global nav `blur(20px)+saturate(180%)`, Framer 10px, Reflect 4–22px, Resend 25px; radii cluster at 16–20px;
+- Browser support: Chrome/Edge 76+, Firefox 103+, Safari 9+ with the `-webkit-` prefix, unprefixed since Safari 18 (2024-09).
+
+## Motion & Interaction
+
+The glass itself is a static material — keep motion restrained:
+
+- **Variant switch**: the demo subscribes to the panel's `variant` and rewrites the card's `data-variant`; the dark veil cross-fades over 0.25s;
+- **Entrance**: fade in + 10px rise, animating only `opacity/translate` (compositor-friendly); disabled under `prefers-reduced-motion`;
+- When backdrop content moves (video, scrolling), `backdrop-filter` re-samples every frame — large glass areas get expensive, so animate only `transform/opacity` (web.dev performance rules);
+- Hover shifts and deepened shadows are optional and should be skipped on high-frequency controls (Apple HIG: avoid motion on frequent interactions).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `blur` | makes the glass "thicker" and the backdrop less legible; past 30px it smears into mush and sampling cost climbs | approaches a plain tinted block; below 6px the glass feel disappears (production floor ≈ 4px, Reflect) |
+| `fill` | gets whiter and more solid — readability improves but the glass feel fades; too much alpha degrades into an ordinary card | gets airier and crisper; under 8% it nearly vanishes into the backdrop and text contrast becomes uncontrolled |
+| `border` | brightens and hardens the edge | removes the rim, gluing the glass to the backdrop — about half of the glass feel lives in that 1px highlight |
+| `radius` | reads more "app card"; keep inner corners concentric (Apple Liquid Glass concentricity rule) | degrades into an ordinary rectangle; below 16px the signature glass silhouette is gone |
+| `variant` | dark stacks a deep veil and flips text light — contrast holds much more easily | light is the white-frost recipe; on pale backdrops text contrast needs extra checking |
+
+Working ranges: blur 10–25px, fill white at 10–15% alpha, radius 16–20px. Glass stacked on glass turns the transmitted content muddy — one layer is the norm.

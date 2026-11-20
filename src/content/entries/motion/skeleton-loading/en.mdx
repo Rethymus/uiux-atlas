@@ -1,0 +1,69 @@
+## Structure & DOM
+
+A skeleton is "two states of the same card": the placeholder state replicates the content layout with geometric blocks, and ready content fades in fast over it. Placeholder and content blocks **align in size**, so the swap causes no layout jump:
+
+```html
+<div class="card" aria-busy="true">
+  <!-- placeholder state (pure decoration, skipped by screen readers) -->
+  <div class="sk-avatar sk-block" aria-hidden="true"></div>
+  <div class="sk-line sk-block" style="width: 62%" aria-hidden="true"></div>
+  <!-- content state (fades in over it) -->
+  <img class="avatar" src="…" alt="" />
+  <h3 class="name">Ada Lovelace</h3>
+</div>
+```
+
+- M3 lists skeleton loaders among its six transition patterns: "a UI abstraction that hints at where content will appear once loaded", with a **subtle pulse** for indeterminate progress (visually travelling from top-left to bottom-right) and a **fast fade-in** of content once loaded (research 04 §2.2);
+- Luke Wroblewski's "Avoid The Spinner": progress indicators make people "watch the clock", while skeletons aim attention at "content is coming" rather than waiting — Polar used them to eliminate spinners (research 04 §2.2);
+- The blocks are pure decoration; the loading semantics ride on aria-busy and status text, never on the animation.
+
+## Styling & Parameters
+
+The pulse is a transform-based sweep (compositor-friendly, web.dev's performance floor, research 04 §1.5):
+
+```css
+.sk-block { position: relative; overflow: hidden; background: <base>; }
+.sk-block::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%;
+  background: linear-gradient(90deg, transparent, hsla(0 0% 100% / 0.4), transparent);
+  animation: sk-sweep var(--skeleton-duration, 1200ms) ease-in-out infinite;
+}
+@keyframes sk-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}
+/* diagonal: a 120° gradient + diagonal offset, matching M3's top-left → bottom-right travel */
+```
+
+Two parameters:
+
+- `pulse` (CSS-type, `--skeleton-duration`): the pulse period. M3 only asks for a "subtle pulse" and **records no number** — 1200ms is a common community value, unverified;
+- `direction` (JS-type, the demo toggles `data-dir`): horizontal = the classic left→right sweep; diagonal = a 120° gradient crossing the card (M3's top-left → bottom-right travel, research 04 §2.2).
+
+**Loading-selection thresholds (NN/g, research 04 §2.2) — pick the indicator first, skeleton second:**
+
+| Expected load time | Official guidance |
+| --- | --- |
+| &lt;1s | Instant state change (button pressed state etc.), no indicator |
+| ≥1s | A progress indicator is mandatory |
+| 2–10s | Looping animation (spinner / looping bar / skeleton pulse) |
+| ≥10s | Percent-done progress bar + descriptive text (e.g. "Loading comments…"); past 10s add a time estimate |
+
+With a progress indicator, satisfaction rises and users tolerate roughly 3× the wait (NN/g, citing a University of Nebraska experiment).
+
+## Motion & Interaction
+
+- **State swap**: the demo's "Reload" re-enters the placeholder state; content fades in after 1.8s (a demo duration sitting in NN/g's "≥1s needs an indicator" band);
+- **Content fade-in**: 200ms + M3 Standard easing `cubic-bezier(0.2, 0, 0, 1)` (M3 short4 = 200ms + Standard easing, research 04 §1.4/§2.6);
+- **Zero-shift swap**: placeholders and content share size and radius — zero layout displacement, the whole point of skeleton "layout stability";
+- **reduced-motion**: the sweep is disabled (blocks keep their static base color) and content appears without the fade; "loading" is backed by aria-busy + `role="status"` text;
+- Skeleton vs spinner: both signal indeterminate progress, but the skeleton preserves layout clues (lukew), and loops fit the 2–10s band (NN/g).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `pulse` | calmer breathing, more "subtle"; past 2.4s the sweep becomes hard to notice and the page may look frozen | hurried and attention-grabbing, violating M3's "subtle"; at 600ms it borders on flicker |
+| `direction` | diagonal follows M3's top-left → bottom-right travel — stronger directionality on large cards | horizontal is the community's default form, a more "direct" scan line; either changes only the visual direction, not the semantics |
+
+Rule of thumb: first ask "how long will this take" — under 1s do nothing, 1–10s use a skeleton/looping indicator, 10s+ a percent-done bar; skeletons only make sense when the **layout is knowable**.

@@ -1,0 +1,101 @@
+{
+  "name": "Claymorphism",
+  "aliases": ["黏土拟物", "Clay UI", "黏土风"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "粉彩底、超大圆角、双内阴影+外投影做出的「充气黏土」质感——元素浮在页面之上而非从背景挤出,以此修复新拟物的对比度失败。",
+    "en": "Pastel bases, oversized radii, and a puffy 'inflated clay' look built from dual inner shadows plus an outer shadow — elements float above the page instead of being extruded from it, fixing neumorphism's contrast failure."
+  },
+  "origin": {
+    "zh": "术语 2021 年由 Michał Malewicz(Hype4 Academy)创造(clay + skeuomorphism),2022 年 Smashing Magazine 的独立技术性文章确认其命名权;动机是修复 Neumorphism 的可访问性失败;2026 年沉淀为利基,多用于儿童产品/教育科技/插画型落地页(调研 03§4)。",
+    "en": "Coined in 2021 by Michał Malewicz (Hype4 Academy) as clay + skeuomorphism, with Smashing Magazine's 2022 technical article confirming the naming; motivated by fixing neumorphism's accessibility failure. By 2026 it has settled into a niche around kids' products, edtech and illustrated landing pages (research 03 §4)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "default": 32,
+      "cssVar": "--clay-radius",
+      "effect": {
+        "zh": "圆角半径。默认 32px 为卡片经验值;调研区间 20–40px,经验法则≈元素高度的 25%(卡片 32px/按钮 24px/输入 20px)。超大圆角是「充气感」的第一来源(superdesign.dev)。",
+        "en": "Corner radius. Default 32px is the card rule of thumb; research range 20–40px, ≈25% of element height (cards 32px / buttons 24px / inputs 20px). Oversized radii are the first source of the puffy look (superdesign.dev)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "shadowY",
+      "unit": "px",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 35,
+      "cssVar": "--clay-shadow-y",
+      "effect": {
+        "zh": "外投影 y 偏移(元素「浮」在页面上的高度)。默认 35px 取自配方 0 35px 68px rgba(112,100,176,.30);blur 68px 与 alpha 0.30 为该配方定值。投影必须向元素色相着色(此处为紫调),禁用纯黑(superdesign.dev)。",
+        "en": "Outer shadow y-offset (how far the element floats). Default 35px from the recipe 0 35px 68px rgba(112,100,176,.30); blur 68px and alpha 0.30 are fixed by that recipe. The shadow must be tinted with the element's hue (purple here) — never pure black (superdesign.dev)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "innerAlpha",
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "default": 1,
+      "cssVar": "--clay-inner-alpha",
+      "effect": {
+        "zh": "双内阴影透明度倍率,1=配方原值:下缘暗内阴影 rgba(95,70,140,.22)+顶部亮内阴影 rgba(255,255,255,.65)(superdesign.dev)。0=内阴影消失,只剩外投影;调到 2 充气感最强但高光易发脏。",
+        "en": "Multiplier on the dual inner-shadow alphas; 1 = the documented recipe: bottom dark inner rgba(95,70,140,.22) + top light inner rgba(255,255,255,.65) (superdesign.dev). 0 removes inner shadows leaving only the outer shadow; 2 maximizes the puffy look but highlights turn dirty."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "多层 box-shadow、border-radius、transform 全平台可用;demo 的内阴影 alpha 用 rgb(... / calc(...)) 计算(现代浏览器均支持),旧环境可直接写死配方三色值。",
+      "en": "Multi-layer box-shadow, border-radius and transform work everywhere; the demo computes inner-shadow alphas with rgb(... / calc(...)) (supported in all modern browsers). Older environments can hardcode the three recipe colors."
+    }
+  },
+  "fallback": {
+    "zh": "不支持多层阴影时:保留粉彩底与大圆角,退化为单层常规投影+1px 同色相描边;充气感会减弱但层级与可读性不损失。按压反馈本来就是 transform 位移,无兼容问题。",
+    "en": "Without multi-layer shadow support: keep the pastel base and oversized radius, degrade to a single regular shadow plus a 1px hue-matched edge; the puffy look weakens but hierarchy and readability survive. Press feedback is a transform shift, so it needs no fallback."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "儿童产品、教育科技与插画型落地页——2026 年该风格的主要落点(调研 03§4)", "en": "Kids' products, edtech and illustrated landing pages — the style's main 2026 habitat (research 03 §4)" },
+      { "zh": "CTA 按钮与奖励弹层——厚按钮 3D 挤出感(Duolingo 式)转化表现好", "en": "CTAs and reward dialogs — thick extruded buttons (Duolingo-style) convert well" },
+      { "zh": "进度、成就、积分等游戏化组件,充气质感强化正反馈", "en": "Gamified progress, achievements and points — the puffy look amplifies positive feedback" }
+    ],
+    "avoid": [
+      { "zh": "数据密集后台与长文阅读——大圆角+厚阴影挤占内容空间", "en": "Data-dense backends and long-form reading — big radii and fat shadows crowd out content" },
+      { "zh": "成熟企业产品主界面——利基风格与工具型产品的克制基调冲突", "en": "Mature enterprise product shells — a niche style clashes with the restrained tone of tooling" },
+      { "zh": "深色主题直接套用——配方的高光内阴影(白 .65)在暗底上会变成刺眼描边", "en": "Dark themes as-is — the white .65 top inner highlight turns into a glaring rim on dark bases" }
+    ]
+  },
+  "a11y": {
+    "zh": "claymorphism 让元素浮于页面之上,元素与背景保留真实对比——这正是它对新拟物对比度失败的修复方式;但仍需逐个核对文本 4.5:1 与控件边界 3:1(WCAG 2.2 SC 1.4.11)。按压反馈用 transform 位移而非动画阴影,焦点态用显式 3px :focus-visible 描边,不得只靠阴影变化表达(superdesign.dev)。",
+    "en": "Because elements float above the page, real contrast between element and background survives — that is exactly how claymorphism repairs neumorphism's contrast failure. Still verify text at 4.5:1 and control boundaries at 3:1 (WCAG 2.2 SC 1.4.11). Press feedback is a transform shift rather than animated shadows, and focus uses an explicit 3px :focus-visible outline — never shadows alone (superdesign.dev)."
+  },
+  "sources": [
+    "https://superdesign.dev/styles/claymorphism",
+    "https://namethatui.com/styles"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用三段式阴影复刻黏土质感卡片:粉彩底、超大圆角、外投影向元素色相着色、下缘暗内阴影+顶部亮内阴影,按压时 transform 下沉而不是动画阴影。",
+      "en": "Replicate a clay card with the three-part shadow: pastel base, oversized radius, a hue-tinted outer shadow, a dark bottom inner shadow plus a light top inner shadow, and press feedback via transform sink instead of animated shadows."
+    },
+    "acceptance": [
+      { "zh": "阴影顺序关键:外投影在前、暗内阴影次之、亮内阴影最后", "en": "Shadow order is critical: outer shadow first, then the dark inner, then the light inner" },
+      { "zh": "外投影 0 35px 68px 且向元素色相着色(如 rgba(112,100,176,.30)),禁用纯黑", "en": "Outer shadow 0 35px 68px tinted with the element hue (e.g. rgba(112,100,176,.30)); never pure black" },
+      { "zh": "双内阴影配方:inset 0 -8px 16px rgba(95,70,140,.22) + inset 0 8px 16px rgba(255,255,255,.65)", "en": "Dual inner shadows: inset 0 -8px 16px rgba(95,70,140,.22) + inset 0 8px 16px rgba(255,255,255,.65)" },
+      { "zh": "圆角用参数快照值(卡片默认 32px,经验≈元素高度 25%)", "en": "Radius uses the parameter snapshot value (card default 32px, ≈25% of element height)" },
+      { "zh": "按压反馈 transform: translateY(2px) scale(0.98),焦点态显式 3px :focus-visible 描边", "en": "Press feedback via transform: translateY(2px) scale(0.98); focus via an explicit 3px :focus-visible outline" }
+    ]
+  }
+}

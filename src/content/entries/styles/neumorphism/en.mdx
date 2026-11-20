@@ -1,0 +1,75 @@
+## Structure & DOM
+
+Neumorphism is a single-layer structure with one hard constraint: the page and the element share **exactly the same color**. The shaping does not live in the DOM — it lives in the shadows.
+
+```html
+<div class="neu-page">
+  <div class="neu-card">
+    <input class="neu-input" type="text" />
+    <button class="neu-btn">Press me</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- `.neu-page` and `.neu-card` use one base color (default `#e0e5ec`) with **no border or outline** between them;
+- Raised and inset are two orientations of the same shadow pair, expressed by swapping `box-shadow`;
+- Content inside the element (text, icons) is normal document flow — shadows only shape the "shell".
+
+## Styling & Parameters
+
+Four parameters map to the base color, offset, blur and raised/inset mode, injected via `--neu-*` variables:
+
+```css
+.neu-page { background-color: var(--neu-bg); }  /* classic #e0e5ec */
+
+/* Raised: classic recipe 9px 9px 18px #bec3c9, -9px -9px 18px #ffffff */
+.neu-card {
+  border-radius: 20px;            /* research range 16–24px */
+  color: #3a4453;                 /* text in high-contrast ink */
+  box-shadow:
+    var(--neu-offset) var(--neu-offset) var(--neu-blur)
+      color-mix(in srgb, var(--neu-bg) 85%, black),  /* base darkened 15% */
+    calc(-1 * var(--neu-offset)) calc(-1 * var(--neu-offset)) var(--neu-blur)
+      #ffffff;                    /* light shadow = pure white, classic value */
+}
+
+/* Inset: shadows flip inside (classic recipe inset 6px 6px 12px) */
+[data-mode="inset"] .neu-card {
+  box-shadow:
+    inset var(--neu-offset) var(--neu-offset) var(--neu-blur)
+      color-mix(in srgb, var(--neu-bg) 85%, black),
+    inset calc(-1 * var(--neu-offset)) calc(-1 * var(--neu-offset)) var(--neu-blur)
+      #ffffff;
+}
+```
+
+Where the numbers come from (superdesign.dev neumorphism page):
+
+- Base `#e0e5ec`, raised recipe `9px 9px 18px #bec3c9, -9px -9px 18px #ffffff`, inset recipe `inset 6px 6px 12px`;
+- **Dark shadow = base darkened 15%**: `color-mix(in srgb, #e0e5ec 85%, black)` equals the classic dark value `#bec3c9` exactly;
+- **blur ≈ 2× offset**: classic raised 18px = 2×9px, inset 12px = 2×6px;
+- Radii cluster at 16–24px; dark mode needs **both shadows retuned**, never a simple inversion.
+
+> ⚠️ **Accessibility counter-example**: typical neumorphic edges measure only about **1.4:1** contrast — below the 3:1 non-text boundary requirement of WCAG 2.2 SC 1.4.11 — and the failure **cannot be fixed while keeping the soft look**. The research records this as the core reason the style retreated through 2021. Always set text in high-contrast ink, reinforce control boundaries with a solid edge, or fall back to regular cards.
+
+## Motion & Interaction
+
+Raised⇄inset is the only "verb" in this language:
+
+- **Press feedback**: on `:active`, swap the raised shadow for the inset pair with a 0.15s transition; acceptable on small elements, avoid on large cards (shadow transitions trigger repaints, costlier than transform);
+- **Toggle semantics**: the slider track stays inset (the well), the knob stays raised; drag only animates `transform`;
+- **Entrance**: a simple card fade-in; under `prefers-reduced-motion` drop transitions and entrance animation, rendering the final state directly;
+- Decorative hover shifts and shadow deepening should be omitted — a low-contrast material cannot afford more ambiguous cues.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `base` | darker or more saturated bases widen the dark-shadow gap, shifting "plastic" toward "rubber" | brighter bases read creamier, but the gap to the pure-white light shadow widens and the feel turns brittle |
+| `offset` | deeper relief, thicker-feeling controls; past 16px the shadow dominates and layouts loosen | near 0 it degenerates into a flat block — raised and inset become indistinguishable |
+| `blur` | softer, more diffuse shadow and atmosphere; far beyond 2× offset the shadow smears and edges get harder to read | a hard emboss, almost engraved; below the offset the soft-plastic feel is lost |
+| `mode` | a globally inset page reads like a mold — suited to status-panel demos | raised is the default posture; switching between the two is the most natural press feedback |
+
+Working ranges: offset 4–12px, blur at 2× offset, radius 16–24px. Base, dark and light shadows must derive from one another — mixing in unrelated grays reads "dirty" immediately.

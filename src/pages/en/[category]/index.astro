@@ -1,0 +1,24 @@
+---
+import CategoryView from "@/components/CategoryView.astro";
+import { CATEGORIES } from "@/lib/types";
+import type { CategoryId, EntryMeta } from "@/lib/types";
+import { listEntryMetas } from "@/lib/metas";
+
+interface Props {
+  categoryId: CategoryId;
+  metas: EntryMeta[];
+}
+
+// 分类合法性校验:路径只从 CATEGORIES 的封闭 id 列表生成,未知分类自然 404
+export async function getStaticPaths() {
+  const metas = await listEntryMetas();
+  return CATEGORIES.map((c) => ({
+    params: { category: c.id },
+    props: { categoryId: c.id, metas: metas.filter((m) => m.slug.startsWith(`${c.id}/`)) },
+  }));
+}
+
+const { categoryId, metas } = Astro.props;
+---
+
+<CategoryView locale="en" categoryId={categoryId} metas={metas} />

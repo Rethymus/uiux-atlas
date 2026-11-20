@@ -1,0 +1,62 @@
+## Structure & DOM
+
+The demo runs a same-document transition between two states: "card list ⇄ detail page". In list state, 4 cards are `<button>`s; in detail state, one large hero plus a back button. The whole flow fits in one function:
+
+```ts
+const open = (id: string) => {
+  // before the old snapshot: name the clicked card (morph mode)
+  cardRefs.current[id]?.classList.add("vt-name");
+  const apply = () => flushSync(() => setDetailId(id)); // the DOM update must complete synchronously inside the callback
+  const doc = document as VTDocument;
+  if (!doc.startViewTransition || reduced) {
+    apply(); // no API or reduced-motion: hard cut
+    cardRefs.current[id]?.classList.remove("vt-name");
+    return;
+  }
+  doc.startViewTransition(apply);
+};
+```
+
+Key points:
+
+- The browser snapshots the page before and after the callback, freezing rendering in between; **every transition animation is a CSS animation**, carried by the pseudo-element tree `::view-transition → group → image-pair → old/new` (research 04 §3.1);
+- The morph trick: **the two sides need not be the same DOM node** — name the list card before the transition, have the detail hero carry the same name after, and `::view-transition-group(name)` tweens position/size automatically (the official shared element transition, research 04 §3.2);
+- Names **must be unique at the same instant**: two same-named elements skip the whole transition — the demo clears stale names before launching and removes them after finishing, keeping at most one holder at any time.
+
+## Styling & Parameters
+
+`duration`/`easing` are CSS-typed (injected through `--vt-duration`/`--vt-easing`); `mode` is JS-typed, subscribed by the demo to pick the naming strategy. Overriding the pseudo-element animations:
+
+```css
+/* Snapshot animations are all overridable — the direct payoff of "every transition is a CSS animation" */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: var(--vt-duration, 300ms);
+  animation-timing-function: var(--vt-easing, cubic-bezier(0.4, 0, 0.2, 1));
+}
+/* morph mode: the shared name of clicked card / detail hero */
+.vt-name { view-transition-name: vt-card; }
+```
+
+Where the numbers come from: the default **300ms + cubic-bezier(0.4, 0, 0.2, 1)** takes the main segment of Chrome's official same-document page Material shared-axis example (exit 90ms + main 300ms, enter 210ms delayed 90ms; the demo uses the main-segment values, research 04 §3.2). The platform cross-fade's own default duration was not recorded in the research, so no official claim is made.
+
+Implementation details: the pseudo-element tree hangs off `<html>` and does not inherit variables set on `.demo-stage` — the demo mirrors the two CSS variables onto `document.documentElement` and removes them on unmount; React's DOM update goes through `flushSync` inside the transition callback, with no async waits in the callback (official advice: within 100ms).
+
+## Motion & Interaction
+
+- **morph**: tapping a card swaps it with the hero — position/size tweened automatically by the group; going back runs the reverse (hero→card). Name uniqueness is guaranteed by "clear before launch, remove after finish";
+- **fade**: no naming at all, leaving a single root-level cross-fade — the platform default, with duration/easing still under parameter control;
+- **Unsupported / reduced-motion hard cut**: without the API or with reduced motion requested, `apply()` runs directly — the UI swaps instantly with zero functional loss;
+- **One transition at a time**: rapid clicks make each new transition skip the old one to its end (official behavior), never stacking;
+- Performance & freezing: rendering is frozen during the transition; `apply` is a small synchronous update with no long tasks.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `duration` | a more leisurely pass with a more legible morph trajectory; past 500ms it drags and the frozen-rendering period weighs | approaches a hard cut; below 150ms a morph's spatial story is unreadable, leaving only a flash |
+| `easing` | y2&lt;1 deceleration settles the morph; y-overshoot amplifies bounce at page scale — use with care | control points near the diagonal read as linear — a constant-speed page slide looks more mechanical than ease |
+| `mode` | morph: the strongest spatial continuity (container-transform feel), making the list↔detail causality explicit | fade: the plainest, safest choice — cleaner when elements share no spatial relationship or the layout reshuffles heavily |
+
+Working ranges: 200–300ms for small same-document state changes; pair morphs with no-overshoot curves like (0.4, 0, 0.2, 1) (page-scale overshoot is a nausea risk); fade can run shorter. Uniqueness discipline outranks everything: remove names first, then start the next transition.

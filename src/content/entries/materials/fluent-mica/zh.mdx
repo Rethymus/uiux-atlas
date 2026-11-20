@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+Mica 是**不透明**材质:窗口创建时对桌面壁纸**采样一次**,绘制成窗口背景并长期驻留;窗口内内容滚动、变化时背景不会重新透出(调研 02 §3 C2)。这与 Acrylic 的『逐元素实时透出』正相反。Web 复刻把『取样』改为壁纸副本 + 重度滤镜:
+
+```html
+<div class="scene">
+  <img class="wallpaper" src="wallpaper.jpg" alt="" />  <!-- 桌面壁纸 -->
+  <section class="window">
+    <img class="mica-sample" src="wallpaper.jpg" alt="" /> <!-- 壁纸副本:单次『取样』 -->
+    <div class="tint"></div>                               <!-- 着色层:tint -->
+    <div class="chrome">标题栏 + 内容</div>
+  </section>
+</div>
+```
+
+关键点:
+
+- 窗口背景**不用** `backdrop-filter`——它不是透视层,而是被烘焙进窗口的静态取样;
+- Mica Alt 只是强着色变体,结构完全相同;
+- Web 无法读取真实桌面壁纸,demo 用照片代替壁纸,近似『采样一次』的行为。
+
+## 样式与参数
+
+两个参数:variant(JS 型,切 `data-variant`)与 tint(CSS 变量 `--fm-tint`):
+
+```css
+.window { position: relative; overflow: hidden; border-radius: 12px; }
+/* 『取样层』:壁纸副本 + 重度模糊/降饱和(社区近似;官方未公布处理参数) */
+.mica-sample {
+  position: absolute; inset: -20%;
+  width: 140%; height: 140%; object-fit: cover;
+  filter: blur(64px) saturate(60%) brightness(0.92);
+}
+.tint { position: absolute; inset: 0; opacity: var(--fm-tint); } /* 默认 50% */
+.window[data-variant="mica"]     .tint { background: rgb(243 243 243 / 0.65); }
+.window[data-variant="mica-alt"] .tint { background: rgb(76 60 154 / 0.75); } /* 强着色 */
+```
+
+数值出处:
+
+- 『不透明、单次壁纸采样、长驻窗口背景』『Mica Alt 强着色、tab 式标题栏』『Windows App SDK 1.1+』:官方文档(调研 02 §3 C2);
+- **tint 默认 50% 与取样滤镜(blur 64px 等):官方未公布数值,均为社区常见近似值(未证实)**;
+- 与 Acrylic 的分工(transient UI → Acrylic,长驻窗口 → Mica):官方文档(C1/C2);
+- Web 支持性:纯 CSS,无 backdrop-filter 依赖。
+
+## 动效与交互
+
+- 变体/着色切换:tint 薄层 0.25s 过渡;`prefers-reduced-motion` 时取消;
+- **背景不动**:demo 让窗口内的内容条持续滚动,而取样背景纹丝不动——这正是『单次采样』的行为演示(Acrylic 条则实时模糊身后内容,形成对照);
+- 窗口内容动画只动 `transform`;取样层永远静止,不做任何动画;
+- 调参即时可见:tint 滑杆改变着色层浓度,variant 切换换掉着色颜色。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant` → mica-alt | 强着色:应用标识更强,适合 tab 式标题栏;壁纸感减弱,深浅前景都要重核对比度 | 标准 mica:更中性的壁纸取样,适合设置页/工作区等大面积长驻表面 |
+| `tint` | 应用色盖过壁纸取样:窗口更像实色品牌面板;100% 等于纯色窗口 | 壁纸取样更裸露:不同壁纸间窗口观感波动大,文字对比度更难预测;0 等于裸取样层 |
+
+与 Acrylic 的选择经验:**要透视选 Acrylic,要稳定选 Mica**——Mica 换取的是性能(单次采样)与可预测的对比度;两者同屏出现时,Acrylic 用于浮层、Mica 用于窗口底,层级自然分明。

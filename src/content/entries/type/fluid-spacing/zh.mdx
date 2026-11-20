@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+与流式字阶同构:无额外 DOM,一层 `:root` 级间距令牌。所有留白(padding/gap/margin)统一从令牌取值,这是流式间距成立的前提。
+
+```html
+<section class="block">
+  <div class="chips">…</div>
+</section>
+```
+
+```css
+:root {
+  --space-3xs: clamp(0.2813rem, 0.2656rem + 0.0521vw, 0.3125rem);
+  --space-2xs: clamp(0.5625rem, 0.5313rem + 0.1042vw, 0.625rem);
+  --space-s:   clamp(1.125rem, 1.0625rem + 0.2083vw, 1.25rem);
+  --space-m:   clamp(1.6875rem, 1.5938rem + 0.3125vw, 1.875rem);
+  --space-l:   clamp(2.25rem, 2.125rem + 0.4167vw, 2.5rem);
+  /* … xl / 2xl / 3xl 同法生成 */
+}
+```
+
+关键点:
+
+- 基准令牌 `--space-s` 在视口两端取 `minSpace/maxSpace`,其余令牌 = 基准 × 倍数,倍数梯 0.25/0.5/0.75/1/1.5/2/3/4/6(取自 Utopia 的 multipliers,调研 05§14);
+- 插值公式与字阶一致:斜率 =(max−min)÷(maxVw−minVw),视口按 16px 根字号折 rem;
+- 命名 3xs/2xs/xs/s/m/l/xl/2xl/3xl 沿用 Utopia 令牌名(调研 05§14 输出样本中的 --space-3xs/2xs/xs/s)。
+
+## 样式与参数
+
+四个参数全部 JS 型:demo 订阅面板后实时生成九条 clamp 令牌,写进样例卡片的 CSS 变量并排展示代码与条形图。
+
+```css
+/* demo 默认参数生成:480px→1440px,1.125rem→1.25rem */
+.block  { padding: var(--space-l); }
+.chips  { gap: var(--space-m); }
+.chip   { padding: var(--space-2xs) var(--space-s); }
+```
+
+数值出处:
+
+- `minSpace` 默认 1.125rem、`maxSpace` 默认 1.25rem = Utopia 实测输出 `--space-s: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem)` 的两端(调研 05§14 一手核对);demo 公式按其视口输入可逐字复现该输出;
+- `minViewport/maxViewport` 默认 480/1440px 为本条目任务规格取值;由 Utopia 样本反推的官方默认约 360/1240px(未直接记录,两说并列);
+- 差异声明:Utopia 官方串对个别令牌做独立舍入(其样本 --space-3xs 为静态定值),本条目实现为纯倍数插值,允许与官方输出相差末位小数。
+
+## 动效与交互
+
+间距是静态令牌,「动」只发生在视口变化时:
+
+- 视口连续变化时 clamp 输出连续变化,无跳变、无需 transition;
+- demo 条形图随「模拟视口宽度」滑杆即时伸缩,样例卡片的 padding/gap 由真实 clamp() 变量驱动,缩放浏览器窗口即可看到留白呼吸;
+- 本条目不产生动画,无 `prefers-reduced-motion` 降级需求。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `minViewport` | 曲线右移:小屏完全停在 min 值,移动端留白变「死」 | 留白更早开始伸缩,手机上就开始呼吸——min 值区变短 |
+| `maxViewport` | 斜率变缓,桌面端留白变化更细微、更晚到达上限 | 斜率变陡,大屏留白快速放大,过早停在 max 值 |
+| `minSpace` | 基准下限抬高,整条标尺上移,小屏留白更宽松、内容密度下降 | 逼近 0.5rem 时微间距令牌(×0.25 后 0.125rem)小到失去分隔作用 |
+| `maxSpace` | 大屏留白变大、斜率变陡,展示页风格增强 | 接近 minSpace 时斜率趋零,标尺退化为静态;低于 minSpace 则 clamp 语义倒挂(min 优先) |
+
+经验区间:基准间距 1.125–1.25rem(Utopia 样本)、视口 360–1440px;间距斜率应缓于字阶斜率,微间距令牌(3xs/2xs)建议保持静态或极小跨度。

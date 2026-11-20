@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+演示分两块并排:左边是**运动区**(一条轨道 + 一颗球),右边是**曲线预览**(SVG 坐标系)。DOM 只有三个必需件:
+
+```html
+<div class="cb-track">
+  <div class="cb-ball"></div>  <!-- animation-timing-function: var(--cb-curve) -->
+</div>
+<svg viewBox="0 -40 100 180">  <!-- 预留 y>1 / y<0 的越界带 -->
+  <path class="cb-curve" d="M 0 100 C …" />
+  <g class="cb-dot-x"><circle class="cb-dot-y" cx="0" cy="100" r="4.5" /></g>
+</svg>
+```
+
+关键点:
+
+- 球的往返、预览里示踪点的水平/垂直分量,消费的是**同一个** `cubic-bezier()` 值——预览与运动天然同步;
+- 示踪点拆成两层嵌套:外层 `g` 做**线性**水平移动,内层 circle 做贝塞尔垂直移动。CSS 多动画写同一属性会互相覆盖,嵌套是合成两个时间函数的唯一干净办法;
+- 预览把 SVG 的 y 轴映射为「进度」:`y = (1 - 进度) × 100`,顶部越界带(y>1)与底部越界带(y&lt;0)画出过冲区间。
+
+## 样式与参数
+
+单一参数 `curve`(cubicBezier 型,经 `--cb-curve` 注入),即曲线本身:
+
+```css
+.cb-ball {
+  animation: cb-run 1.6s var(--cb-curve) infinite alternate;
+}
+@keyframes cb-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--cb-dist)); } /* 轨道宽 - 球径,JS 测量注入 */
+}
+.cb-dot-x  { animation: cb-dot-x 1.6s linear infinite alternate; }                       /* 水平:匀速 = 时间轴 */
+.cb-dot-y  { animation: cb-dot-y 1.6s var(--cb-curve) infinite alternate; }              /* 垂直:贝塞尔 = 进度 */
+```
+
+数值出处(MDN `<easing-function>` 原文,调研 04§1.1):
+
+- 默认 **ease = cubic-bezier(0.25, 0.1, 0.25, 1)**;
+- 四个关键字预设官方数值:`ease-in = cubic-bezier(0.42, 0, 1, 1)`、`ease-out = cubic-bezier(0, 0, 0.58, 1)`、`ease-in-out = cubic-bezier(0.42, 0, 0.58, 1)`(另 `linear = cubic-bezier(0, 0, 1, 1)`);
+- `x1`、`x2` 必须在 [0,1](否则整条声明无效);**y 可以越界**——MDN 示例 `cubic-bezier(0, 1.1, 0.8, 4)` 即靠 y>1 实现过冲。
+
+只动画 `transform`(球位移、示踪点),符合 web.dev「只动 transform/opacity」的性能底线(调研 04§1.5);球位移距离用 JS `ResizeObserver` 测量后写入 `--cb-dist`,避免动画 `left`。
+
+## 动效与交互
+
+- **实时联动**:拖动参数面板的两个控制点(或点 ease/ease-in/ease-out/ease-in-out 预设),`--cb-curve` 即时更新——运行中的 CSS 动画会按新曲线重新插值,球与示踪点同步变形,无需重启;
+- **重播**:点「重播」通过 React `key` 重挂载动画元素,从头播放一遍当前曲线(便于观察起步/收尾段);
+- **越界可视化**:曲线越过顶部线(y=1)即为过冲段,示踪点会短暂冲出进度 100% 的位置再回落;
+- **reduced-motion**:`prefers-reduced-motion: reduce` 时停用全部循环动画,球静置在终点、示踪点钉在曲线末端,预览仍完整展示曲线形状——信息不丢。
+
+## 参数敏感度
+
+单一参数 `curve`,但四个控制点各有分工,逐一说明:
+
+| 控制点 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `curve` 整体 | 前后两段都变陡,动画「先抢跑后刹车」的对比更强 | 趋近直线,读作 linear 匀速 |
+| `x1`(P1 时间) | 起步延迟更久,前段显得「迟钝」 | 起步更早更急;为 0 时起步即最大斜率 |
+| `y1`(P1 进度) | >1 直接过冲(先冲过头再回头);前段冲刺感强 | &lt;0 先反向「蓄力」再前进;前段更拖 |
+| `x2`(P2 时间) | 收尾加速段开始得更晚,中段平台期更长 | 更早进入收尾;为 1 时收尾段被压缩到极短 |
+| `y2`(P2 进度) | >1 末段过冲回弹;&lt;1 减速收尾(ease-out 手感) | 越低末段越「悬停」;为 0 时刻意停顿后才到位 |
+
+经验区间:通用过渡 ease 系四预设覆盖九成场景;轻回弹取 `y∈(1, 1.5)`;`y>2` 的强过冲只适合极短行程,否则读作失控。注意单段贝塞尔**表达不了真弹簧**——可打断、速度继承只能靠 JS 物理弹簧或 `linear()` 采样近似(调研 04§1.2/1.3)。

@@ -1,0 +1,63 @@
+---
+import "@fontsource-variable/inter";
+import "@fontsource/noto-sans-sc/chinese-simplified-400.css";
+import "@fontsource/noto-sans-sc/chinese-simplified-500.css";
+import "@fontsource/noto-sans-sc/chinese-simplified-700.css";
+import "@/styles/global.css";
+import { t } from "@/i18n/ui";
+import { CATEGORIES, type Locale } from "@/lib/types";
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  /** 对应另一语言的 URL,用于语言切换 */
+  altUrl: string;
+  activeCategory?: string;
+}
+
+const { locale, title, description, altUrl, activeCategory } = Astro.props;
+const dict = t(locale);
+const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
+---
+
+<!doctype html>
+<html lang={locale === "zh" ? "zh-CN" : "en"}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title} · {dict.siteName}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="brand" href={locale === "en" ? "/en/" : "/"}>
+          <span class="brand-mark">◍</span>{dict.siteName}
+        </a>
+        <nav class="site-nav" aria-label={dict.nav.atlas}>
+          {
+            CATEGORIES.map((c) => (
+              <a href={catPath(c.id)} aria-current={activeCategory === c.id ? "true" : undefined}>
+                {locale === "en" ? c.en : c.zh}
+              </a>
+            ))
+          }
+        </nav>
+        <a class="lang-switch" href={altUrl} hreflang={locale === "zh" ? "en" : "zh-CN"}>
+          {dict.langSwitch}
+        </a>
+      </div>
+    </header>
+
+    <main class="shell">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">{dict.footer.note}</div>
+    </footer>
+  </body>
+</html>

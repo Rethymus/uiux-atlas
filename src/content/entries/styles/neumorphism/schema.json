@@ -1,0 +1,113 @@
+{
+  "name": "Neumorphism",
+  "aliases": ["新拟物", "Soft UI", "软拟物"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "元素与背景完全同色,仅靠「一侧暗、对侧亮」的双阴影把界面从底色里挤出或压入——低对比软塑料质感,2020 年达峰后因可访问性迅速退潮。",
+    "en": "Elements share the page background color exactly; a dual shadow (dark on one side, light on the other) extrudes or presses them into the surface — a low-contrast soft-plastic look that peaked in 2020 and receded over accessibility failures."
+  },
+  "origin": {
+    "zh": "术语为 neo + skeuomorphism 合成词,2019 年由 Jason Kelly 创造;Alexander Plyuto 在 Dribbble 的银行 App 拟物稿引爆传播,雏形见于 2019 年华为鸿蒙智慧屏界面;2020 年 11 月 macOS Big Sur 被认为带明显新拟物特征;2021 年因可访问性问题迅速退潮(调研 03§3)。",
+    "en": "The term (neo + skeuomorphism) was coined by Jason Kelly in 2019; Alexander Plyuto's Dribbble banking-app shots ignited the trend, with an earlier precursor on Huawei's 2019 Honor Vision UI; macOS Big Sur (Nov 2020) was read as strongly neumorphic; it receded quickly through 2021 over accessibility failures (research 03 §3)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "base",
+      "format": "hex",
+      "default": "#e0e5ec",
+      "cssVar": "--neu-bg",
+      "effect": {
+        "zh": "页面与元素共用的基准底色。默认 #e0e5ec 是社区经典值(superdesign.dev):新拟物的塑形完全依赖双阴影,底色一旦与元素不同色,风格即失效。demo 用 color-mix 由底色现算暗影(底色加深 15%:#e0e5ec→#bec3c9)。",
+        "en": "The base color shared by page and elements. Default #e0e5ec is the community classic (superdesign.dev): shaping relies entirely on the dual shadow, so any mismatch between element and background breaks the style. The demo derives the dark shadow via color-mix (base darkened 15%: #e0e5ec → #bec3c9)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "offset",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 9,
+      "cssVar": "--neu-offset",
+      "effect": {
+        "zh": "双阴影偏移量。默认 9px 取自经典凸起配方 9px 9px 18px #bec3c9, -9px -9px 18px #ffffff(superdesign.dev);经典压入配方用 6px。经验法则:blur≈2×offset。",
+        "en": "Dual-shadow offset. Default 9px comes from the classic raised recipe 9px 9px 18px #bec3c9, -9px -9px 18px #ffffff (superdesign.dev); the classic inset recipe uses 6px. Rule of thumb: blur ≈ 2× offset."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "default": 18,
+      "cssVar": "--neu-blur",
+      "effect": {
+        "zh": "阴影模糊半径。默认 18px 为经典凸起配方值(=2×9px 偏移);经典压入配方用 12px(superdesign.dev)。模糊过大软影发虚,过小则变成硬边浮雕。",
+        "en": "Shadow blur radius. Default 18px is the classic raised recipe value (= 2× the 9px offset); the classic inset recipe uses 12px (superdesign.dev). Too much blur turns the shadow mushy; too little becomes a hard emboss."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "raised", "label": { "zh": "凸起", "en": "Raised" } },
+        { "value": "inset", "label": { "zh": "压入", "en": "Inset" } }
+      ],
+      "default": "raised",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-mode)。raised=凸起:暗影在右下、亮影在左上;inset=压入:阴影翻入内侧。经典压入配方为 inset 6px 6px 12px(superdesign.dev),demo 沿用当前 offset/blur 内凹以便对比。",
+        "en": "JS-type param (demo subscribes and toggles data-mode). raised = extruded: dark shadow bottom-right, light top-left; inset = pressed: shadows flip inside. The classic inset recipe is inset 6px 6px 12px (superdesign.dev); the demo insets with the current offset/blur for direct comparison."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "box-shadow 全平台可用;demo 用 color-mix() 由底色现算暗影(Chrome 111+/Edge 111+/Firefox 113+/Safari 16.2+),旧浏览器可直接写死经典色对 #bec3c9/#ffffff。",
+      "en": "box-shadow works everywhere; the demo derives the dark shadow via color-mix() (Chrome 111+/Edge 111+/Firefox 113+/Safari 16.2+). Older browsers can hardcode the classic color pair #bec3c9/#ffffff."
+    }
+  },
+  "fallback": {
+    "zh": "双阴影无法传达层级时的退化方案:回到常规浅色卡片——保留同色底,补 1px 实色边框与常规投影区分边界,文本改用高对比墨色;交互态(按下/焦点)必须改用边框、填充或下划线等非阴影线索表达。",
+    "en": "Degradation when dual shadows cannot carry hierarchy: fall back to an ordinary light card — keep the shared base, add a 1px solid border and a regular shadow to mark edges, switch text to a high-contrast ink; express pressed/focus states with non-shadow cues (border, fill, underline)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "音乐播放器、计算器等「软塑料」控制面板(该风格最初的流行场景)", "en": "Soft-plastic control panels: music players, calculators — the style's original home" },
+      { "zh": "开关、滑杆、按钮组等低频控件,按压态凸起⇄压入语义清晰", "en": "Low-frequency controls (toggles, sliders, button groups) where raised⇄inset reads as press semantics" },
+      { "zh": "氛围优先的品牌页与概念稿,数据密度低、装饰性优先", "en": "Atmosphere-first brand pages and concept work: low data density, decoration over information" }
+    ],
+    "avoid": [
+      { "zh": "正文文本与关键信息——典型边缘对比仅约 1.4:1,低于 WCAG 2.2 SC 1.4.11 的 3:1(调研 03§3 反例)", "en": "Body text and critical information — typical edge contrast is only ≈1.4:1, below the 3:1 of WCAG 2.2 SC 1.4.11 (research 03 §3 counter-example)" },
+      { "zh": "数据密集仪表盘与表单页——层级线索太弱,扫描成本高", "en": "Data-dense dashboards and forms — hierarchy cues are too weak to scan" },
+      { "zh": "暗色主题直接反色——暗色下需重调两个阴影而非简单反转(superdesign.dev)", "en": "Dark themes via simple color inversion — dark mode needs both shadows retuned, not flipped (superdesign.dev)" }
+    ]
+  },
+  "a11y": {
+    "zh": "反例警示:典型新拟物元件的边缘对比仅约 1.4:1,无法满足 WCAG 2.2 SC 1.4.11 组件边界 3:1 非文本对比,且在保留柔和质感的前提下不可修复——这正是其 2021 年退潮的核心原因。补救:文本一律用高对比墨色并独立核对 4.5:1;控件边界补 1px 实色描边或改回常规卡片;焦点态不得只靠阴影表达。",
+    "en": "Counter-example warning: typical neumorphic edges measure only ≈1.4:1 contrast, failing the 3:1 non-text boundary requirement of WCAG 2.2 SC 1.4.11, and the failure is unfixable while keeping the soft look — the core reason for its 2021 retreat. Mitigations: set text in high-contrast ink checked independently at 4.5:1; add a 1px solid edge or revert to regular cards for control boundaries; never encode focus state in shadows alone."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Neumorphism",
+    "https://superdesign.dev/styles/neumorphism",
+    "https://neumorphism.io/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用同色底双阴影复刻一块新拟物控制面板:凸起卡片、压入输入槽、可按压的软按钮,暗影=底色加深 15%,blur≈2×offset,并用 color-mix 从底色现算暗影色。",
+      "en": "Replicate a neumorphic control panel with same-color dual shadows: a raised card, an inset input well, pressable soft buttons; dark shadow = base darkened 15%, blur ≈ 2× offset, dark color derived from the base via color-mix."
+    },
+    "acceptance": [
+      { "zh": "元素与背景必须完全同色,靠 box-shadow 双影塑形,不引入边框或渐变", "en": "Elements share the background color exactly; shape via box-shadow dual shadows only, no borders or gradients" },
+      { "zh": "凸起配方 9px 9px 18px 暗影 + -9px -9px 18px 亮影(亮影取纯白),压入翻成 inset", "en": "Raised recipe: 9px 9px 18px dark + -9px -9px 18px light (light = pure white); inset flips to inset shadows" },
+      { "zh": "暗影色=底色加深 15%(如 #e0e5ec→#bec3c9),亮影为纯白 #ffffff", "en": "Dark shadow = base darkened 15% (e.g. #e0e5ec→#bec3c9); light shadow = pure white #ffffff" },
+      { "zh": "模糊≈2×偏移;圆角落在 16–24px 区间", "en": "blur ≈ 2× offset; radius stays within 16–24px" },
+      { "zh": "文本使用高对比墨色并核对 4.5:1;在 MDX 中保留 1.4:1 边缘对比反例警示", "en": "Text uses high-contrast ink checked at 4.5:1; keep the ≈1.4:1 edge-contrast counter-example warning in the MDX" }
+    ]
+  }
+}

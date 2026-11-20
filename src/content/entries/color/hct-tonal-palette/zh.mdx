@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+色调调色板(Tonal Palette)是 Material 体系的最小色彩单位:固定 hue + chroma,只沿 **tone(= CIE L\*)** 展开一列颜色。它没有任何 DOM 形态——产出就是一串 hex,通常在构建期落成 CSS 变量:
+
+```html
+<div class="tone" style="--tone-color: #cfbdfa; --tone: 80">
+  <span class="tone-num">80</span>
+</div>
+```
+
+```css
+.tone { background-color: var(--tone-color); }
+```
+
+- 调色板是「列」不是「环」:tone 是唯一自由度,hue/chroma 对整列共享;
+- Android 系统为每个关键色(Primary/Secondary/Tertiary/Neutral/Error 五板)生成 **13 档 tone**(调研 06§二5);demo 采用通行 13-tone 集 0,10,…,90,95,99,100(其中 95/99 的逐值未在本次抓取来源核实,数量以调研为准);本条目演示其中一列,五板如何组合成角色色见姊妹条目 m3-dynamic-color;
+- demo 内嵌 material-color-utilities 0.3.0 发布源码的 TS 简版移植(CAM16 前向 + HCT 求解器,常量逐字对照),演示即真实算法;
+- 与 oklch 的差别:HCT 的 tone 是 CIE L*(0–100),oklch 的 L 是 Oklab 亮度(0–1)——两者都感知均匀但数值互不相通,换体系必须整列重算,不能逐值搬用;
+- 产出侧两种消费形态:整列 hex 表(给人对照)与语义档位变量(`--hct-primary-80`,给 UI 用)——demo 两种都展示。
+
+## 样式与参数
+
+三个输入决定整列颜色。HCT = **CAM16 的 H/C × CIE L\***,与 oklch/HSL 都不是一套刻度:
+
+```ts
+// material-color-utilities 核心管线(TS 简版,见 demo)
+const argb = solveToInt(hue, chroma, tone);      // HCT → sRGB(CAM16 求解 + 关键平面二分)
+const cam = camFromInt(argb);                    // 反向读出实际达到的 hue/chroma
+// 某档请求的 chroma 超出色域时,solveToInt 截断为该 tone 可达的最大色度(官方行为)
+// 构建期落成 CSS 变量:产物即 hex,运行时零依赖
+for (const t of TONES) vars[`--hct-primary-${t}`] = hexOf(solveToInt(hue, chroma, t));
+```
+
+- 观看条件固定为库默认(白点 D65、200 lux、背景 L\*=50、surround=2、不作光源折扣——viewing_conditions.js `make()` 默认值),即屏幕自发光的典型设定;HCT 的数值都相对该默认条件;
+- tone 与对比度的换算桥:tone 即 CIE L\*,可经 Y(相对亮度)直接套算 WCAG 比值——tone 80 与 tone 20 的配对即 ≈7.7:1(≥7,达 AAA);库内 Contrast.ratioOfTones 正是按 Y 实现。
+
+- **tone 的对比度保证**(库文档明示):同列任意两档,tone 差 40 保证对比度 ≥3:1,差 50 保证 ≥4.5:1——所以「on-色与色底 tone 差 ≥50」就是 AA 正文的充分条件;
+- **角色即 tone**(库内 contrastLevel 0 约定):亮色 accent 40 / 暗色 accent 80;container 90/30;on-色 100/20;outline 50/60;
+- **亮暗共用一条色阶**:官方暗色 primary 定义为同调色板的 tone 80(≈#D0BCFF),亮色取 tone 40——只换取值档位,不换调色板(调研 06§六7 基线值 + 库 material_dynamic_colors.js 约定);
+- **求解枢轴 tone 50**:该档平均可用色度最大,material-color-utilities 的 keyColor 从 50 起搜(源码 `pivotTone = 50`);
+- 默认 hue 299 / chroma 48 / tone 80 对齐 M3 基线:#6750A4(官方亮色 primary)实测 HCT ≈ (298.98, 47.86, 40.08),官方暗色 primary #D0BCFF 实测 tone≈80(调研 06§六7 载值,demo 算法实测复核)。
+
+## 动效与交互
+
+- 改 hue/chroma,13 档整列即时重算;单次求解为常数级开销(牛顿迭代 ≤5 轮,超界再走关键平面二分 ≤8 轮/轴,源码 hct_solver.js),演示级性能无忧;
+- tone 端点(≤0.0001 或 ≥99.9999)走纯灰路径(argbFromLstar),请求的 chroma 无效——demo 读数如实显示实际 chroma≈0;
+- 色块过渡只动 `background-color`(0.18s),`prefers-reduced-motion` 时取消;
+- 请求 chroma 超出某档可达上限时,该档显示**实际截断后的颜色**并给出「请求 C / 实际 C」读数——近黑近白两端的变灰是 sRGB 物理限制,如实呈现而非掩盖;
+- 每档 hover/读数展示 hex,方便逐值抄进设计 token;
+- 更换 hue/chroma 属于「换一代」色阶:新旧两代不可混用(同 tone 档亮度观感一致但色相全变),token 需整列重新生成,否则界面出现隐性色相断层。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hue` | 整列绕 CAM16 色环转动,各档亮度(tone)不变——这是 tone 体系对比度稳定的原因 | 反向转环;HCT 的蓝在 ≈300°附近,别拿 oklch(蓝≈220°)的角度直接套 |
+| `chroma` | 列更鲜艳;超过各档可达上限的部分被截断,tone 两端先「触顶变灰」 | 趋向灰列;chroma=0 时整列是纯 L\* 灰阶(0–100 线性感知亮度) |
+| `tone`(选中档) | 高亮移动;高于 90 逼近白、色度可达值骤降 | 低于 10 逼近黑;选中档只影响高亮位置,不影响整列 |
+
+经验:品牌色先换算出 HCT 的 hue/chroma,再按变体配比展开 5 板;整列一旦生成,亮暗主题只读取不同档位。不要手工在 hex 上加减黑白模拟 tone——L\* 的感知均匀性会丢,档位观感忽大忽小。

@@ -1,0 +1,62 @@
+## Structure & DOM
+
+Radix Colors' core abstraction is "one hue = one 12-step scale", shipped as a set of CSS custom properties you can copy straight into a project:
+
+```html
+<div class="card">
+  <h3>Heading</h3>
+  <p>Body</p>
+  <button>Action</button>
+</div>
+```
+
+```css
+.card {
+  /* Position is semantics: background 2 · border 6 · heading 12 · body 11 · button 9 (paired text per official split) */
+  background: var(--blue-2);
+  border: 1px solid var(--blue-6);
+}
+.card h3 { color: var(--blue-12); }
+.card p { color: var(--blue-11); }
+.card button { background: var(--blue-9); }
+```
+
+- The 12 step semantics (Radix official, research 06 §8): **1** app background, **2** subtle background, **3** component surface, **4** hover background, **5** pressed/selected background, **6** subtle non-interactive borders, **7** interactive borders & focus rings, **8** hover borders, **9** solid (highest chroma, least white/black mixed of the scale), **10** solid hover, **11** low-contrast text, **12** high-contrast text;
+- Official catalog: 6 neutrals (Gray/Mauve/Slate/Sage/Olive/Sand) + 26 accents + alpha variants + independently tuned -dark scales;
+- The demo's 8 hue values were read value-by-value from the official @radix-ui/colors@3.0.0 package (light-scale sRGB hex).
+
+## Styling & Parameters
+
+The scale is a "numbered-by-usage" system — no computation needed, just pick by position:
+
+```css
+/* Official guarantee: steps 11/12 reach APCA Lc 60 / Lc 90 on same-family step-2 backgrounds */
+:root {
+  --scale-step-9-text: white;  /* most hues pair step 9 with white text */
+}
+:root[data-hue="sky"], :root[data-hue="mint"], :root[data-hue="lime"],
+:root[data-hue="yellow"], :root[data-hue="amber"] {
+  /* Official exception: steps 9 of Sky/Mint/Lime/Yellow/Amber pair with dark text */
+  --scale-step-9-text: #2b2118;
+}
+```
+
+- The contrast guarantee is about **step pairs**, not single colors: 11/12 vs 2 at APCA Lc 60/90 is calibrated by the vendor; custom scales must rebuild those pairings;
+- In practice, map the 12 steps into CSS variables (--blue-1…--blue-12) and have components reference semantic slots instead of raw step numbers — swapping a hue then only rewires the variables, never the components;
+- Hover feedback speaks through adjacent steps: background 3→4, border 7→8, solid 9→10 — the step system means interactive color changes need no newly designed colors;
+- Dark themes are not darkened light themes: the official -dark scales are tuned separately; light themes can keep a white app background while dark themes switch to step 1/2 grays or colors, with a mutable AppBg alias remapped per mode;
+- The alpha variants (-alpha files) solve white/gray fringes in colored overlays — use them for shadows/scrims instead of hand-tuned rgba.
+
+## Motion & Interaction
+
+- Switching hue recomputes the whole 12-step scale and the semantic example card; step-9 text color follows the official split automatically (amber → dark);
+- The selected step gets a 2px outline; transitions are dropped under `prefers-reduced-motion`;
+- No motion beyond color transitions: the only thing a scale demo should animate is "which step is being explained";
+- Division of labor vs. Material tones: Radix steps are **semantic slots** (one use per step), Material tones are a **continuous ruler** (roles read values off it) — the two are often conflated; the demo shows one of them so the difference stays visible.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hue` | warmer/cooler depending on the accent; swapping hue keeps every step's semantics and roughly its visual weight (officially APCA-targeted) | gray is the only achromatic scale: step 9 becomes a pure-gray CTA for restrained UIs; changing hue never invalidates the contrast guarantees |
+| `step` | above 9: enters the text steps (11/12) — colors darken toward "ink"; 10 is the hover feedback step | below 9: enters surfaces/backgrounds (1–5) and borders (6–8) — colors lighten toward "face"; the selection only moves the highlight, never the scale |
