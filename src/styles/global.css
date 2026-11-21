@@ -1412,6 +1412,9 @@ html {
 @media (max-width: 639px) {
   .filter-bar {
     flex-direction: column;
+    /* column+wrap 的行宽会被 chips 内容撑破容器(360px 实测 463>318,
+       见 docs/self-review 记录);单一行 + stretch 才能把组约束回容器宽 */
+    flex-wrap: nowrap;
     align-items: stretch;
     gap: var(--space-2);
     padding: var(--space-2) 0;
