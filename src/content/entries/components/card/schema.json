@@ -1,0 +1,101 @@
+{
+  "name": "Card",
+  "nameZh": "卡片",
+  "aliases": ["内容卡", "封面卡", "Content Card"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "共同区域的具象化:一条边框或一层底色把相关内容圈成一块,头部标题 + 正文 + 操作区 + 可选封面,是信息分区最基本的容器。",
+    "en": "Common region made concrete: one border or one fill circles related content into a block — header + body + actions + optional cover, the most basic container for partitioning information."
+  },
+  "origin": {
+    "zh": "规格对齐 Ant Design Card(antd 6.7.1,经 out/design-study/06-antdesign.md §4.18 + 本地 `.scratch/antd06` 源码复核):size 默认 medium(index.zh-CN.md:55)、hoverable 默认 false(Card.Grid 内默认 true,:52、:68)、variant 默认 outlined(取代 v5 bordered=true,:47)、cover 为 ReactNode 内容插槽(:49);分组语义参考格式塔·共同区域法则(调研 07§35)。",
+    "en": "Spec aligned with Ant Design Card (antd 6.7.1, verified via out/design-study/06-antdesign.md §4.18 plus the local `.scratch/antd06` source): size defaults to medium (index.zh-CN.md:55), hoverable to false (true inside Card.Grid, :52/:68), variant to outlined (replacing v5 bordered=true, :47), and cover is a ReactNode slot (:49); grouping semantics follow the Law of Common Region (research 07 §35)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "紧凑 small", "en": "Compact small" } },
+        { "value": "md", "label": { "zh": "标准 medium", "en": "Standard medium" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-size)。对齐 antd Card size 默认 medium(index.zh-CN.md:55,分档 medium|small);demo 两档的内边距具体像素(24px / 12px)为演示值,antd 的 Card 头部/正文 padding 像素规格调研未记载(未证实)。",
+        "en": "JS-type param (demo subscribes and toggles data-size). Aligned with antd Card size defaulting to medium (index.zh-CN.md:55, tiers medium|small); the demo tiers' concrete paddings (24px / 12px) are demo values — antd's pixel specs for Card head/body padding aren't recorded in the research (unverified)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "hoverable",
+      "options": [
+        { "value": "off", "label": { "zh": "不浮起", "en": "Off" } },
+        { "value": "on", "label": { "zh": "悬停浮起", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-hoverable)。antd hoverable 默认 false(index.zh-CN.md:52);唯一例外是 Card.Grid 内默认 true(:68)。浮起 = 阴影从轻阴影档升到浮层阴影档,demo 采用 antd boxShadowTertiary → boxShadow 两组实测 token(06-antdesign.md §2.3 ⑥)。",
+        "en": "JS-type param (demo subscribes and toggles data-hoverable). antd hoverable defaults to false (index.zh-CN.md:52); the one exception is inside Card.Grid where it defaults to true (:68). Lifting = shadow rises from the tertiary tier to the elevation tier; the demo uses antd's measured boxShadowTertiary → boxShadow token pair (06-antdesign.md §2.3 ⑥)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "cover",
+      "options": [
+        { "value": "off", "label": { "zh": "无封面", "en": "Off" } },
+        { "value": "on", "label": { "zh": "顶部色带封面", "en": "Color-band cover" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后渲染顶部色带)。antd cover 是内容插槽(ReactNode,默认 -,index.zh-CN.md:49)——存在与否由内容决定,没有布尔默认;demo 以渐变色带模拟封面,off 为演示默认值。",
+        "en": "JS-type param (demo subscribes and renders the top color band). antd cover is a content slot (ReactNode, no default, index.zh-CN.md:49) — its presence is decided by content, so no boolean default exists; the demo simulates the cover with a gradient band, and off is the demo default."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "本条目仅用 div + CSS(边框、底色、box-shadow、transition),全浏览器基线能力,无特性开关要适配;box-shadow 多层阴影与过渡在 2015 年后的所有常青浏览器一致。",
+      "en": "This entry uses only div + CSS (borders, fills, box-shadow, transition) — baseline in every browser, nothing to feature-detect; multi-layer shadows and transitions behave consistently across all evergreen browsers since ~2015."
+    }
+  },
+  "fallback": {
+    "zh": "卡片没有需要降级的视觉特性;要做的是层级降级:不支持(或不需要)阴影时保留 1px 边框定义边界(outlined 形态),暗色环境下阴影失效时用底色微差区分层级——antd dark 算法正是用 lighten 底色替代阴影(06-antdesign.md §2.4)。",
+    "en": "The card has no visual feature to degrade; degrade hierarchy instead: when shadows are unsupported (or unwanted), keep a 1px border to define the boundary (the outlined form), and in dark environments where shadows vanish, separate levels by subtle fill differences — antd's dark algorithm replaces shadows with lightened fills exactly this way (06-antdesign.md §2.4)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "栅格中的信息分区:仪表盘统计卡、设置分组、内容流单元(卡片 = 格式塔共同区域,调研 07§35)", "en": "Partitioning information in grids: dashboard stat cards, settings groups, feed units (card = Gestalt common region, research 07 §35)" },
+      { "zh": "带封面的内容卡:文章/商品/媒体预览,cover 承载图片区,actions 承载操作区", "en": "Covered content cards: article/product/media previews where cover holds the image area and actions the footer controls" },
+      { "zh": "需要 hover 预告「整块可点」的可点击单元(hoverable),点击进入详情", "en": "Clickable units where hover previews 'the whole block is tappable' (hoverable), leading to a detail page" }
+    ],
+    "avoid": [
+      { "zh": "卡片套卡片的多层嵌套——共同区域边界互相打架,层级反而模糊", "en": "Cards nested inside cards — competing common-region boundaries blur hierarchy instead of clarifying it" },
+      { "zh": "一屏十几个同权重卡片——每张卡都在喊「看我」,分区价值随数量归零;先分组再分区", "en": "A dozen equal-weight cards per screen — every card shouts 'look at me' and partitioning value drops to zero; group first, then partition" },
+      { "zh": "不可点击的静态卡开 hoverable——虚假 affordance 诱导点击;只有整卡可点才浮起", "en": "hoverable on static, non-clickable cards — a false affordance inviting clicks; only lift cards that are entirely clickable" }
+    ]
+  },
+  "a11y": {
+    "zh": "卡片是布局容器不是控件:不要给容器加 role=\"button\"——可点击性属于卡内真实的按钮/链接;整卡可点时,确保键盘有等价路径(卡内放一个覆盖全卡的真链接),hover 浮起只是视觉预告;标题用语义层级(h2/h3)组织,操作区按钮带可读文本(图标按钮补 aria-label);边框/阴影边界保持 3:1 非文本对比(WCAG 2.1 SC 1.4.11)。",
+    "en": "A card is a layout container, not a control: never put role=\"button\" on the container — clickability belongs to the real buttons/links inside; when the whole card is clickable, guarantee a keyboard path (one real link stretched over the card) — the hover lift is only a visual preview; structure titles with semantic heading levels (h2/h3) and give action buttons readable text (icon buttons get aria-label); borders/shadows keep 3:1 non-text contrast (WCAG 2.1 SC 1.4.11)."
+  },
+  "sources": [
+    "https://ant.design/components/card-cn",
+    "https://lawsofux.com/law-of-common-region/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张内容卡:头部(标题 + extra 操作)+ 正文 + 底部操作区,可选顶部渐变封面带,hoverable 时阴影从轻阴影档升至浮层阴影档并微微上浮,sm/md 两档密度。",
+      "en": "Replicate a content card: header (title + extra action) + body + footer action row, an optional top gradient cover band, and when hoverable a shadow rising from the tertiary tier to the elevation tier with a slight lift, in sm/md density tiers."
+    },
+    "acceptance": [
+      { "zh": "默认形态:1px 边框(outlined)、无阴影浮起、无封面、md 密度——四项与参数快照一致", "en": "Default form: 1px border (outlined), no shadow lift, no cover, md density — all four matching the parameter snapshot" },
+      { "zh": "hoverable=on 的浮起用 antd boxShadowTertiary → boxShadow 两组 token,过渡 0.2s easeOut", "en": "hoverable=on lifts with antd's boxShadowTertiary → boxShadow token pair, transitioning 0.2s easeOut" },
+      { "zh": "cover=on 时顶部渲染渐变色带(纯装饰 aria-hidden),头部/正文/操作区结构不变", "en": "cover=on renders a gradient band on top (purely decorative aria-hidden) without changing header/body/actions structure" },
+      { "zh": "sm/md 只改内边距与标题字号,边框/阴影/结构不随 size 漂移", "en": "sm/md changes only padding and title size; border/shadow/structure never drift with size" },
+      { "zh": "容器不加 role=\"button\";操作区按钮带可读文本,hover 浮起配合 prefers-reduced-motion 关闭过渡", "en": "No role=\"button\" on the container; action buttons carry readable text; the hover lift transition disables under prefers-reduced-motion" }
+    ]
+  }
+}

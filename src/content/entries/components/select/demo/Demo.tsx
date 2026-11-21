@@ -1,0 +1,269 @@
+import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
+import { getEntryStore } from "@/lib/store";
+import type { EntrySchema } from "@/lib/types";
+import DemoStage from "@/components/DemoStage";
+
+interface DemoProps {
+  entryId: string;
+  schema: EntrySchema;
+}
+
+const OPTIONS = [
+  { id: "sel-opt-bj", value: "北京 Beijing" },
+  { id: "sel-opt-sh", value: "上海 Shanghai" },
+  { id: "sel-opt-gz", value: "广州 Guangzhou" },
+  { id: "sel-opt-sz", value: "深圳 Shenzhen" },
+  { id: "sel-opt-hz", value: "杭州 Hangzhou" },
+];
+
+const css = `
+.sel-stage { width: min(280px, calc(100% - 48px)); }
+.sel-wrap { position: relative; }
+.sel-trigger {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.88);
+  cursor: pointer;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1), box-shadow 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.sel-trigger:hover { border-color: #1677ff; }
+.sel-stage[data-size="sm"] .sel-trigger { height: 24px; font-size: 12px; padding: 0 8px; border-radius: 4px; }
+.sel-stage[data-size="md"] .sel-trigger { height: 32px; font-size: 14px; padding: 0 12px; border-radius: 6px; }
+.sel-stage[data-size="lg"] .sel-trigger { height: 40px; font-size: 16px; padding: 0 12px; border-radius: 6px; }
+.sel-stage[data-status="default"] .sel-trigger { border-color: #d9d9d9; }
+.sel-stage[data-status="error"] .sel-trigger { border-color: #ff4d4f; }
+.sel-stage[data-status="warning"] .sel-trigger { border-color: #faad14; }
+.sel-stage[data-clearable="on"] .sel-trigger { padding-right: 30px; }
+.sel-trigger:focus-visible { outline: 2px solid #1677ff; outline-offset: -2px; }
+.sel-trigger[aria-expanded="true"] { border-color: #1677ff; box-shadow: 0 0 0 2px color-mix(in srgb, #1677ff 25%, transparent); }
+.is-placeholder { color: rgba(0, 0, 0, 0.25); }
+.sel-arrow { font-size: 10px; color: rgba(0, 0, 0, 0.45); }
+.sel-clear {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  right: 24px;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.06);
+}
+.sel-clear:hover { color: rgba(0, 0, 0, 0.88); background: rgba(0, 0, 0, 0.12); }
+.sel-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 4px;
+  box-sizing: border-box;
+  list-style: none;
+  max-height: 256px;
+  overflow: auto;
+  background: #fff;
+  border-radius: 6px;
+  z-index: 10;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  animation: sel-pop 0.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+@keyframes sel-pop {
+  from { opacity: 0; translate: 0 -4px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.sel-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.88);
+  cursor: pointer;
+}
+.sel-opt:hover, .sel-opt.is-active { background: rgba(0, 0, 0, 0.04); }
+.sel-opt[aria-selected="true"] { background: #E6F4FF; color: #1677ff; }
+.sel-opt[aria-selected="true"]:hover, .sel-opt[aria-selected="true"].is-active { background: color-mix(in srgb, #E6F4FF 75%, #91CAFF); }
+.sel-check { font-size: 12px; }
+.sel-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  margin: 0;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sel-trigger { transition: none; }
+  .sel-list { animation: none; }
+}
+`;
+
+/**
+ * 选择器演示:自绘 listbox(点击展开、键盘可达)。
+ * size / status / clearable 为 JS 型参数——订阅 store 后改写舞台 data-*;
+ * 键盘路径:↓/↑ 展开并移动高亮、Enter 确认、Esc 关闭并恢复打开前的值、Tab 收起;
+ * 点击浮层外任意处收起;焦点始终留在触发器上,高亮经 aria-activedescendant 表达。
+ */
+export default function Demo({ entryId, schema }: DemoProps) {
+  const store = getEntryStore(entryId, schema);
+  const [size, setSize] = useState(() => store.get("size") as string);
+  const [status, setStatus] = useState(() => store.get("status") as string);
+  const [clearable, setClearable] = useState(() => store.get("clearable") as string);
+  const [value, setValue] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const valueAtOpen = useRef<string | null>(null);
+
+  useEffect(
+    () =>
+      store.subscribe(() => {
+        setSize(store.get("size") as string);
+        setStatus(store.get("status") as string);
+        setClearable(store.get("clearable") as string);
+      }),
+    [store],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocPointerDown = (e: ReactPointerEvent<Document> | PointerEvent) => {
+      const el = wrapRef.current;
+      if (el && !el.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || active < 0) return;
+    document.getElementById(OPTIONS[active].id)?.scrollIntoView({ block: "nearest" });
+  }, [open, active]);
+
+  const openList = () => {
+    valueAtOpen.current = value;
+    setActive(Math.max(0, OPTIONS.findIndex((o) => o.value === value)));
+    setOpen(true);
+  };
+
+  const close = (restore = false) => {
+    if (restore) setValue(valueAtOpen.current);
+    setOpen(false);
+  };
+
+  const commit = (i: number) => {
+    setValue(OPTIONS[i].value);
+    close();
+    triggerRef.current?.focus();
+  };
+
+  const onTriggerKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!open) {
+        openList();
+        return;
+      }
+      setActive((a) =>
+        e.key === "ArrowDown" ? Math.min(a + 1, OPTIONS.length - 1) : Math.max(a - 1, 0),
+      );
+    } else if (e.key === "Enter" || e.key === " ") {
+      if (open) {
+        e.preventDefault();
+        if (active >= 0) commit(active);
+      }
+    } else if (e.key === "Escape") {
+      if (open) {
+        e.preventDefault();
+        close(true);
+      }
+    } else if (e.key === "Tab") {
+      close();
+    }
+  };
+
+  return (
+    <DemoStage entryId={entryId} schema={schema}>
+      <div className="sel-stage" data-size={size} data-status={status} data-clearable={clearable}>
+        <div className="sel-wrap" ref={wrapRef}>
+          <button
+            type="button"
+            ref={triggerRef}
+            className="sel-trigger"
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            aria-controls={open ? "sel-city-list" : undefined}
+            aria-activedescendant={open && active >= 0 ? OPTIONS[active].id : undefined}
+            aria-label="城市 City"
+            onClick={() => (open ? close() : openList())}
+            onKeyDown={onTriggerKeyDown}
+          >
+            <span className={value == null ? "is-placeholder" : undefined}>
+              {value ?? "请选择城市 Pick a city"}
+            </span>
+            <span className="sel-arrow" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          {clearable === "on" && value != null && (
+            <button
+              type="button"
+              className="sel-clear"
+              aria-label="清空选择 Clear selection"
+              onClick={() => {
+                setValue(null);
+                triggerRef.current?.focus();
+              }}
+            >
+              ×
+            </button>
+          )}
+          {open && (
+            <ul className="sel-list" id="sel-city-list" role="listbox" aria-label="城市 Cities">
+              {OPTIONS.map((o, i) => (
+                <li
+                  key={o.id}
+                  id={o.id}
+                  role="option"
+                  aria-selected={value === o.value}
+                  className={`sel-opt${i === active ? " is-active" : ""}`}
+                  onClick={() => commit(i)}
+                  onMouseEnter={() => setActive(i)}
+                >
+                  <span>{o.value}</span>
+                  {value === o.value && (
+                    <span className="sel-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+      <style>{css}</style>
+      <p className="sel-hint">键盘 Keyboard:↓/↑ 高亮 · Enter 确认 · Esc 关闭并恢复 · 点击外部关闭</p>
+    </DemoStage>
+  );
+}

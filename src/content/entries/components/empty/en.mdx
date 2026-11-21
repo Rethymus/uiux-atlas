@@ -1,0 +1,68 @@
+## Structure & DOM
+
+An empty state is a **replacement**, not a filler: Carbon's best practice is to have the empty state **replace** the original element — when a table has no data, collapse the header/footer entirely and show only the empty card; otherwise screen-reader users must listen to the whole table structure before hearing "no content".
+
+```html
+<div class="table-region">
+  <!-- With data: a normal table; without data: the whole table is replaced by the empty card -->
+  <div class="empty-card" role="status">
+    <svg class="empty-art" aria-hidden="true">…</svg>
+    <p class="empty-title">No data</p>
+    <p class="empty-desc">Records will appear here once you add the first entry.</p>
+    <button class="empty-btn">Create data</button>
+  </div>
+</div>
+```
+
+Anatomy (Carbon): optional artwork → short title (phrased positively, e.g. "Start by adding data assets") → body copy stating the next step → optional primary action → optional secondary link. Carbon recommends left-aligned copy blocks; antd Empty is centered by default — the demo follows antd's centered card form, while Carbon document scenarios may left-align. The two are not in conflict.
+
+This entry echoes the [data table](/en/components/table) empty state: container components (Table/List/TreeSelect) usually embed Empty as the no-data placeholder (official antd usage); the table entry covers the table itself, while this one focuses on the embedded empty card.
+
+## Styling & Parameters
+
+Two toggles map to the two key form decisions of antd Empty:
+
+```css
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 32px;
+  border-radius: 12px;
+}
+.empty-art { width: 121px; height: 116px; }   /* default tier = antd PRESENTED_IMAGE_DEFAULT size */
+.empty-card[data-simple="on"] .empty-art {
+  width: 55px; height: 35px;                  /* simple tier = antd PRESENTED_IMAGE_SIMPLE size */
+}
+.empty-title { font-size: 16px; font-weight: 600; color: rgba(0, 0, 0, 0.88); }
+.empty-desc  { font-size: 13px; color: rgba(0, 0, 0, 0.45); }
+```
+
+Where the numbers come from:
+
+- `image` defaults to **Empty.PRESENTED_IMAGE_DEFAULT (121×116)**, with the built-in **Empty.PRESENTED_IMAGE_SIMPLE (55×35)** as the compact tier; `description` has no explicit default row — the actual copy comes from the locale ("暂无数据" / No data) (verified against antd 6.7.1 source, 06-antdesign §4.23; research §5.2-6 honestly flags this as an implementation-level default);
+- Carbon's empty-state anatomy: positive titles; on dashboards with several concurrent empty states, use tertiary CTAs to avoid multiple primary buttons in one view;
+- `footerAction` is not an official prop: antd uses an optional children slot (`<Empty><Button>Create</Button></Empty>`) and Carbon lists the primary action as optional — the demo defaults to on purely to show the full anatomy, honestly flagged as an editorial choice.
+
+## Motion & Interaction
+
+- **Entrance**: fade in + 8px rise, animating only `opacity/transform` (compositor-friendly); disabled under `prefers-reduced-motion`. Empty states often land at the end of a data-clearing or loading flow — a high-weight moment of the peak-end rule — so keep motion light;
+- **Timing**: render the empty state only after loading finishes — use skeletons/progress indicators while loading so the empty state never flashes (NN/g: give immediate visual feedback for every action; spinner-class loops only for 2–10s waits);
+- **Interactive exit**: immediate hover/active feedback on the primary button; "no search results" empty states must offer a secondary exit such as "clear filters / revise keywords" (the core requirement of Carbon's user-action type);
+- **Anti-pattern demo**: the demo's "keep table frame" switch shows Carbon's anti-pattern — with the header/footer still present, the empty card looks like a broken table and screen readers read in the wrong order.
+
+## Real-world examples
+
+- **GitHub empty search results**: a centered illustration + "No results matched your search" plus suggestions to adjust keywords or filters — a textbook user-action empty state: explain why + offer an exit;
+- **Gmail empty inbox**: "You're all caught up" with a light illustration — framing emptiness as an achievement rather than a loss, a textbook case of Carbon's positive-copy principle;
+- **Ant Design Table with no data**: the official Table embeds the Empty component when `dataSource` is empty, showing the locale default "暂无数据" (No data) — the standard container-embeds-empty form (official antd docs, research 07 §17).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `simple` | on: artwork shrinks to 55×35, the card gets compact — fits embedded cards and dashboards with several empty states; less emotional pull, leans more on the text | off: back to the 121×116 default artwork — stronger first-use guidance; costly in space and crowding when multiple empty states coexist |
+| `footerAction` | on: one explicit "next step" exit, turning the dead end into guidance; but dashboards with several empty states end up with multiple primary buttons (Carbon's warning case) | off: copy only, a quieter page; no explicit exit — fits pure informational states or views that already carry a page-level CTA |
+
+Working ranges: the two artwork tiers (55×35 / 121×116) cover every scenario; title ≈16px, description 13–14px, secondary copy 12px; keep exactly one primary CTA per view — other exits become links or secondary buttons.

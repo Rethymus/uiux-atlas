@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+输入框是「label + 原生 textbox + 可选后缀」的结构,原生元素已经内置了 APG textbox 模式,不需要显式 role:
+
+```html
+<div class="field">
+  <label for="username">用户名</label>
+  <div class="input-wrap" data-size="md" data-status="default">
+    <input id="username" type="text" placeholder="4-16 个字符" aria-describedby="username-help" />
+    <button type="button" class="clear" aria-label="清空用户名">×</button>
+  </div>
+  <p id="username-help">支持字母、数字与下划线</p>
+</div>
+```
+
+关键点:
+
+- `label` 经 `for/id` 显式关联,点击 label 也能聚焦;`placeholder` 只做示例,不能顶替字段名;
+- 状态文案(错误/警告/帮助)用 `aria-describedby` 挂到输入框,读屏在聚焦时一并朗读;
+- 清空按钮放在输入框右端,必须带 `aria-label`,清空后焦点留在输入框;
+- 计数提示放字段下方右对齐(antd TextArea 的 showCount 即此布局),`aria-live="polite"` 让超限播报温和一点。
+
+## 样式与参数
+
+四个参数全部是 JS 型(经 store 订阅改 `data-*`),CSS 按 `data-size` / `data-status` / `data-clearable` 分支取值:
+
+```css
+.input-wrap[data-size="sm"] input { height: 24px; font-size: 12px; padding: 0 8px; border-radius: 4px; }
+.input-wrap[data-size="md"] input { height: 32px; font-size: 14px; padding: 0 12px; border-radius: 6px; }
+.input-wrap[data-size="lg"] input { height: 40px; font-size: 16px; padding: 0 12px; border-radius: 6px; }
+
+.input-wrap[data-status="default"] input { border-color: #d9d9d9; }        /* colorBorder */
+.input-wrap[data-status="error"]   input { border-color: #ff4d4f; }        /* colorError */
+.input-wrap[data-status="warning"] input { border-color: #faad14; }        /* colorWarning */
+
+.input-wrap[data-clearable="on"] .clear { display: grid; }                 /* 有值时显示 */
+.count.is-over { color: #ff4d4f; }                                         /* 超出标红,不截断 */
+```
+
+数值出处:
+
+- 尺寸三档 24/32/40px 与字号 12/14/16px 取 antd 控件高度派生(controlHeight 32→SM×0.75=24、LG×1.25=40)与字阶派生(fontSizeSM 12 / fontSize 14 / fontSizeLG 16),设计调研 06§2.3①③;
+- 边框 `#d9d9d9` = antd colorBorder、错误 `#ff4d4f` = colorError、警告 `#faad14` = colorWarning、圆角 6/4 = borderRadius/borderRadiusSM、水平内边距 12/8 = controlPaddingHorizontal/SM(06§2.2/§2.3);
+- 占位文字色 rgba(0,0,0,0.25) 对齐 antd colorTextQuaternary(中性 25% 透明度,06§2.3⑤);
+- `status` 对齐 antd Input 的 `status: error|warning`(不设即默认);`clearable` 对齐 `allowClear`(默认未开启);计数对齐 `count.max` 的「超出标红、不截断」语义(06§4.5)。
+
+## 动效与交互
+
+- **边框色过渡**:hover/focus/状态切换都是 `border-color 0.2s`(antd motionDurationMid),焦点另加 2px 主色柔光环;
+- **焦点环不可裸删**:WebAIM 明令禁止移除焦点指示(调研 07§36);demo 用 2px 主色光环(box-shadow)替换原生 outline,键盘聚焦(`:focus-visible`)再加同色实线 outline 兜底;
+- **清空**:点击 × 立即清值、焦点留在输入框并触发 onChange——键盘等价路径是 Ctrl/Cmd+A + Delete;
+- **超限反馈**:计数变红是即时反馈,不加抖动动画(错误要可诊断,不要惩罚性动效);`prefers-reduced-motion` 时取消全部 transition。
+
+## 真实产品案例
+
+- **GitHub 顶部搜索框**:全站任何页面按 `/` 聚焦搜索输入框,输入后右端出现清空 ×,清空即回到占位提示——快捷键聚焦 + 可清空是代码托管场景的标配;
+- **Google 搜索框**:聚焦即出现联想下拉建议,输入内容后同样提供清空 ×;输入框本体保持极简无边框感,交互全在聚焦后展开;
+- **淘宝/京东登录表单**:手机号输入框左侧固定「+86」前缀、右侧内嵌「获取验证码」动作(suffix 动作),验证码错误时边框变红并在字段正下方给红字——前缀、后缀动作与就近错误提示三个能力同时上阵。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | lg(40px)触控命中更稳(Fitts 定律),但表单密度下降;16px 字号在表单流里过于抢眼 | sm(24px)适合筛选栏/工具条等紧凑区,但触屏点击目标偏小,字号 12px 只可承载辅助字段 |
+| `status` | error 一档会让整块边框 + 计数全部转红,视觉权重最高,多字段同时报错会形成「红海」 | 回到 default 时所有提示消失——注意别把用户输入到一半的状态静默吞掉 |
+| `clearable` | on 时有值即显示 ×,输入区右侧空间被占用(点击区域与文字间距要保证) | off 时只能靠全选删除;移动端长按选词成本高 |
+| `maxLength` | 40 上限接近标题长度,超限红字常态出现说明上限定低了 | 0=不限,计数隐藏;用户无从得知系统对长度的真实容忍度 |
+
+经验区间:表单主字段用 md(32px/14px);筛选栏、表格内嵌行内编辑用 sm;错误文案永远紧贴字段下方,而不是集中到表单顶部。

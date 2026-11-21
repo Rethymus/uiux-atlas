@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+模态对话框是三层结构:页面内容 → 遮罩(mask)→ 对话框本体。打开时遮罩盖住页面,对话框浮在遮罩上,外部内容对交互「inert」。
+
+```html
+<button id="trigger">打开</button>
+<div class="overlay">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title" tabindex="-1">
+    <h2 id="dlg-title">标题</h2>
+    <p>正文</p>
+    <button>取消</button>
+    <button>确定</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- 容器 `role="dialog"` + `aria-modal="true"` + `aria-labelledby` 指向**可见**标题(APG Dialog);
+- 必须提供**可见的关闭按钮**(APG 强烈建议),Esc 作为键盘等价路径;
+- 焦点规则:打开时焦点进对话框(默认第一个可聚焦元素;不可逆操作落在**破坏性最小**的动作上),关闭后焦点**归还触发元素**——APG 与 WebAIM 键位表双源一致。
+
+## 样式与参数
+
+`width` 是 CSS 变量型参数(`--modal-width`,经舞台注入);`maskClosable` / `centered` 是 JS 型参数,分别驱动遮罩点击行为与 `data-centered` 垂直对齐。
+
+```css
+.overlay {
+  position: fixed; inset: 0; z-index: 1000;   /* antd zIndex 默认 1000 */
+  background: rgba(0, 0, 0, 0.45);            /* antd colorBgMask */
+  display: flex; justify-content: center;
+  align-items: flex-start;                    /* centered=off:贴顶留白 */
+  padding: 56px 16px 24px;
+}
+.overlay[data-centered="on"] { align-items: center; }
+.dialog {
+  width: var(--modal-width); max-width: 100%;
+  background: #fff;
+  border-radius: 8px;                         /* antd borderRadiusLG */
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08),
+              0 3px 6px -4px rgba(0,0,0,.12),
+              0 9px 28px 8px rgba(0,0,0,.05); /* antd boxShadow */
+  outline: none;                              /* 容器 tabindex=-1 接焦点,去默认圈 */
+}
+```
+
+数值出处(antd 6.7.1 核对):`width` 默认 **520**、`Modal.method()` 确认框默认 416、`maskClosable` 默认 true(6.x 收敛为 `mask.closable`)、`centered` 默认 false、`keyboard`(Esc)默认 true(design-study 06 §4.11)。本站演示 width 默认取 480(任务规格值,如实标注非官方默认)。
+
+## 动效与交互
+
+- **入场**:遮罩 0.2s 淡入,对话框淡入 + 4% 微缩放 + 6px 下移,曲线取 antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`、时长对齐 `motionDurationMid = 0.2s`;只用 opacity/transform;
+- **键盘**:Esc 关闭(antd `keyboard` 默认 true);Tab/Shift+Tab 在对话框内首尾循环困焦——这是模态的合法键盘陷阱,WCAG 2.1.2 要求焦点可移入也必须可键盘移出(Esc/关闭按钮即出口);
+- **点遮罩**:仅当 `e.target === 遮罩本身` 且 `maskClosable=on` 时关闭,对话框内误点不触发;
+- **关闭后**:焦点归还触发按钮;`prefers-reduced-motion: reduce` 时取消入场动画。
+
+## 真实产品案例
+
+- **GitHub**:删除仓库的确认对话框要求**手动输入仓库名**才能点击删除按钮——把「不可逆 + 高破坏」场景的防误触做到极致,主按钮在输入正确前保持禁用;
+- **微信(桌面端)**:删除联系人、清空聊天记录时弹出居中小对话框,红色危险按钮放在确认位、点遮罩不关闭——确认型对话框关闭「点遮罩」的典型实现;
+- **Google Docs**:「重命名」是横向窄对话框:标题即输入框、取消/确定右对齐,宽度只装一行内容——窄宽度参数化适合单字段任务的样例。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `width` | 容纳表单/表格/多列内容,但大对话框加重打断感,窄屏会触底 `max-width` 折行 | 只剩单列确认——低于 400px 放不下两列表单;320px 相当于移动端全宽减边距 |
+| `maskClosable` | on:轻操作容错高、关闭路径多,但误触遮罩会丢掉已填内容 | off:强制用户明确选择(antd 确认框默认 off),防误触但增加关闭成本—— Esc 与取消按钮必须保留 |
+| `centered` | on:垂直居中,视觉重心稳定、暂态感强,高内容上下都被裁切风险小 | off:贴顶摆放(antd 默认),长内容向下自然延伸、阅读起点固定;超视口时需对话框内滚动 |
+
+经验区间:width 416–560(antd 两档 520/416 为锚点)、确认型对话框 maskClosable=off、内容超过两屏改用抽屉或页面。

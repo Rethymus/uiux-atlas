@@ -1,0 +1,103 @@
+{
+  "name": "Date Picker",
+  "nameZh": "日期选择器",
+  "aliases": ["日期选择", "DatePicker", "Calendar Picker"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "从月历网格里点选日期:触发器收起为输入框,展开后是「星期表头 + 7 列日网格 + 月份切换」的浮层面板。",
+    "en": "Pick a date from a month grid: the trigger collapses into an input, opening a panel of 'weekday header + 7-column day grid + month paging'."
+  },
+  "origin": {
+    "zh": "APG 没有独立 date picker 模式,官方示例(Dialog 版日期选择器)以 grid 模式承载月历:role=grid/row/gridcell 组织行列,方向键在网格内移动(调研 07§34 的 30 模式清单含 Grid);本条目 demo 为**自绘简化实现**,仅取其网格思想。生产参照系是 Ant Design DatePicker(antd 6.7.1 核对:size 默认不设=32px/large 40px/small 24px(官方文档明示三个高度)、allowClear 默认 true、placement 默认 bottomLeft、默认 en-US locale 经 ConfigProvider 挂 zh_CN,见设计调研 06§4.9)。",
+    "en": "APG has no standalone date picker pattern; its official example (the dialog-based date picker) carries the month calendar on the grid pattern: role=grid/row/gridcell for rows and columns with arrow keys moving inside the grid (Grid is in the 30-pattern list of research 07 §34). This entry's demo is a **self-drawn simplified implementation** borrowing only the grid idea. The production reference is Ant Design DatePicker (antd 6.7.1: size unset=32px / large 40px / small 24px (three heights documented explicitly), allowClear default true, placement bottomLeft, en-US locale default with zh_CN via ConfigProvider — design study 06 §4.9)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "firstDay",
+      "options": [
+        { "value": "mon", "label": { "zh": "周一始 mon", "en": "Monday first" } },
+        { "value": "sun", "label": { "zh": "周日始 sun", "en": "Sunday first" } }
+      ],
+      "default": "mon",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重排星期表头与日网格)。周一始为中国大陆与 ISO 8601 惯例,周日始为北美惯例;组件库通常随 locale 决定(antd 经 locale 挂载,zh_CN/en-US 各随其周起始约定),demo 默认 mon 与默认 lang zh 配对。",
+        "en": "JS-type param (demo subscribes and re-orders the weekday header and day grid). Monday-first is the mainland-China and ISO 8601 convention, Sunday-first the North-American one; libraries typically derive it from locale (antd mounts it via locale, zh_CN/en-US each following their own week-start convention). The demo defaults to mon, paired with lang zh."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "lang",
+      "options": [
+        { "value": "zh", "label": { "zh": "中文 zh", "en": "Chinese zh" } },
+        { "value": "en", "label": { "zh": "英文 en", "en": "English en" } }
+      ],
+      "default": "zh",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换月标题/星期表头/按钮文案)。对齐组件库的 i18n 机制:antd DatePicker 默认 en-US,经 ConfigProvider locale 挂 zh_CN(设计调研 06§4.9);demo 的日期格式 zh 用 2026年11月21日、en 用 Nov 21, 2026。",
+        "en": "JS-type param (demo subscribes and switches month title / weekday header / button copy). Aligns with library i18n mechanics: antd DatePicker defaults to en-US with zh_CN mounted via ConfigProvider locale (design study 06 §4.9); demo date formats are 2026年11月21日 for zh and Nov 21, 2026 for en."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "小 sm", "en": "Small sm" } },
+        { "value": "md", "label": { "zh": "中 md", "en": "Medium md" } },
+        { "value": "lg", "label": { "zh": "大 lg", "en": "Large lg" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-size,作用于触发器高度与日格尺寸)。对应 antd DatePicker 官方文档明示的三档高度:size 默认不设=32px、large=40px、small=24px(设计调研 06§4.9)。",
+        "en": "JS-type param (demo subscribes and toggles data-size, driving trigger height and day-cell size). Maps to the three heights documented explicitly by antd DatePicker: size unset=32px, large=40px, small=24px (design study 06 §4.9)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 的月历网格全部用原生 button + ARIA grid 角色:焦点管理走 roving tabindex,无 Pointer Events 之外的 API 依赖。原生 <input type=\"date\"> 亦可作免脚本兜底(桌面端为自绘日历、移动端唤起系统日期滚轮,体验不可控);ARIA grid 的读屏支持依 AT 而异,APG 对 grid 的键盘要求需真机实测。",
+      "en": "The demo's month grid uses native buttons + ARIA grid roles throughout: focus management is roving tabindex with no API dependency beyond Pointer Events. A native <input type=\"date\"> works as the script-free fallback (drawn calendar on desktop, system wheel on mobile — unpredictable UX); screen-reader support for ARIA grid varies by AT, and APG's grid keyboard contract needs real-device testing."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时退化到原生 <input type=\"date\">(或 select 年 + select 月 + 三个 select 日的组合);自绘面板定位失败时降级为触发器正下方的同宽静态面板,禁止悬浮层遮挡触发器本身。",
+    "en": "Without JS degrade to native <input type=\"date\"> (or a year select + month select + day select trio); if the drawn panel cannot position, fall back to a same-width static panel directly below the trigger — never let the floating layer cover its own trigger."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单中的单一日期字段:出发日期、生效日期、账期(antd picker 默认 date 形态,调研 06§4.9)", "en": "Single date fields in forms: departure date, effective date, billing period (antd picker's default date form, research 06 §4.9)" },
+      { "zh": "跨月/跨年的日期查询:月切换翻页比下拉选年月更快定位", "en": "Date queries across months/years: month paging locates a date faster than year/month dropdowns" },
+      { "zh": "需要「不可选日期」语义的场景:已订满、过去日期、维护窗口(置灰或禁用格)", "en": "Scenarios needing 'unavailable dates': fully booked, past dates, maintenance windows (dimmed or disabled cells)" }
+    ],
+    "avoid": [
+      { "zh": "日期范围两端需要联动约束时不要复用两个单选实例——用 RangePicker 一类范围形态表达开始≤结束", "en": "Do not reuse two single-pickers for a constrained range — use a range form (RangePicker-style) to express start ≤ end" },
+      { "zh": "只需年份或月份时用 picker=year/month 精简形态,整月历是过度交互", "en": "When only a year or month is needed, use the picker=year/month reduced forms; a full calendar is overkill" },
+      { "zh": "高频录入结构化日期(如报单日期批量录入)直接键入更快——强弹日历会拖慢熟练用户", "en": "For high-volume structured date entry, typing beats the calendar — forcing the popup slows expert users" },
+      { "zh": "移动端窄屏慎用桌面式大浮层——底部抽屉式日历或系统原生滚轮更贴合触达半径", "en": "On narrow mobile screens, beware desktop-style large overlays — bottom-sheet calendars or native system wheels fit thumb reach better" }
+    ]
+  },
+  "a11y": {
+    "zh": "面板网格用 role=\"grid\"/\"row\"/\"gridcell\",星期表头 role=\"columnheader\" 并带完整可读名称;日格是原生 button(roving tabindex:焦点落在选中日或今日,方向键 ±1/±7 移动);触发器 aria-expanded/aria-haspopup 表达展开态;Esc 关闭并把焦点还给触发器;星期与文案随 lang 同步(含 aria-label);本 demo 为自绘简化实现——未实现 APG grid 的全部键盘契约(如跨月翻页键),上线前须按 APG grid 模式补全并 AT 实测(调研 07§34/§35)。",
+    "en": "The panel grid uses role=\"grid\"/\"row\"/\"gridcell\" with weekday headers as role=\"columnheader\" carrying full readable names; day cells are native buttons (roving tabindex: focus lands on the selected day or today; arrows move ±1/±7); the trigger exposes aria-expanded/aria-haspopup; Esc closes and returns focus to the trigger; weekdays and copy follow lang (aria-labels included). This demo is a self-drawn simplified implementation — it does not implement APG grid's full keyboard contract (e.g. paging keys across months); production must complete it per the APG grid pattern and test with real ATs (research 07 §34/§35)."
+  },
+  "sources": [
+    "https://ant.design/components/date-picker-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/grid/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个自绘月历日期选择器:触发器输入框 + 展开的月历浮层(星期表头、7 列日网格、月份前后翻页、今天/清空),支持 firstDay 周一起始或周日起始、zh/en 双语、三档尺寸;点选日期即回填触发器并收起。",
+      "en": "Replicate a self-drawn month-calendar date picker: a trigger input + an open calendar overlay (weekday header, 7-column day grid, prev/next month paging, Today/Clear), supporting Monday/Sunday week start, zh/en bilingual copy and three size tiers; picking a day fills the trigger and collapses the panel."
+    },
+    "acceptance": [
+      { "zh": "触发器三档高度严格 24/32/40px(antd DatePicker 官方文档明示的高度分档),日格尺寸随档位缩放", "en": "Trigger heights are exactly 24/32/40px (the tier heights documented by antd DatePicker), with day-cell sizes scaling per tier" },
+      { "zh": "firstDay 重排星期表头与首行偏移;lang 同步切换月标题(2026年11月 / November 2026)、星期与按钮文案", "en": "firstDay re-orders the weekday header and first-row offset; lang switches the month title (2026年11月 / November 2026), weekdays and button copy together" },
+      { "zh": "面板 role=grid/row/gridcell + columnheader 结构;日格为原生 button,roving tabindex + 方向键 ±1/±7", "en": "Panel structured as role=grid/row/gridcell + columnheader; day cells are native buttons with roving tabindex + arrows ±1/±7" },
+      { "zh": "选中日主色底 #1677ff 白字,今日描边强调;浮层用 antd 浮层主阴影、圆角 8px、z-index 高于页面内容", "en": "Selected day on primary #1677ff with white text, today outlined; the overlay uses antd's floating-layer shadow, 8px radius and a z-index above page content" },
+      { "zh": "Esc 关闭面板且焦点回触发器;点击外部关闭;动效约 0.2s 且尊重 prefers-reduced-motion;标注「自绘简化实现」", "en": "Esc closes the panel and returns focus to the trigger; clicking outside closes; motion ~0.2s honoring prefers-reduced-motion; labeled as a 'self-drawn simplified implementation'" }
+    ]
+  }
+}

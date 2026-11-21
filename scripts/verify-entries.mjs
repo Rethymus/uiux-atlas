@@ -8,6 +8,18 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
 const entriesRoot = join(root, "src", "content", "entries");
 
+// 第七分类 components:24 个 slug(组件库分类学,六子分组)。
+// 24 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与其他分类同规则);
+// 条目级检查照常逐条全检(额外要求 subgroup ∈ 六值;nameZh 非空为全条目通用检查)。
+const COMPONENT_SLUGS = [
+  "button", "icon", "tag", "typography",
+  "input", "select", "switch", "checkbox", "date-picker",
+  "toast", "modal", "drawer", "alert", "tooltip",
+  "table", "avatar", "badge", "card",
+  "nav-menu", "tabs", "breadcrumb", "dropdown",
+  "empty", "watermark",
+];
+
 const EXPECTED = {
   styles: [
     "glassmorphism", "neumorphism", "claymorphism", "neo-brutalism",
@@ -30,7 +42,10 @@ const EXPECTED = {
   ],
   type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
   layout: ["container-queries"],
+  components: COMPONENT_SLUGS,
 };
+
+const SUBGROUP_IDS = new Set(["basic", "form", "feedback", "data", "navigation", "other"]);
 
 const SYSTEMS = new Set(["apple", "m3", "fluent", "web-std", "component-lib", "community"]);
 const PARAM_TYPES = new Set(["color", "dimension", "number", "cubicBezier", "enum", "shadow"]);
@@ -68,6 +83,7 @@ for (const cat of Object.keys(actual)) {
   if (!EXPECTED[cat]) problems.push(`unexpected category directory: ${cat}`);
 }
 if (problems.length === 0) ok(`entry inventory matches expected ${totalExpected} entries`);
+ok(`components: ${(actual.components ?? []).length}/${COMPONENT_SLUGS.length} entries present (missing-check enforced)`);
 
 // ---------- 单条目检查 ----------
 function isBilingual(v, path) {
@@ -76,7 +92,10 @@ function isBilingual(v, path) {
   if (typeof v.en !== "string" || !v.en.trim()) problems.push(`${path}.en empty`);
 }
 
-for (const [cat, slugs] of Object.entries(EXPECTED)) {
+// 单条目检查:EXPECTED 全部分类(components 已并入,与其他分类同规则)
+const checkList = EXPECTED;
+
+for (const [cat, slugs] of Object.entries(checkList)) {
   for (const slug of slugs) {
     const id = `${cat}/${slug}`;
     const dir = join(entriesRoot, cat, slug);
@@ -117,6 +136,10 @@ for (const [cat, slugs] of Object.entries(EXPECTED)) {
       problems.push(`${id}: schema.nameZh missing/empty`);
     }
     if (schema.category !== cat) problems.push(`${id}: schema.category "${schema.category}" != directory "${cat}"`);
+    // components 条目:subgroup 必填且 ∈ 六子分组 id(nameZh 非空由下方全条目通用检查兜底)
+    if (cat === "components" && !SUBGROUP_IDS.has(schema.subgroup)) {
+      problems.push(`${id}: schema.subgroup "${schema.subgroup}" invalid (must be one of basic/form/feedback/data/navigation/other)`);
+    }
     if (!SYSTEMS.has(schema.system)) problems.push(`${id}: schema.system "${schema.system}" invalid`);
     if (!Number.isInteger(schema.star) || schema.star < 1 || schema.star > 3) problems.push(`${id}: schema.star invalid`);
     isBilingual(schema.tagline, `${id}.tagline`);

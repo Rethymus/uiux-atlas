@@ -1,0 +1,74 @@
+## Structure & DOM
+
+A table is a strict semantic tree in a fixed order: `table` wraps `thead` + `tbody`, each column gets one `th` (with `scope="col"`) inside `thead`, and each `tbody` row is a `tr` of `td` cells.
+
+```html
+<table>
+  <thead>
+    <tr><th scope="col">Name</th><th scope="col" aria-sort="ascending">Price</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Spruce lamp</td><td>129</td></tr>
+  </tbody>
+</table>
+```
+
+Key points:
+
+- Real table semantics, not div soup: screen readers announce a `table` as a table, and the WAI-APG Table pattern is the first reference for custom implementations (research 07 §34);
+- Sortable headers are buttons; the sort direction is expressed with `aria-sort="ascending / descending"`, and the attribute is absent when unsorted;
+- Row count is a function of the data — at zero rows the **empty state replaces the whole table** (no leftover header or frame) so screen readers don't announce a full table before "no content" (Carbon, research 07 §17); same rule as the empty entry.
+
+## Styling & Parameters
+
+All four parameters are JS-typed (the demo subscribes to the store and toggles `data-*` attributes); density tiers follow antd Table's cell-padding tokens:
+
+```css
+/* Three density tiers: antd cellPadding large 16 / medium 12·8 / small 8
+   (table/style/index.ts:457-462; padding 16, paddingSM 12, paddingXS 8) */
+.tb-table[data-size="lg"] th, .tb-table[data-size="lg"] td { padding: 16px; }
+.tb-table[data-size="md"] th, .tb-table[data-size="md"] td { padding: 12px 8px; }
+.tb-table[data-size="sm"] th, .tb-table[data-size="sm"] td { padding: 8px; }
+
+/* bordered (antd default false): outer frame colorBorder #d9d9d9, column lines colorBorderSecondary #f0f0f0 */
+.tb-table[data-bordered="on"] { border: 1px solid #d9d9d9; }
+.tb-table[data-bordered="on"] td:not(:last-child) { border-right: 1px solid #f0f0f0; }
+
+/* Striping (antd has no such prop; the off default follows TDesign stripe @default false);
+   stripe 2% / hover 4% take antd's neutral fill alpha tiers (FillQuaternary/Tertiary) */
+.tb-table[data-striped="on"] tbody tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+.tb-table tbody tr:hover { background: rgba(0,0,0,0.04); }
+
+/* Numeric columns: right-aligned + tabular figures (antd recommends tabular-nums, 06-antdesign.md §1.3) */
+.tb-num { text-align: right; font-variant-numeric: tabular-nums; }
+```
+
+Where the numbers come from:
+
+- `size` defaults to **large** and `bordered` to **false**, both verified against the antd 6.7.1 doc sources (out/design-study/06-antdesign.md §4.15; re-checked locally in `.scratch/antd06`, index.zh-CN.md:129 and :148);
+- Striping: antd 6.7.1 has no `striped` prop; the off default follows TDesign Table `stripe`'s documented `@default false`;
+- Always-on row hover is an explicit Carbon requirement ("row hover state should always be enabled to aid scanning", research 07 §13); hover does not depend on the stripe parameter.
+
+## Motion & Interaction
+
+- **Row hover**: a 0.2s background transition (antd motionDurationMid) on the `cubic-bezier(0.645,0.045,0.355,1)` curve (motionEaseInOut); hover changes the fill only — no shifts, no per-row outlines;
+- **Sort click**: asc → desc → clear, a three-state cycle, with the header's `aria-sort` kept in sync; antd `sortDirections` defaults to `['ascend','descend']` (6.7.1);
+- **Entrance**: the table fades in with an 8px rise, animating only `opacity/translate`; both the entrance and the hover transition are disabled under `prefers-reduced-motion: reduce`;
+- **Empty-state switch**: setting rowCount to 0 replaces the table with an empty-state block carrying `role="status"` for screen-reader announcement; its "create record" is the single primary action (avoiding multiple primary buttons when several empty states coexist — Carbon, research 07 §17).
+
+## Real-world examples
+
+- **GitHub repository file list**: a three-column table (name / latest commit message / time) with highlighted row hover to aid scanning and icon prefixes distinguishing folders from files — the canonical form of a table for scanning structured records;
+- **The API doc tables on ant.design component pages**: a four-column "parameter / description / type / default" layout — exactly the kind of table this repo's research (out/design-study/06-antdesign.md) reads row by row; long types wrap without overflowing the column;
+- **Stripe Dashboard payments list**: one payment per row with colored status badges and right-aligned amounts — right-aligned tabular figures are the standard for financial tables so vertical comparison doesn't jitter.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` (sm→lg) | looser density and taller rows — better readability but fewer rows per screen | tighter density and more rows per screen; at sm (8px) the breathing room is gone — only for short-field tables |
+| `bordered` | outer frame + column lines make column boundaries crisp, good for wide multi-column data; too many borders start to read like a form | row separators only — lighter and more content-like; with many columns the column boundaries drift and are hard to align |
+| `striped` | tinted even rows keep horizontal scanning from slipping lines, good for dense tables with small row heights | back to plain white with hover-only row targeting; on airy rows stripes start to look dirty |
+| `rowCount` | more rows lengthen the page; past one screen, add pagination or virtual scrolling | fewer rows; at 0 the empty state **replaces the whole table** (no header left), same rule as the empty entry |
+
+Working ranges: admin data tables use md density with always-on hover; narrow containers get horizontal scrolling instead of squeezed columns; never use tables as spreadsheet replacements and never nest tables (Carbon, research 07 §13).

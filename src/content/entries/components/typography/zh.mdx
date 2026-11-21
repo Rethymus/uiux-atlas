@@ -1,0 +1,73 @@
+## 结构与 DOM
+
+文字层级的骨架是「语义标签 × 视觉档位」双通道:标题用真实 `h1–h4` 语义标签,视觉样式(字号/行高/颜色)由类名控制,二者解耦。
+
+```html
+<h1 class="lv-h1">页面主标题</h1>
+<h2 class="lv-h2">区块标题</h2>
+<p class="lv-body">正文段落:主字号 14px,行高 1.5714。</p>
+<p class="lv-caption ty-secondary">辅助说明:12px,次级 65% 黑。</p>
+
+<!-- 单行省略三件套 -->
+<p class="ty-ell ell-on" title="全文 Full text">超长一行文本……</p>
+```
+
+关键点:
+
+- **语义不跳级**:h1 之后接 h2,大纲连续;antd Typography 的 `Title level` 默认 1(06-antdesign §4.4),对应 `fontSizeHeading1 = 38px`;
+- **文本色是独立通道**:antd `Text` 的 `type`(secondary/success/warning/danger)只改颜色不改字号(06 §4.4)——demo 同理,`level` 管字号、`type` 管颜色;
+- **省略三件套**:`white-space: nowrap` + `overflow: hidden` + `text-overflow: ellipsis` 缺一不可;antd `Paragraph.ellipsis` 还支持 `rows`/`expandable`/`suffix`(06 §4.4);
+- demo 的阶梯区用 `div` + `role="heading"`/`aria-level` 表达层级标本,避免向宿主页面注入重复的真实 `h1`。
+
+## 样式与参数
+
+`level`/`type`/`ellipsis` 均为 JS 型参数(demo 订阅 store 后切类名):
+
+```css
+/* antd 自然指数字阶(genFontSizes):size[i] = round(14 × e^((i-1)/5)),
+   行高恒为 (size+8)/size —— 一套公式而非一组孤立数字 */
+.lv-h1      { font-size: 38px; line-height: 1.23;   font-weight: 600; } /* fontWeightStrong */
+.lv-h2      { font-size: 30px; line-height: 1.2667; font-weight: 600; }
+.lv-h3      { font-size: 24px; line-height: 1.3333; font-weight: 600; }
+.lv-h4      { font-size: 20px; line-height: 1.4;    font-weight: 600; }
+.lv-body    { font-size: 14px; line-height: 1.5714; font-weight: 400; } /* 主字号/行高 */
+.lv-caption { font-size: 12px; line-height: 1.6667; font-weight: 400; } /* fontSizeSM */
+
+/* type 三档:中性文字透明度 + 功能色 */
+.ty-spec { color: rgba(0, 0, 0, 0.88); }            /* colorText 88% */
+.ty-spec[data-type="secondary"] { color: rgba(0, 0, 0, 0.65); } /* colorTextSecondary */
+.ty-spec[data-type="danger"] { color: #ff4d4f; }    /* seed colorError */
+.ty-ell.ell-on { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+```
+
+数值出处(经 out/design-study/06-antdesign.md 核对 antd 6.7.1):
+
+- **h1–h4** = fontSizeHeading1..4 = **38 / 30 / 24 / 20px**,行高 1.23 / 1.2667 / 1.3333 / 1.4(genFontSizes.ts 自然指数曲线,06 §2.3①);
+- **body** = 主字号 14px / 行高 1.5714(≈22px;基于 50cm 阅读距离与 0.3° 视角,06 §1.3);
+- **caption** = fontSizeSM 12px / 1.6667(官方 token;「caption」为 demo 命名,antd 无此命名档);
+- **字重**:regular 400 / medium 500 / 强调 600(`fontWeightStrong: 600`,06 §1.3);
+- **次级色** 65% 黑、默认色 88% 黑:中性文字四档透明度 88/65/45/25%(06 §2.3⑤);
+- **danger** `#ff4d4f` = seed colorError(06 §2.2);antd `Text type` 默认不设即默认色、`ellipsis` 默认 false(06 §4.4)。
+
+## 动效与交互
+
+- 排印本体无动效——字号/行高的变化应当**瞬时完成**,不做过渡(文字重排的动画会伤害可读性);
+- **ellipsis 交互惯例**:截断处补 `title`(或 antd ellipsis 的 tooltip,06 §4.4)承载全文;可展开场景用 `expandable`(antd Paragraph 支持);
+- **复制支持**:antd Typography 另有 `copyable`(默认 false,tooltip 默认「复制/复制成功」)与 `editable`,属文字件的交互扩展(06 §4.4);
+- 触发即时反馈的原则依然适用:链接色、danger 红的 hover 加深属于合理微动效,时长取 0.1s 档(motionDurationFast,06 §3.1)。
+
+## 真实产品案例
+
+- **GitHub README** — 渲染后的 Markdown 用清晰的标题阶梯(h1–h3)组织长文,正文单一字号,版本号/操作说明等次要信息用灰色小字,层级全部由字号与颜色双通道表达。
+- **微信聊天列表** — 每行三层文字:联系人名(默认色)、消息摘要(次级灰)、时间戳(更小更浅),颜色深浅直接编码信息优先级,一眼可扫。
+- **Notion** — 页面标题用大字号重层级,正文保持单一字号,占位符与提示用浅灰;层级靠字号与颜色表达,页面内不出现第三种以上字号。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `level` | h1(38px)视觉分量最大,一屏一个;多标题同用大档会让大纲失效、扫读变慢 | caption(12px)信息密度高但可读性下降,长文用 12px 会疲劳;低于 12px 已越过无障碍舒适区 |
+| `type` | danger 红把文字推向前台——全段红等于没有红(WCAG SC 1.4.1:还需文字冗余) | secondary 65% 黑做辅助说明正合适;再浅(45%/25%)用于正文会逼近 4.5:1 对比红线 |
+| `ellipsis` | on 把超长行压成一行,表格/卡片密度提升,但被截内容对读屏不可见——必须补 title 全文 | off 全文换行,信息无损;长列表单元格不用省略会撑破栅格 |
+
+经验区间:系统内字阶控制在 3–5 种(antd 建议值,06 §1.3);正文永远用 body 档;标题层级 h1→h4 连续使用;caption 只用于时间戳、备注等辅助信息。

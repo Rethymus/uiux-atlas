@@ -1,0 +1,90 @@
+{
+  "name": "Breadcrumb",
+  "nameZh": "面包屑",
+  "aliases": ["面包屑导航", "Breadcrumb Trail", "路径导航"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "按层级排列的父页面链接列表,显示当前页在站点层级中的位置:放主内容之前的水平位置,上层任意节点可点、逐级回退。",
+    "en": "A list of parent-page links ordered by hierarchy showing where the current page sits in the site structure: horizontal, before the main content, with every ancestor clickable for step-by-step backtracking."
+  },
+  "origin": {
+    "zh": "童话《糖果屋》沿途撒面包屑记路的隐喻:WAI-ARIA APG「Breadcrumb」模式给出 navigation landmark + 有序列表语义(调研 07§12 一手);生产参照系是 Ant Design Breadcrumb(separator 官方默认「/」,见 out/design-study/06-antdesign.md §4.21)与 MUI Breadcrumbs(maxItems 折叠,2026-11-21 实抓核验)。",
+    "en": "The metaphor comes from Hansel and Gretel's trail of crumbs: the WAI-ARIA APG \"Breadcrumb\" pattern defines the navigation landmark + ordered-list semantics (research 07§12, first-hand); production references are Ant Design Breadcrumb (separator officially defaults to \"/\", see out/design-study/06-antdesign.md §4.21) and MUI Breadcrumbs (maxItems collapsing, verified live 2026-11-21)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "separator",
+      "options": [
+        { "value": "/", "label": { "zh": "斜杠 /", "en": "Slash /" } },
+        { "value": ">", "label": { "zh": "大于号 >", "en": "Greater-than >" } },
+        { "value": "·", "label": { "zh": "间隔点 ·", "en": "Middle dot ·" } }
+      ],
+      "default": "/",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换层间分隔符)。Ant Design Breadcrumb 的 separator 官方默认「/」(06-antdesign.md §4.21);分隔符是纯装饰,读屏侧应 aria-hidden(以 CSS 伪元素渲染时天然不可达,MUI 无障碍说明即按此处理,2026-11-21 实抓核验)。",
+        "en": "JS-type param (the demo subscribes and switches the between-level separator). Ant Design Breadcrumb's separator officially defaults to \"/\" (06-antdesign.md §4.21); the separator is purely decorative and should be aria-hidden for screen readers (natural when rendered via CSS pseudo-elements — MUI's accessibility notes treat it exactly this way, verified live 2026-11-21)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxItems",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "JS 型参数:路径超过 N 层时,中间层折叠为一个可点的「…」展开钮(首、尾层始终保留)。Ant Design Breadcrumb 无此属性;MUI Breadcrumbs 有 maxItems(官方示例 maxItems={2},超出中间折叠为「…」,官方文档未记载默认值,2026-11-21 实抓核验);本条目默认 3 为任务规格演示值——5 层样例路径下开箱即可看到折叠效果。",
+        "en": "JS-type param: when the trail exceeds N levels, the middle levels collapse into one clickable \"…\" expander (first and last levels always stay). Ant Design Breadcrumb has no such prop; MUI Breadcrumbs does have maxItems (official example maxItems={2} collapses the middle into \"…\", with no default documented, verified live 2026-11-21); this entry's default of 3 is a task-spec demo value — on the 5-level sample path the collapse is visible out of the box."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 兼容性门槛:结构是 nav landmark + ol 有序列表 + 链接,全部基础 Web 特性;分隔符以伪元素渲染时不可聚焦、不影响可达性(MUI 无障碍说明,2026-11-21 实抓核验)。",
+      "en": "No CSS compatibility gate: the structure is a nav landmark + ol + links, all baseline web features; pseudo-element separators are not focusable and stay out of the accessibility tree (MUI accessibility notes, verified live 2026-11-21)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时降级为纯链接路径:ol 内全部层级平铺为链接,折叠逻辑消失但路径信息不丢失;当前页改为纯文本即失去回退入口,仅最后一层如此。",
+    "en": "Without JS it degrades to a plain link trail: all levels stay as links inside the ol and the collapsing logic disappears, but no path information is lost; only the final level becomes plain text and loses its backtrack entry."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "三层以上的层级型站点:文档站、电商类目、管理后台,帮助用户定位并逐级回退(APG:帮助用户定位,调研 07§12)", "en": "Hierarchical sites of 3+ levels: docs, e-commerce categories, admin consoles — locate the user and backtrack level by level (APG: helps users locate themselves, research 07§12)" },
+      { "zh": "与顶部导航分工:导航管跨区跳转,面包屑管区内的深度路径", "en": "Complementing top navigation: the nav handles cross-area jumps while the breadcrumb handles in-area depth" },
+      { "zh": "深层详情页的回退入口:从列表页逐层点进后,一路可点返回", "en": "Backtracking on deep detail pages: after drilling in level by level, every step stays clickable on the way back" }
+    ],
+    "avoid": [
+      { "zh": "只有 1–2 层的扁平站点——面包屑冗余,信息量抵不过视觉占用", "en": "Flat sites of 1–2 levels — the trail is redundant and costs more visual space than it informs" },
+      { "zh": "替代主导航或历史回退(浏览器返回键)——面包屑表达层级,不表达浏览历史", "en": "Replacing primary navigation or history back — a breadcrumb expresses hierarchy, not browsing history" },
+      { "zh": "窄屏塞长路径不折叠——5 层以上在移动端必须折叠或省略中层", "en": "Long trails on narrow screens without folding — beyond 5 levels on mobile, collapse or elide the middle" },
+      { "zh": "把当前页做成可点链接指向自身——无操作意义还误导", "en": "Making the current page a link to itself — pointless and misleading" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG Breadcrumb 语义(调研 07§12):整个面包屑放 navigation landmark 内并用 aria-label 命名(如「面包屑」);层级用 ol 有序列表;当前页设 aria-current=\"page\"(若当前页不是链接则可选);分隔符 aria-hidden(MUI 无障碍说明,2026-11-21 实抓核验);折叠「…」必须是可聚焦按钮,带 aria-expanded 与「展开被折叠的层级」式标签,展开后提供收起。",
+    "en": "APG Breadcrumb semantics (research 07§12): the whole trail lives in a navigation landmark named via aria-label; levels use an ol; the current page sets aria-current=\"page\" (optional when the current page is not a link); separators are aria-hidden (MUI accessibility notes, verified live 2026-11-21); the collapsed \"…\" must be a focusable button with aria-expanded and a label like \"expand collapsed levels\", with a way to collapse again."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/",
+    "https://ant.design/components/breadcrumb-cn",
+    "https://mui.com/material-ui/react-breadcrumbs/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条可交互的面包屑:5 层样例路径,分隔符可选(/ > ·),超过 maxItems 时中层折叠为可点「…」并再展开,上层任意节点可点回退,当前页 aria-current 标记。",
+      "en": "Replicate an interactive breadcrumb: a 5-level sample trail, selectable separators (/ > ·), middle levels collapsing into a clickable \"…\" past maxItems with re-expansion, every ancestor clickable to backtrack, and the current page marked with aria-current."
+    },
+    "acceptance": [
+      { "zh": "nav landmark + aria-label + ol 结构齐备;当前页 aria-current=\"page\" 且不是链接", "en": "nav landmark + aria-label + ol in place; the current page carries aria-current=\"page\" and is not a link" },
+      { "zh": "分隔符 aria-hidden,不进入读屏朗读流", "en": "Separators are aria-hidden and stay out of the screen-reader stream" },
+      { "zh": "超出 maxItems 时中层折叠为「…」按钮(aria-expanded + 可聚焦),点击展开并可收起", "en": "Past maxItems the middle collapses into a \"…\" button (aria-expanded + focusable) that expands on click and can collapse again" },
+      { "zh": "点击任意上层节点即回退到该层,面板内容随层级联动", "en": "Clicking any ancestor truncates the trail there, with panel content following the level" },
+      { "zh": "折叠/展开无动画也可用;如有动效须尊重 prefers-reduced-motion", "en": "Collapse/expand works without animation; any motion respects prefers-reduced-motion" }
+    ]
+  }
+}

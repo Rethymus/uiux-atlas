@@ -1,0 +1,105 @@
+{
+  "name": "Nav Menu",
+  "nameZh": "导航菜单",
+  "aliases": ["导航栏", "Navbar", "Navigation Menu", "Menubar", "顶部导航", "侧边导航"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "将网站的信息架构分组归类并以导航的形式展示给用户,方便用户查找要获取的信息:顶部横向或侧栏纵向,二级导航聚合在下拉菜单中。",
+    "en": "Classifies a site's information architecture into groups and presents it as navigation so users can find the information they want: horizontal across the top or vertical in a sidebar, with second-level items aggregated into dropdown menus."
+  },
+  "origin": {
+    "zh": "桌面应用菜单栏的 Web 化:WAI-ARIA APG「Menu and Menubar」模式定义 menubar/menu/menuitem 三层语义(2026-11-21 实抓核验);生产参照系是 Ant Design Menu(props 默认值逐项对齐 antd 6.7.1 文档核对结果,见 out/design-study/06-antdesign.md §4.19)。",
+    "en": "The web adaptation of the desktop application menu bar: the WAI-ARIA APG \"Menu and Menubar\" pattern defines the menubar/menu/menuitem role set (verified live 2026-11-21); the production reference is Ant Design Menu (props cross-checked against the antd 6.7.1 docs audit, see out/design-study/06-antdesign.md §4.19)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "horizontal", "label": { "zh": "横向(顶部导航)", "en": "Horizontal (top nav)" } },
+        { "value": "vertical", "label": { "zh": "纵向(侧边导航)", "en": "Vertical (sidebar)" } }
+      ],
+      "default": "horizontal",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换布局)。horizontal=顶部导航条,二级弹层向下展开;vertical=侧栏纵向菜单(menubar 声明 aria-orientation=vertical),二级弹层向右弹出。注意:Ant Design Menu 的 mode 官方默认是 vertical(vertical|horizontal|inline,06-antdesign.md §4.19),本条目默认取 horizontal——导航菜单最典型的形态是顶部导航条、与 demo 默认视图一致,属条目规格取值而非 antd 官方默认。",
+        "en": "JS-type param (the demo subscribes and switches layout). horizontal = top navigation bar with dropdowns opening downward; vertical = sidebar menu (menubar declares aria-orientation=vertical) with submenus popping to the right. Note: Ant Design Menu's mode officially defaults to vertical (vertical|horizontal|inline, 06-antdesign.md §4.19); this entry defaults to horizontal because the top nav bar is the component's most typical form and matches the demo's default view — an entry-spec choice, not antd's official default."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "theme",
+      "options": [
+        { "value": "light", "label": { "zh": "浅色", "en": "Light" } },
+        { "value": "dark", "label": { "zh": "深色", "en": "Dark" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-theme)。light=白底菜单(antd Menu theme 官方默认 light,06-antdesign.md §4.19);dark=深底反白菜单,demo 深底取 antd dark 算法 colorBgElevated #1d1d1d、文字沿用中性文字 88% 透明度惯例 rgba(255,255,255,.88)(§2.3-⑤/§2.4)。",
+        "en": "JS-type param (the demo subscribes and toggles data-theme). light = white-surface menu (Ant Design Menu theme officially defaults to light, 06-antdesign.md §4.19); dark = dark menu — the demo's dark surface uses antd dark-algorithm colorBgElevated #1d1d1d with text at the 88% neutral-alpha convention rgba(255,255,255,.88) (§2.3-⑤/§2.4)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "trigger",
+      "options": [
+        { "value": "hover", "label": { "zh": "悬停展开", "en": "Hover" } },
+        { "value": "click", "label": { "zh": "点击展开", "en": "Click" } }
+      ],
+      "default": "hover",
+      "effect": {
+        "zh": "JS 型参数(二级下拉与头像用户菜单的展开方式)。hover 对应 antd Menu triggerSubMenuAction 的官方默认 hover(06-antdesign.md §4.19),关闭延时对齐其 subMenuCloseDelay 官方默认 0.1s;click 需按 APG menu-button 模式以 aria-haspopup/aria-expanded 声明状态(2026-11-21 实抓核验)。无论哪种触发,键盘与触屏都要有等价路径。",
+        "en": "JS-type param (how second-level dropdowns and the avatar user menu open). hover matches antd Menu triggerSubMenuAction's official default hover (06-antdesign.md §4.19), with the close delay aligned to its subMenuCloseDelay official default of 0.1s; click follows the APG menu-button pattern, declaring state via aria-haspopup/aria-expanded (verified live 2026-11-21). Either way, keyboard and touch need an equivalent path."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 兼容性门槛:结构是普通 DOM + CSS,语义由 ARIA menubar/menu/menuitem 与 aria-expanded/aria-haspopup 提供(主流浏览器与读屏均支持);menubar 的方向键漫游焦点需作者自行实现(APG 键盘界面实践,调研 07§35)。",
+      "en": "No CSS compatibility gate: plain DOM + CSS; semantics come from ARIA menubar/menu/menuitem and aria-expanded/aria-haspopup (supported across mainstream browsers and screen readers); menubar roving-focus arrow keys must be implemented by the author (APG keyboard interface practices, research 07§35)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时降级为普通链接列表(ul > li > a):一级项全部平铺可见、二级链接并列其下,导航信息不丢失;搜索引擎与读屏按文档结构阅读。",
+    "en": "Without JS it degrades to a plain link list (ul > li > a): all first-level items stay visible with second-level links listed beneath, so no navigation information is lost; search engines and screen readers follow the document structure."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "提供流量分发入口:首页/频道/类目的一级入口,把用户送往各内容区", "en": "Traffic distribution entries: first-level entries for home/channels/categories that route users into each content area" },
+      { "zh": "网站各功能聚合:二级导航聚合在下拉菜单,功能入口集中、可发现", "en": "Aggregating site functions: second-level items gathered into dropdown menus keep every entry point centralized and discoverable" },
+      { "zh": "后台/控制台的侧边导航(vertical),与内容区并排常驻", "en": "Console/admin sidebar navigation (vertical), persistent beside the content area" },
+      { "zh": "与面包屑分工:导航负责跨区跳转,面包屑负责区内层级定位", "en": "Dividing labor with breadcrumbs: the nav handles cross-area jumps, the breadcrumb handles in-area depth" }
+    ],
+    "avoid": [
+      { "zh": "一级项过多——决策时间随选项数量上升(Hick 定律,调研 07§23),关键动作应放两端(序位效应,调研 07§29)", "en": "Too many first-level items — decision time grows with option count (Hick's law, research 07§23); put key actions at both ends (serial position effect, research 07§29)" },
+      { "zh": "导航层级超过三层——深层内容改用站内搜索/站点地图", "en": "Navigation deeper than three levels — use site search or a sitemap for deep content" },
+      { "zh": "只用图标不用文字的一级项(语义不可猜)", "en": "Icon-only top-level items without a text label (their meaning cannot be guessed)" },
+      { "zh": "拿导航表达页面内层级——那是面包屑的职责", "en": "Using the nav to express within-page hierarchy — that is the breadcrumb's job" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG 语义:横向持久导航用 menubar/menuitem(垂直 menubar 需显式 aria-orientation=vertical);二级下拉与头像菜单按 disclosure/menu-button 模式声明 aria-haspopup/aria-expanded,弹层用 role=menu + menuitem,分组处用 role=separator(2026-11-21 实抓核验);Escape 关闭当前层并把焦点还给触发项。demo 实现 disclosure 基线(按钮 + aria-expanded + menu 弹层、Enter/Space 切换、Esc 归还焦点、方向键在弹层内漫游);完整 menubar 一级项方向键循环生产环境应补齐。hover 不得是唯一触发路径(键盘/触屏需 click/focus 等价)。",
+    "en": "APG semantics: a persistent horizontal nav uses menubar/menuitem (a vertical menubar needs explicit aria-orientation=vertical); second-level dropdowns and the avatar menu declare aria-haspopup/aria-expanded per the disclosure/menu-button patterns, with role=menu + menuitem popups and role=separator between groups (verified live 2026-11-21); Escape closes the current layer and returns focus to its trigger. The demo implements the disclosure baseline (button + aria-expanded + menu popup, Enter/Space toggle, Esc returns focus, arrow keys rove inside an open popup); full menubar arrow-key cycling across top-level items should be completed in production. Hover must never be the only path (keyboard/touch need an equivalent)."
+  },
+  "sources": [
+    "https://ant.design/components/menu-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation-hybrid/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条网站顶部导航条:品牌位 + 一级导航项(其中两项把二级入口聚合在下拉菜单里)+ 右侧个人头像,头像 hover 展开用户菜单(个人中心/设置/退出登录);支持横向/纵向两种布局与浅/深两套主题。",
+      "en": "Replicate a site top nav: a brand slot + first-level items (two of them aggregating second-level entries inside dropdown menus) + a personal avatar on the right whose hover reveals a user menu (profile/settings/sign-out); support horizontal/vertical layouts and light/dark themes."
+    },
+    "acceptance": [
+      { "zh": "二级导航聚合在下拉菜单内,不把二级项平铺在导航条上", "en": "Second-level items are aggregated inside dropdown menus, never flattened onto the bar" },
+      { "zh": "下拉与用户菜单以 button/aria-expanded/aria-haspopup + role=menu/menuitem 声明,Esc 关闭且焦点回触发项", "en": "Dropdowns and the user menu declare button/aria-expanded/aria-haspopup + role=menu/menuitem; Esc closes and returns focus to the trigger" },
+      { "zh": "hover 触发保留点击/键盘等价路径,关闭延时约 0.1s 防误收起", "en": "Hover triggering keeps click/keyboard equivalents, with a ≈0.1s close delay to avoid accidental collapse" },
+      { "zh": "布局与主题参数经状态切换即时生效;动效尊重 prefers-reduced-motion", "en": "Layout and theme params switch instantly via state; motion respects prefers-reduced-motion" },
+      { "zh": "选中态与 hover 填充分档可区分(选中主色 #1677ff + #e6f4ff 底,hover 4% 中性填充)", "en": "Selected vs hover states are visually distinct (selection #1677ff on #e6f4ff, hover at 4% neutral fill)" }
+    ]
+  }
+}

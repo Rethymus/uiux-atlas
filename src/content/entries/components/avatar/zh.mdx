@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+单个头像是一个方形容器(圆角决定形态),字符/图片是容器的填充内容;头像组是一排**兄弟节点 + 负 margin** 的重叠栈,溢出项折叠为一个 `+N` 徽标。
+
+```html
+<!-- 单个 -->
+<div class="avatar" role="img" aria-label="林晚">林</div>
+
+<!-- 组:重叠 + 溢出 +N(antd Avatar.Group max 语义) -->
+<div class="avatar-group" role="group" aria-label="项目成员共 8 人,当前展示 4 位">
+  <div class="avatar">林</div>
+  <div class="avatar">陈</div>
+  <div class="avatar">王</div>
+  <div class="avatar">赵</div>
+  <div class="avatar avatar-more">+4</div>
+</div>
+```
+
+关键点:
+
+- 头像必须可命名:带 `role="img"` + `aria-label` 或相邻可见文字名;纯装饰头像才允许 `alt=""`;
+- 组的重叠是 `margin-inline-start: -8px` 的兄弟排布,后一个压在前一个之上(DOM 顺序即层叠顺序);
+- 组对读屏要表达完整名单(aria-label 里声明总人数与被折叠人数),不要只靠视觉的 `+N`。
+
+## 样式与参数
+
+`size` 是 CSS 变量型(`--av-size` 注入,宽高与字号同源),`shape` 与 `groupCount` 是 JS 型(订阅 store 切换 `data-shape` / 重新切片):
+
+```css
+.avatar, .avatar-more {
+  width: var(--av-size); height: var(--av-size);   /* 默认 32px */
+  font-size: calc(var(--av-size) * 0.4375);        /* 字号 14 / 尺寸 32 */
+  border-radius: 50%;                              /* circle */
+  border: 2px solid #fff;                          /* 组描边 = colorBorderBg */
+}
+[data-shape="square"] .avatar { border-radius: 6px; } /* antd seed borderRadius = 6 */
+.avatar + .avatar, .avatar + .avatar-more { margin-inline-start: -8px; } /* 重叠 */
+.avatar-more { background: #f5f5f5; }             /* 溢出徽标底色 = colorBgLayout */
+```
+
+数值出处(antd 6.7.1,经 out/design-study/06-antdesign.md §4.16 + 本地 `.scratch/antd06` 源码复核):
+
+- 默认尺寸 32px:Avatar `size` 默认 medium,像素基准 `containerSize = controlHeight = 32`(avatar/style/index.ts:209;controlHeight seed 默认 32);
+- 字号 14px:`textFontSize = fontSize = 14`(style/index.ts:212),与 32px 的比 ≈ 0.4375;
+- 组重叠:`groupOverlapping = -marginXS = -8px`(style/index.ts:220),**不随 size 缩放**;
+- 组描边:`groupBorderColor = colorBorderBg`(白,style/index.ts:221)——重叠处靠白环分离前后头像;
+- 形状:shape 默认 circle(index.zh-CN.md:44);square 圆角走 token `borderRadius = 6`(style/index.ts:98-100、118);
+- 溢出折叠:Group `max = { count, style, popover }`,5.18.0 起(index.zh-CN.md:58);`count` 无官方默认,本条目默认 4 为演示值。
+
+## 动效与交互
+
+- 头像是静态身份标识,**不建议常态动效**;demo 入场为整组淡入 + 8px 上移(0.4s,easeOut `cubic-bezier(0.215,0.61,0.355,1)` = antd motionEaseOut),`prefers-reduced-motion: reduce` 时取消;
+- 交互空间只有两处:hover 时 title/tooltip 展示全名(小尺寸下字符/头像不可辨全名);antd 的 Group 溢出徽标是 popover 触发器,hover/点击展开被折叠成员——本 demo 以 `title` + aria-label 表达同一语义;
+- 拖拽 `size` 时宽高与字号同步重算(`calc` 同源),组整体宽度随之变化;重叠量恒为 -8px,不参与缩放。
+
+## 真实产品案例
+
+- **飞书文档右上角协作者头像组**:当前打开同一文档的成员头像重叠排列在页面右上角,人数多时折叠收纳——正是本条目 demo 的形态;头像色块即用户身份色,新成员进入会实时出现在队列尾部;
+- **GitHub 顶栏右上角用户头像**:圆形小尺寸(约 32px),下拉菜单承载账户操作——头像本身不做导航,只作为菜单锚点;PR/Issue 页底部贡献者头像横排也是同一组件的组形态;
+- **Slack 消息流发送者头像**:圆角方形(方形容器 + 圆角 6px 量级),与消息文本左对齐成列——方形 + 圆角是 Slack 对圆形生态的差异化选择,证明 shape 是产品识别度的一部分。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | 头像更醒目、字符更可读;超过 40px 开始抢页面焦点,适合个人主页而非列表 | 密度更高、一排能放更多人;低于 24px 字符不可读、照片不可辨,只能靠 tooltip 补全名 |
+| `shape` | square(6px 圆角)更显产品个性,方形角部与卡片/按钮圆角呼应;圆形更中性通用 | —(两形没有量级差异,只有风格差异;6px 圆角再调小会接近锐角,调大会退化成圆) |
+| `groupCount` | 展示更多成员,组变宽、重叠层数变多,单个头像辨识度下降 | 更多成员被折叠进 +N;低于 4 时组的存在感变弱,接近散排 |
+
+经验区间:列表/消息流 24–32px,页头/个人页 40–64px;组内 4–5 个为重叠上限,再多必须折叠 +N;重叠宽度 -8px 是 antd 默认,视觉过挤时可改用 -size/4 一类比例值,但那是自定义而非官方默认。

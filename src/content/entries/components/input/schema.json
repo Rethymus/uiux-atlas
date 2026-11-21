@@ -1,0 +1,118 @@
+{
+  "name": "Input",
+  "nameZh": "输入框",
+  "aliases": ["文本框", "Text Field", "TextField", "Textbox"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "单行文本输入:label + 原生 textbox,状态色边框、可清空后缀与计数提示是表单里最高频的三件套。",
+    "en": "Single-line text entry: a label + native textbox — status border, clearable suffix and count hint are the three highest-frequency extras in forms."
+  },
+  "origin": {
+    "zh": "原生 <input type=\"text\"> 即 APG textbox 模式;生产参照系是 Ant Design Input(antd 6.7.1 文档逐项核对:variant 默认 outlined、type 默认 text、size 档位 large/medium/small 默认不设、status 取 error|warning、allowClear 默认未开启,见设计调研 06§4.5)。",
+    "en": "The native <input type=\"text\"> already implements the APG textbox pattern; the production reference is Ant Design Input (checked item-by-item against antd 6.7.1 docs: variant defaults to outlined, type to text, size tiers large/medium/small unset by default, status takes error|warning, allowClear off by default — see design study 06 §4.5)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "小 sm", "en": "Small sm" } },
+        { "value": "md", "label": { "zh": "中 md", "en": "Medium md" } },
+        { "value": "lg", "label": { "zh": "大 lg", "en": "Large lg" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-size)。对应 antd size 档位:sm=24px、md=32px、lg=40px,取 antd 控件高度官方派生档 controlHeight 32→SM×0.75=24、LG×1.25=40(设计调研 06§2.3③);antd Input 的 size 默认不设、落到 32px 中档(06§4.5)。",
+        "en": "JS-type param (demo subscribes and toggles data-size). Maps to antd size tiers: sm=24px, md=32px, lg=40px — the official control-height derivation controlHeight 32 → SM×0.75=24, LG×1.25=40 (design study 06 §2.3③); antd Input leaves size unset by default, landing on the 32px middle tier (06 §4.5)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "status",
+      "options": [
+        { "value": "default", "label": { "zh": "默认", "en": "Default" } },
+        { "value": "error", "label": { "zh": "错误", "en": "Error" } },
+        { "value": "warning", "label": { "zh": "警告", "en": "Warning" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-status)。对齐 antd Input 的 status prop:只接受 error|warning,不设即为默认态(06§4.5);demo 的三档边框色取 antd 语义色 colorBorder #d9d9d9、colorError #ff4d4f、colorWarning #faad14(06§2.2/§2.3⑤)。",
+        "en": "JS-type param (demo subscribes and toggles data-status). Aligns with the antd Input status prop: it only accepts error|warning and unset means default (06 §4.5); the demo's three border colors use antd semantic tokens colorBorder #d9d9d9, colorError #ff4d4f and colorWarning #faad14 (06 §2.2/§2.3⑤)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "clearable",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-clearable,有值时显示清空后缀)。对齐 antd Input 的 allowClear:默认未开启(06§4.5);清空按钮必须带可读名称(aria-label),清空后焦点留在输入框。",
+        "en": "JS-type param (demo subscribes and toggles data-clearable, showing the clear suffix once there is a value). Aligns with antd Input's allowClear, unset by default (06 §4.5); the clear button must carry an accessible name (aria-label) and keep focus in the input after clearing."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxLength",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 0,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后驱动计数提示)。0=不限(antd Input 不设 maxLength 即不限制,06§4.5);>0 时按 antd count.max 的默认语义「超出标红、不截断」展示 n/max 计数——用粘贴可超出上限以暴露红字,而非提前静默截断。",
+        "en": "JS-type param (demo subscribes and drives the count hint). 0 = unlimited (antd Input sets no maxLength by default, 06 §4.5); above 0 the demo shows an n/max counter following antd count.max's default semantics — over-limit turns red without truncating, so pasting can exceed the cap and expose the red state instead of silently clipping."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "原生 <input type=\"text\"> + <label> 在全部主流浏览器与读屏/键盘生态开箱可用,无需 polyfill;clear 后缀与计数为纯 DOM/CSS 增强。ARIA 层面 textbox 是隐式角色,无需显式 role。",
+      "en": "Native <input type=\"text\"> + <label> works out of the box across all mainstream browsers, screen readers and keyboard ecosystems — no polyfill needed; the clear suffix and counter are pure DOM/CSS enhancements. textbox is an implicit ARIA role, no explicit role required."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时退化路径就是原生输入框本身——label、placeholder、原生校验照常工作;清空按钮不可用时保留 Ctrl/Cmd+A + Delete 的键盘清空,不要把清空做成唯一手段。",
+    "en": "Without JS the fallback is the native input itself — label, placeholder and native validation keep working; if the clear button is unavailable, keyboard clearing (Ctrl/Cmd+A + Delete) remains, so never make the clear button the only path."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单短文本字段:登录/注册、搜索、备注一行", "en": "Short form fields: sign-in/sign-up, search, one-line notes" },
+      { "zh": "需要即时校验反馈的字段:status 边框 + 紧贴字段的错误文案(NN/g 表单错误准则:错误信息贴近出错字段,调研 07§16)", "en": "Fields needing instant validation feedback: status border + a message right beside the field (NN/g form-error guideline: put errors next to the failing field, research 07 §16)" },
+      { "zh": "带上限的昵称/标题类输入:count.max 计数超出标红提示", "en": "Capped nickname/title inputs: count.max shows an over-limit red counter" },
+      { "zh": "可清空的搜索框:allowClear 后缀一键回占位", "en": "Clearable search fields: allowClear suffix resets to placeholder in one click" }
+    ],
+    "avoid": [
+      { "zh": "不要在用户输入完成前报错(NN/g 准则⑦:未填完就校验是反例,调研 07§16)", "en": "Do not validate before the user finishes typing (NN/g guideline ⑦: premature validation is the classic anti-pattern, research 07 §16)" },
+      { "zh": "不要用 tooltip 报错(准则⑨:图标不明显、用户不知道要 hover,调研 07§16)", "en": "Do not report errors via tooltip (guideline ⑨: the icon is easy to miss, users never learn to hover, research 07 §16)" },
+      { "zh": "placeholder 不能替代 label——聚焦输入后 placeholder 消失,读屏与回看场景都丢失字段名", "en": "placeholder must not replace a label — it disappears on focus, losing the field name for screen readers and for review" },
+      { "zh": "长段落用 TextArea 而非拉高单行 Input;密码字段用遮蔽输入而非明文", "en": "Use TextArea for long passages instead of stretching a single line; use masked input for passwords, not plain text" }
+    ]
+  },
+  "a11y": {
+    "zh": "label 通过 for/id 与输入框显式关联(点击 label 也能聚焦);错误/警告态除颜色外必须有文字说明(WCAG 1.4.1 不能只靠颜色),并用 aria-describedby 把状态文案挂到输入框;清空按钮提供 aria-label;焦点环不可移除(WebAIM 禁忌 outline:none,调研 07§36)。",
+    "en": "Associate label with the input via for/id (clicking the label focuses too); error/warning states need a text explanation beyond color (WCAG 1.4.1 — color alone is not enough) and should hang the status copy on the input via aria-describedby; give the clear button an aria-label; never remove the focus ring (WebAIM forbids outline:none, research 07 §36)."
+  },
+  "sources": [
+    "https://ant.design/components/input-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/textbox/",
+    "https://www.nngroup.com/articles/errors-forms-design-guidelines/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个表单文本输入框:label + 单行 textbox,带状态色边框(默认/错误/警告)、可选清空后缀与 n/max 计数,尺寸分 sm/md/lg 三档。",
+      "en": "Replicate a form text input: label + single-line textbox with status-colored borders (default/error/warning), an optional clear suffix and an n/max counter, in sm/md/lg size tiers."
+    },
+    "acceptance": [
+      { "zh": "label 与输入框经 for/id 显式关联,输入框不写显式 role(textbox 隐式)", "en": "label is explicitly tied to the input via for/id; no explicit role on the input (textbox is implicit)" },
+      { "zh": "尺寸档位 sm=24px/md=32px/lg=40px,取 antd controlHeight 官方派生档", "en": "Size tiers sm=24px/md=32px/lg=40px, using antd's official control-height derivation" },
+      { "zh": "状态色严格用 colorBorder #d9d9d9 / colorError #ff4d4f / colorWarning #faad14,错误与警告态附文字说明", "en": "Status colors use exactly colorBorder #d9d9d9 / colorError #ff4d4f / colorWarning #faad14, with text copy in error and warning states" },
+      { "zh": "计数遵循「超出标红不截断」:允许粘贴超出 maxLength 并显示红色 n/max,0 时不显示计数", "en": "The counter follows 'mark red, do not truncate': pasting may exceed maxLength and shows a red n/max; no counter when the cap is 0" },
+      { "zh": "清空按钮带 aria-label,清空后焦点留在输入框;边框色过渡约 0.2s 且尊重 prefers-reduced-motion", "en": "The clear button has an aria-label and keeps focus in the input after clearing; the border color transition runs ~0.2s and honors prefers-reduced-motion" }
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+## 结构与 DOM
+
+导航菜单把网站的信息架构**分组归类**并以导航的形式展示给用户,方便用户查找要获取的信息。DOM 上是三层:导航容器(`nav` + 列表)→ 一级项(直达链接,或「父项按钮 + 二级聚合弹层」)→ 二级聚合层(`role="menu"` 弹层)。**二级导航聚合在下拉菜单里**,不平铺到导航条上。
+
+```html
+<nav aria-label="站点导航">
+  <ul role="menubar" aria-label="站点导航">
+    <li><a role="menuitem" href="/">首页</a></li>
+    <li>
+      <!-- 父项:disclosure 语义按钮 -->
+      <button role="menuitem" aria-haspopup="menu"
+              aria-expanded="false" aria-controls="menu-product">产品</button>
+      <!-- 二级聚合层:父项的兄弟节点,绝对定位 -->
+      <ul role="menu" id="menu-product" aria-label="产品">
+        <li><button role="menuitem">产品矩阵</button></li>
+        <li><button role="menuitem">定价</button></li>
+      </ul>
+    </li>
+    <li class="nav-user">
+      <!-- 个人中心:同一套 menu 语义挂在头像按钮上 -->
+      <button aria-haspopup="menu" aria-expanded="false"
+              aria-controls="menu-user" aria-label="个人中心"></button>
+      <ul role="menu" id="menu-user" aria-label="个人中心">
+        <li><button role="menuitem">个人中心</button></li>
+        <li role="separator" aria-orientation="horizontal"></li>
+        <li><button role="menuitem">退出登录</button></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+```
+
+关键点:
+
+- 一级项两种形态:直达 `<a>`,或「父项 `<button>` + 弹出 menu」;开合状态由 `aria-haspopup` / `aria-expanded` 声明(APG disclosure 与 menu-button 模式,2026-11-21 实抓核验);
+- `menubar` 默认 horizontal;垂直导航要显式声明 `aria-orientation="vertical"`(APG Menu and Menubar,2026-11-21 实抓核验);
+- 弹层绝对定位于父项之下,`z-index` 要盖过页面内容;隐藏时用 `visibility: hidden` 让菜单项同时退出 Tab 序列;
+- 无 JS 时整棵结构退化为链接列表,导航信息不丢失。
+
+## 样式与参数
+
+三个参数全部是 JS 型(demo 订阅 store):`mode` 切布局、`theme` 切 `data-theme` 配色、`trigger` 切二级展开方式。
+
+```css
+.menu-item { padding: 0 14px; height: 36px; border-radius: 6px; font-size: 14px; }
+
+/* 选中:antd 主色 #1677ff + 蓝板第 1 阶 #e6f4ff(controlItemBgActive = PrimaryBg) */
+.menu-item[data-active="true"] { color: #1677ff; background: #e6f4ff; }
+/* 悬停:4% 中性填充(antd controlItemBgHover = FillTertiary) */
+.menu-item:hover { background: rgba(0, 0, 0, 0.04); }
+/* 深色主题:antd dark 算法浮层底 #1d1d1d(colorBgElevated),文字 88% 反白 */
+[data-theme="dark"] .menu-item[data-active="true"] { background: #1677ff; color: #fff; }
+
+/* 二级聚合弹层 */
+.menu {
+  position: absolute; top: calc(100% + 6px); left: 0; min-width: 168px;
+  padding: 4px; border-radius: 8px; background: #fff; border: 1px solid #f0f0f0;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05);
+  z-index: 1000;
+  visibility: hidden; opacity: 0; transform: translateY(-4px);
+}
+.menu[data-open] { visibility: visible; opacity: 1; transform: none; }
+```
+
+数值出处(均经 out/design-study/06-antdesign.md 对 antd 6.7.1 核对):主色 `#1677ff`(seed colorPrimary)、选中底 `#e6f4ff`(蓝板第 1 阶)、hover 填充 `4%`(FillTertiary 分档)、中性文字 `88%` 透明度、深色浮层底 `#1d1d1d`(dark 算法 colorBgElevated)、圆角 6/8(borderRadius / borderRadiusLG)、弹层阴影 = boxShadow token 三段值、弹层层级基准 zIndexPopupBase = 1000。
+
+## 动效与交互
+
+- **hover 触发**(antd `triggerSubMenuAction` 官方默认):进入父项立即展开,移出后延时 **0.1s** 再收起(antd `subMenuCloseDelay` 官方默认 0.1s)——这个延时是防止「鼠标斜向移动误关」的关键;click 触发则点击切换、点击外部收起;
+- **展开动画**:淡入 + 4px 下移,0.2s(antd motionDurationMid)+ motionEaseOut 缓出 `cubic-bezier(0.215, 0.61, 0.355, 1)`;`prefers-reduced-motion: reduce` 时取消过渡,只留显隐;
+- **键盘**:Enter/Space 展开子菜单或激活项;Esc 关闭当前层并把焦点还给触发项(APG Menu and Menubar);方向键在打开的弹层内上下漫游;demo 实现 disclosure 基线,完整 menubar 一级项左右循环生产环境应补齐;
+- 右侧头像用户菜单与二级下拉共用同一套开合逻辑——「个人中心头像 hover 出现下拉菜单」由 `trigger=hover` 直接复现。
+
+## 真实产品案例
+
+- **CSDN 顶部导航**:一条横向导航承载全站频道与产品入口,一般含个人中心;存在二级导航的频道把二级项**聚合在下拉菜单**里,鼠标悬停展开;右上角个人中心**头像 hover 出现下拉菜单**(资料、创作、退出等入口)——「一级在条上、二级聚合在下拉、头像挂用户菜单」的最典型结构。
+- **GitHub 顶栏**:左侧一级产品项(Products / Solutions / Open Source / Enterprise / Pricing)hover 展开大型下拉面板,把各产品线的二级入口聚合在一块面板中;右侧是搜索、通知与头像,头像菜单聚合个人资料、仓库列表、Sign out 等账户入口,与 CSDN 同构。
+- **飞书 / 钉钉工作台**:桌面端导航聚合消息、文档、会议与「工作台」;工作台页内再把企业自建与第三方应用分组聚合成入口宫格——导航同时承担「流量分发入口」与「各功能聚合」两种角色。
+
+## 参数敏感度
+
+| 参数 | 切到这一侧会… | 切到另一侧会… |
+| --- | --- | --- |
+| `mode` | vertical:菜单变成侧栏,适合后台/控制台与更深的信息架构;一级项纵向堆叠,二级弹层向右弹出 | horizontal:顶部导航条,适合内容型网站;横向空间有限,二级必须聚合进下拉 |
+| `theme` | dark:深底反白,暗色站点/后台侧栏常用;深底上选中态改用实心主色块更易辨识 | light:白底菜单,内容型网站默认;浅底上文字对比度更容易核对 |
+| `trigger` | click:触屏友好、没有「路过即展开」的误触;代价是每次都多点一下 | hover:桌面端探索成本最低,但必须配 0.1s 关闭延时与 click/键盘等价路径,否则误触与不可达并存 |
+
+经验区间:一级项 4–7 个(Hick 定律:决策时间随选项上升,调研 07§23);二级下拉宽 160–240px;关键入口放条的两端(序位效应,调研 07§29)。

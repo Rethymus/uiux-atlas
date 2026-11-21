@@ -1,0 +1,103 @@
+{
+  "name": "Modal",
+  "nameZh": "对话框",
+  "aliases": ["Dialog", "模态框", "遮罩对话框", "Modal Dialog"],
+  "category": "components",
+  "subgroup": "feedback",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "压在页面之上的模态层:遮罩隔离外部内容、焦点困在框内、Esc/关钮退出,承载需要用户必须处理的信息或不可逆操作确认。",
+    "en": "A layer pressed over the page: a mask isolates outside content, focus is trapped inside, Esc/close exits — for information the user must handle or irreversible confirmations."
+  },
+  "origin": {
+    "zh": "交互契约来自 W3C APG Dialog (Modal) 模式:打开时外部 inert、Tab 循环困焦、Esc 关闭、焦点落点与归还规则;实现参数参照 Ant Design Modal(width 默认 520、maskClosable 默认 true、centered 默认 false,antd 6.7.1 核对)(调研 07§3 与 design-study 06§4.11)。",
+    "en": "The interaction contract comes from the W3C APG Dialog (Modal) pattern: inert outside content, Tab-loop focus trap, Esc to close, focus placement and return rules; implementation parameters follow Ant Design Modal (width default 520, maskClosable true, centered false, per antd 6.7.1) (research 07 §3, design-study 06 §4.11)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "width",
+      "unit": "px",
+      "min": 320,
+      "max": 720,
+      "step": 8,
+      "default": 480,
+      "cssVar": "--modal-width",
+      "effect": {
+        "zh": "对话框内容盒宽度(CSS 变量型参数)。官方核对:AntD Modal width 默认 **520**、Modal.method() 确认框默认 416(06-antdesign §4.11);本站演示默认取 480(任务规格值,非官方默认)。窄于 400 只适合单列确认,宽于 640 适合表单/表格类内容。",
+        "en": "Dialog content-box width (CSS-var param). Verified: AntD Modal width defaults to **520**, Modal.method() confirmers to 416 (design-study 06 §4.11); this demo defaults to 480 (the task's spec value, not an official default). Under 400 suits single-column confirmations only; over 640 suits forms/tables."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "maskClosable",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "点击遮罩是否关闭(JS 型参数)。AntD Modal maskClosable 默认 **true**(6.x 收敛为 mask.closable);但 Modal.method() 确认框默认 **false**——不可逆操作与需要明确选择的对话框应关掉它,防误触遮罩丢答。",
+        "en": "Whether clicking the mask closes the dialog (JS-type param). AntD Modal maskClosable defaults to **true** (v6 folds it into mask.closable); but Modal.method() confirmers default to **false** — irreversible or choice-required dialogs should turn it off to prevent stray clicks discarding answers."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "centered",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "垂直方向是否居中(JS 型参数)。AntD Modal centered 默认 **false**——对话框贴视口顶部留白摆放,阅读起点更稳定;内容很高或希望强调「任务是暂态的」时开居中。",
+        "en": "Whether the dialog is vertically centered (JS-type param). AntD Modal centered defaults to **false** — the dialog sits near the viewport top with headroom, giving a steadier reading start; turn it on for tall content or to signal a transient task."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现依赖 fixed/absolute 定位、transform/opacity 过渡与焦点 API,均为 Baseline 能力;无任何实验特性。",
+      "en": "Implementation relies on fixed/absolute positioning, transform/opacity transitions and the focus API, all Baseline; no experimental features."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 focus-trap API 的旧环境至少保证 Esc 关闭与关闭按钮可点;不支持 transform 过渡时对话框直接出现;JS 失效时不要用 modal 承载唯一路径的关键内容。",
+    "en": "Without focus-trap APIs, older environments must still close via Esc and the close button; without transform transitions the dialog simply appears; if JS fails, never route critical content solely through a modal."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "不可逆操作确认(删除、支付)——焦点放最不破坏的动作(APG)", "en": "Irreversible confirmations (delete, pay) — focus the least destructive action (APG)" },
+      { "zh": "必须处理后才能继续的短表单/向导", "en": "Short forms or wizards that must be completed before continuing" },
+      { "zh": "大图/详情的沉浸预览", "en": "Immersive previews of large images or details" }
+    ],
+    "avoid": [
+      { "zh": "非关键通知——用 toast 或流内 alert(APG:模态打断成本高)", "en": "Non-critical notices — use a toast or in-flow alert (APG: modal interruption is costly)" },
+      { "zh": "嵌套连续弹模态——用抽屉或页面跳转承载子任务", "en": "Nested modal chains — hand subtasks to a drawer or a page instead" },
+      { "zh": "内容超过视口高度的长文档——改用页面或抽屉", "en": "Long documents exceeding the viewport — use a page or drawer" },
+      { "zh": "错误表单校验的替代品(NN/g:模态确认框少用,打断且加重记忆负担)", "en": "As a substitute for form validation errors (NN/g: use confirm modals sparingly — they interrupt and tax memory)" }
+    ]
+  },
+  "a11y": {
+    "zh": "容器 role=dialog + aria-modal=true + aria-labelledby 指向可见标题;打开时 Tab/Shift+Tab 循环困在框内、外部内容 inert;Esc 关闭,强烈建议提供可见关闭按钮;初始焦点默认第一个可聚焦元素,不可逆操作应落在破坏性最小的动作上;关闭后焦点返回触发元素(APG Dialog + WebAIM 键位表双源一致)。",
+    "en": "Container gets role=dialog + aria-modal=true + aria-labelledby to the visible title; while open, Tab/Shift+Tab cycle inside and outside content is inert; Esc closes and a visible close button is strongly recommended; initial focus defaults to the first focusable element, and for irreversible actions should land on the least destructive one; on close focus returns to the trigger (APG Dialog, corroborated by WebAIM's keyboard table)."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+    "https://ant.design/components/modal"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个遮罩对话框:按钮弹出、宽度按参数、点击遮罩按 maskClosable 决定是否关闭、焦点困在框内且关闭后归还触发按钮。",
+      "en": "Replicate a masked dialog: a button opens it, width follows the parameter, mask clicks close it per maskClosable, focus is trapped inside and returned to the trigger on close."
+    },
+    "acceptance": [
+      { "zh": "role=dialog + aria-modal=true + aria-labelledby 齐备,打开时焦点落进对话框", "en": "role=dialog + aria-modal=true + aria-labelledby present; focus lands inside on open" },
+      { "zh": "Tab/Shift+Tab 困焦循环,Esc 关闭,关闭后焦点回触发元素", "en": "Tab/Shift+Tab cycle trapped inside; Esc closes; focus returns to the trigger" },
+      { "zh": "遮罩 rgba(0,0,0,0.45)(antd colorBgMask),点遮罩行为严格按参数", "en": "Mask rgba(0,0,0,0.45) (antd colorBgMask); mask-click behavior strictly follows the parameter" },
+      { "zh": "width/centered 严格使用参数快照值;入场 0.2s 淡入+微缩放", "en": "width/centered use the exact snapshot values; entrance is a 0.2s fade + micro zoom" },
+      { "zh": "prefers-reduced-motion 时取消入场动画", "en": "Entrance animation disabled under prefers-reduced-motion" }
+    ]
+  }
+}

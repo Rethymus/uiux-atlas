@@ -1,0 +1,105 @@
+{
+  "name": "Icon",
+  "nameZh": "图标",
+  "aliases": ["图标", "SVG Icon", "Glyph"],
+  "category": "components",
+  "subgroup": "basic",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "线性 SVG 图标件:stroke=currentColor 单色渲染,尺寸 12–48px、线宽 1–3 实时可调;图标随文字颜色走,语义靠可访问名补齐。",
+    "en": "Linear SVG icon: rendered monochrome with stroke=currentColor; size 12–48px and stroke width 1–3 are live-tunable; icons inherit text color and rely on accessible names for meaning."
+  },
+  "origin": {
+    "zh": "antd 自 4.0 起不内置图标,拆分到独立包 @ant-design/icons,图标注入 width/height=1em 与 fill=currentColor(out/design-study/06-antdesign.md §4.2);线性描边风格由 Feather/Lucide 社区风格普及。本条目图标集为自绘 24×24 描边图形,非任何官方图标库的拷贝。",
+    "en": "antd stopped bundling icons at 4.0, splitting them into the @ant-design/icons package which injects width/height=1em and fill=currentColor (out/design-study/06-antdesign.md §4.2); the stroked linear style was popularized by the Feather/Lucide community. This entry's icon set is self-drawn 24×24 stroked shapes, not a copy of any official library."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "size",
+      "unit": "px",
+      "min": 12,
+      "max": 48,
+      "step": 1,
+      "default": 14,
+      "cssVar": "--icon-size",
+      "effect": {
+        "zh": "图标边长。antd 图标注入 width/height=1em,antd 主字号 14px(06-antdesign §2.2/§4.2),故默认取 14——即文字旁的图标与文字等高。12px 是与 caption 文字相称的下限,48px 进入空状态插画级。",
+        "en": "Icon edge length. antd icons inject width/height=1em at the 14px base font size (06-antdesign §2.2/§4.2), hence the default 14 — an icon beside text matches the text height. 12px is the floor that pairs with caption text; 48px enters empty-state illustration territory."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "color",
+      "options": [
+        { "value": "current", "label": { "zh": "跟随文字", "en": "Current color" } },
+        { "value": "accent", "label": { "zh": "主色", "en": "Accent" } },
+        { "value": "danger", "label": { "zh": "危险红", "en": "Danger" } }
+      ],
+      "default": "current",
+      "effect": {
+        "zh": "着色模式。current = currentColor——antd 图标默认注入 fill=currentColor(06-antdesign §4.2),图标颜色随所在文字,hover 变色一次生效;accent = antd seed colorPrimary #1677ff(06 §2.2);danger = seed colorError #ff4d4f(06 §2.2)。JS 型参数(demo 订阅后切 data-icon-color)。",
+        "en": "Coloring mode. current = currentColor — antd icons inject fill=currentColor by default (06-antdesign §4.2), so the icon follows its text and one hover rule colors both; accent = antd seed colorPrimary #1677ff (06 §2.2); danger = seed colorError #ff4d4f (06 §2.2). JS-typed (demo subscribes and toggles data-icon-color)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "strokeWidth",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "default": 2,
+      "cssVar": "--icon-stroke-width",
+      "effect": {
+        "zh": "描边宽度(SVG stroke-width,继承属性)。默认 2 为社区常见值(Lucide/Feather 线性图标惯例)——**未证实**为任何官方默认;antd 图标多为填充路径,根本没有 stroke-width 属性(06 §4.2)。1=细线精致,3=粗壮醒目,仅本 demo 自绘描边图形消费。",
+        "en": "Stroke width (SVG stroke-width, an inherited property). The default 2 is the community convention of Lucide/Feather linear icon sets — **unverified** as any official default; antd icons are mostly filled paths and have no stroke-width property at all (06 §4.2). 1 = fine and delicate, 3 = bold and loud; consumed only by this demo's self-drawn stroked shapes."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "内联 SVG 与 CSS 继承属性 stroke-width 全浏览器基线;stroke-width 作为 CSS 属性遵循 SVG 2 继承语义。prefers-reduced-motion 于 2020-01 起全浏览器可用(调研 07 §37)——仅影响 demo 中可选的旋转演示。",
+      "en": "Inline SVG and the CSS inherited property stroke-width are baseline everywhere; stroke-width as a CSS property follows SVG 2 inheritance semantics. prefers-reduced-motion is baseline since 2020-01 (research 07 §37) — it only affects the demo's optional spin."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 CSS 变量的旧环境(IE11 级)会丢掉尺寸/线宽联动,退回写死的 width/height/stroke-width 属性即可;不支持 SVG 的环境(几乎绝迹)应退化为文字或 emoji 占位。图标仅作装饰时务必 aria-hidden,不依赖其传达唯一信息。",
+    "en": "Legacy environments without CSS variables (IE11-class) lose the size/stroke coupling — fall back to hard-coded width/height/stroke-width attributes; environments without SVG (nearly extinct) should degrade to text or emoji placeholders. Decorative icons must be aria-hidden and never the sole carrier of information."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "按钮/菜单项前的语义化小图标(与文字等高,1em 对齐)", "en": "Semantic mini-icons before buttons/menu items (text-height, 1em aligned)" },
+      { "zh": "表单控件的后缀图标(搜索镜、清除叉、下拉箭头)", "en": "Suffix icons on form controls (magnifier, clear cross, dropdown caret)" },
+      { "zh": "空状态/引导页的插画级大图标(40–48px)", "en": "Illustration-scale icons on empty states and onboarding (40–48px)" },
+      { "zh": "状态指示:危险动作旁的红色警示图标(colorError)", "en": "Status cues: a red warning icon beside destructive actions (colorError)" }
+    ],
+    "avoid": [
+      { "zh": "用图标承载唯一语义而无文字/可访问名——含义因人而异,读屏完全拿不到", "en": "Letting an icon carry the only meaning without text or an accessible name — meaning varies by person and screen readers get nothing" },
+      { "zh": "同一界面混用描边与填充两套风格、或多套线宽——视觉噪音破坏一致性", "en": "Mixing stroked and filled styles, or multiple stroke widths, in one UI — visual noise breaks consistency" },
+      { "zh": "小于 12px 的图标:线条粘连成墨点,缩略后不可辨", "en": "Icons under 12px: strokes smear into ink blots and become unreadable" },
+      { "zh": "仅靠颜色区分图标状态(危险红 vs 主色)——色觉障碍用户需要形状兜底(Von Restorff 告诫,调研 07 §30)", "en": "Distinguishing icon states by color alone (danger red vs accent) — color-blind users need shape redundancy (Von Restorff caveat, research 07 §30)" }
+    ]
+  },
+  "a11y": {
+    "zh": "纯装饰图标必须 aria-hidden=\"true\"(读屏跳过);承载语义的图标按钮按 MUI 要求必须提供 aria-label(调研 07 §1);APG 键盘实践:焦点指示可见,勿用 outline:none(07 §36)。状态不得仅靠颜色表达:危险红图标应同时有形状或文字冗余(07 §30 色觉告诫)。",
+    "en": "Purely decorative icons must be aria-hidden=\"true\" (skipped by screen readers); icon buttons carrying semantics need an aria-label per MUI's requirement (research 07 §1); APG keyboard practice: keep focus indication visible, never outline:none (07 §36). State must not rely on color alone: a danger-red icon needs shape or text redundancy (07 §30 color-vision caveat)."
+  },
+  "sources": [
+    "https://ant.design/components/icon-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/button/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组自绘线性 SVG 图标集(≥8 个 24×24 描边图形):stroke=currentColor 单色渲染,尺寸 12–48px 与线宽 1–3 经 CSS 变量实时联动,另给一行 1em 行内对齐用法;装饰图标 aria-hidden。",
+      "en": "Replicate a self-drawn linear SVG icon set (≥8 stroked 24×24 shapes): monochrome stroke=currentColor, with size 12–48px and stroke width 1–3 coupled live via CSS variables, plus a 1em inline-alignment row; decorative icons aria-hidden."
+    },
+    "acceptance": [
+      { "zh": "全部图标 viewBox=\"0 0 24 24\"、fill=\"none\"、stroke=\"currentColor\",风格统一", "en": "All icons use viewBox=\"0 0 24 24\", fill=\"none\", stroke=\"currentColor\" — one consistent style" },
+      { "zh": "尺寸/线宽严格用参数快照值并经 CSS 变量注入,改动即时生效", "en": "Size and stroke width come from the exact parameter snapshot via CSS variables, reacting instantly" },
+      { "zh": "默认 14px(antd 1em 对齐主字号);线宽默认 2 为社区惯例(未证实为官方默认)", "en": "Default 14px (antd's 1em alignment to the base font); stroke default 2 is community convention, not an official default" },
+      { "zh": "accent=#1677ff、danger=#ff4d4f(antd seed);current 模式随文字色", "en": "accent=#1677ff, danger=#ff4d4f (antd seeds); current mode follows the text color" },
+      { "zh": "装饰图标 aria-hidden=\"true\";语义图标按钮带 aria-label;focus 指示不被移除", "en": "Decorative icons aria-hidden=\"true\"; semantic icon buttons carry aria-label; focus indication never removed" }
+    ]
+  }
+}

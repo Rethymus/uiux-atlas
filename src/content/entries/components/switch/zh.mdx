@@ -1,0 +1,92 @@
+## 结构与 DOM
+
+开关是「恒定 label + 拨杆」结构,拨杆本体是原生 button 加 `role="switch"`:
+
+```html
+<label class="switch-row" id="mail-label">接收产品更新邮件</label>
+<button type="button" role="switch" aria-checked="true" aria-labelledby="mail-label">
+  <span class="thumb">
+    <span class="glyph" aria-hidden="true">开</span>
+  </span>
+</button>
+```
+
+关键点:
+
+- **可访问名称恒定**:外部 label 经 `aria-labelledby` 提供名称,拨杆里的「开/关」文字 `aria-hidden`——名称一旦随状态变化,读屏在焦点处播报的名称与状态就错位(APG 铁律,调研 07§6);
+- `aria-checked` 是唯一状态载体("true"/"false"),不使用 pressed/checked 混用;
+- 滑块位移只写 `transform`,过渡在合成器上跑,不触发重排;
+- loading/disabled 时补 `aria-disabled="true"`,读屏才知道为什么 Space 没反应。
+
+## 样式与参数
+
+四个参数都是 JS 型(经 store 订阅改 `data-*` 与 `aria-checked`),CSS 按 `data-size` / `data-loading` / `data-disabled` 分支:
+
+```css
+.switch-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.switch-btn[aria-checked="true"] { background: #1677ff; }   /* colorPrimary */
+.switch-btn .thumb {
+  position: absolute;
+  left: 2px;
+  border-radius: 50%;
+  background: #fff;
+  translate: 0 0;
+  transition: translate 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.switch-btn[aria-checked="true"] .thumb { translate: var(--thumb-travel) 0; }
+.switch-btn[data-loading="on"] .thumb::after {              /* 旋转指示 */
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sw-spin 0.6s linear infinite;
+}
+.switch-btn[data-disabled="on"] { opacity: 0.45; cursor: not-allowed; }
+@keyframes sw-spin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .switch-btn, .switch-btn .thumb { transition: none; }
+  .switch-btn[data-loading="on"] .thumb::after { animation: none; }
+}
+```
+
+数值出处:
+
+- `size` 对齐 antd v6 `medium|small` 默认 **medium**(v5 为 default|small,设计调研 06§4.7/§5.1);轨道像素为 demo 自绘示意,调研未记载官方轨道尺寸,不作官方断言;
+- `checked`/`loading`/`disabled` 默认值逐项对齐 antd 6.7.1 文档核对(06§4.7):false/false/false;
+- on 轨道色 `#1677ff` = antd colorPrimary(06§2.2);过渡 0.2s = motionDurationMid(06§3.1);缓动 = motionEaseInOut;
+- off 轨道灰 rgba(0,0,0,0.25) 为 demo 自绘示意值(语义对齐中性 25% 透明度档,06§2.3⑤,非官方轨道 token)。
+
+## 动效与交互
+
+- **滑块位移**:0.2s cubic-bezier(0.645, 0.045, 0.355, 1)(antd motionDurationMid + motionEaseInOut);只动 `translate`(transform);
+- **键盘**:Space 切换(原生 button 行为,Enter 可选)——不加自定义键盘代码,把可预期性留给原生(APG,调研 07§6);
+- **loading**:滑块内 0.6s 线性旋转,交互被抑制但**状态不回滚**——表达「已受理、生效中」;`prefers-reduced-motion` 时旋转静止为圆环;
+- **disabled**:整键减淡、cursor not-allowed、不响应 Space;焦点按 Tab 顺序仍可到达(disabled button 不可聚焦,读屏语义由 aria-disabled 补充)。
+
+## 真实产品案例
+
+- **iOS 设置(UISwitch)**:系统设置里几乎每一行都是「文案 + 右侧拨杆」,开启为绿色、关闭为灰色,点击整行即切换——开关与行合并成一个命中区,是移动端最普及的开关形态;
+- **微信聊天设置**:聊天详情页的「消息免打扰」「置顶聊天」等都是即改即生效的拨杆,改完无确认弹窗——即时生效心智的典型载体;
+- **Android M3 Switch**:选中态滑块带勾选图标、轨道随状态加宽,pressed 时滑块放大——Material 系对同一语义的更强调式表达。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | md 拨杆命中区更大、更适合触屏与行内主设置 | sm 适合紧凑列表/工具条,但滑块小、误触率上升 |
+| `loading` | on 期间交互被锁,快速连续点击被吸收,适合异步保存真实场景;但若后端不可靠,用户会被「永远生效中」卡住 | off 即回到即时切换;loading 只应为真实异步等待存在,不要拿它做视觉装饰 |
+| `disabled` | on 明确「这里不可动」,减少无效点击;整组禁用时要说明原因(上级条件/无权限) | off 回到可交互;长期 disabled 的设置项应该直接从界面移除而非永远灰着 |
+| `checked` | on 轨道变主色、滑块右移——即时反馈的强信号;大量开关同时 on 会形成大面积主色 | off 回到灰轨道;默认值全 on 会稀释「开启」的稀缺性与可发现性 |
+
+经验区间:一屏开关不超过 6–8 个;默认值谨慎——多数设置默认 off,把「开启」留给用户显式决策;loading 态务必配超时兜底,不可无限旋转。

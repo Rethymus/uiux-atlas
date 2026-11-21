@@ -1,0 +1,84 @@
+## 结构与 DOM
+
+按钮的全部语义由原生 `<button>` 承担:Space/Enter 激活由浏览器免费提供(WAI-APG Button 模式),不需要任何额外键盘代码。
+
+```html
+<!-- 常规四变体 -->
+<button type="button" class="btn btn-primary">提交订单</button>
+<button type="button" class="btn btn-secondary">取消</button>
+<button type="button" class="btn btn-text">展开详情</button>
+<button type="button" class="btn btn-dashed">+ 添加字段</button>
+
+<!-- 加载态:阻断点击 + aria-busy -->
+<button type="button" class="btn btn-primary" disabled aria-busy="true">
+  <svg class="spin" aria-hidden="true"></svg>加载中…
+</button>
+
+<!-- 禁用态 -->
+<button type="button" class="btn btn-secondary" disabled>不可用</button>
+```
+
+关键点:
+
+- 每屏只保留一个 primary(Carbon:页头/模态/侧栏除外);secondary 只与 primary 成对出现,单独出现是反模式;
+- loading 态 = spinner + `disabled` + `aria-busy="true"`,三者缺一不可——只转圈不禁点击会被连击;
+- 图标按钮(icon-only)必须补 `aria-label`,否则可访问名为空(MUI 明确要求);
+- `htmlType` 概念:表单内的按钮默认 `type="button"`,只有明确的提交按钮才用 `type="submit"`。
+
+## 样式与参数
+
+四个参数全部是 JS 型(demo 订阅 store 后落到 `data-variant` / `data-size` 与行为上),无 CSS 变量:
+
+```css
+.btn {
+  border-radius: 6px;          /* antd seed borderRadius */
+  font-size: 14px;             /* antd seed fontSize */
+  height: 32px;                /* seed controlHeight */
+  padding: 0 12px;             /* controlPaddingHorizontal */
+  transition: background-color 0.1s, border-color 0.1s, transform 0.1s; /* motionDurationFast */
+}
+.btn-primary { background: #1677ff; color: #fff; }        /* colorPrimary seed */
+.btn-primary:hover { background: #4096ff; }               /* 蓝色板阶5 */
+.btn-primary:active { background: #0958d9; transform: translateY(1px); } /* 蓝色板阶7 */
+.btn:disabled {
+  background: rgba(0, 0, 0, 0.04);   /* 中性填充 4% 档 */
+  border-color: #d9d9d9;             /* colorBorder(bg 加深 15%) */
+  color: rgba(0, 0, 0, 0.25);        /* colorTextQuaternary 25% */
+  cursor: not-allowed;
+}
+```
+
+数值出处(全部经 out/design-study/06-antdesign.md 核对 antd 6.7.1 源码):
+
+- **高度分档** `16 / 24 / 32 / 40` = `genControlHeight` 派生公式(controlHeight 32 ×0.5/×0.75/×1/×1.25,06 §2.3③);48 为本 demo 按 ×1.5 外推,**antd 无 XL 档(未证实)**。antd v6 size 枚举实为 `large|medium|small`,默认 `medium`(06 §4.1,注意 v5 是 `middle`);
+- **圆角族** xs 2 / sm 4 / md·lg 6 / xl 8 = `genRadius`(06 §2.3②);
+- **字号** 12 / 14 / 16 = fontSizeSM / fontSize / fontSizeLG(06 §2.3①);
+- **主色** `#1677ff` = seed colorPrimary;hover `#4096ff`(阶5)、active `#0958d9`(阶7),按「主=阶6、Hover=阶4或5、Active=阶7」的派生档位(06 §1.2 蓝色板十阶 + §2.3⑤);
+- **中性 token**:文字 88%/65%/45%/25% 四档透明度、填充 15%/6%/4%/2%、边框 `#d9d9d9`(06 §2.3⑤);
+- **动效时长** 0.1s = motionDurationFast(06 §3.1);
+- loading 默认 false、disabled 默认 false、`autoInsertSpace` 默认 true 双汉字自动加空格(06 §4.1)。
+
+## 动效与交互
+
+- **按压反馈**:antd 官方动效价值观以「树叶浮水」比喻按钮——触碰下浮、再回弹(06 §1.6);demo 用 `:active` 时 `translateY(1px)` + 色阶下沉实现,时长 0.1s。NN/g:任何动作发起都要**立即**给视觉反馈(07 §19);
+- **hover/active 色阶**:primary 在色板 5/6/7 阶之间滑动,只动 `background-color` 与 `transform`(合成器属性);
+- **loading 转圈**:spinner 0.8s 线性旋转(demo 取值,antd 未记载具体周期);点击后 demo 保持 1.6s 加载态再恢复——期间点击被 `disabled` 阻断,这是防重复提交的标准写法;spinner 属循环动画,只适合 2–10s 的操作(NN/g,07 §19);
+- **`prefers-reduced-motion`**:命中 reduce 时取消位移、取消过渡、spinner 静止(07 §37);
+- **激活后的焦点**(APG Button,本会话实测):打开对话框则焦点进入对话框;关闭则回触发按钮;Apply 类不关闭上下文的动作,焦点留在按钮上。
+
+## 真实产品案例
+
+- **GitHub** — Pull Request 页的「Merge pull request」长期是绿色实底主按钮,是该屏唯一的高强调;Comment、Close 等动作都是中性描边或文字按钮。整屏一个 primary 的层级纪律与 Carbon 准则一致(07 §2)。
+- **微信** — 转账、红包等确认页把唯一主操作做成大面积绿色主按钮独占视觉焦点,取消等次操作弱化为浅色/文字按钮;破坏性操作(如删除好友)则换成红色警示按钮。
+- **Google 搜索首页** — 「Google Search」与「I'm Feeling Lucky」两个按钮都是白底弱描边的中性按钮:首页的交互重点是输入框,按钮刻意低强调、不与彩色 Logo 争夺注意力——对应 Von Restorff「强调要有节制」(07 §30)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant` | 向 primary 移动,强调更强——每屏多个实底按钮会互相争夺注意力 | 向 text 移动,强调更弱——对话框里的关键确认若用 text 档会被忽略 |
+| `size` | 命中目标更容易(Fitts 定律:目标越大越快,07 §22),但占版面、与 32px 控件行混排会破坏基线 | xs(16px)低于触控目标舒适下限,仅适合密集工具条;过小的高度配 14px 文字会溢出 |
+| `loading` | on 时按钮阻断点击、传达「系统在忙」;长时间(>10s)停留会让人放弃,应升级为进度条(NN/g 三限) | off 时若请求实际耗时 >1s,用户得不到任何反馈,连击风险最高 |
+| `disabled` | on 置灰并不可点,防止误操作,但用户失去「为什么不可点」的解释,应配提示文案 | off 恢复交互;对不可逆操作(删除、支付)直接放开会增加误触成本 |
+
+经验区间:常规页面按钮用 md(32px);工具栏与表格行内用 sm;表单页主提交用 lg;xl 仅营销页 CTA。loading 只用于预期 2–10s 的请求。

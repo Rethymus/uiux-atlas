@@ -1,0 +1,73 @@
+## 结构与 DOM
+
+标签页 = 一条**标签轴**(tablist)+ 一块**内容面板**(tabpanel)。所有面板的 DOM 都在文档里(内容预载),视觉上只显示当前面板;切换只改显示,不换页面。
+
+```html
+<div class="tabs">
+  <div role="tablist" aria-label="详情分区">
+    <button role="tab" id="tab-overview" aria-selected="true"
+            aria-controls="panel-overview" tabindex="0">概览</button>
+    <button role="tab" id="tab-spec" aria-selected="false"
+            aria-controls="panel-spec" tabindex="-1">设计规范</button>
+    <button role="tab" id="tab-code" aria-selected="false"
+            aria-controls="panel-code" tabindex="-1">代码示例</button>
+  </div>
+  <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+    …当前面板内容…
+  </div>
+</div>
+```
+
+关键点:
+
+- 标签轴内的按钮用 **roving tabindex**:活动标签 `tabindex=0`,其余 `-1`,Tab 只进出整组,方向键在组内移动(调研 07§35);
+- 面板 `aria-labelledby` 指回标签、`tabindex=0` 让无焦点元素的面板可进入 Tab 序列;`aria-selected` 与焦点样式必须可区分(focus ≠ selection);
+- 垂直布局在 `tablist` 上声明 `aria-orientation="vertical"`,方向键换成上/下;
+- 线条式的**滑动指示条**(ink bar)是装饰层,不承担语义,宽度/位置由活动标签测量得出。
+
+## 样式与参数
+
+三个参数全部是 JS 型(demo 订阅 store):`position` 切布局、`type` 切形态、`animated` 开关过渡。
+
+```css
+.tab { padding: 8px 16px; font-size: 14px; border: 0; background: none; cursor: pointer; }
+.tab[aria-selected="true"] { color: #1677ff; }          /* antd 主色(seed colorPrimary) */
+.tab:hover { color: #4096ff; }                          /* 蓝板第 5 阶(§1.2) */
+.tab:not([aria-selected="true"]) { color: rgba(0, 0, 0, 0.65); } /* 中性文字 65%(§2.3-⑤) */
+
+/* 线条式:轴底线 + 滑动指示条 */
+.tablist[data-type="line"] { border-bottom: 1px solid #f0f0f0; } /* colorBorderSecondary */
+.ink-bar {
+  position: absolute; bottom: -1px; left: 0; height: 2px; background: #1677ff;
+  transition: transform 0.2s cubic-bezier(0.215, 0.61, 0.355, 1), width 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/* 卡片式:活动卡片底与面板连成一体 */
+.tablist[data-type="card"] .tab { border: 1px solid #d9d9d9; border-radius: 6px 6px 0 0; background: #fafafa; }
+.tablist[data-type="card"] .tab[aria-selected="true"] { background: #fff; border-bottom-color: #fff; margin-bottom: -1px; }
+```
+
+数值出处(经 out/design-study/06-antdesign.md 对 antd 6.7.1 核对):主色 `#1677ff`、hover 蓝 `#4096ff`(蓝板第 5 阶)、非活动文字 `65%`(colorTextSecondary)、底线 `#f0f0f0`(colorBorderSecondary)、卡片描边 `#d9d9d9`(colorBorder)、圆角 6(borderRadius)、过渡 0.2s = motionDurationMid + motionEaseOut;type 默认 line、position 默认 top 为 antd 官方默认(§4.20),animated 默认 on 对齐 antd `{inkBar:true, tabPane:false}` 中指示条默认开的一半(面板过渡为条目规格扩展)。
+
+## 动效与交互
+
+- **键盘**:方向键在标签间漫游并**选中随焦点**(自动激活)——这只在面板内容已预载、切换瞬时完成时被 APG 推荐,否则改手动激活(Enter/Space)(调研 07§11);Home/End 跳首尾;demo 内容全部预载,采用自动激活;
+- **指示条滑动**:0.2s(motionDurationMid)+ motionEaseOut;`animated=off` 时移除过渡,指示条直接跳位、面板瞬时切换;
+- **面板过渡**:淡入 + 6px 上移,0.2s;`prefers-reduced-motion: reduce` 时全部取消,只留显隐;
+- 切换不打断页面滚动位置;若面板内容需异步加载,加载期间保持旧面板可见并给行内加载态(响应时间三限:1s 内思维流不中断,调研 07§20)。
+
+## 真实产品案例
+
+- **GitHub 仓库页头部**:Code / Issues / Pull requests / Actions 等一级分区用一条带计数徽标的横排标签轴呈现,选中项下划线标记——标签轴同时承担「仓库内二级导航」的角色。
+- **浏览器多标签**:标签页隐喻的直系来源——每个标签一个页面,可关闭、可拖拽重排、溢出折叠成列表;管理界面里的 card 型标签几乎都在复刻这套心智。
+- **VS Code 编辑器标签组**:card 型标签 + 可拆分多组,活动文件标签与编辑区连成一体,对应「多标签并置 + 活动项融入面板」的典型形态。
+
+## 参数敏感度
+
+| 参数 | 切到这一侧会… | 切到另一侧会… |
+| --- | --- | --- |
+| `position` | left:标签轴纵排,标签文案长的场景更从容,面板横向空间被占用;方向键换成上/下,需声明 aria-orientation | top:最常见形态,阅读动线自然;标签过多时横向先溢出,需要「更多」折叠兜底 |
+| `type` | card:边界清晰,多标签并置的管理界面更整齐;视觉重量大,页面上多组标签时显嘈杂 | line:轻量,指示条动效有「位置感」;无边框的标签在嘈杂背景上可辨识度下降 |
+| `animated` | on:滑动指示条 + 面板过渡给出空间连续感,切换更「稳」;大量快速切换时动效成为噪声 | off:瞬时切换零等待,适合高频切换工具型界面;失去位置连续的暗示 |
+
+经验区间:单组标签 2–7 个;文案 2–6 字;指示条高 2px;面板过渡 ≤0.2s(antd motionDurationMid)。

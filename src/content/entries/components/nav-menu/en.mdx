@@ -1,0 +1,88 @@
+## Structure & DOM
+
+A navigation menu **classifies a site's information architecture into groups** and presents them as navigation so users can find the information they want. The DOM has three layers: the navigation container (`nav` + list) → first-level items (direct links, or "parent button + aggregated popup") → the second-level aggregation layer (a `role="menu"` popup). **Second-level navigation is aggregated inside dropdown menus**, never flattened onto the bar.
+
+```html
+<nav aria-label="Site navigation">
+  <ul role="menubar" aria-label="Site navigation">
+    <li><a role="menuitem" href="/">Home</a></li>
+    <li>
+      <!-- Parent item: a disclosure-semantic button -->
+      <button role="menuitem" aria-haspopup="menu"
+              aria-expanded="false" aria-controls="menu-product">Products</button>
+      <!-- Aggregated second level: sibling of the parent, absolutely positioned -->
+      <ul role="menu" id="menu-product" aria-label="Products">
+        <li><button role="menuitem">Product suite</button></li>
+        <li><button role="menuitem">Pricing</button></li>
+      </ul>
+    </li>
+    <li class="nav-user">
+      <!-- Personal center: the same menu semantics on the avatar button -->
+      <button aria-haspopup="menu" aria-expanded="false"
+              aria-controls="menu-user" aria-label="Personal center"></button>
+      <ul role="menu" id="menu-user" aria-label="Personal center">
+        <li><button role="menuitem">Profile</button></li>
+        <li role="separator" aria-orientation="horizontal"></li>
+        <li><button role="menuitem">Sign out</button></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+```
+
+Key points:
+
+- Two forms of first-level item: a direct `<a>`, or a "parent `<button>` + popup menu"; open state is declared by `aria-haspopup` / `aria-expanded` (APG disclosure and menu-button patterns, verified live 2026-11-21);
+- `menubar` defaults to horizontal; a vertical navigation must declare `aria-orientation="vertical"` explicitly (APG Menu and Menubar, verified live 2026-11-21);
+- The popup is absolutely positioned under its parent with a `z-index` above page content; hiding with `visibility: hidden` also removes its items from the Tab order;
+- Without JS the whole structure degrades to a link list — no navigation information is lost.
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store): `mode` switches the layout, `theme` switches the `data-theme` palette, `trigger` switches how second levels open.
+
+```css
+.menu-item { padding: 0 14px; height: 36px; border-radius: 6px; font-size: 14px; }
+
+/* Selected: antd primary #1677ff on blue step 1 #e6f4ff (controlItemBgActive = PrimaryBg) */
+.menu-item[data-active="true"] { color: #1677ff; background: #e6f4ff; }
+/* Hover: 4% neutral fill (antd controlItemBgHover = FillTertiary) */
+.menu-item:hover { background: rgba(0, 0, 0, 0.04); }
+/* Dark theme: antd dark-algorithm elevated surface #1d1d1d (colorBgElevated), 88% inverse text */
+[data-theme="dark"] .menu-item[data-active="true"] { background: #1677ff; color: #fff; }
+
+/* Aggregated dropdown */
+.menu {
+  position: absolute; top: calc(100% + 6px); left: 0; min-width: 168px;
+  padding: 4px; border-radius: 8px; background: #fff; border: 1px solid #f0f0f0;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05);
+  z-index: 1000;
+  visibility: hidden; opacity: 0; transform: translateY(-4px);
+}
+.menu[data-open] { visibility: visible; opacity: 1; transform: none; }
+```
+
+Where the numbers come from (all cross-checked against antd 6.7.1 in out/design-study/06-antdesign.md): primary `#1677ff` (seed colorPrimary), selected fill `#e6f4ff` (blue palette step 1), hover fill `4%` (FillTertiary tier), neutral text at `88%` alpha, dark popup surface `#1d1d1d` (dark-algorithm colorBgElevated), radii 6/8 (borderRadius / borderRadiusLG), popup shadow = the three-part boxShadow token, popup stacking base zIndexPopupBase = 1000.
+
+## Motion & Interaction
+
+- **Hover trigger** (antd `triggerSubMenuAction` official default): opens immediately on entering the parent, and closes **0.1s** after leaving (antd `subMenuCloseDelay` official default 0.1s) — that delay is what prevents diagonal mouse travel from closing the menu by accident; click trigger toggles on click and closes on outside click;
+- **Open animation**: fade in + 4px drop over 0.2s (antd motionDurationMid) with the motionEase-out curve `cubic-bezier(0.215, 0.61, 0.355, 1)`; transitions are removed under `prefers-reduced-motion: reduce`, leaving instant show/hide;
+- **Keyboard**: Enter/Space opens a submenu or activates an item; Esc closes the current layer and returns focus to its trigger (APG Menu and Menubar); arrow keys rove within an open popup; the demo implements the disclosure baseline — full menubar left/right cycling across top-level items belongs in production;
+- The avatar user menu shares the same open/close machinery as the second-level dropdowns — the CSDN-style "avatar hover reveals the user menu" falls out of `trigger=hover` directly.
+
+## Real-world examples
+
+- **CSDN top navigation**: one horizontal bar carries the site's channels and product entries and generally includes a personal center; channels with second-level navigation **aggregate those items into dropdown menus** that open on hover; the personal-center **avatar on the right reveals a dropdown on hover** (profile, creation, sign-out entries) — the canonical "first level on the bar, second level aggregated in dropdowns, avatar carrying the user menu" structure.
+- **GitHub header**: top-level product items on the left (Products / Solutions / Open Source / Enterprise / Pricing) open large dropdown panels on hover, aggregating each product line's second-level entries into one panel; the right side holds search, notifications and the avatar, whose menu gathers profile, repository list and Sign out — isomorphic to CSDN.
+- **Feishu / DingTalk workspace**: desktop navigation aggregates messaging, docs, meetings and "Workspace"; inside the workspace, enterprise-built and third-party apps are further grouped into an entry grid — the nav plays both the "traffic distribution entry" and "aggregate site functions" roles at once.
+
+## Parameter Sensitivity
+
+| Parameter | One side… | The other side… |
+| --- | --- | --- |
+| `mode` | vertical: the menu becomes a sidebar, suited to consoles/admins and deeper information architectures; top-level items stack and submenus pop to the right | horizontal: a top nav bar suited to content sites; horizontal room is scarce, so second levels must be aggregated into dropdowns |
+| `theme` | dark: dark surface with inverse text, common for dark sites and admin sidebars; on dark surfaces a solid primary block reads better as the selection | light: white-surface menu, the default for content sites; text contrast is easier to verify on light backgrounds |
+| `trigger` | click: touch-friendly, no "opened by drive-by" accidents; the cost is one extra click every time | hover: the lowest exploration cost on desktop, but it demands the 0.1s close delay plus click/keyboard equivalents, or misfires and dead ends coexist |
+
+Working ranges: 4–7 top-level items (Hick's law — decision time grows with option count, research 07§23); dropdown width 160–240px; key entries at both ends of the bar (serial position effect, research 07§29).

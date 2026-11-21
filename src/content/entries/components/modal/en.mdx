@@ -1,0 +1,70 @@
+## Structure & DOM
+
+A modal dialog is a three-layer structure: page content → mask → dialog body. When open, the mask covers the page and the dialog floats above it; outside content is inert to interaction.
+
+```html
+<button id="trigger">Open</button>
+<div class="overlay">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title" tabindex="-1">
+    <h2 id="dlg-title">Title</h2>
+    <p>Body</p>
+    <button>Cancel</button>
+    <button>OK</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- The container gets `role="dialog"` + `aria-modal="true"` + `aria-labelledby` pointing to the **visible** title (APG Dialog);
+- A **visible close button is mandatory** (strongly recommended by APG), with Esc as the keyboard equivalent;
+- Focus rules: on open, focus enters the dialog (first focusable by default; for irreversible actions, land on the **least destructive** control); on close, focus **returns to the trigger** — consistent across APG and WebAIM's keyboard table.
+
+## Styling & Parameters
+
+`width` is a CSS-var param (`--modal-width`, injected by the stage); `maskClosable` / `centered` are JS-type params driving mask-click behavior and the `data-centered` vertical alignment.
+
+```css
+.overlay {
+  position: fixed; inset: 0; z-index: 1000;   /* antd zIndex default 1000 */
+  background: rgba(0, 0, 0, 0.45);            /* antd colorBgMask */
+  display: flex; justify-content: center;
+  align-items: flex-start;                    /* centered=off: top-anchored */
+  padding: 56px 16px 24px;
+}
+.overlay[data-centered="on"] { align-items: center; }
+.dialog {
+  width: var(--modal-width); max-width: 100%;
+  background: #fff;
+  border-radius: 8px;                         /* antd borderRadiusLG */
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08),
+              0 3px 6px -4px rgba(0,0,0,.12),
+              0 9px 28px 8px rgba(0,0,0,.05); /* antd boxShadow */
+  outline: none;                              /* container tabindex=-1 receives focus */
+}
+```
+
+Where the numbers come from (antd 6.7.1): `width` default **520**, `Modal.method()` confirmers 416, `maskClosable` default true (v6 folds into `mask.closable`), `centered` default false, `keyboard` (Esc) default true (design-study 06 §4.11). This demo's width default is 480 (the task's spec value, honestly noted as not an official default).
+
+## Motion & Interaction
+
+- **Entrance**: the mask fades 0.2s; the dialog fades in with a 4% micro-zoom and a 6px drop, using antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)` at `motionDurationMid = 0.2s`; only opacity/transform;
+- **Keyboard**: Esc closes (antd `keyboard` default true); Tab/Shift+Tab cycle trapped inside — a legitimate keyboard trap for modals, and WCAG 2.1.2 requires that focus which can move in can also move out (Esc/close button is the exit);
+- **Mask clicks**: close only when `e.target === the mask itself` and `maskClosable=on`; stray clicks inside the dialog never trigger it;
+- **After close**: focus returns to the trigger button; `prefers-reduced-motion: reduce` disables the entrance animation.
+
+## Real-world examples
+
+- **GitHub**: the delete-repository confirmation requires **typing the repository name** before the delete button enables — the extreme of misuse-proofing for irreversible, high-damage actions;
+- **WeChat (desktop)**: deleting a contact or clearing chat history raises a small centered dialog with a red danger button in the confirm slot and mask clicks ignored — the canonical confirmation-style dialog that disables mask-closing;
+- **Google Docs**: "Rename" is a narrow horizontal dialog — the title is the input itself, Cancel/OK right-aligned, sized for a single line — the model case for narrow-width parameterization on single-field tasks.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `width` | fits forms/tables/multi-column content, but larger dialogs feel heavier as interruptions; narrow screens hit `max-width` and reflow | single-column confirmations only — below 400px two-column forms stop fitting; 320px is roughly mobile full-width minus gutters |
+| `maskClosable` | on: forgiving, multiple exit paths — but a stray mask click discards typed content | off: forces an explicit choice (antd confirmers default off); keeps answers safe but raises exit cost — Esc and Cancel must remain |
+| `centered` | on: vertically centered, stable visual weight, transient feel; tall content is less likely to clip top or bottom | off: top-anchored (antd default), long content extends downward naturally with a fixed reading start; over-viewport content needs in-dialog scrolling |
+
+Working ranges: width 416–560 (anchored by antd's 520/416), maskClosable=off for confirmations, and anything beyond two viewport-heights belongs in a drawer or a page.

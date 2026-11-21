@@ -1,0 +1,63 @@
+## Structure & DOM
+
+A drawer is an edge-docked sliding panel: an absolutely positioned panel pinned to one edge, normally pushed out of the viewport with `transform: translate`, sliding back into place when opened; an optional mask pads the layer between page and panel.
+
+```html
+<button id="trigger">Open</button>
+<div class="mask" aria-hidden="true"></div>
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drw-title" tabindex="-1">
+  <header><h2 id="drw-title">Title</h2><button aria-label="Close">×</button></header>
+  <div class="body">…</div>
+</aside>
+```
+
+Key points:
+
+- Panel gets `role="dialog"` + `aria-modal` (true when masked; with mask=false it is non-modal and the page stays interactive);
+- Slide direction follows the docked edge: right/left use `translateX`, top/bottom use `translateY` — **never animate width/height** (sizing animation forces per-frame reflow);
+- AntD's official positioning: carries groups of info that must stay in the main-task context — "create/edit in a form", "subtasks too heavy for a Popover" (research 07 §4).
+
+## Styling & Parameters
+
+`thickness` is a CSS-var param (`--drawer-thickness`; width for left/right, height for top/bottom); `placement` / `mask` are JS-type params driving `data-placement` and the mask rendering.
+
+```css
+.drawer {
+  position: absolute; z-index: 1000;          /* antd Drawer zIndex default 1000 */
+  background: #fff;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08),
+              0 3px 6px -4px rgba(0,0,0,.12),
+              0 9px 28px 8px rgba(0,0,0,.05);
+  transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.drawer[data-placement="right"] { top: 0; right: 0; bottom: 0; width: var(--drawer-thickness); transform: translateX(100%); }
+.drawer[data-placement="top"]   { left: 0; right: 0; top: 0; height: var(--drawer-thickness); transform: translateY(-100%); }
+.drawer.is-open { transform: translate(0, 0); }
+.mask { position: absolute; inset: 0; background: rgba(0,0,0,0.45); } /* antd colorBgMask */
+```
+
+Where the numbers come from (antd 6.7.1): `placement` default **right**, `size` default **378px** / large **736px** (legacy `width/height` defaulting to 378 are deprecated), `mask` default true, `keyboard` (Esc) default true, `push` multi-level offset default `{distance: 180}` (design-study 06 §4.12).
+
+## Motion & Interaction
+
+- **Slide in/out**: `transform 0.3s` (antd `motionDurationSlow`) with `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`; transform-only keeps it on the compositor with zero reflow;
+- **Reduced-motion goes instant**: under `prefers-reduced-motion: reduce`, `transition: none` — the drawer appears at its final state; large travel animations discomfort vestibular users (MDN), and this is the entry's mandatory degradation path;
+- **Keyboard**: Esc closes (antd `keyboard` default true); when masked, Tab is trapped inside the panel (focus trap configurable via `focusable` since antd 6.2.0); with mask=false it is non-modal and must not trap;
+- **Multi-level drawers**: AntD expresses branching tasks with `push` (default offset 180px) — a newer drawer nudges the older one toward the edge, making the hierarchy legible;
+- On close, focus returns to the trigger (same rule as APG Dialog).
+
+## Real-world examples
+
+- **Notion**: the left sidebar collapses and expands as a whole, pushing the content area rightward instead of covering it — the docked-left-drawer pattern in wide-screen document tools;
+- **GitHub**: on narrow viewports the header nav collapses into a hamburger button; opening it slides a menu panel in from the left with a mask, closing after selection — the classic responsive nav drawer;
+- **Mobile commerce apps**: product-list filters are almost universally a **bottom drawer** (bottom-sheet style): swipe up to raise, groups of filters inside, Confirm/Reset pinned at the bottom — matching AntD's `placement="bottom"` with a large thickness.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `placement` | no "size" per se — it changes spatial semantics: right/left suit forms and details (vertical reading flow), top/bottom suit notice bars and filters (horizontal spread) | same; right is antd's default and the mainstream mental model — switch edges only for information-architecture reasons |
+| `thickness` | fits two-column forms and wide tables; past ~50% of viewport width the "drawer" reads as a half page | single narrow column — below 280px form labels and buttons start wrapping; 240px is already the mobile floor |
+| `mask` | on: modal, attention forcibly narrowed, the subtask must be explicitly closed | off: non-modal, view the drawer while operating the page (great for comparison), but users may forget it is open |
+
+Working ranges: thickness 320–480 (anchor 378), right by default for forms/details, bottom for filters, mask=off when side-by-side comparison matters.

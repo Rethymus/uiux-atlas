@@ -1,0 +1,71 @@
+## Structure & DOM
+
+A linear icon is "inline `<svg>` + currentColor": shapes are drawn as `path`/`circle`/`polygon` strokes, and color is delegated entirely to CSS `color` inheritance.
+
+```html
+<!-- Decorative icon: aria-hidden, skipped by screen readers -->
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <circle cx="11" cy="11" r="7" />
+  <path d="m16.5 16.5 4.5 4.5" />
+</svg>
+
+<!-- Semantic icon button: an accessible name is mandatory (MUI's requirement) -->
+<button type="button" aria-label="Search">
+  <svg aria-hidden="true" …>…</svg>
+</button>
+```
+
+Key points:
+
+- One grid, one style: `viewBox="0 0 24 24"`, `fill="none"`, `stroke="currentColor"` everywhere;
+- `stroke-width` is an inherited SVG property — set it once on the `<svg>` root and every child shape follows; this is what powers the demo's live stroke coupling;
+- antd's approach is a useful reference: the standalone `@ant-design/icons` package injects `width/height="1em"` and `fill="currentColor"` (06-antdesign §4.2), so icons scale and recolor with text; since 4.0 the main package no longer bundles icons;
+- `spin`/`rotate` are antd's only behavioral icon props (`spin` defaults to false, 06 §4.2); two-tone icons add `twoToneColor`.
+
+## Styling & Parameters
+
+`size`/`strokeWidth` are CSS-variable params (`--icon-size` / `--icon-stroke-width`); `color` is JS-typed (toggled via a data attribute):
+
+```css
+.ic {
+  width: var(--icon-size, 14px);   /* default 14 = antd base font; 1em means text-height */
+  height: var(--icon-size, 14px);
+  stroke-width: var(--icon-stroke-width, 2);
+  color: rgba(0, 0, 0, 0.88);      /* current mode: antd colorText 88% */
+}
+.icon-scene[data-icon-color="accent"] .ic { color: #1677ff; } /* seed colorPrimary */
+.icon-scene[data-icon-color="danger"] .ic { color: #ff4d4f; } /* seed colorError */
+/* Inline usage: 1em naturally matches the text height (antd width/height=1em) */
+.icon-inline .ic { width: 1em; height: 1em; }
+```
+
+Where the numbers come from:
+
+- **Default 14px**: antd seed `fontSize: 14` (06 §2.2) plus the icon's `1em` (06 §4.2) — an icon beside text matches the text height;
+- **accent `#1677ff` / danger `#ff4d4f`**: antd seed `colorPrimary` / `colorError` (06 §2.2);
+- **strokeWidth default 2**: the community convention of the Lucide/Feather linear sets — **not verified as any official default**; antd icons are mostly filled paths and carry no stroke-width property (06 §4.2), stated as-is;
+- The neutral text color 88% follows antd's `colorText` step (06 §2.3⑤).
+
+## Motion & Interaction
+
+- The glyph itself is static — **avoid** animating ordinary icons; the one common exception is the rotating "loading" icon (spin), which should freeze under `prefers-reduced-motion` (07 §37);
+- **Color coupling** is the icon's most important "motion": `stroke="currentColor"` lets one hover rule recolor text and icon together, with zero extra JS;
+- Size/stroke changes through CSS variables apply instantly with no repaint flicker; to swap icons at scale, change a `class`/CSS variable rather than touching each DOM node;
+- Touch target: clickable icons need a comfortable hit area — a visually 16px icon should own a 32px+ target (Fitts's law, 07 §22).
+
+## Real-world examples
+
+- **GitHub Octicons** — the official icon set is designed on a 16px grid; repository-page icons like star and fork render in the same color as their adjacent text (the currentColor idea), so a hover highlight recolors both at once.
+- **VS Code** — the activity bar's file/search/source-control icons are monochrome strokes: the selected item is highlighted in white, unselected ones sit in dark gray, and state is expressed purely through tone plus a thin indicator bar — highly consistent.
+- **Apple SF Symbols** — system icons render as monochrome templates whose color is driven by the tint color: tab-bar items recolor when selected, disabled buttons dim as a whole; one shape adapts across contexts — the same mechanism as currentColor.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | visual weight jumps — 40–48px works as empty-state illustration, but mixing with 14px text breaks the baseline | below 12px strokes smear and detail is lost; complex glyphs on the 24×24 grid blur first |
+| `color` | accent/danger emphasize loudly — emphasizing many icons at once cancels out (Von Restorff, 07 §30); danger red needs shape redundancy | current follows the text and is the most stable, but in low-emphasis contexts (disabled, secondary) icons may lack presence |
+| `strokeWidth` | 3 reads bold and loud, steadier at large sizes; on small icons it clogs the inner whitespace | 1 is fine and elegant, even airy on a 48px icon; on 12px icons thin strokes break up and shimmer |
+
+Working ranges: 14–16px beside body text, 16px for menu items, 16–20px in toolbars, 40–48px for empty states; stroke 2 is the universal default, 1 only for ≥24px display-scale glyphs.

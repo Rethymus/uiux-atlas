@@ -1,0 +1,58 @@
+## 结构与 DOM
+
+Tooltip 是「触发元素 + 气泡」的成对结构:触发元素保持相对定位的锚点身份,气泡绝对定位挂在它的四个方位之一;气泡是纯文本短句,不进入 Tab 序列、不夺取焦点。
+
+```html
+<button aria-describedby="tip-save">保存</button>
+<span id="tip-save" role="tooltip" hidden>保存到草稿箱 · ⌘S</span>
+```
+
+关键点:
+
+- 触发元素经 `aria-describedby` 关联气泡(显隐时同步挂/摘属性),气泡自身 `role="tooltip"`;
+- **hover 与 focus 双触发**(APG Tooltip):鼠标悬停和键盘 Tab 聚焦都要出提示,只有 hover 的实现把键盘用户排除在外;
+- `Esc` 隐藏是 APG 规定的键盘逃生口;气泡延迟出现(antd `mouseEnterDelay` 默认 0.1s),防止光标扫过界面时提示成串闪烁。
+
+## 样式与参数
+
+三个参数均为 JS 型(demo 订阅 store 驱动):`placement`/`theme`/`arrow` 分别落到气泡的 `data-placement` / `data-theme` / `data-arrow`,改动即时生效。
+
+```css
+.anchor { position: relative; }        /* 触发元素的 wrapper 作锚 */
+.bubble {
+  position: absolute; z-index: 1060;   /* 浮层体系顶端(Arco/Semi tooltip 层) */
+  padding: 6px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.bubble[data-placement="top"]    { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+.bubble[data-theme="dark"]       { background: rgba(0, 0, 0, 0.85); color: #fff; }  /* antd colorBgSpotlight */
+.bubble[data-theme="light"]      { background: #fff; color: rgba(0,0,0,0.88); border: 1px solid #d9d9d9; }
+.bubble[data-arrow="on"]::after  { content: ""; width: 8px; height: 8px; rotate: 45deg; background: inherit; }
+```
+
+数值出处:placement 12 向默认 **top**、`arrow` 默认 **true**、`trigger` 默认 hover、`mouseEnterDelay/mouseLeaveDelay` 默认 0.1s(design-study 06 §4.14);深色底 rgba(0,0,0,0.85) 为 antd 系统色板 colorBgSpotlight(06 §2.3⑤),Semi/Arco 暗色模式 tooltip 底 `#373739`(design-study 03);z-index 1060 取自 Semi 浮层层级体系(03);0.1s 过渡取自 Semi Popover/Tooltip 动效(03)。`theme` 的 dark/light:antd 官方**无此枚举**(以 `color` 自定义),dark 为事实默认、light 变体常见于 TDesign 体系——均如实标注,未证实为官方枚举默认。
+
+## 动效与交互
+
+- **出现**:100ms 延迟后 0.1s 淡入(Semi Popover/Tooltip 过渡参数);**消失**:立即——tooltip 是高频出现的放大器,退出不排队;
+- **Esc 隐藏**:键盘用户的逃生口;鼠标移开/焦点离开同样隐藏;
+- **方位兜底**:贴近视口边缘时生产库会自动翻转方位(antd `autoAdjustOverflow` 默认 true);demo 的触发按钮居中摆放,四方位都放得下;
+- `prefers-reduced-motion: reduce` 时取消过渡,直接显隐。
+
+## 真实产品案例
+
+- **GitHub**:仓库首页协作者头像组,悬停任一头像浮出「用户名」黑底气泡——海量列表项的轻量标识放大器;
+- **VS Code**:工具栏/活动栏图标按钮 hover 显示「名称 + 快捷键」气泡(如「切换侧边栏 Ctrl+B」)——图标密集界面里 tooltip 是鼠标用户的主要可发现性通道;
+- **Figma**:左侧工具栏 hover 显示「工具名 + 单键快捷键」(如「矩形 R」)——专业工具把快捷键记忆装进气泡,贴合「鼠标用户的放大器」定位。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `placement` | 无大小可言,换的是遮挡策略:top 远离任务栏/拇指区最安全,bottom 会盖住触发元素下方内容 | 同上;left/right 在贴边触发元素上必然被裁切——生产实现要配 auto-flip |
+| `theme` | light 在浅色页面里更协调、长文可读性略好,但深色页面上会突兀 | dark 是事实标准(antd 默认),对比强、识别快;深底上白字注意 4.5:1 |
+| `arrow` | on:从属关系明确,元素密集时不易读错主人 | off:更像独立浮层,界面更素;多气泡同屏时容易混淆归属 |
+| (延迟) | 出现越迟误触越少,但「点了没反应」感增强;>300ms 像坏了 | \<50ms 光标扫过工具栏时气泡成串闪烁——0.1s(antd 默认)是甜点 |
+
+经验区间:纯文本一行以内、延迟 0.1s、全站统一 placement 基准方向;任何「不看提示就做不对」的信息都不该只住在 tooltip 里。

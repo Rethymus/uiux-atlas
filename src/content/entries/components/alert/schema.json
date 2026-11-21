@@ -1,0 +1,117 @@
+{
+  "name": "Alert",
+  "nameZh": "警告提示",
+  "aliases": ["警告条", "通知条", "横幅提示", "Inline Alert"],
+  "category": "components",
+  "subgroup": "feedback",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "文档流内的四色警示块:不夺键盘焦点、默认不自动消失,经 role=alert 播报——与 toast(浮层自动消失)和 Dialog(阻断)三分反馈职责。",
+    "en": "A four-tone warning block in the document flow: never steals focus, does not auto-dismiss, announced via role=alert — splitting feedback duty with toast (floating, auto-dismiss) and Dialog (blocking)."
+  },
+  "origin": {
+    "zh": "语义取自 W3C APG Alert 模式:role=alert 显示简短重要消息、动态插入时多数屏幕阅读器自动播报、不得夺取键盘焦点;APG 特别告诫避免自动消失(WCAG 2.2.3)与频繁打断(2.2.4)。实现参数参照 Ant Design Alert:type 默认 info、showIcon/closable/banner 默认 false(antd 6.7.1 核对,调研 07§9 与 design-study 06§4.13)。",
+    "en": "Semantics from the W3C APG Alert pattern: role=alert shows a short important message, auto-announced by most screen readers on dynamic insertion, never stealing keyboard focus; APG specifically warns against auto-dismissing (WCAG 2.2.3) and frequent interruptions (2.2.4). Implementation follows Ant Design Alert: type default info, showIcon/closable/banner default false (antd 6.7.1, research 07 §9, design-study 06 §4.13)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "type",
+      "options": [
+        { "value": "success", "label": { "zh": "成功", "en": "Success" } },
+        { "value": "info", "label": { "zh": "信息", "en": "Info" } },
+        { "value": "warning", "label": { "zh": "警告", "en": "Warning" } },
+        { "value": "error", "label": { "zh": "错误", "en": "Error" } }
+      ],
+      "default": "info",
+      "effect": {
+        "zh": "语义四态(JS 型参数)。AntD Alert type 默认 **info**;banner 模式下默认翻转为 **warning**。配色遵循 antd seed 功能色:success #52c41a / info(primary)#1677ff / warning #faad14 / error #ff4d4f;浅底与描边按「Bg=阶1、Border=阶3」规则派生。",
+        "en": "Four semantic states (JS-type param). AntD Alert type defaults to **info**; banner mode flips the default to **warning**. Colors follow antd seed functional tokens: success #52c41a / info(primary) #1677ff / warning #faad14 / error #ff4d4f; pale fills and borders derive via the 'Bg=step1, Border=step3' palette rule."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "closable",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "是否提供手动关闭按钮(JS 型参数)。AntD Alert closable 默认 **false**。警告默认常驻(这正是它与 toast 的分界:APG 告诫警告不要自动消失,WCAG 2.2.3);开启关闭钮后由用户决定何时移除。",
+        "en": "Whether a manual close button is offered (JS-type param). AntD Alert closable defaults to **false**. Alerts persist by default — exactly the boundary with toast (APG warns alerts must not auto-dismiss, WCAG 2.2.3); with the close button the user decides when to remove it."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "showIcon",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "是否显示语义图标(JS 型参数)。AntD Alert showIcon 默认 **false**;banner 模式下默认翻转为 **true**。图标与颜色双通道编码(NN/g 错误准则⑤:图标+颜色照顾色盲),扫读时先认形状再读文字。",
+        "en": "Whether the semantic icon shows (JS-type param). AntD Alert showIcon defaults to **false**; banner mode flips the default to **true**. Icons add a second channel beside color (NN/g error guideline 5: icon + color for color-blind users) — shape first, then text, when scanning."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "banner",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "是否渲染为页面顶部通栏(JS 型参数)。AntD Alert banner 默认 **false**;开启后去掉圆角与侧边框、横向铺满,且 type/showIcon 默认翻转为 warning/true——通栏常用于站点级公告(维护、存储告急)。",
+        "en": "Whether to render as a full-width top banner (JS-type param). AntD Alert banner defaults to **false**; when on, radius and side borders drop, it spreads full-width, and type/showIcon defaults flip to warning/true — banners suit site-level notices (maintenance, storage warnings)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现为普通文档流块级元素 + CSS color-mix 派生浅底,均为 Baseline 能力;color-mix 自 2023 年起全浏览器可用,不支持时浅底退化为白底(信息不受影响)。",
+      "en": "Implemented as ordinary flow-level blocks with color-mix-derived pale fills, all Baseline; color-mix is available across browsers since 2023, degrading to a white fill where unsupported (message unaffected)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 color-mix 的旧环境直接用功能色描边 + 白底即可读;图标用 SVG currentColor 着色,不依赖图片加载;关闭按钮必须是真实 button,不能只靠 CSS 隐藏。",
+    "en": "Without color-mix, older environments stay readable with the functional-color border on white; icons are SVG currentColor so no image loading is involved; the close button must be a real button, never hidden by CSS alone."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "页面级/表单顶部的整体性错误与状态说明(Carbon:整体性错误用行内通知)", "en": "Page-level or form-top summary errors and status notes (Carbon: overall errors as inline notifications)" },
+      { "zh": "存储告急、维护公告等站点级通栏(banner)", "en": "Site-level banners: storage warnings, maintenance notices" },
+      { "zh": "成功/结果确认等需要驻留直到用户读完的反馈", "en": "Success/outcome feedback that must remain until read" }
+    ],
+    "avoid": [
+      { "zh": "自动消失——那是 toast 的职责;警告自动消失太快违反 WCAG 2.2.3(APG)", "en": "Auto-dismissal — that is toast's job; fast-disappearing alerts violate WCAG 2.2.3 (APG)" },
+      { "zh": "必须处理才能继续的信息——用 alertdialog(APG:要打断用户就升级为对话框)", "en": "Must-act-before-continue info — use an alertdialog (APG: escalate to a dialog when you must interrupt)" },
+      { "zh": "字段级表单校验——错误要紧贴字段(NN/g 准则③)", "en": "Field-level form validation — errors belong next to the field (NN/g guideline 3)" },
+      { "zh": "一屏堆多个警告——信息噪音,合并为一条或改用页面结构承载", "en": "Stacking many alerts per screen — noise; merge into one or restructure the page" }
+    ]
+  },
+  "a11y": {
+    "zh": "容器 role=alert,动态插入时多数屏幕阅读器自动播报(WAI-APG);不夺取键盘焦点——需要打断用户时改用 alertdialog;不要自动消失(违反 WCAG 2.2.3)、不要频繁出现(2.2.4);图标只作辅助,颜色+图标双通道避免「仅靠颜色传达」(WCAG 1.4.1);关闭按钮真实可聚焦并带 aria-label。",
+    "en": "Container role=alert, auto-announced by most screen readers on dynamic insertion (WAI-APG); never takes focus — escalate to alertdialog when you must interrupt; no auto-dismiss (WCAG 2.2.3), no frequent interruptions (2.2.4); icons are auxiliary — color + icon dual-channel avoids color-only encoding (WCAG 1.4.1); close button is a real focusable control with aria-label."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/alert/",
+    "https://ant.design/components/alert"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻四色警告提示:type 切换语义色、showIcon 加图标、closable 加关闭钮、banner 变顶部通栏;驻留文档流、role=alert、不自动消失。",
+      "en": "Replicate the four-tone alert: type switches semantic color, showIcon adds the icon, closable adds a close button, banner becomes a full-width top strip; stays in flow, role=alert, never auto-dismisses."
+    },
+    "acceptance": [
+      { "zh": "容器 role=alert 且不夺焦点;默认常驻,关闭仅经真实按钮", "en": "Container role=alert without focus theft; persists by default; closing only via a real button" },
+      { "zh": "四态用 antd seed 功能色:#52c41a / #1677ff / #faad14 / #ff4d4f,浅底描边按阶1/阶3规则派生", "en": "Four states use antd seed functional colors #52c41a / #1677ff / #faad14 / #ff4d4f, pale fill/border derived via step1/step3" },
+      { "zh": "banner=on 时通栏无圆角、内容下移让位,type/showIcon 默认翻转(warning/true)", "en": "banner=on renders full-width without radius, content shifts down, and type/showIcon defaults flip (warning/true)" },
+      { "zh": "图标 SVG currentColor 着色,颜色+图标双通道编码", "en": "Icons colored via SVG currentColor; color+icon dual-channel encoding" },
+      { "zh": "不引入自动消失计时;prefers-reduced-motion 无影响(无入场动画)", "en": "No auto-dismiss timer; prefers-reduced-motion unaffected (no entrance animation)" }
+    ]
+  }
+}

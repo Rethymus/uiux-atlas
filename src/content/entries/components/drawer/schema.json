@@ -1,0 +1,105 @@
+{
+  "name": "Drawer",
+  "nameZh": "抽屉",
+  "aliases": ["侧滑面板", "抽屉面板", "Slide-over", "侧边栏浮层"],
+  "category": "components",
+  "subgroup": "feedback",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "从屏幕边缘 transform 滑入的面板:不离开当前页即可承载子任务/表单/详情,Esc 关闭、可带遮罩,reduced-motion 直达。",
+    "en": "A panel that transform-slides in from a screen edge: hosts subtasks/forms/details without leaving the page, closes on Esc, optional mask, instant under reduced-motion."
+  },
+  "origin": {
+    "zh": "定位取自 Ant Design Drawer 官方描述:从屏幕边缘滑入、承载一组信息或动作,适用于「Form 中创建/编辑」「子任务对 Popover 太重但需留在主任务上下文」;placement 默认 right、size 默认 378/736、Esc 默认开启均按 antd 6.7.1 核对(调研 07§4 与 design-study 06§4.12)。",
+    "en": "Positioning follows the official Ant Design Drawer description: a panel sliding in from the screen edge carrying a set of info or actions, for 'create/edit in a form', 'subtasks too heavy for a Popover but kept in the main-task context'; placement default right, size default 378/736, Esc on by default, all per antd 6.7.1 (research 07 §4, design-study 06 §4.12)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "placement",
+      "options": [
+        { "value": "top", "label": { "zh": "顶部", "en": "Top" } },
+        { "value": "right", "label": { "zh": "右侧", "en": "Right" } },
+        { "value": "bottom", "label": { "zh": "底部", "en": "Bottom" } },
+        { "value": "left", "label": { "zh": "左侧", "en": "Left" } }
+      ],
+      "default": "right",
+      "effect": {
+        "zh": "滑入边缘(JS 型参数)。AntD Drawer placement 默认 **right**(四方位 top/right/bottom/left);右侧抽屉贴合「详情/表单子任务」的主流布局(内容左、操作右)。",
+        "en": "The edge it slides from (JS-type param). AntD Drawer placement defaults to **right** (four positions top/right/bottom/left); right-side drawers match the mainstream 'details/form subtask' layout (content left, actions right)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "thickness",
+      "unit": "px",
+      "min": 240,
+      "max": 560,
+      "step": 2,
+      "default": 378,
+      "cssVar": "--drawer-thickness",
+      "effect": {
+        "zh": "抽屉厚度:左右抽屉为宽度、上下抽屉为高度(CSS 变量型参数)。官方核对:AntD Drawer size 默认档 **378px**、large 档 **736px**(旧 width/height 默认 378 已废弃,demo 用单一厚度参数统一表达);范围 240–560 为演示收敛值。",
+        "en": "Drawer thickness: width for left/right drawers, height for top/bottom ones (CSS-var param). Verified: AntD Drawer size default is **378px**, large **736px** (legacy width/height defaulting to 378 are deprecated; the demo expresses both with a single thickness param); the 240–560 range is a demo narrowing."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mask",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "是否渲染遮罩(JS 型参数)。AntD Drawer mask 默认 **true**;mask=false 时页面仍可交互(「看着抽屉同时操作页面」),点遮罩关闭随之失效,Esc 关闭仍保留(antd keyboard 默认 true)。",
+        "en": "Whether a mask renders (JS-type param). AntD Drawer mask defaults to **true**; with mask=false the page stays interactive (operate the page while watching the drawer), mask-click closing goes away, Esc close remains (antd keyboard default true)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只依赖 absolute 定位 + transform 过渡 + 焦点 API,均为 Baseline;prefers-reduced-motion 全浏览器可用(调研 07§37)。",
+      "en": "Implementation only needs absolute positioning + transform transitions + the focus API, all Baseline; prefers-reduced-motion is universally supported (research 07 §37)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 transform 过渡的旧环境抽屉直接出现/消失(信息不受影响);不支持 CSS 变量时厚度取 378px 硬值;JS 失效时抽屉无法触发,导航类内容需要另有静态入口。",
+    "en": "Without transform transitions the drawer simply appears/disappears (content unaffected); without CSS variables thickness falls back to a hard 378px; with JS disabled the drawer cannot open, so navigation-type content needs a static entry elsewhere."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "在 Form 中创建/编辑一组信息,不离开主任务上下文(AntD 官方场景)", "en": "Create/edit a group of info inside a form without leaving the main task (official AntD scenario)" },
+      { "zh": "对 Popover 太重、对整页又太轻的子任务(详情预览、筛选条件)", "en": "Subtasks too heavy for a Popover yet too light for a full page (detail previews, filters)" },
+      { "zh": "多处以同一 Form 复用的编辑面板", "en": "An edit panel reusing the same form from many places" },
+      { "zh": "窄屏导航(左侧滑入)+ 多级抽屉处理分支任务(push 推挤)", "en": "Narrow-screen navigation (slides from left) + multi-level drawers for branching tasks (push)" }
+    ],
+    "avoid": [
+      { "zh": "必须处理的阻断信息——用 Dialog(alertdialog)", "en": "Blocking, must-act information — use a Dialog (alertdialog)" },
+      { "zh": "轻量确认/提示——Drawer 开销过大,用 Dialog 或 toast", "en": "Light confirmations/hints — a Drawer is overkill; use Dialog or toast" },
+      { "zh": "超过两屏的长内容——直接开页面,避免抽屉内长滚动", "en": "Content beyond two screens — open a page instead of long in-drawer scrolling" }
+    ]
+  },
+  "a11y": {
+    "zh": "面板 role=dialog + aria-modal(带遮罩时 true);打开焦点进面板、Tab 困焦(6.2.0 起可用 focusable 配置焦点陷阱)、Esc 关闭(antd keyboard 默认 true)、关闭后焦点回触发元素;mask=false 时面板非模态,不应困焦;transform 大位移动画必须在 prefers-reduced-motion 下直达(MDN)。",
+    "en": "Panel gets role=dialog + aria-modal (true when masked); focus enters on open, Tab is trapped (focus trap configurable via `focusable` since 6.2.0), Esc closes (antd keyboard default true), focus returns to the trigger on close; with mask=false the panel is non-modal and must not trap; the large transform travel must collapse to instant under prefers-reduced-motion (MDN)."
+  },
+  "sources": [
+    "https://ant.design/components/drawer",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个边缘滑入抽屉:placement 决定滑入边、厚度按参数、可开关遮罩、transform 过渡滑入滑出,Esc 关闭且 reduced-motion 直达。",
+      "en": "Replicate an edge-sliding drawer: placement picks the edge, thickness follows the parameter, mask toggles, transform transitions in/out, Esc closes, instant under reduced-motion."
+    },
+    "acceptance": [
+      { "zh": "面板 transform: translate 滑入滑出(不用 width/height 动画)", "en": "Panel slides via transform: translate (never animating width/height)" },
+      { "zh": "placement/thickness/mask 严格使用参数快照值", "en": "placement/thickness/mask use the exact parameter snapshot values" },
+      { "zh": "带遮罩时 role=dialog + aria-modal=true、Tab 困焦;Esc 关闭;焦点归还触发元素", "en": "With mask: role=dialog + aria-modal=true, Tab trapped; Esc closes; focus returns to the trigger" },
+      { "zh": "遮罩 rgba(0,0,0,0.45)(antd colorBgMask)", "en": "Mask rgba(0,0,0,0.45) (antd colorBgMask)" },
+      { "zh": "prefers-reduced-motion 时取消过渡直达终态", "en": "prefers-reduced-motion collapses the transition to instant" }
+    ]
+  }
+}

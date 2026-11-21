@@ -1,0 +1,92 @@
+## 结构与 DOM
+
+日期选择器是「触发器 + 月历浮层」两层结构(自绘简化实现,借 APG grid 模式的行列思想):
+
+```html
+<div class="dp-wrap" data-size="md">
+  <button type="button" class="dp-trigger" aria-haspopup="dialog" aria-expanded="true">
+    2026年11月21日 <span aria-hidden="true">📅</span>
+  </button>
+  <div class="dp-panel" role="dialog" aria-label="选择日期">
+    <div class="dp-head">
+      <button type="button" aria-label="上一月">‹</button>
+      <span class="dp-title">2026年11月</span>
+      <button type="button" aria-label="下一月">›</button>
+    </div>
+    <table role="grid">
+      <thead>
+        <tr><th role="columnheader" aria-label="星期一">一</th>…</tr>
+      </thead>
+      <tbody>
+        <tr role="row">
+          <td role="gridcell"><button type="button" tabindex="-1">1</button></td>
+          <td role="gridcell"><button type="button" tabindex="0" aria-pressed="true">21</button></td>
+          …
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```
+
+关键点:
+
+- 月历是 **7 列 grid**:星期表头 `columnheader`,日期格 `gridcell` 内放原生 button——可聚焦、可 Space/Enter 激活是原生能力;
+- 焦点用 **roving tabindex**:整表只有一枚 `tabindex="0"`(选中日或今日),方向键 ±1/±7 移动焦点;
+- 浮层绝对定位在触发器正下(bottomLeft,antd placement 默认),点击外部与 Esc 关闭,关闭后焦点回触发器;
+- 首行前置空格补齐(firstDay 决定偏移),月末行留空——只渲染当前月,不做跨月溢出格(APG 官方示例含跨月键,自绘简化版省略并如实标注)。
+
+## 样式与参数
+
+三个参数都是 JS 型(经 store 订阅),CSS 按 `data-size` / `data-lang` 分支:
+
+```css
+.dp-trigger {
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff;
+  color: rgba(0, 0, 0, 0.88); display: inline-flex; gap: 8px; align-items: center;
+}
+.dp-stage[data-size="sm"] .dp-trigger { height: 24px; font-size: 12px; padding: 0 8px; }
+.dp-stage[data-size="md"] .dp-trigger { height: 32px; font-size: 14px; padding: 0 12px; }
+.dp-stage[data-size="lg"] .dp-trigger { height: 40px; font-size: 16px; padding: 0 12px; }
+.dp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 10;
+  width: 252px; padding: 8px; background: #fff; border-radius: 8px;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+  animation: dp-pop 0.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+.dp-cell { width: 32px; height: 28px; border-radius: 4px; }
+.dp-cell[aria-pressed="true"] { background: #1677ff; color: #fff; }   /* 选中日 */
+.dp-cell.is-today { box-shadow: inset 0 0 0 1px #1677ff; }            /* 今日描边 */
+.dp-cell:not([aria-pressed="true"]):hover { background: rgba(0, 0, 0, 0.04); }
+```
+
+数值出处:
+
+- 触发器高度三档 **24/32/40px** 与字号 12/14/16 = antd DatePicker 官方文档明示的尺寸分档(「size 默认 32px,large 40px,small 24px」)与字阶派生,设计调研 06§4.9/§2.3①③;
+- 浮层阴影逐字取 antd 浮层主阴影 boxShadow,圆角 8px = borderRadiusLG 档(06§2.3②);日格 hover 底 rgba(0,0,0,0.04) = FillTertiary(06§2.3⑤);
+- 选中底色 `#1677ff` = colorPrimary(06§2.2);展开过渡 0.2s = motionDurationMid + motionEaseInOut(06§3.1);
+- `lang` 对齐 antd「默认 en-US,经 ConfigProvider locale 挂 zh_CN」的 i18n 机制;`firstDay` 默认 mon 为任务规格与 zh locale 惯例的配对(组件实现层面随 locale 决定,06§4.9);
+- antd DatePicker 的 `allowClear` 默认 **true**——demo 保留「清空」按钮呼应这一默认(06§4.9)。
+
+## 动效与交互
+
+- **展开/收起**:浮层 opacity + 4px 上移入场,0.2s;`prefers-reduced-motion` 时直接显隐;
+- **键盘**(自绘简化):Tab 进面板后落在 roving 焦点格;←/→/↑/↓ 移动 ±1/±7(仅当前月内,到边界即停);Enter/Space 选中并收起;Esc 关闭并把焦点还给触发器;Tab 移出面板即收起;
+- **月切换**:‹ › 只改显示月,不改变已选值;翻到边界年份由实现自定,demo 不限年份;
+- **点击外部关闭**:document 级 pointerdown,目标不在容器内即收起;选择日期后收起并回填触发器(单选形态的即时确认,antd 单选默认行为同向)。
+
+## 真实产品案例
+
+- **12306 购票日期选择**:订票页的日历面板只放行「今天及以后」的日期,过去日期整体置灰不可点;选中即回填出发日期字段——「不可选日期置灰」语义的最强场景;
+- **Airbnb / 携程入住—退房**:范围形态的月历面板常驻双月并排,hover 即预览入住—退房区间,已订日期置灰不可选;范围选择是单选日历最重要的复合变体;
+- **Google Flights 日期面板**:日历网格上直接叠加各日期的最低票价标签,把「哪天走便宜」变成扫视可得——日历格作为数据可视化容器的扩展用法。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | lg(40px 触发器)触屏命中稳,日格同步放大、面板更占纵向空间 | sm(24px)适合工具条/表格行内,但日格点击目标显著缩小,误触邻格 |
+| `firstDay` | sun 始让周末靠右成对,符合北美用户的心智与日历印刷传统 | mon 始让工作日先行、周末收尾,与中国大陆办公日历一致;两者没有优劣,只有受众——混用是最大风险 |
+| `lang` | en 文案整体更短(月名缩写),面板可以更紧凑 | zh 日期格式携带年月日汉字,信息更完整但占宽略大;切换语言时 aria-label 必须同步,否则读屏播报与可见文案脱节 |
+
+经验区间:面板宽度固定 7 列节奏(约 252–280px),日格 28–32px 见方;不可选日期的置灰对比度仍须可辨(WCAG 1.4.11 非文本 3:1);月切换永远保留「今天」快速回路。

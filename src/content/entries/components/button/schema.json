@@ -1,0 +1,124 @@
+{
+  "name": "Button",
+  "nameZh": "按钮",
+  "aliases": ["按钮", "Action Button", "Command Button"],
+  "category": "components",
+  "subgroup": "basic",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "触发即时动作的按钮件:四档变体(primary/secondary/text/dashed,antd 风格)对应四级强调,loading 转圈阻断交互,disabled 置灰不可点;每屏只留一个 primary。",
+    "en": "Buttons trigger immediate actions: four antd-style variants (primary/secondary/text/dashed) encode four emphasis levels; loading shows a spinner and blocks interaction, disabled grays out — keep exactly one primary per screen."
+  },
+  "origin": {
+    "zh": "源自 HTML 表单按钮;变体/强调层级体系由设计系统成型——MUI 三档 text/contained/outlined(调研 07 §1)、IBM Carbon 的 primary/secondary/danger 层级(调研 07 §2)、antd v6 的 type 语法糖 primary|dashed|link|text|default(out/design-study/06-antdesign.md §4.1)。",
+    "en": "Derived from the HTML form button; the variant/emphasis system was shaped by design systems — MUI's text/contained/outlined trio (research 07 §1), IBM Carbon's primary/secondary/danger hierarchy (research 07 §2), and antd v6's type sugar primary|dashed|link|text|default (out/design-study/06-antdesign.md §4.1)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "primary", "label": { "zh": "主操作", "en": "Primary" } },
+        { "value": "secondary", "label": { "zh": "次操作", "en": "Secondary" } },
+        { "value": "text", "label": { "zh": "文字按钮", "en": "Text" } },
+        { "value": "dashed", "label": { "zh": "虚线按钮", "en": "Dashed" } }
+      ],
+      "default": "secondary",
+      "effect": {
+        "zh": "强调层级四档(antd 风格)。secondary 对应 antd type=default 的形态(antd v6 type 族为 primary|dashed|link|text|default,默认 default——06-antdesign §4.1);primary 实底唯一强调(hover/active 取蓝色板阶5/阶7);text 无底低强调;dashed 虚线描边,常作「添加项」诱导入口。Carbon 纪律:每屏只一个 primary,secondary 只与 primary 成对(调研 07 §2)。",
+        "en": "Four emphasis levels (antd style). secondary maps to antd type=default (antd v6 type set: primary|dashed|link|text|default, default 'default' — 06-antdesign §4.1); primary is the sole solid emphasis (hover/active take blue palette steps 5/7); text is borderless low emphasis; dashed draws an invitation entry like 'add item'. Carbon discipline: one primary per screen, secondary only paired with primary (research 07 §2)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "xs", "label": { "zh": "极小 16px", "en": "XS 16px" } },
+        { "value": "sm", "label": { "zh": "小 24px", "en": "SM 24px" } },
+        { "value": "md", "label": { "zh": "中 32px", "en": "MD 32px" } },
+        { "value": "lg", "label": { "zh": "大 40px", "en": "LG 40px" } },
+        { "value": "xl", "label": { "zh": "特大 48px(demo 扩展)", "en": "XL 48px (demo extra)" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "控件高度五档。16/24/32/40 取 antd genControlHeight 派生公式(controlHeight 32 ×0.5/×0.75/×1/×1.25,06-antdesign §2.3③);48 为本 demo 按 ×1.5 外推——antd 无 XL 档(未证实)。antd v6 size 枚举实为 large|medium|small、默认 medium(06 §4.1/§5.1);圆角随档位取圆角族 XS 2/SM 4/默认 6/LG 8(06 §2.3②),字号取 12/14/16(fontSizeSM/基/LG,06 §2.3①)。",
+        "en": "Five control heights. 16/24/32/40 come from antd's genControlHeight formula (controlHeight 32 ×0.5/×0.75/×1/×1.25, 06-antdesign §2.3③); 48 is extrapolated ×1.5 by this demo — antd has no XL step (unverified). antd v6's actual size enum is large|medium|small, default medium (06 §4.1/§5.1). Radii follow the radius family XS 2/SM 4/default 6/LG 8 (06 §2.3②); font sizes 12/14/16 (fontSizeSM/base/LG, 06 §2.3①)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "loading",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "加载态。antd Button loading 默认 false(06-antdesign §4.1);on 时按钮内出现旋转指示并阻断点击——antd 进入加载态即禁交互,MUI 自 v6.4.0 起提供同款 loading prop(调研 07 §1)。NN/g:任何动作发起都要立即给视觉反馈,>1s 才升级为进度指示(调研 07 §19)。",
+        "en": "Loading state. antd Button loading defaults to false (06-antdesign §4.1); when on, a spinner appears and clicks are blocked — antd disables interaction while loading, and MUI ships the same loading prop since v6.4.0 (research 07 §1). NN/g: give immediate visual feedback on any action; escalate to a progress indicator only past 1s (research 07 §19)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "disabled",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "禁用态。antd disabled 默认 false(06-antdesign §4.1);置灰不响应点击,样式取中性 token:文字 25%、填充 4%、边框 #d9d9d9(06 §2.3⑤)。光标 not-allowed——MUI 因 pointer-events:none 无法呈现该光标并自述为已知限制(调研 07 §六),本 demo 用原生 disabled 属性规避此问题。",
+        "en": "Disabled state. antd disabled defaults to false (06-antdesign §4.1); grayed out and unclickable, styled with neutral tokens: text 25%, fill 4%, border #d9d9d9 (06 §2.3⑤). Cursor shows not-allowed — MUI's pointer-events:none loses that cursor, a limitation the library itself documents (research 07 §6); this demo uses the native disabled attribute to avoid it."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "原生 <button>、:hover/:active/:disabled、aria-busy 全部为成熟基线;唯一动效相关项 prefers-reduced-motion 于 2020-01 起全浏览器可用(调研 07 §37)。",
+      "en": "Native <button>, :hover/:active/:disabled and aria-busy are mature baseline; the only motion-related item, prefers-reduced-motion, is baseline across browsers since 2020-01 (research 07 §37)."
+    }
+  },
+  "fallback": {
+    "zh": "无 CSS 动画环境时加载图标静止但仍可见,语义由 aria-busy 与文案传达;按压反馈(:active 位移/变色)缺失不影响操作;不支持 not-allowed 光标的环境退化为默认光标,禁用语义仍由置灰 + disabled 属性表达。",
+    "en": "Without CSS animation the spinner freezes but stays visible; semantics are carried by aria-busy and the label. Missing press feedback (:active shift/tint) never blocks operation; where the not-allowed cursor is unsupported the default cursor remains, with disabled state still expressed by graying + the disabled attribute."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单提交、对话框确认等每屏唯一的主操作(primary;Carbon:页头/模态/侧栏除外)", "en": "The single primary action per screen: form submit, dialog confirm (primary; Carbon exempts page headers/modals/sidebars)" },
+      { "zh": "与主操作成对的否定动作(Cancel/Back 用 secondary)", "en": "Negative actions paired with the primary (Cancel/Back as secondary)" },
+      { "zh": "删除数据等破坏性操作(danger 语义按钮,Carbon)", "en": "Destructive operations (danger semantics, Carbon)" },
+      { "zh": "提交等待 >1s 的请求:loading 态防重复提交并给即时反馈(NN/g)", "en": "Submissions taking >1s: loading state prevents double submits and gives instant feedback (NN/g)" },
+      { "zh": "卡片/列表内低强调动作(text 变体,MUI)", "en": "Low-emphasis actions inside cards/lists (text variant, MUI)" }
+    ],
+    "avoid": [
+      { "zh": "拿按钮做页面导航——按钮触发动作,链接负责导航(Carbon)", "en": "Using buttons for page navigation — buttons trigger actions, links navigate (Carbon)" },
+      { "zh": "一屏多个 primary 争夺注意力(Von Restorff:强调要有节制,调研 07 §30)", "en": "Multiple primaries competing on one screen (Von Restorff: restraint in emphasis, research 07 §30)" },
+      { "zh": "secondary 单独使用或承担肯定动作(必须与 primary 成对,Carbon)", "en": "Secondary alone or carrying an affirmative action (must pair with primary, Carbon)" },
+      { "zh": ">10s 的长任务只用按钮 loading 表达——应升级为可中断的进度条(NN/g 三限,调研 07 §18)", "en": "Long >10s tasks expressed only by a button spinner — escalate to an interruptible progress bar (NN/g limits, research 07 §18)" }
+    ]
+  },
+  "a11y": {
+    "zh": "WAI-APG Button(本会话实测):Space 与 Enter 均激活;可访问名默认取文本内容,图标按钮必须补 aria-label(MUI 要求);动作不可用时用 aria-disabled 或原生 disabled;加载中置 aria-busy=true 供读屏播报;勿移除 focus 指示(WebAIM:outline:none 是键盘无障碍禁忌,调研 07 §36);激活后焦点归属按 APG:不关闭上下文的动作(如 Apply)焦点留在按钮上。",
+    "en": "WAI-APG Button (verified this session): both Space and Enter activate; the accessible name comes from text content, so icon-only buttons need aria-label (MUI's requirement); use aria-disabled or the native disabled attribute when unavailable; set aria-busy=true while loading for screen readers; never remove focus indication (WebAIM lists outline:none as a keyboard-a11y taboo, research 07 §36); post-activation focus follows APG: non-dismissing actions like Apply keep focus on the button."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+    "https://ant.design/components/button-cn",
+    "https://mui.com/material-ui/react-button/",
+    "https://carbondesignsystem.com/components/button/usage/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组 antd 风格按钮:primary/secondary/text/dashed 四变体同行展示,五档高度(xs 16–xl 48px),主按钮点击有按压反馈(位移+色阶),loading 态转圈并阻断点击,disabled 态置灰;蓝色板与中性 token 严格按参数快照值。",
+      "en": "Replicate a row of antd-style buttons: primary/secondary/text/dashed variants, five heights (xs 16 – xl 48px), primary press feedback (shift + palette step), a loading spinner that blocks clicks, and grayed disabled state; blue palette and neutral tokens follow the parameter snapshot exactly."
+    },
+    "acceptance": [
+      { "zh": "用原生 <button type=\"button\">,Space/Enter 可激活(APG),focus 指示不被移除", "en": "Native <button type=\"button\"> activatable via Space/Enter (APG), focus indication never removed" },
+      { "zh": "每屏只有一个 primary;secondary 不单独承担肯定动作", "en": "Exactly one primary per screen; secondary never alone carries an affirmative action" },
+      { "zh": "loading 时 aria-busy=true、阻断点击、spinner 旋转,且 prefers-reduced-motion 下静止", "en": "While loading: aria-busy=true, clicks blocked, spinner rotating — static under prefers-reduced-motion" },
+      { "zh": "primary 主色 #1677ff、hover #4096ff、active #0958d9(蓝色板阶6/5/7);圆角 6、主字号 14", "en": "Primary #1677ff, hover #4096ff, active #0958d9 (blue palette steps 6/5/7); radius 6, base font 14" },
+      { "zh": "高度严格用参数快照档位 16/24/32/40(+48 demo 扩展),禁用态取中性 token(文字 25%/填充 4%/边框 #d9d9d9)", "en": "Heights use the exact snapshot steps 16/24/32/40 (+48 demo extra); disabled state uses neutral tokens (text 25%/fill 4%/border #d9d9d9)" }
+    ]
+  }
+}

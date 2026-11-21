@@ -1,0 +1,108 @@
+{
+  "name": "Typography",
+  "nameZh": "文字排印",
+  "aliases": ["文字排印", "Text Styles", "Type Scale"],
+  "category": "components",
+  "subgroup": "basic",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "文字层级件:六档 level(h1–h4/body/caption,antd 自然指数字阶)× 三档 type(默认/次级/危险)+ 单行省略开关;同屏阶梯展示各级字号与行高。",
+    "en": "Text hierarchy: six level steps (h1–h4/body/caption on antd's natural-exponential scale) × three type colors (default/secondary/danger) plus a single-line ellipsis toggle; the demo shows every step's size and line-height on one screen."
+  },
+  "origin": {
+    "zh": "组件化文本承载于 antd Typography(Text/Title/Paragraph,06-antdesign §4.4);其字阶不是拍脑袋数字,而是由 10 档自然指数公式 size[i]=round(14×e^((i-1)/5)) 生成、行高恒为 (size+8)/size(06 §2.3①,genFontSizes.ts)。",
+    "en": "Componentized text is carried by antd Typography (Text/Title/Paragraph, 06-antdesign §4.4); its type scale is not arbitrary — 10 steps come from the natural-exponential formula size[i]=round(14×e^((i-1)/5)) with line-height fixed at (size+8)/size (06 §2.3①, genFontSizes.ts)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "level",
+      "options": [
+        { "value": "h1", "label": { "zh": "H1 38px", "en": "H1 38px" } },
+        { "value": "h2", "label": { "zh": "H2 30px", "en": "H2 30px" } },
+        { "value": "h3", "label": { "zh": "H3 24px", "en": "H3 24px" } },
+        { "value": "h4", "label": { "zh": "H4 20px", "en": "H4 20px" } },
+        { "value": "body", "label": { "zh": "正文 14px", "en": "Body 14px" } },
+        { "value": "caption", "label": { "zh": "辅助 12px", "en": "Caption 12px" } }
+      ],
+      "default": "body",
+      "effect": {
+        "zh": "字号/行高六档。h1–h4 = antd fontSizeHeading1..4 = 38/30/24/20px,行高 1.23/1.2667/1.3333/1.4(genFontSizes 自然指数曲线,06-antdesign §2.3①;Title level 默认 1,06 §4.4);body = 主字号 14px/行高 1.5714(≈22px,06 §1.3);caption = fontSizeSM 12px/行高 1.6667(官方 token)——「caption」为 demo 命名,antd 无此命名档。字重:h* 600(fontWeightStrong)/正文 400。JS 型参数。",
+        "en": "Six size/leading steps. h1–h4 = antd fontSizeHeading1..4 = 38/30/24/20px with line-heights 1.23/1.2667/1.3333/1.4 (the genFontSizes natural-exponential curve, 06-antdesign §2.3①; Title level defaults to 1, 06 §4.4); body = the base 14px/1.5714 (≈22px, 06 §1.3); caption = fontSizeSM 12px/1.6667 (official token) — \"caption\" is this demo's name, antd has no such named step. Weights: h* 600 (fontWeightStrong) / body 400. JS-typed."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "type",
+      "options": [
+        { "value": "default", "label": { "zh": "默认", "en": "Default" } },
+        { "value": "secondary", "label": { "zh": "次级", "en": "Secondary" } },
+        { "value": "danger", "label": { "zh": "危险", "en": "Danger" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "文本色三档。default = antd colorText rgba(0,0,0,0.88);secondary = colorTextSecondary rgba(0,0,0,0.65)(中性文字四档透明度 88/65/45/25%,06-antdesign §2.3⑤;antd Text type 默认不设即默认色,06 §4.4);danger = seed colorError #ff4d4f(06 §2.2)。JS 型参数。",
+        "en": "Three text colors. default = antd colorText rgba(0,0,0,0.88); secondary = colorTextSecondary rgba(0,0,0,0.65) (the neutral text alpha steps 88/65/45/25%, 06-antdesign §2.3⑤; antd Text type unset = default color, 06 §4.4); danger = seed colorError #ff4d4f (06 §2.2). JS-typed."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ellipsis",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "单行截断开关。antd Typography ellipsis 默认 false(06-antdesign §4.4);on 时超长文本以 text-overflow:ellipsis 单行截断(antd Text/Title 单行语义;Paragraph ellipsis 另支持 rows/expandable/suffix,06 §4.4,demo 只做单行)。JS 型参数。",
+        "en": "Single-line truncation toggle. antd Typography ellipsis defaults to false (06-antdesign §4.4); when on, overflowing text truncates on one line via text-overflow:ellipsis (antd Text/Title single-line semantics; Paragraph ellipsis additionally supports rows/expandable/suffix, 06 §4.4 — the demo does single line only). JS-typed."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "font-size/line-height/letter-spacing 全基线;单行省略 text-overflow:ellipsis 全基线;若做多行截断 -webkit-line-clamp 亦全浏览器可用(需 -webkit- 前缀)。prefers-reduced-motion 不涉及(本条目无动效)。",
+      "en": "font-size/line-height/letter-spacing are baseline; single-line ellipsis via text-overflow is baseline; multi-line clamping with -webkit-line-clamp also works in all browsers (with the -webkit- prefix). prefers-reduced-motion not involved (no motion in this entry)."
+    }
+  },
+  "fallback": {
+    "zh": "text-overflow:ellipsis 需要容器 overflow:hidden + white-space:nowrap 三件套齐备,缺一即截断失效退化为换行——不支持时文本自动换行,信息不丢失;自定义字体加载失败时回退系统字体栈(antd fontFamily 即系统栈),层级仍由字号/字重/颜色承担。",
+    "en": "text-overflow:ellipsis needs the trio — overflow:hidden + white-space:nowrap on the container — or truncation silently degrades to wrapping (no information loss); if a custom font fails to load, fall back to the system stack (antd's fontFamily IS a system stack) and let size/weight/color carry the hierarchy."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "页面信息架构:页面标题(h1/h2)→ 区块标题(h3/h4)→ 正文 → 辅助说明", "en": "Page information architecture: page title (h1/h2) → section title (h3/h4) → body → helper text" },
+      { "zh": "列表三层文字:名称(默认色)/摘要(次级)/时间戳(caption+次级)", "en": "Three-layer list rows: name (default) / summary (secondary) / timestamp (caption + secondary)" },
+      { "zh": "错误与警示文案(danger 色配文案,不只靠颜色)", "en": "Error and warning copy (danger color paired with wording, never color alone)" },
+      { "zh": "表格/卡片内长文本的单元格省略(ellipsis + title 提示全文)", "en": "Ellipsized cells inside tables/cards (ellipsis + title tooltip for the full text)" }
+    ],
+    "avoid": [
+      { "zh": "一屏超过 3–5 种字号(antd 建议系统内字阶控制在 3–5 种,06 §1.3)", "en": "More than 3–5 font sizes on one screen (antd suggests keeping 3–5 steps in a system, 06 §1.3)" },
+      { "zh": "跳级使用(h1 直接接 h4)或用加粗/字号硬造层级而不用语义标题——文档大纲断裂", "en": "Skipping levels (h1 straight to h4) or faking hierarchy with bold/size instead of semantic headings — breaks the document outline" },
+      { "zh": "次要信息全靠颜色变浅——低视觉/色觉障碍场景漏读;浅色小字还要过 4.5:1(WCAG SC 1.4.3)", "en": "Marking secondary info only by lighter color — low-vision/color-blind users miss it; pale small text must still clear 4.5:1 (WCAG SC 1.4.3)" },
+      { "zh": "整段长文用 h1 大字号——阅读负担与行宽失控;正文承担长阅读(主字号 14/行高 1.57)", "en": "Long-form passages set in h1 scale — reading load and line length explode; body copy does long reading (base 14/1.57)" }
+    ]
+  },
+  "a11y": {
+    "zh": "标题层级必须用语义 h1–h4(而非视觉字号),保持文档大纲连续、不跳级;视觉与语义解耦时(如 h2 视觉按 caption 样式)用 class 控样式、标签控语义;danger 红色信息需文字冗余(WCAG SC 1.4.1);正文对比 ≥4.5:1(WCAG SC 1.4.3)——次级 65% 黑对白底 ≈ 7:1 可过,45% 及以下慎用于正文;省略截断的长文本补 title 或 tooltip 全文提示(antd copyable/ellipsis 亦配 tooltip 惯例,06 §4.4)。",
+    "en": "Heading levels must be semantic h1–h4 (not visual sizes), keeping the document outline continuous with no skipped levels; when visuals and semantics decouple (an h2 styled like a caption), control styling via class and semantics via the tag; danger-red information needs textual redundancy (WCAG SC 1.4.1); body contrast ≥4.5:1 (SC 1.4.3) — secondary 65% black on white ≈ 7:1 passes, while 45% and below is risky for body copy; ellipsized long text needs a title or tooltip with the full content (antd's copyable/ellipsis tooltip convention, 06 §4.4)."
+  },
+  "sources": [
+    "https://ant.design/components/typography-cn",
+    "https://ant.design/docs/spec/font-cn"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻 antd 风格的文字排印面板:同屏阶梯展示 h1(38/1.23)→h4(20/1.4)、body(14/1.57)、caption(12/1.67)六档,参数驱动样本文本按 level/type/ellipsis 即时变化;次级 = 65% 黑,危险 = #ff4d4f。",
+      "en": "Replicate an antd-style typography panel: a one-screen ladder of h1 (38/1.23) → h4 (20/1.4), body (14/1.57) and caption (12/1.67), with a param-driven specimen reacting instantly to level/type/ellipsis; secondary = 65% black, danger = #ff4d4f."
+    },
+    "acceptance": [
+      { "zh": "字号/行高严格取官方字阶:h* 38/30/24/20 + 行高 1.23/1.2667/1.3333/1.4;body 14/1.5714;caption 12/1.6667", "en": "Sizes/leadings use the exact official scale: h* 38/30/24/20 with 1.23/1.2667/1.3333/1.4; body 14/1.5714; caption 12/1.6667" },
+      { "zh": "标题用语义 h1–h4 标签承载,层级连续不跳级", "en": "Headings live in semantic h1–h4 tags with a continuous outline" },
+      { "zh": "type 三档色:#000 88% / 65% / #ff4d4f(antd colorText 档 + colorError seed)", "en": "The three type colors: #000 at 88% / 65% / #ff4d4f (antd colorText steps + colorError seed)" },
+      { "zh": "ellipsis=on 时单行截断(text-overflow:ellipsis 三件套齐备),且提供全文 title 提示", "en": "With ellipsis=on, single-line truncation (the text-overflow trio complete) plus a title tooltip carrying the full text" },
+      { "zh": "h* 字重 600(fontWeightStrong)、正文 400;不引入第三方组件库", "en": "h* weight 600 (fontWeightStrong), body 400; no third-party component libraries" }
+    ]
+  }
+}

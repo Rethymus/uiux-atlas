@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+标签是「行内小容器 + 可选关闭钮」的结构:文本直接可读,关闭交互由真实 `<button>` 承担。
+
+```html
+<!-- 静态标签 -->
+<span class="tag tag-blue">进行中 Doing</span>
+
+<!-- 可关闭标签:关闭钮必须带可访问名 -->
+<span class="tag tag-blue">
+  进行中 Doing
+  <button type="button" class="tag-x" aria-label="移除标签 Remove tag">✕</button>
+</span>
+```
+
+关键点:
+
+- 关闭钮用真实按钮元素而非 `<i>`/`<span>`——键盘可达、可聚焦、可挂 aria-label;
+- 删除列表项后焦点要移交给被删项的后一项,不能任其掉到 body(APG 焦点管理实践,调研 07 §35);
+- 标签组语义上可用 `role="list"`/`role="listitem"` 表达;
+- antd 侧对应关系:`closable` 默认 false、`closeIcon` 默认 false、`onClose` 回调、`href` 存在时整标签渲染成 `<a>`(06-antdesign §4.3)。
+
+## 样式与参数
+
+`color`/`closable`/`bordered` 均为 JS 型参数(demo 订阅 store 后切类名/渲染分支):
+
+```css
+.tag {
+  font-size: 12px;        /* antd fontSizeSM */
+  border-radius: 4px;     /* antd borderRadiusSM */
+  border: 1px solid;
+  height: 22px; padding: 0 7px;  /* demo 取值,antd 源码档位未逐一核对 */
+  transition: opacity 0.18s ease, transform 0.18s ease; /* 近 motionDurationMid 0.2s */
+}
+/* 五色 = 功能色派生档位 Bg=阶1 / Border=阶3 / Text=阶9 */
+.tag-red    { background: #fff1f0; border-color: #ffccc7; color: #820014; }
+.tag-orange { background: #fff7e6; border-color: #ffd591; color: #873800; }
+.tag-green  { background: #f6ffed; border-color: #b7eb8f; color: #135200; }
+.tag-blue   { background: #e6f4ff; border-color: #91caff; color: #002c8c; }
+/* 灰 = 无 color 默认形态:白底叠 2% 中性填充 / colorBorder / colorText 88% */
+.tag-gray   { background: #fafafa; border-color: #d9d9d9; color: rgba(0, 0, 0, 0.88); }
+.tag-scene[data-bordered="off"] .tag { border-color: transparent; }
+.tag-closing { opacity: 0; transform: scale(0.85); }
+```
+
+数值出处:
+
+- **seed 主色**:红 `#F5222D`、橙 `#FA8C16`、绿 `#52C41A`、蓝 `#1677FF`(06-antdesign §1.2,seed.ts:3-20);
+- **阶值**(demo 浅底/描边/深字用):取 `@ant-design/colors` 8.0.1 官方 presets(本会话 npm tarball 实测):red 阶1 `#fff1f0`/阶3 `#ffccc7`/阶9 `#820014`;orange `#fff7e6`/`#ffd591`/`#873800`;green `#f6ffed`/`#b7eb8f`/`#135200`;blue `#e6f4ff`/`#91caff`/`#002c8c`。派生档位 Bg=阶1/Border=阶3/Text=阶9 出处为 06 §2.3⑤(antd Tag 内部是否逐字使用该档位未逐一核对源码,如实标注);
+- **closable 默认 false**(06 §4.3);**bordered 默认 true 为 antd v5 语义,v6 已废弃、改 variant: filled|solid|outlined 默认 filled**(06 §4.3/§5.1)——本条目沿用任务给定的 v5 布尔参数;
+- **无「灰色」预设**:antd 13 预设色不含灰,中性灰即不设 color 的 default 形态(06 §4.3)。
+
+## 动效与交互
+
+- **关闭动画**:antd Tag 移除时有淡出/塌缩过渡;demo 只动 `opacity` + `transform: scale(0.85)`,时长 0.18s(≈motionDurationMid 0.2s 档,06 §3.1);`prefers-reduced-motion` 命中时瞬时移除(07 §37);
+- **焦点移交**:关闭后焦点落到剩余的后一个标签的关闭钮;全部删完落回常驻的「恢复全部」按钮——恢复按钮以 disabled 常驻而非条件渲染,避免焦点掉到 body(07 §35);
+- **hover**:关闭钮透明度 0.65→1,不引入位移;标签本体 hover 不变色(标注件不需要按钮级反馈);
+- 别把标签当提醒用:需要「自动消失」的反馈属于 Toast/Message 域,APG Alert 明确告诫自动消失过快违反 WCAG(07 §9)。
+
+## 真实产品案例
+
+- **GitHub Issues** — 每条 issue 右侧的 label 是彩色标签,同一仓库用固定颜色区分 bug/feature/documentation 等类别,点标签可按类别筛选列表。
+- **Gmail** — 收件箱的分类页签(社交/促销/更新)是带图标的彩色标签组,把邮件按类别归堆,选中态用深色底反白。
+- **电商列表(淘宝/京东)** — 商品卡上的「满减」「包邮」「自营」角标是红/橙实底小标签,用高饱和色制造促销紧迫感;同一张卡通常只放一两个,避免强调泛滥。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `color` | 红橙等暖色视觉分量大,适合状态警示(错误红、警告橙);全组都用暖色则紧迫感失效(Von Restorff,07 §30) | 灰最安静,适合大量并存的属性标注;清一色灰会丢失类别区分度,需要文字冗余 |
+| `closable` | on 让标签组成为「输入型」可增删结构(收件人、权限成员),交互成本上升 | off 回归纯标注,无法交互;静态展示场景应保持 off |
+| `bordered` | on 时 1px 描边撑起边界,浅底浅字也立得住(3:1 非文本对比底线,SC 1.4.11) | off 更轻更现代,但浅底标签在白背景上可能整块「隐形」,浅色系慎用 |
+
+经验区间:同一界面彩色标签 ≤3 种颜色;一屏高饱和标签 ≤5 个;状态类(红/橙/绿)必须配文字语义,禁止只靠颜色。

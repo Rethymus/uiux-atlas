@@ -1,0 +1,118 @@
+{
+  "name": "Table",
+  "nameZh": "表格",
+  "aliases": ["数据表格", "Data Table", "DataGrid"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "用行列矩阵组织结构化数据:表头承载列语义,行承载记录;排序、斑马纹与行 hover 都是为扫读服务的辅助层,不是装饰。",
+    "en": "A row-column matrix for structured data: headers carry column semantics, rows carry records. Sorting, striping and row hover are scanning aids, not decoration."
+  },
+  "origin": {
+    "zh": "规格对齐 Ant Design Table(antd 6.7.1:size 默认 large、bordered 默认 false);数据表格组织原则(排序/行 hover 恒开辅助扫读/不要嵌套表格)取 IBM Carbon Data Table usage(调研 07§13);交互与 ARIA 语义取 WAI-APG Table 模式(调研 07§34)。斑马纹默认值取 TDesign Table stripe(@default false)。",
+    "en": "Spec aligned with Ant Design Table (antd 6.7.1: size defaults to large, bordered to false); data-table principles (sorting, always-on row hover, no nested tables) from IBM Carbon Data Table usage (research 07 §13); interaction and ARIA semantics from the WAI-APG Table pattern (research 07 §34). The striping default follows TDesign Table stripe (@default false)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "紧凑 small", "en": "Compact small" } },
+        { "value": "md", "label": { "zh": "中等 medium", "en": "Medium" } },
+        { "value": "lg", "label": { "zh": "宽松 large", "en": "Roomy large" } }
+      ],
+      "default": "lg",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-size)。antd Table size 默认 large(6.7.1 index.zh-CN.md:148);密度分档对齐单元格内边距 token:large 16px、medium 块向 12px/行向 8px、small 8px(table/style/index.ts:457-462,padding/paddingSM/paddingXS = 16/12/8)。",
+        "en": "JS-type param (demo subscribes and toggles data-size). antd Table size defaults to large (6.7.1 index.zh-CN.md:148); density tiers follow the cell-padding tokens: large 16px, medium 12px block / 8px inline, small 8px (table/style/index.ts:457-462; padding/paddingSM/paddingXS = 16/12/8)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "bordered",
+      "options": [
+        { "value": "off", "label": { "zh": "无边框", "en": "Off" } },
+        { "value": "on", "label": { "zh": "带边框", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-bordered)。antd bordered 默认 false(6.7.1 index.zh-CN.md:129),开启时展示外边框和列边框;demo 外框用 colorBorder #d9d9d9、内列线用 colorBorderSecondary #f0f0f0(06-antdesign.md §2.3 中性边框 token)。",
+        "en": "JS-type param (demo subscribes and toggles data-bordered). antd bordered defaults to false (6.7.1 index.zh-CN.md:129) and adds outer + column borders; the demo uses colorBorder #d9d9d9 for the frame and colorBorderSecondary #f0f0f0 for column lines (neutral border tokens, 06-antdesign.md §2.3)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "striped",
+      "options": [
+        { "value": "off", "label": { "zh": "无斑马纹", "en": "Off" } },
+        { "value": "on", "label": { "zh": "斑马纹", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-striped)。antd 6.7.1 Table 无 striped prop(本地源码全检索无 stripe/striped);默认 off 取 TDesign Table stripe 的官方注释 @default false(packages/components/table/type.ts)。demo 斑马色用 rgba(0,0,0,0.02)、hover 用 0.04,对应 antd 中性填充 2%/4% 透明度档(06-antdesign.md §2.3)。",
+        "en": "JS-type param (demo subscribes and toggles data-striped). antd 6.7.1 Table has no striped prop (no stripe/striped hit in a full source search); the off default follows TDesign Table stripe's documented @default false (packages/components/table/type.ts). The demo stripes with rgba(0,0,0,0.02) and hovers at 0.04, matching antd's neutral fill alpha tiers 2%/4% (06-antdesign.md §2.3)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "rowCount",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "JS 型参数:从 8 条内存数据中渲染前 N 行。默认 5 为演示值(antd 无对应 prop,行数由数据驱动)。0 行时以空状态整表替换——Carbon 要求空态不保留表头,避免读屏先读完整表才读到『无内容』(调研 07§17);与 empty 部件条目同一准则。",
+        "en": "JS-type param: renders the first N rows from 8 in-memory records. The default of 5 is a demo value (antd has no such prop; row count is data-driven). At 0 rows an empty state replaces the whole table — Carbon requires the empty state to replace the element (no leftover header) so screen readers don't announce a full table before 'no content' (research 07 §17); same rule as the empty entry."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "table/th/td、scope、aria-sort、:nth-child 与 CSS 变量都是 Web 基线能力,无特性开关要适配;真正的兼容工作是窄容器下的溢出策略(table-layout 与横向滚动),任何浏览器都不缺『能不能渲染』的问题。",
+      "en": "table/th/td, scope, aria-sort, :nth-child and CSS variables are all baseline web capabilities with nothing to feature-detect; the real compatibility work is overflow strategy in narrow containers (table-layout and horizontal scrolling), not rendering support."
+    }
+  },
+  "fallback": {
+    "zh": "表格本身没有需要降级的视觉特性;要做的是内容降级:窄容器给出横向滚动容器而非压缩列宽,排序无法实现时退化为静态表头(不渲染可点击表头,避免虚假 affordance),空数据时用空状态替换整表。",
+    "en": "The table itself has no visual feature to degrade; degrade content instead: give narrow containers a horizontal scroller rather than squeezing columns, fall back to static headers when sorting can't be implemented (don't render clickable headers that do nothing), and replace the whole table with an empty state for empty data."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "结构化记录的扫读与比对(订单、库存、日志),数值列右对齐 + 等宽数字", "en": "Scanning and comparing structured records (orders, inventory, logs) with right-aligned numeric columns in tabular figures" },
+      { "zh": "表头可排序的数据列表——antd sortDirections 默认 ['ascend','descend'](6.7.1)", "en": "Sortable data lists — antd sortDirections defaults to ['ascend','descend'] (6.7.1)" },
+      { "zh": "后台管理的主数据区:行 hover 恒开辅助扫读(Carbon:调研 07§13)", "en": "Primary data area of admin consoles: always-on row hover to aid scanning (Carbon, research 07 §13)" },
+      { "zh": "空数据场景配空状态引导(与 empty 部件同准则,调研 07§17)", "en": "Empty-data scenes guided by an empty state (same rule as the empty entry, research 07 §17)" }
+    ],
+    "avoid": [
+      { "zh": "把表格当 spreadsheet 替代品、嵌套表格(Carbon 明确反对,调研 07§13)", "en": "Using tables as spreadsheet replacements or nesting tables (explicitly rejected by Carbon, research 07 §13)" },
+      { "zh": "纯布局对齐(表单标签排布)——语义 table 会被读屏按表格朗读,布局请用 CSS grid", "en": "Pure layout alignment (form label grids) — a semantic table is announced as a table by screen readers; use CSS grid for layout" },
+      { "zh": "列数过多仍不分组不折叠——密集列应提供列设置或摘要,而不是让用户横向永滚", "en": "Too many columns with no grouping or collapse — offer column settings or summaries instead of endless horizontal scrolling" }
+    ]
+  },
+  "a11y": {
+    "zh": "语义结构:table > thead/tbody > tr > th(scope='col')/td;可排序列头用 aria-sort 表达 ascending/descending,点击后才改变;行 hover 恒开但 hover 不是唯一信息通道(所有数据在 DOM 里始终可读);空状态用 role='status' 让读屏播报;边框与 hover 底色保持 3:1 非文本对比(WCAG 2.1 SC 1.4.11);数值列用 font-variant-numeric: tabular-nums 等宽数字(antd 推荐,06-antdesign.md §1.3)降低纵向比对错位。",
+    "en": "Semantics: table > thead/tbody > tr > th (scope='col')/td; sortable headers express ascending/descending via aria-sort, changing only after a click; row hover is always on but hover is never the only channel (all data stays readable in the DOM); empty states use role='status' to be announced; borders and hover fills keep 3:1 non-text contrast (WCAG 2.1 SC 1.4.11); numeric columns use font-variant-numeric: tabular-nums (antd's recommendation, 06-antdesign.md §1.3) so vertical comparison doesn't jitter."
+  },
+  "sources": [
+    "https://ant.design/components/table-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/table/",
+    "https://carbondesignsystem.com/components/data-table/usage/",
+    "https://github.com/Tencent/tdesign-vue-next/blob/main/packages/components/table/type.ts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个小型数据表格:语义化 thead/tbody 结构、三档密度(size)、可选外框与列线、可选斑马纹、行 hover 高亮、数值列右对齐等宽数字,行数为 0 时整表替换为空状态。",
+      "en": "Replicate a small data table: semantic thead/tbody, three density tiers (size), optional outer/column borders, optional zebra striping, always-on row hover, right-aligned tabular numeric columns, and a full-table empty state replacement at zero rows."
+    },
+    "acceptance": [
+      { "zh": "用真实 table/thead/tbody/th(scope)/td 语义标签,不用 div 拼表", "en": "Use real table/thead/tbody/th (scope)/td semantic tags, not div soup" },
+      { "zh": "size 三档严格对应单元格内边距 16/12·8/8 px,其余样式不随 size 漂移", "en": "The three size tiers map strictly to cell paddings 16 / 12·8 / 8 px; no other styles drift with size" },
+      { "zh": "bordered=on 时外框 #d9d9d9、列线 #f0f0f0;striped=on 时偶数行 rgba(0,0,0,0.02)", "en": "bordered=on gives an #d9d9d9 frame with #f0f0f0 column lines; striped=on tints even rows rgba(0,0,0,0.02)" },
+      { "zh": "行 hover 底色 rgba(0,0,0,0.04) 恒开,不依赖 striped", "en": "Row hover fill rgba(0,0,0,0.04) is always on, independent of striping" },
+      { "zh": "rowCount=0 时不渲染表头,以 role='status' 的空状态替换整表", "en": "At rowCount=0 no header is rendered; a role='status' empty state replaces the whole table" },
+      { "zh": "数值列右对齐并启用 tabular-nums", "en": "Numeric columns are right-aligned with tabular-nums enabled" }
+    ]
+  }
+}

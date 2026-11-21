@@ -1,0 +1,84 @@
+## Structure & DOM
+
+All button semantics live in the native `<button>` element: Space/Enter activation comes free from the browser (WAI-APG Button pattern), no extra keyboard code required.
+
+```html
+<!-- The four variants -->
+<button type="button" class="btn btn-primary">Submit order</button>
+<button type="button" class="btn btn-secondary">Cancel</button>
+<button type="button" class="btn btn-text">Show details</button>
+<button type="button" class="btn btn-dashed">+ Add field</button>
+
+<!-- Loading: block clicks + aria-busy -->
+<button type="button" class="btn btn-primary" disabled aria-busy="true">
+  <svg class="spin" aria-hidden="true"></svg>Loading…
+</button>
+
+<!-- Disabled -->
+<button type="button" class="btn btn-secondary" disabled>Unavailable</button>
+```
+
+Key points:
+
+- Exactly one primary per screen (Carbon: except page headers/modals/sidebars); secondary only appears paired with a primary — alone it is an anti-pattern;
+- Loading state = spinner + `disabled` + `aria-busy="true"`, all three — a spinning button that still accepts clicks invites double submits;
+- Icon-only buttons need an explicit `aria-label`, otherwise the accessible name is empty (MUI's explicit requirement);
+- The `htmlType` idea: buttons default to `type="button"` inside forms; only an intentional submitter gets `type="submit"`.
+
+## Styling & Parameters
+
+All four parameters are JS-typed (the demo subscribes to the store and applies them as `data-variant` / `data-size` attributes plus behavior), with no CSS variables:
+
+```css
+.btn {
+  border-radius: 6px;          /* antd seed borderRadius */
+  font-size: 14px;             /* antd seed fontSize */
+  height: 32px;                /* seed controlHeight */
+  padding: 0 12px;             /* controlPaddingHorizontal */
+  transition: background-color 0.1s, border-color 0.1s, transform 0.1s; /* motionDurationFast */
+}
+.btn-primary { background: #1677ff; color: #fff; }        /* colorPrimary seed */
+.btn-primary:hover { background: #4096ff; }               /* blue palette step 5 */
+.btn-primary:active { background: #0958d9; transform: translateY(1px); } /* step 7 */
+.btn:disabled {
+  background: rgba(0, 0, 0, 0.04);   /* neutral fill 4% step */
+  border-color: #d9d9d9;             /* colorBorder (bg darkened 15%) */
+  color: rgba(0, 0, 0, 0.25);        /* colorTextQuaternary 25% */
+  cursor: not-allowed;
+}
+```
+
+Where the numbers come from (all cross-checked against antd 6.7.1 sources in out/design-study/06-antdesign.md):
+
+- **Height steps** `16 / 24 / 32 / 40` = the `genControlHeight` formula (controlHeight 32 ×0.5/×0.75/×1/×1.25, 06 §2.3③); 48 is extrapolated ×1.5 by this demo — **antd has no XL step (unverified)**. antd v6's real size enum is `large|medium|small`, default `medium` (06 §4.1; v5 used `middle`);
+- **Radius family** xs 2 / sm 4 / md·lg 6 / xl 8 = `genRadius` (06 §2.3②);
+- **Font sizes** 12 / 14 / 16 = fontSizeSM / fontSize / fontSizeLG (06 §2.3①);
+- **Primary color** `#1677ff` = seed colorPrimary; hover `#4096ff` (step 5), active `#0958d9` (step 7), following the derivation "primary=step 6, Hover=step 4–5, Active=step 7" (06 §1.2 blue palette + §2.3⑤);
+- **Neutral tokens**: text at 88%/65%/45%/25% alpha, fills at 15%/6%/4%/2%, border `#d9d9d9` (06 §2.3⑤);
+- **Motion duration** 0.1s = motionDurationFast (06 §3.1);
+- loading defaults to false, disabled defaults to false, `autoInsertSpace` defaults to true for two-CJK-character labels (06 §4.1).
+
+## Motion & Interaction
+
+- **Press feedback**: antd's motion philosophy likens a button to a leaf on water — dips on touch, bounces back (06 §1.6); the demo uses `:active` `translateY(1px)` plus a palette step-down over 0.1s. NN/g: give **immediate** visual feedback on any action (07 §19);
+- **Hover/active palette steps**: the primary glides across palette steps 5/6/7, animating only `background-color` and `transform` (compositor-friendly);
+- **Loading spinner**: 0.8s linear rotation (demo value; antd does not document a period). After a click the demo holds loading for 1.6s — clicks are blocked by `disabled` throughout, the standard double-submit guard; spinners are looping indicators, appropriate only for 2–10s operations (NN/g, 07 §19);
+- **`prefers-reduced-motion`**: under reduce, the shift and transitions are removed and the spinner freezes (07 §37);
+- **Focus after activation** (APG Button, verified this session): opening a dialog moves focus into it; closing returns focus to the trigger; non-dismissing actions like Apply keep focus on the button.
+
+## Real-world examples
+
+- **GitHub** — the "Merge pull request" button on a PR page has long been the sole solid-green primary on that screen; Comment, Close and the rest are neutral outlined or text buttons. The one-primary-per-screen discipline matches Carbon's guidance (07 §2).
+- **WeChat** — transfer and red-packet confirmation screens give the single affirmative action a large solid green button that owns the visual focus, while cancel-style secondary actions are muted text/light buttons; destructive actions (e.g. deleting a contact) switch to red warning buttons.
+- **Google search homepage** — both "Google Search" and "I'm Feeling Lucky" are white, quietly outlined neutral buttons: the page's interaction focus is the input, and the buttons deliberately avoid competing with the colorful logo — echoing Von Restorff's "restraint in emphasis" (07 §30).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `variant` | toward primary: stronger emphasis — multiple solid buttons on one screen fight for attention | toward text: weaker emphasis — a critical confirmation in a dialog rendered as text gets ignored |
+| `size` | easier to hit (Fitts's law: bigger targets, faster acquisition, 07 §22), but takes space and breaks the 32px control baseline when mixed | xs (16px) sits below a comfortable touch target, only for dense toolbars; tiny heights overflow 14px text |
+| `loading` | on blocks clicks and says "the system is busy"; dwelling past 10s drives abandonment — escalate to a progress bar (NN/g limits) | off while the request actually takes >1s leaves users without any feedback — maximum double-click risk |
+| `disabled` | on grays out and blocks, preventing mistakes, but loses the "why" — pair with explanatory copy | off restores interaction; leaving irreversible operations (delete, pay) freely clickable raises the cost of slips |
+
+Working ranges: md (32px) for ordinary page buttons; sm in toolbars and table rows; lg for a form's primary submit; xl reserved for marketing CTAs. Use loading only for requests expected to take 2–10s.

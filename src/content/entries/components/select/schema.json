@@ -1,0 +1,106 @@
+{
+  "name": "Select",
+  "nameZh": "选择器",
+  "aliases": ["下拉选择", "Dropdown", "Combobox", "Listbox"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "从一组互斥选项里选一个:收起时是带箭头的触发器,展开后是可键盘导航的 listbox 浮层。",
+    "en": "Pick one exclusive option from a set: a trigger with an arrow when collapsed, a keyboard-navigable listbox overlay when open."
+  },
+  "origin": {
+    "zh": "原生 <select> 只能换肤有限,生产组件库普遍自绘触发器 + 浮层:APG 把这类「输入框 + 关联弹出层」归为 combobox 模式(select-only 形态),弹出列表用 listbox 模式(调研 07§5);生产参照系是 Ant Design Select(antd 6.7.1 核对:size 默认 medium、allowClear 默认 false、listHeight 默认 256、placement 默认 bottomLeft、单选 mode 默认,见设计调研 06§4.6)。",
+    "en": "Native <select> is barely skinnable, so production libraries draw their own trigger + overlay: APG classifies 'an input with an associated popup' as the combobox pattern (select-only form), with the popup list following the listbox pattern (research 07 §5); the production reference is Ant Design Select (checked against antd 6.7.1: size defaults to medium, allowClear false, listHeight 256, placement bottomLeft, single-select mode default — design study 06 §4.6)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "小 sm", "en": "Small sm" } },
+        { "value": "md", "label": { "zh": "中 md", "en": "Medium md" } },
+        { "value": "lg", "label": { "zh": "大 lg", "en": "Large lg" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-size)。对应 antd Select 的 size:large|medium|small 默认 medium;demo 三档取 antd 控件高度派生档 SM 24 / 32 / LG 40(设计调研 06§2.3③、§4.6)。",
+        "en": "JS-type param (demo subscribes and toggles data-size). Maps to antd Select size: large|medium|small defaulting to medium; the demo tiers use antd's derived control heights SM 24 / 32 / LG 40 (design study 06 §2.3③, §4.6)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "status",
+      "options": [
+        { "value": "default", "label": { "zh": "默认", "en": "Default" } },
+        { "value": "error", "label": { "zh": "错误", "en": "Error" } },
+        { "value": "warning", "label": { "zh": "警告", "en": "Warning" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-status)。对齐 antd 表单控件的 status 语义(error|warning,不设即默认,06§4.5/§4.15 Form validateStatus);边框色取 antd colorBorder #d9d9d9、colorError #ff4d4f、colorWarning #faad14(06§2.2)。",
+        "en": "JS-type param (demo subscribes and toggles data-status). Aligns with antd form-control status semantics (error|warning, unset = default, 06 §4.5/§4.15 Form validateStatus); border colors use antd colorBorder #d9d9d9, colorError #ff4d4f, colorWarning #faad14 (06 §2.2)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "clearable",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-clearable,已选时显示 × 清空)。对齐 antd Select 的 allowClear:默认 false(06§4.6);清空后应把焦点留在触发器上。",
+        "en": "JS-type param (demo subscribes and toggles data-clearable, showing a × once a value is selected). Aligns with antd Select's allowClear, default false (06 §4.6); after clearing, keep focus on the trigger."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "自绘触发器 + listbox 浮层依赖 ARIA 角色与键盘脚本:触发器是原生 button(键盘无障碍),listbox 的方向键导航与 aria-activedescendant 需要脚本实现,读屏对自绘 listbox 的支持需真机实测(APG 键盘实践:ARIA 组件的键盘支持由作者负责,调研 07§35);原生 <select> 则全平台开箱可用。",
+      "en": "A drawn trigger + listbox overlay depends on ARIA roles and keyboard scripting: the trigger is a native button (accessible by default), while arrow-key navigation and aria-activedescendant for the listbox must be scripted, and screen-reader support for drawn listboxes needs real-device testing (APG keyboard practice: authors own ARIA keyboard support, research 07 §35); native <select> works out of the box everywhere."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 环境用原生 <select> 兜底——选项少(≤7 个)时原生控件的可用性与可达性都更好;自绘实现务必保留「点击 + 键盘」双路径,浮层定位失败时降级为触发器下方的同宽面板。",
+    "en": "In no-JS environments fall back to native <select> — with few options (≤7) the native control wins on both usability and accessibility; drawn implementations must keep both click and keyboard paths, and degrade to a same-width panel below the trigger if overlay positioning fails."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "互斥单选且选项 5–15 个:地址省份、排序方式、语言切换", "en": "Exclusive single choice with 5–15 options: province pickers, sort order, language switch" },
+      { "zh": "表单中的受控枚举字段(与 Input 搭配),需要统一的尺寸与状态视觉", "en": "Controlled enum fields in forms (paired with Input) needing unified size/status visuals" },
+      { "zh": "空间受限的筛选栏:收起只占一个控件宽,展开再扫选项", "en": "Space-constrained filter bars: collapsed it takes one control width; options are scanned only when open" },
+      { "zh": "选项需要富内容展示(图标、描述)超出原生 select 能力时", "en": "When options need rich content (icons, descriptions) beyond what native select offers" }
+    ],
+    "avoid": [
+      { "zh": "只有 2–3 个互斥选项时用 radio 更直接——Hick 定律:少一跳展开就少一层记忆负担(调研 07§23)", "en": "With only 2–3 exclusive options, radios are more direct — Hick's law: one less expand step is one less memory burden (research 07 §23)" },
+      { "zh": "选项超过约 15 个且需检索时,应升级为可搜索 combobox,而不是让用户滚长列表", "en": "Past ~15 options with a search need, upgrade to a searchable combobox instead of a long scroll list" },
+      { "zh": "多选场景误用单选 Select——多选应显式 mode=multiple 并展示已选集合", "en": "Misusing single-select for multi-select — multiple needs an explicit multiple mode and a visible selection set" },
+      { "zh": "把触发器做成超长文本容器:选中值过长应省略号截断 + title 提示,而不是撑破布局", "en": "Using the trigger as a long-text container: truncate the selected value with an ellipsis + title hint instead of breaking layout" }
+    ]
+  },
+  "a11y": {
+    "zh": "触发器用 role=\"combobox\"(aria-expanded/aria-haspopup=\"listbox\"/aria-controls/aria-activedescendant 指向高亮项),浮层用 role=\"listbox\"、选项 role=\"option\" + aria-selected;键盘:Down/Up 展开并移动高亮、Enter 确认、Esc 关闭且恢复原值(APG combobox「探索不丢选择」,调研 07§5);焦点环不可移除(WebAIM,调研 07§36);弹出层及其后代不进入页面 Tab 序列(调研 07§5)。",
+    "en": "Trigger uses role=\"combobox\" (aria-expanded/aria-haspopup=\"listbox\"/aria-controls/aria-activedescendant pointing at the highlighted option), the overlay role=\"listbox\" with role=\"option\" + aria-selected; keyboard: Down/Up opens and moves the highlight, Enter commits, Esc closes and restores the previous value (APG combobox 'explore without losing the selection', research 07 §5); never remove the focus ring (WebAIM, research 07 §36); the popup and its descendants stay out of the page Tab order (research 07 §5)."
+  },
+  "sources": [
+    "https://ant.design/components/select-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/listbox/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个自绘单选选择器:带箭头的触发器 + 展开的 listbox 浮层,支持点击与键盘(方向键高亮、Enter 确认、Esc 关闭恢复原值、点击外部关闭),尺寸 sm/md/lg、状态边框三档。",
+      "en": "Replicate a drawn single-select: an arrowed trigger plus an open listbox overlay supporting click and keyboard (arrows to highlight, Enter to commit, Esc to close and restore, click-outside to dismiss), with sm/md/lg sizes and three status borders."
+    },
+    "acceptance": [
+      { "zh": "触发器 role=\"combobox\" 且 aria-expanded/aria-controls 随展开状态联动,浮层 role=\"listbox\"、选项 aria-selected", "en": "Trigger role=\"combobox\" with aria-expanded/aria-controls synced to open state; overlay role=\"listbox\" and options with aria-selected" },
+      { "zh": "浮层最大高度 256px(antd listHeight 默认)可滚动,阴影用 antd 浮层投影,圆角 6px", "en": "Overlay max-height 256px (antd listHeight default) and scrollable, with antd's floating-layer shadow and a 6px radius" },
+      { "zh": "键盘全路径可用:Down/Up/Enter/Esc,Esc 关闭后恢复打开前的值,焦点不落入浮层 Tab 序列", "en": "Full keyboard path works: Down/Up/Enter/Esc; Esc restores the pre-open value and focus never lands in the overlay Tab order" },
+      { "zh": "尺寸 24/32/40px、状态色 #d9d9d9/#ff4d4f/#faad14、选中项底色 #E6F4FF + 主色文字 #1677ff,严格用参数快照值", "en": "Sizes 24/32/40px, status colors #d9d9d9/#ff4d4f/#faad14, selected option on #E6F4FF with primary text #1677ff — exact snapshot values" },
+      { "zh": "浮层展开/收起约 0.2s 且尊重 prefers-reduced-motion;点击外部关闭", "en": "Overlay opens/closes over ~0.2s honoring prefers-reduced-motion; clicking outside dismisses it" }
+    ]
+  }
+}

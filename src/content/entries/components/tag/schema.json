@@ -1,0 +1,106 @@
+{
+  "name": "Tag",
+  "nameZh": "标签",
+  "aliases": ["标签", "Chip", "Badge Label"],
+  "category": "components",
+  "subgroup": "basic",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "标记与分类的小型标签件:五色枚举(红橙蓝绿灰,antd 预设色系),可关闭(closable)与描边(bordered)开关;删除后焦点移交下一个标签。",
+    "en": "A small labeling/classification chip: five color choices (red/orange/blue/green/gray from antd's preset system), with closable and bordered toggles; after removal, focus hands over to the next tag."
+  },
+  "origin": {
+    "zh": "分类标记从实体标签(文件夹标签、价格吊牌)迁移到界面;组件化实现以 antd Tag 为参照——预设色、closable、v6 的 variant 三形态(out/design-study/06-antdesign.md §4.3)。可关闭标签的删除交互遵循 APG 焦点管理实践:删除列表项后焦点移到被删项的后一项(调研 07 §35)。",
+    "en": "Classification marks migrated from physical tags (folder tabs, price tags) into UI; the component form follows antd Tag — preset colors, closable, and v6's variant forms (out/design-study/06-antdesign.md §4.3). The removal interaction follows APG focus-management practice: after deleting a list item, focus moves to the next one (research 07 §35)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "color",
+      "options": [
+        { "value": "gray", "label": { "zh": "灰", "en": "Gray" } },
+        { "value": "red", "label": { "zh": "红", "en": "Red" } },
+        { "value": "orange", "label": { "zh": "橙", "en": "Orange" } },
+        { "value": "green", "label": { "zh": "绿", "en": "Green" } },
+        { "value": "blue", "label": { "zh": "蓝", "en": "Blue" } }
+      ],
+      "default": "gray",
+      "effect": {
+        "zh": "标签色五枚举。灰 = antd 不设 color 的 default 形态(antd 13 个预设色中并无灰色档,中性灰即无色默认——06-antdesign §4.3);红 #F5222D / 橙 #FA8C16 / 绿 #52C41A / 蓝 #1677FF = antd seed 预设色(06 §1.2,seed.ts:3-20)。浅底/描边/文字按功能色派生档位 Bg=阶1、Border=阶3、Text=阶9(06 §2.3⑤),阶值取 @ant-design/colors 8.0.1 官方 presets。JS 型参数。",
+        "en": "Five tag colors. gray = antd's default form with no color prop (antd's 13 preset colors include no gray — neutral gray IS the default — 06-antdesign §4.3); red #F5222D / orange #FA8C16 / green #52C41A / blue #1677FF = antd seed presets (06 §1.2, seed.ts:3-20). Light fill/border/text follow the functional-color derivation Bg=step1, Border=step3, Text=step9 (06 §2.3⑤), with step values from @ant-design/colors 8.0.1 official presets. JS-typed."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "closable",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "关闭按钮开关。antd Tag closable 默认 false(06-antdesign §4.3);on 时尾部出现 ×,点击移除标签并把焦点移交给剩余的后一个标签(无剩余则移到恢复按钮)——APG:删除列表项后焦点设到被删项后一项,勿让焦点掉到 body(调研 07 §35)。demo 另提供「恢复全部」入口。",
+        "en": "Close-button toggle. antd Tag closable defaults to false (06-antdesign §4.3); when on, a trailing × appears and removing a tag hands focus to the following remaining tag (or to the reset control when none left) — APG: after deleting a list item, put focus on the next one; never let focus drop to body (research 07 §35). The demo also offers a restore control."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "bordered",
+      "options": [
+        { "value": "on", "label": { "zh": "有描边", "en": "Bordered" } },
+        { "value": "off", "label": { "zh": "无描边", "en": "Borderless" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "描边开关,沿用 antd v5 的 bordered 布尔语义(默认 true,06-antdesign §4.3);antd v6 已将其废弃,改用 variant: filled|solid|outlined(默认 filled,06 §4.3/§5.1)——本参数保留 v5 语义,off 即去掉 1px 描边。3:1 非文本对比度是控件边界底线(WCAG SC 1.4.11)。",
+        "en": "Border toggle, keeping antd v5's bordered boolean semantics (default true, 06-antdesign §4.3); antd v6 deprecated it in favor of variant: filled|solid|outlined (default filled, 06 §4.3/§5.1) — this param preserves the v5 meaning; off removes the 1px border. A 3:1 non-text contrast ratio is the floor for control boundaries (WCAG SC 1.4.11)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "标签本体(块级元素 + 边框/圆角)与关闭按钮全基线;关闭过渡只动 opacity/transform,prefers-reduced-motion 命中时直接移除(2020-01 起全浏览器可用,调研 07 §37)。",
+      "en": "The tag itself (inline-block + border/radius) and its close button are baseline everywhere; the closing transition animates only opacity/transform and is skipped under prefers-reduced-motion (baseline since 2020-01, research 07 §37)."
+    }
+  },
+  "fallback": {
+    "zh": "无 CSS 过渡能力时关闭动画退化为瞬时移除,信息不丢失;关闭按钮若被禁用 JS 则无法交互——静态场景应避免 closable,改由列表页批量管理。色板阶值缺失时退化为实色底 + 白字(solid 形态)。",
+    "en": "Without CSS transitions the closing animation degrades to instant removal with no information loss; if JS is disabled the close button cannot work — avoid closable in static contexts and manage tags from a list page instead. Missing palette steps degrade to a solid fill + white text (the solid form)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "内容分类标记:文章话题、issue 类别、商品属性", "en": "Content classification: article topics, issue categories, product attributes" },
+      { "zh": "状态标注:进行中/已完结/草稿等生命周期状态", "en": "Status annotation: in-progress/done/draft lifecycle states" },
+      { "zh": "可勾选的多选筛选条件(antd Tag.CheckableTag 形态,06 §4.3)", "en": "Selectable multi-pick filters (antd's Tag.CheckableTag form, 06 §4.3)" },
+      { "zh": "输入型标签组:邮件收件人、权限成员等可增删项(配 closable)", "en": "Input-style tag groups: email recipients, permission members — add/remove items (with closable)" }
+    ],
+    "avoid": [
+      { "zh": "用标签承载必须被处理的关键信息——它是标注不是提醒(提醒请用 Alert/Toast,APG Alert 告诫自动消失风险,07 §9)", "en": "Carrying must-process critical info in a tag — it annotates, it doesn't alert (use Alert/Toast; APG warns about auto-dismiss, 07 §9)" },
+      { "zh": "一屏十几个高饱和彩色标签——Von Restorff:强调泛滥即失效(07 §30)", "en": "A dozen saturated colored tags on one screen — Von Restorff: emphasis everywhere is emphasis nowhere (07 §30)" },
+      { "zh": "把标签当按钮承载主操作——层级错位,主操作应交给 Button", "en": "Using tags as buttons for primary actions — misplaced hierarchy; primary actions belong to Button" },
+      { "zh": "过长的多行文本塞进标签(标签应单行短词,长文用 Badge+文本或列表)", "en": "Stuffing long multi-line text into a tag (tags are single-line short words; long content needs a list)" }
+    ]
+  },
+  "a11y": {
+    "zh": "标签文本本身可被读屏正常读取;关闭按钮必须带可访问名(如 aria-label=\"移除标签 X Remove tag\"),不能只渲染裸 ×;删除后焦点移交后一项(07 §35);颜色不得是唯一的信息通道——同组标签应有文字差异,红色/绿色语义需文字或图标冗余(WCAG SC 1.4.1;07 §30 色觉告诫);控件边界保持 3:1 非文本对比(SC 1.4.11)。",
+    "en": "Tag text reads normally in screen readers; the close button must carry an accessible name (e.g. aria-label=\"Remove tag\"), never a bare ×; after deletion focus moves to the next item (07 §35); color must not be the only information channel — tags in a group need textual differences, and red/green semantics need text or icon redundancy (WCAG SC 1.4.1; 07 §30 color-vision caveat); keep a 3:1 non-text contrast on the boundary (SC 1.4.11)."
+  },
+  "sources": [
+    "https://ant.design/components/tag-cn",
+    "https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组可关闭的 antd 风格标签:五色(红橙蓝绿灰)按色板阶值派生浅底/描边/深字,closable 开关控制尾部 ×,bordered 开关控制 1px 描边;删除有 0.2s 塌缩动画、焦点移交后一项,并提供恢复入口。",
+      "en": "Replicate a row of closable antd-style tags: five colors (red/orange/blue/green/gray) derived from official palette steps for fill/border/text, closable toggling a trailing ×, bordered toggling the 1px stroke; removal plays a 0.2s collapse, hands focus to the next tag, and a restore control resets the group."
+    },
+    "acceptance": [
+      { "zh": "颜色严格用官方阶值:Bg=阶1/Border=阶3/Text=阶9(@ant-design/colors presets);灰 = 无 color 默认形态(#fafafa/#d9d9d9/文字 88%)", "en": "Colors use exact official steps: Bg=step1/Border=step3/Text=step9 (@ant-design/colors presets); gray = the default no-color form (#fafafa/#d9d9d9/text 88%)" },
+      { "zh": "关闭按钮带 aria-label,删除后焦点移到剩余的后一个标签(空则回恢复按钮)", "en": "Close buttons carry aria-label; after deletion focus moves to the next remaining tag (or back to the restore control)" },
+      { "zh": "closable 默认 off、bordered 默认 on(antd v5 语义;v6 已改 variant 默认 filled,如实标注)", "en": "closable defaults off, bordered defaults on (v5 semantics; v6 replaced it with variant defaulting filled, noted as-is)" },
+      { "zh": "关闭动画只动 opacity/transform,约 0.2s,prefers-reduced-motion 下瞬时移除", "en": "The closing animation animates only opacity/transform, ≈0.2s, instant removal under prefers-reduced-motion" },
+      { "zh": "不引入第三方组件库;标签单行短词,组内文字可区分(不只靠颜色)", "en": "No third-party component libraries; tags are single-line short words, textually distinguishable within the group (not by color alone)" }
+    ]
+  }
+}

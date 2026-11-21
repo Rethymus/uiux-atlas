@@ -1,0 +1,113 @@
+{
+  "name": "Badge",
+  "nameZh": "徽标数",
+  "aliases": ["角标", "徽标", "通知数", "Notification Badge"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "附着在其他控件角上的状态计数:数字封顶 99+、归零隐藏、可降级为小红点——徽标的一切默认值都在替用户收敛信息密度。",
+    "en": "A status count attached to the corner of another control: capped at 99+, hidden at zero, degradable to a red dot — every default is converging information density on the user's behalf."
+  },
+  "origin": {
+    "zh": "规格对齐 Ant Design Badge(antd 6.7.1,经 out/design-study/06-antdesign.md §4.17 + 本地 `.scratch/antd06` 源码复核):overflowCount 默认 99(Badge.tsx:70 缺省、:112 拼 `+`)、dot 默认 false、count 为 0 默认隐藏(showZero 默认 false)、offset 为 [number,number] 且默认 -(index.zh-CN.md:47-52)。任务参数名 max 对应 antd overflowCount。",
+    "en": "Spec aligned with Ant Design Badge (antd 6.7.1, verified via out/design-study/06-antdesign.md §4.17 plus the local `.scratch/antd06` source): overflowCount defaults to 99 (Badge.tsx:70 default, :112 appending `+`), dot to false, count hides at 0 (showZero defaults to false), and offset is [number, number] with no default (index.zh-CN.md:47-52). This entry's param name max maps to antd's overflowCount."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "count",
+      "min": 0,
+      "max": 99,
+      "step": 1,
+      "default": 8,
+      "effect": {
+        "zh": "JS 型参数。默认 8 为演示值(antd count 无官方默认);antd 语义:count 为 0 时默认隐藏(showZero 默认 false),大于封顶值时显示 `${overflowCount}+`(index.zh-CN.md:47)。demo 把 count 挂在按钮与头像两个宿主的角上。",
+        "en": "JS-type param. The default of 8 is a demo value (antd count has no documented default); antd semantics: count hides at 0 (showZero defaults to false) and shows `${overflowCount}+` past the cap (index.zh-CN.md:47). The demo pins count to two hosts: a button and an avatar."
+      }
+    },
+    {
+      "type": "number",
+      "name": "max",
+      "min": 1,
+      "max": 99,
+      "step": 1,
+      "default": 99,
+      "effect": {
+        "zh": "JS 型参数。默认 99 对齐 antd overflowCount 的官方默认 99(index.zh-CN.md:51;Badge.tsx:70);超过封顶显示 `99+`。任务参数名 max 是本条目参数名,antd 原名为 overflowCount(5.x/6.x 均无 maxCount,调研已核实为「未证实」命名)。",
+        "en": "JS-type param. The default of 99 matches antd overflowCount's documented default of 99 (index.zh-CN.md:51; Badge.tsx:70); past the cap the badge renders `99+`. max is this entry's param name; antd's original is overflowCount (no maxCount exists in 5.x/6.x — the research records that name as unverified)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "dot",
+      "options": [
+        { "value": "off", "label": { "zh": "数字徽标", "en": "Count badge" } },
+        { "value": "on", "label": { "zh": "小红点", "en": "Red dot" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-dot)。antd dot 默认 false(index.zh-CN.md:49):不展示数字、只有一个小红点,适合「有新内容但数量不重要」;dot 模式同样遵守 count 为 0 隐藏。",
+        "en": "JS-type param (demo subscribes and toggles data-dot). antd dot defaults to false (index.zh-CN.md:49): no number, just a small red dot, for 'new content exists but the amount doesn't matter'; dot mode also hides when count is 0."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "offset",
+      "unit": "px",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "default": 0,
+      "cssVar": "--bd-offset",
+      "effect": {
+        "zh": "CSS 变量型参数(--bd-offset 经 translate 消费)。antd offset 为 [number, number] 双值且默认 -(index.zh-CN.md:50);demo 简化为单值同时作用于 x/y 两轴的额外平移,方向语义以 antd 官方文档为准,此处仅演示「偏移可调」的能力。",
+        "en": "CSS-variable param (--bd-offset consumed via translate). antd offset is a two-value [number, number] with no default (index.zh-CN.md:50); the demo simplifies it to a single value applied as extra translation on both x/y axes — the direction semantics follow antd's docs, and this only demonstrates that the offset is tunable."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "本条目仅用 div + CSS(absolute 定位、translate、border-radius、min-width 药丸形),全浏览器基线能力,无特性开关要适配;真正要守的是宿主角上的裁剪(宿主 overflow: hidden 会剪掉徽标)。",
+      "en": "This entry uses only div + CSS (absolute positioning, translate, border-radius, min-width pill) — baseline in every browser, nothing to feature-detect. The real guard is clipping at the host corner (a host with overflow: hidden will cut the badge off)."
+    }
+  },
+  "fallback": {
+    "zh": "徽标被宿主裁剪时,给宿主留 padding 或把徽标改为 inset 定位;纯视觉徽标必须随附可见文本或 aria-label 表达数量,否则计数信息只活在视觉层;小红点不得作为传达关键信息的唯一手段(颜色不是唯一指示,WCAG 2.1 SC 1.4.1)。",
+    "en": "If the host clips the badge, give the host padding or switch the badge to inset positioning; a purely visual badge must travel with visible text or an aria-label carrying the count, or the number lives only in the visual layer; a red dot must never be the sole carrier of key information (color is not the only indicator, WCAG 2.1 SC 1.4.1)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "消息/通知入口的未读计数(按钮、Tab、图标角上),封顶 99+ 收敛大数字", "en": "Unread counts on message/notification entries (buttons, tabs, icons), capped at 99+ to converge big numbers" },
+      { "zh": "头像角上的状态点(在线、有更新),数量不重要时降级为 dot", "en": "Status dots on avatars (online, has updates), degraded to dot when the amount doesn't matter" },
+      { "zh": "数字本身有信息量时用 count(购物车件数、待办条数);数量不重要时用 dot", "en": "Use count when the number itself informs (cart items, todo count); use dot when only presence matters" }
+    ],
+    "avoid": [
+      { "zh": "把长期不变的数字钉在角上——徽标是「需要处理」的信号,常驻即噪音", "en": "Pinning a never-changing number on a corner — a badge signals 'needs attention'; permanent display is noise" },
+      { "zh": "多个宿主同时挂满徽标——徽标的注意力价值随数量稀释,一屏留两三个以内", "en": "Saturating many hosts with badges at once — attention value dilutes with count; keep two or three per screen" },
+      { "zh": "小红点承载关键且不可恢复的信息——dot 无内容无详情,关键信息要走列表/横幅", "en": "Red dots carrying critical, unrecoverable information — dots have no content or detail; critical info belongs in lists/banners" }
+    ]
+  },
+  "a11y": {
+    "zh": "对读屏,徽标不是独立控件而是宿主的可访问名称的一部分:在宿主上补 aria-label(如「收件箱,8 条未读」)或用 antd Badge 的语义包裹;count 为 0 时视觉隐藏,读屏同样不应播报「0」;小红点必须配宿主文本状态(不能只靠颜色,SC 1.4.1);徽标底色 #ff4d4f 与白色数字对比约 3.9:1,作为大号粗体数字满足 WCAG 大文本 3:1,但小字号数字建议加深底色。",
+    "en": "To screen readers a badge is not a standalone control but part of the host's accessible name: add aria-label on the host ('Inbox, 8 unread') or wrap with antd Badge semantics; when count is 0 the badge hides visually and readers shouldn't announce '0' either; red dots must pair with host text state (never color-only, SC 1.4.1); the #ff4d4f fill against white digits is roughly 3.9:1 — fine for large bold digits at WCAG's 3:1 large-text bar, but darken the fill for small digits."
+  },
+  "sources": [
+    "https://ant.design/components/badge-cn",
+    "https://github.com/ant-design/ant-design/blob/6.7.1/components/badge/Badge.tsx"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一枚计数徽标:挂在按钮与头像的右上角,数字按 max 封顶为 `99+`、归零隐藏、可切换为小红点,offset 可微调位置;宿主语义完整(aria-label 携带未读数)。",
+      "en": "Replicate a count badge pinned to the top-right of a button and an avatar: numbers capped at `99+` by max, hidden at zero, switchable to a red dot, with a tunable offset; hosts stay semantically complete (aria-label carries the unread count)."
+    },
+    "acceptance": [
+      { "zh": "count > max 时严格显示 `${max}+`,不做四舍五入或静默截断", "en": "count > max renders exactly `${max}+`, no rounding or silent truncation" },
+      { "zh": "count = 0 时徽标整体隐藏(dot 模式同样),宿主不留空位", "en": "At count = 0 the badge hides entirely (dot mode too) with no reserved hole on the host" },
+      { "zh": "dot=on 时显示无数字小红点,颜色同为 #ff4d4f(antd colorError seed)", "en": "dot=on renders a numberless red dot in the same #ff4d4f (antd colorError seed)" },
+      { "zh": "offset 通过 CSS 变量注入 translate,参数改动即时可见", "en": "offset is injected through a CSS variable into translate and reacts to parameter changes instantly" },
+      { "zh": "宿主按钮/头像保留完整可访问名称,徽标信息不与宿主文本重复播放两遍", "en": "Host button/avatar keep a complete accessible name; badge info isn't announced twice on top of host text" }
+    ]
+  }
+}

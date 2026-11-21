@@ -15,7 +15,20 @@ const EXPECTED = {
   color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation"],
   type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
   layout: ["container-queries"],
+  // 第七分类 components:24 个 slug(与 scripts/verify-entries.mjs 的 COMPONENT_SLUGS 同一清单,
+  // 六子分组序 basic/form/feedback/data/navigation/other)—— 批产已完成,缺失检查并入常规逐条全检。
+  components: [
+    "button", "icon", "tag", "typography",
+    "input", "select", "switch", "checkbox", "date-picker",
+    "toast", "modal", "drawer", "alert", "tooltip",
+    "table", "avatar", "badge", "card",
+    "nav-menu", "tabs", "breadcrumb", "dropdown",
+    "empty", "watermark",
+  ],
 };
+
+// components 分类页标记(zh 页标题文案,en 页为分类名大写首词)
+const CATEGORY_ZH_MARKERS = { components: "前端部件" };
 
 const missing = [];
 const contentFails = [];
@@ -55,9 +68,10 @@ checkPage(
   "en resources",
 );
 
-// 分类列表页 ×2 ×6
+// 分类列表页 ×2 ×7(components 批产前无条目,仅检分类页存在与标题标记)
 for (const cat of Object.keys(EXPECTED)) {
-  checkPage(join(cat, "index.html"), [cat], `zh category ${cat}`);
+  const zhMarker = CATEGORY_ZH_MARKERS[cat] ?? cat;
+  checkPage(join(cat, "index.html"), [zhMarker], `zh category ${cat}`);
   checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
 }
 

@@ -1,0 +1,90 @@
+{
+  "name": "Checkbox",
+  "nameZh": "多选框",
+  "aliases": ["复选框", "Check Box", "Checkbox Group"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "多选控件:一组里可同时选中任意多项;配一个全选框时,「部分选中」用 indeterminate 半选态表达。",
+    "en": "A multi-select control: any number of siblings can be checked at once; with a select-all, the 'some selected' state is expressed as an indeterminate half-check."
+  },
+  "origin": {
+    "zh": "原生 <input type=\"checkbox\"> 即 APG checkbox 模式;第三态经 aria-checked=\"mixed\" 表达(Carbon 数据表格的表头全选同为三态,调研 07§6/§13)。生产参照系是 Ant Design Checkbox(antd 6.7.1 核对:checked 默认 false、indeterminate 默认 false 且只控样式、disabled 默认 false、Group 的 value/defaultValue 默认 [],见设计调研 06§4.8)。",
+    "en": "The native <input type=\"checkbox\"> already implements the APG checkbox pattern; the third state is expressed via aria-checked=\"mixed\" (Carbon's data-table header select-all is tristate too, research 07 §6/§13). The production reference is Ant Design Checkbox (checked against antd 6.7.1: checked defaults false, indeterminate defaults false and is style-only, disabled false, Group value/defaultValue default [] — design study 06 §4.8)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "selectAll",
+      "options": [
+        { "value": "off", "label": { "zh": "全不选", "en": "All off" } },
+        { "value": "on", "label": { "zh": "全选", "en": "All on" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 双向:面板改动驱动三个子项,点击子项也回写本参数)。对应「全选框」的勾选态——全部子项选中时为 on、否则 off;「部分选中」是派生的半选态(aria-checked=\"mixed\"),不落在本参数里(antd indeterminate 默认 false 且只控样式,06§4.8)。",
+        "en": "JS-type param (two-way in the demo: panel edits drive the three children, child clicks write back). Represents the select-all checkbox state — on only when every child is checked, else off; 'some selected' is a derived indeterminate state (aria-checked=\"mixed\") and does not live in this param (antd indeterminate defaults false and is style-only, 06 §4.8)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "disabled",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-disabled)。对齐 antd Checkbox 的 disabled:默认 false(06§4.8);组级 disabled 同时禁用全选框与全部子项(antd Checkbox.Group 同样提供整组 disabled)。",
+        "en": "JS-type param (demo subscribes and toggles data-disabled). Aligns with antd Checkbox disabled, default false (06 §4.8); a group-level disabled disables the select-all and all children together (antd Checkbox.Group offers the same group-level disabled)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "原生 checkbox 的键盘(Space)与读屏支持全平台完备;半选态有两套通道——原生 input.indeterminate DOM 属性(视觉打点)与 aria-checked=\"mixed\"(读屏播报),两者应同时设置,缺一则视觉与播报不同步。",
+      "en": "Native checkboxes ship complete keyboard (Space) and screen-reader support everywhere; the half state has two channels — the native input.indeterminate DOM property (visual dash) and aria-checked=\"mixed\" (announced state) — both must be set, or visuals and announcements desync."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时原生表单照常工作;全选联动的派生逻辑不可用时,保留「全选框 + 子项」的静态表单语义即可——浏览器原生表单提交不依赖 JS。",
+    "en": "Without JS native forms keep working; if the select-all derivation is unavailable, the static semantics of 'select-all + children' still hold — native form submission never needed JS."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "「全选 + 子项」批量场景:列表行首勾选、购物车合并结算、批量操作(调研 07§13 Carbon 数据表格的三态全选)", "en": "'Select-all + children' batch scenarios: list row checks, cart consolidation, bulk actions (research 07 §13 Carbon data-table tristate select-all)" },
+      { "zh": "互不排斥的多选项:订阅渠道、权限点、筛选条件", "en": "Non-exclusive multi-picks: subscription channels, permission points, filter conditions" },
+      { "zh": "「我已阅读并同意」类确认勾选(单框形态)", "en": "'I have read and agree' confirmation checks (single-box form)" }
+    ],
+    "avoid": [
+      { "zh": "即时生效的二元设置——用 switch;checkbox 勾选后通常要等「提交」才生效,两种心智不能混(调研 07§6)", "en": "Instant-effect binary settings — use a switch; a checkbox usually waits for submit, and the two mental models must not mix (research 07 §6)" },
+      { "zh": "互斥单选——用 radio group;勾选框允许全不选,表达不了「必选其一」约束", "en": "Exclusive single choice — use a radio group; checkboxes allow none selected and cannot express 'exactly one'" },
+      { "zh": "只靠视觉打点表达半选而漏设 aria-checked=\"mixed\"——读屏会把它读成未选中", "en": "Expressing the half state only via the visual dash while omitting aria-checked=\"mixed\" — screen readers will announce it as unchecked" },
+      { "zh": "勾选后即时执行删除等不可逆操作——勾选只是选择,执行前需要明确的动作按钮确认", "en": "Triggering irreversible actions (delete) immediately on check — checking is a selection; execution needs an explicit action button" }
+    ]
+  },
+  "a11y": {
+    "zh": "组语义用 fieldset/legend(或 role=group + aria-labelledby)命名;全选框在部分选中时设 input.indeterminate=true + aria-checked=\"mixed\";键盘 Space 切换(WebAIM 键位表,调研 07§36);disabled 用原生属性并在文案中说明原因;勾选框与文字标签整体可点(label 包裹),命中区≥ 控件本身。",
+    "en": "Group semantics come from fieldset/legend (or role=group + aria-labelledby); the select-all sets input.indeterminate=true + aria-checked=\"mixed\" when partially selected; Space toggles (WebAIM key table, research 07 §36); disabled uses the native attribute with the reason stated in copy; the hit area covers the label text too (label wraps the input), never smaller than the control itself."
+  },
+  "sources": [
+    "https://ant.design/components/checkbox-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/switch/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻「全选 + 三子项」多选组:fieldset/legend 命名,全选框在部分选中时呈现 indeterminate 半选,勾选任一子项即时联动全选态,支持整组 disabled。",
+      "en": "Replicate a 'select-all + three children' checkbox group: fieldset/legend naming, a select-all showing an indeterminate half-check when partially selected, instant two-way linkage from any child, and a group-wide disabled."
+    },
+    "acceptance": [
+      { "zh": "全选联动为双向派生:子项全选中→全选 on;全不选→off;其余→indeterminate(视觉打点 + aria-checked=\"mixed\" 同时设置)", "en": "Select-all linkage is a two-way derivation: all children on → select-all on; none → off; otherwise indeterminate (visual dash + aria-checked=\"mixed\" set together)" },
+      { "zh": "组语义经 fieldset/legend 提供;键盘 Space 切换为原生 checkbox 行为", "en": "Group semantics via fieldset/legend; Space toggling is native checkbox behavior" },
+      { "zh": "disabled 同时禁用全选与子项并整体减淡;选中底色 #1677ff(antd colorPrimary),圆角 4px(borderRadiusSM)", "en": "disabled disables select-all and children together and dims the group; checked fill #1677ff (antd colorPrimary), radius 4px (borderRadiusSM)" },
+      { "zh": "控件尺寸 16px(antd controlInteractiveSize = controlHeight/2),点击区域覆盖文字标签", "en": "Control size 16px (antd controlInteractiveSize = controlHeight/2); the hit area covers the text label too" },
+      { "zh": "selectAll 参数与面板双向同步;无布局抖动,半选态切换不改变行高", "en": "The selectAll param syncs both ways with the panel; no layout shift — the half state never changes line height" }
+    ]
+  }
+}

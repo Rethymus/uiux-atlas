@@ -1,0 +1,58 @@
+## Structure & DOM
+
+A tooltip is a paired "trigger + bubble" structure: the trigger stays as a relative-positioning anchor, the bubble is absolutely positioned at one of its four sides; the bubble is a plain short text line, outside the Tab order, never taking focus.
+
+```html
+<button aria-describedby="tip-save">Save</button>
+<span id="tip-save" role="tooltip" hidden>Saves to drafts · ⌘S</span>
+```
+
+Key points:
+
+- The trigger references the bubble via `aria-describedby` (attribute attached/removed with visibility), and the bubble itself carries `role="tooltip"`;
+- **Both hover and focus trigger it** (APG Tooltip): mouse hover and keyboard Tab focus must both reveal it — hover-only implementations exclude keyboard users;
+- `Esc` to hide is the APG-mandated keyboard escape; the bubble appears after a delay (antd `mouseEnterDelay` default 0.1s) so sweeping the cursor doesn't strobe tooltips across the UI.
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store): `placement`/`theme`/`arrow` map to the bubble's `data-placement` / `data-theme` / `data-arrow`, taking effect immediately.
+
+```css
+.anchor { position: relative; }        /* the trigger's wrapper anchors */
+.bubble {
+  position: absolute; z-index: 1060;   /* top of the layer system (Arco/Semi tooltip tier) */
+  padding: 6px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.bubble[data-placement="top"]    { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+.bubble[data-theme="dark"]       { background: rgba(0, 0, 0, 0.85); color: #fff; }  /* antd colorBgSpotlight */
+.bubble[data-theme="light"]      { background: #fff; color: rgba(0,0,0,0.88); border: 1px solid #d9d9d9; }
+.bubble[data-arrow="on"]::after  { content: ""; width: 8px; height: 8px; rotate: 45deg; background: inherit; }
+```
+
+Where the numbers come from: placement across 12 positions defaulting to **top**, `arrow` default **true**, `trigger` default hover, `mouseEnterDelay/mouseLeaveDelay` default 0.1s (design-study 06 §4.14); the dark ground rgba(0,0,0,0.85) is antd's system colorBgSpotlight token (06 §2.3⑤), and Semi/Arco dark-mode tooltip ground is `#373739` (design-study 03); z-index 1060 from Semi's layer system (03); the 0.1s transition from Semi's Popover/Tooltip motion (03). On `theme` dark/light: antd itself **has no such enum** (custom `color` prop instead) — dark is the de-facto default, light is a variant seen in TDesign's theme system — both honestly noted, unverified as official enum defaults.
+
+## Motion & Interaction
+
+- **Show**: fade in over 0.1s after the 100ms delay (Semi Popover/Tooltip transition parameters); **hide**: immediately — a tooltip is a high-frequency amplifier with no exit queue;
+- **Esc hides**: the keyboard escape hatch; mouse leave / focus loss also hide it;
+- **Flip fallback**: near viewport edges production libraries auto-flip the direction (antd `autoAdjustOverflow` default true); the demo centers its triggers so all four directions fit;
+- Under `prefers-reduced-motion: reduce`, transitions drop and it toggles instantly.
+
+## Real-world examples
+
+- **GitHub**: on a repository home, hovering any collaborator avatar in the stack floats a dark bubble with the username — the lightweight identity amplifier for dense lists;
+- **VS Code**: toolbar and activity-bar icon buttons reveal "name + shortcut" bubbles on hover (e.g. "Toggle Sidebar Ctrl+B") — in icon-dense UIs the tooltip is the mouse user's main discoverability channel;
+- **Figma**: the left toolbar shows "tool name + single-key shortcut" on hover (e.g. "Rectangle R") — pro tools store shortcut memory inside the bubble, matching the "amplifier for mouse users" positioning.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `placement` | no size per se — it changes occlusion strategy: top avoids taskbars/thumb zones best, bottom covers content under the trigger | same; left/right inevitably clip on edge-docked triggers — production needs auto-flip |
+| `theme` | light harmonizes on pale pages and reads slightly better for longer text, but jars on dark surfaces | dark is the de-facto standard (antd default): stronger contrast, faster recognition; check white-on-dark at 4.5:1 |
+| `arrow` | on: ownership is explicit — with dense elements, less mis-attribution | off: reads as a detached layer, quieter UI; easy to mis-attribute when several bubbles share a screen |
+| (delay) | later shows mean fewer accidental reveals but a growing "nothing happened" feel; past 300ms it feels broken | under 50ms, sweeping a toolbar strobes bubbles — 0.1s (antd default) is the sweet spot |
+
+Working ranges: one line of plain text, 0.1s delay, one consistent baseline direction per product; any information required to act correctly must never live only in a tooltip.

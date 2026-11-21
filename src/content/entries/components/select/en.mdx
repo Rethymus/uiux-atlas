@@ -1,0 +1,75 @@
+## Structure & DOM
+
+A drawn select is a two-layer "trigger + overlay list" structure, wrapped in one relatively-positioned container:
+
+```html
+<div class="select-wrap" data-size="md" data-status="default">
+  <button type="button" class="select-trigger" role="combobox"
+          aria-haspopup="listbox" aria-expanded="true"
+          aria-controls="city-list" aria-activedescendant="city-sh">
+    Shanghai <span class="arrow" aria-hidden="true">▾</span>
+  </button>
+  <ul class="select-list" id="city-list" role="listbox" aria-label="City">
+    <li class="opt" role="option" id="city-bj" aria-selected="false">Beijing</li>
+    <li class="opt" role="option" id="city-sh" aria-selected="true">Shanghai</li>
+  </ul>
+</div>
+```
+
+Key points:
+
+- The trigger is a **native button** (natively tabbable and Enter/Space-activatable); the combobox role relays the "highlighted option" to screen readers via `aria-activedescendant`;
+- The overlay is `role="listbox"` with options as `role="option"` + `aria-selected`; `aria-expanded` must track the open state in real time;
+- The overlay is absolutely positioned below the trigger (bottomLeft), same width as the trigger (antd `popupMatchSelectWidth` default true, research 06 §4.6), and stays out of the Tab order.
+
+## Styling & Parameters
+
+All three parameters are JS-typed (store-subscribed `data-*` switches); the CSS branches on `data-size` / `data-status` / `data-clearable`:
+
+```css
+.select-trigger { border: 1px solid #d9d9d9; border-radius: 6px; background: #fff;
+                  color: rgba(0, 0, 0, 0.88); display: flex; justify-content: space-between; }
+.select-wrap[data-size="sm"] .select-trigger { height: 24px; font-size: 12px; padding: 0 8px; border-radius: 4px; }
+.select-wrap[data-size="md"] .select-trigger { height: 32px; font-size: 14px; padding: 0 12px; border-radius: 6px; }
+.select-wrap[data-size="lg"] .select-trigger { height: 40px; font-size: 16px; padding: 0 12px; border-radius: 6px; }
+.select-wrap[data-status="error"]   .select-trigger { border-color: #ff4d4f; }
+.select-wrap[data-status="warning"] .select-trigger { border-color: #faad14; }
+.select-list {
+  position: absolute; top: calc(100% + 4px); left: 0; width: 100%;
+  max-height: 256px; overflow: auto;                    /* antd listHeight default 256 */
+  background: #fff; border-radius: 6px; z-index: 10;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+}
+.opt[aria-selected="true"] { background: #E6F4FF; color: #1677ff; }  /* blue-1, primary tint */
+.opt:hover { background: rgba(0, 0, 0, 0.04); }                      /* controlItemBgHover */
+.is-placeholder { color: rgba(0, 0, 0, 0.25); }                      /* colorTextQuaternary */
+```
+
+Where the numbers come from:
+
+- Sizes 24/32/40 and font sizes 12/14/16 = antd's derived control-height/type-scale tiers (design study 06 §2.3①③); antd Select `size` defaults to **medium** (06 §4.6; the v5-era default was middle);
+- The 256px overlay max-height = antd `listHeight` default; the overlay shadow copies antd's floating-layer boxShadow verbatim; selected background `#E6F4FF` = antd blue scale step 1 (controlItemBgActive=PrimaryBg); hover rgba(0,0,0,0.04) = FillTertiary (06 §1.2/§2.3);
+- `clearable` aligns with `allowClear` (default **false**), `status` with form-control `status: error|warning` semantics (06 §4.5/§4.6).
+
+## Motion & Interaction
+
+- **Open/close**: the overlay enters with opacity + a 4px rise over 0.2s (antd motionDurationMid + motionEaseInOut); under `prefers-reduced-motion` it appears/disappears instantly;
+- **Full keyboard path** (APG combobox, research 07 §5): Down/Up opens and moves the highlight; Enter commits the highlighted option; **Esc closes and restores the value from before opening** — "explore without losing the selection" is what separates a combobox from a plain single-select listbox; leaving via Tab collapses it too;
+- **Click-outside close**: a document-level pointerdown listener collapses the overlay when the target lies outside the container;
+- **Focus management**: focus stays on the trigger throughout; the highlight is expressed via `aria-activedescendant` (focus ≠ selection, visually distinct — research 07 §35).
+
+## Real-world examples
+
+- **GitHub issue/PR list filters**: "Label", "Assignee" and "Milestone" are all trigger + overlay dropdowns, each with a search box at the top of the overlay, checkable items and check marks on selections — large option sets gain filtering on top of the listbox;
+- **12306 departure/arrival station picker**: clicking the field opens a station list searchable by pinyin and initials, with frequently-used cities pinned first — search + listbox coping with thousands of options;
+- **E-commerce shipping address (province/city/district)**: a three-level cascading select where changing a parent resets the child — cascades are the classic compound use of Select.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | lg (40px) steadies touch hits, and the overlay rows grow too — fewer options visible per screen | sm (24px) compacts filter bars, but 12px option text and shorter rows raise scanning and tapping cost |
+| `status` | error turns the whole trigger red at once — highest weight, and it needs copy under the field (color alone is not enough, WCAG 1.4.1) | back to default all visual hints vanish; the message must be carried by text instead |
+| `clearable` | on adds a × hit area to the selected state for a one-click return to the placeholder | off makes undoing a selection require reopening the overlay and re-picking the old option — especially costly on mobile |
+
+Working ranges: 5–15 options render as a plain listbox; beyond ~15 add search; the collapsed trigger always shows the current value or placeholder — never a blank trigger.

@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+多选组是「fieldset + legend 命名,组内全选框 + 子项」的结构,全选框用原生 checkbox:
+
+```html
+<fieldset class="ck-group">
+  <legend>通知方式</legend>
+  <label class="ck-row">
+    <input type="checkbox" id="ck-all" aria-checked="mixed" />
+    <span>全选</span>
+  </label>
+  <label class="ck-row">
+    <input type="checkbox" name="channel" value="email" />
+    <span>邮件</span>
+  </label>
+  <label class="ck-row">
+    <input type="checkbox" name="channel" value="sms" />
+    <span>短信</span>
+  </label>
+</fieldset>
+```
+
+关键点:
+
+- `fieldset/legend` 提供组语义,读屏聚焦任一子项都会先播报组名;等价替代是 `role="group"` + `aria-labelledby`;
+- 全选框的半选态需要**双通道**:JS 设 `input.indeterminate = true`(视觉打点)+ `aria-checked="mixed"`(读屏播报)——React 不透传 indeterminate 属性,必须经 ref 设置;
+- 原生 `input[type=checkbox]` 的 Space 切换、`label` 包裹的整行命中区都是免费的,不要用 div + 自绘勾重造;
+- 子项同名 `name`(如 `channel`)让表单提交天然聚合为数组(antd Checkbox.Group 的 `value/defaultValue` 默认 `[]` 同语义,调研 06§4.8)。
+
+## 样式与参数
+
+两个参数都是 JS 型(经 store 订阅/回写),CSS 按 `data-disabled` 分支:
+
+```css
+.ck-group { border: 0; padding: 0; margin: 0; }
+.ck-group legend { font-size: 14px; color: rgba(0, 0, 0, 0.88); padding: 0; margin-bottom: 8px; }
+.ck-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+.ck-row input {
+  appearance: none;
+  width: 16px; height: 16px;                    /* controlInteractiveSize = controlHeight/2 */
+  border: 1px solid #d9d9d9; border-radius: 4px; /* borderRadiusSM */
+  display: grid; place-items: center;
+  transition: background 0.2s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.2s;
+}
+.ck-row input:checked { background: #1677ff; border-color: #1677ff; }  /* colorPrimary */
+.ck-row input:checked::after { content: ""; width: 8px; height: 4px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(0, -1px); }
+.ck-row input:indeterminate { background: #1677ff; border-color: #1677ff; }
+.ck-row input:indeterminate::after { content: ""; width: 8px; height: 2px; background: #fff; }
+.ck-group[data-disabled="on"] .ck-row { opacity: 0.45; cursor: not-allowed; }
+```
+
+数值出处:
+
+- 控件 16px = antd `controlInteractiveSize`(controlHeight 32 的一半,设计调研 06§2.3④);圆角 4px = borderRadiusSM(06§2.3②);
+- 选中底色 `#1677ff` = colorPrimary、边框 `#d9d9d9` = colorBorder、过渡 0.2s = motionDurationMid + motionEaseInOut(06§2.2/§2.3/§3.1);
+- `checked`/`disabled` 默认值、`indeterminate`「默认 false 且只控样式」、Group 默认 `[]`,逐项对齐 antd 6.7.1 文档核对(06§4.8)。
+
+## 动效与交互
+
+- **勾选反馈**:底色/边框 0.2s 过渡,勾线随 `::after` 即时出现;半选打点同理;`prefers-reduced-motion` 时取消过渡;
+- **键盘**:Space 切换(原生);Tab 顺序 = 全选框 → 各子项,天然线性;
+- **联动是派生不是状态机**:任一子项变化 → 重算 全选=全部选中?半选=部分选中?:全选框变化 → 把值广播给全部子项——逻辑单向可测,避免双向绑定的回环;
+- **禁用整组**:点击与键盘全部哑掉,视觉减淡;恢复时勾选状态保留原样。
+
+## 真实产品案例
+
+- **Gmail 邮件列表**:表头全选框带下拉(全部/已读/未读/已加星标…),部分行被选中时全选框呈半选;勾选行首复选框后浮出批量操作工具栏——「三态全选 + 批量操作栏」的标准范式;
+- **淘宝/京东购物车**:每件商品行首复选框,店铺级与全选逐级联动,底部结算栏实时汇总已选金额与件数——勾选联动直接驱动业务汇总;
+- **Windows/macOS 安装向导**:「我已阅读并同意许可条款」单个复选框,不勾选则「继续」按钮保持禁用——复选框作为责任确认的最小用法。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `selectAll` | on 把三个子项全部拉起——批量场景一步到位;误触发全选的代价是全部重置 | off 清空全部;注意半选态下点全选框应**补齐到全选**(主流实现),而不是清空 |
+| `disabled` | on 锁住整组,适合「上级条件未满足」的场景;需要文案说明原因,否则用户不知道何时解锁 | off 恢复交互;长期禁用的组应考虑折叠或移除 |
+
+经验区间:子项 3–7 个平铺一列;超过约 7 个考虑分列或分组;全选框永远放第一位并保持与子项一致的缩进节奏。

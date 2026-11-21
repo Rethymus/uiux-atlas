@@ -71,6 +71,14 @@ export default function FilterBar({ entries, locale }: FilterBarProps) {
       card.classList.remove("card-in");
       if (show) visible.push(card);
     });
+    // subgroup 分组页(components):组内卡全被过滤掉时连组标题一起隐藏
+    // (其余分类无 [data-subgroup] 节点,天然 no-op)
+    scope.querySelectorAll<HTMLElement>("[data-subgroup]").forEach((section) => {
+      const hasVisible = Array.from(section.querySelectorAll<HTMLElement>(".entry-card")).some(
+        (card) => card.style.display !== "none",
+      );
+      section.style.display = hasVisible ? "" : "none";
+    });
     if (firstRun.current) {
       firstRun.current = false;
       return;

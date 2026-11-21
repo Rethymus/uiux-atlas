@@ -1,0 +1,74 @@
+## Structure & DOM
+
+A tag is "a small inline container + an optional close control": the text stays directly readable, and the close interaction lives on a real `<button>`.
+
+```html
+<!-- Static tag -->
+<span class="tag tag-blue">Doing</span>
+
+<!-- Closable tag: the close control must carry an accessible name -->
+<span class="tag tag-blue">
+  Doing
+  <button type="button" class="tag-x" aria-label="Remove tag">✕</button>
+</span>
+```
+
+Key points:
+
+- Use a real button element, not `<i>`/`<span>` — keyboard reachable, focusable, and able to host an aria-label;
+- After deleting an item from the group, hand focus to the item after the deleted one; never let it drop to body (APG focus-management practice, research 07 §35);
+- A tag group can be expressed with `role="list"`/`role="listitem"`;
+- The antd correspondence: `closable` defaults to false, `closeIcon` defaults to false, an `onClose` callback exists, and with `href` the whole tag renders as `<a>` (06-antdesign §4.3).
+
+## Styling & Parameters
+
+`color`/`closable`/`bordered` are all JS-typed params (the demo subscribes to the store and toggles classes/branches):
+
+```css
+.tag {
+  font-size: 12px;        /* antd fontSizeSM */
+  border-radius: 4px;     /* antd borderRadiusSM */
+  border: 1px solid;
+  height: 22px; padding: 0 7px;  /* demo values; antd's exact source steps not audited */
+  transition: opacity 0.18s ease, transform 0.18s ease; /* near motionDurationMid 0.2s */
+}
+/* Five colors = the functional-color derivation Bg=step1 / Border=step3 / Text=step9 */
+.tag-red    { background: #fff1f0; border-color: #ffccc7; color: #820014; }
+.tag-orange { background: #fff7e6; border-color: #ffd591; color: #873800; }
+.tag-green  { background: #f6ffed; border-color: #b7eb8f; color: #135200; }
+.tag-blue   { background: #e6f4ff; border-color: #91caff; color: #002c8c; }
+/* Gray = the default no-color form: 2% neutral fill over white / colorBorder / colorText 88% */
+.tag-gray   { background: #fafafa; border-color: #d9d9d9; color: rgba(0, 0, 0, 0.88); }
+.tag-scene[data-bordered="off"] .tag { border-color: transparent; }
+.tag-closing { opacity: 0; transform: scale(0.85); }
+```
+
+Where the numbers come from:
+
+- **Seed primaries**: red `#F5222D`, orange `#FA8C16`, green `#52C41A`, blue `#1677FF` (06-antdesign §1.2, seed.ts:3-20);
+- **Step values** (used for the demo's fill/border/text): from the `@ant-design/colors` 8.0.1 official presets (npm tarball inspected this session): red step1 `#fff1f0`/step3 `#ffccc7`/step9 `#820014`; orange `#fff7e6`/`#ffd591`/`#873800`; green `#f6ffed`/`#b7eb8f`/`#135200`; blue `#e6f4ff`/`#91caff`/`#002c8c`. The derivation Bg=step1/Border=step3/Text=step9 comes from 06 §2.3⑤ (whether antd Tag's internal CSS uses these very steps was not audited against source — stated as-is);
+- **closable defaults to false** (06 §4.3); **bordered default true is antd v5 semantics — v6 deprecated it for variant: filled|solid|outlined, default filled** (06 §4.3/§5.1) — this entry keeps the task-given v5 boolean param;
+- **No gray preset**: antd's 13 preset colors include no gray; the neutral gray IS the no-color default form (06 §4.3).
+
+## Motion & Interaction
+
+- **Closing animation**: antd fades/collapses the tag on removal; the demo animates only `opacity` + `transform: scale(0.85)` over 0.18s (near the motionDurationMid 0.2s step, 06 §3.1); under `prefers-reduced-motion` removal is instant (07 §37);
+- **Focus handover**: after closing, focus lands on the next remaining tag's close button; when the group empties it returns to the ever-present "Restore" button — rendered as permanently disabled rather than conditionally unmounted, so focus never drops to body (07 §35);
+- **Hover**: the close button goes from opacity 0.65 to 1 with no translation; the tag body itself does not change color on hover (an annotation needs no button-level feedback);
+- Never use tags as alerts: "auto-dismiss" feedback belongs to Toast/Message, and the APG Alert pattern explicitly warns that dismissing too fast violates WCAG (07 §9).
+
+## Real-world examples
+
+- **GitHub Issues** — the label beside each issue is a colored tag; a repository fixes colors per category (bug/feature/documentation), and clicking a label filters the list by it.
+- **Gmail** — the inbox category tabs (Social/Promotions/Updates) form an icon-bearing colored tag group that bins mail by category; the selected tab uses a dark fill with inverted text.
+- **E-commerce listings (Taobao/JD)** — "discount", "free shipping" and "self-run" corner tags on product cards are red/orange solid micro-tags; the saturated colors manufacture promotional urgency, and a single card usually carries no more than one or two to avoid emphasis inflation.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `color` | warm hues (red/orange) carry heavy visual weight, right for state warnings (error red, warning orange); an all-warm group kills urgency (Von Restorff, 07 §30) | gray is the quietest, right for dense coexisting attribute labels; all-gray loses category distinction and needs textual redundancy |
+| `closable` | on turns the group into an editable "input-style" structure (recipients, members) at higher interaction cost | off returns to pure annotation, non-interactive; static displays should keep it off |
+| `bordered` | on: the 1px stroke props up the boundary so light fills hold on white (3:1 non-text contrast floor, SC 1.4.11) | off is lighter and more modern, but pale fills on white backgrounds can go invisible — be careful with the light palette |
+
+Working ranges: ≤3 colored tag hues per screen; ≤5 saturated tags per view; status tags (red/orange/green) must pair with textual semantics — never color alone.

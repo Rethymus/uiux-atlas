@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+表格是一棵严格的语义树,顺序不能颠倒:`table` 包 `thead` + `tbody`,`thead` 内每列一个 `th`(带 `scope="col"`),`tbody` 内每行一个 `tr`、每格一个 `td`。
+
+```html
+<table>
+  <thead>
+    <tr><th scope="col">名称</th><th scope="col" aria-sort="ascending">单价</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>云杉台灯</td><td>129</td></tr>
+  </tbody>
+</table>
+```
+
+关键点:
+
+- 用真实表格语义而非 div 拼装:读屏会把 `table` 按表格朗读,WAI-APG Table 模式是自定义实现的第一参照(调研 07§34);
+- 可排序的列头是按钮,排序方向用 `aria-sort="ascending / descending"` 表达,未排序时不设该属性;
+- 行数是数据的函数——行数为 0 时,**空状态替换整张表**(不保留表头/边框),避免读屏先读完整表才读「无内容」(Carbon,调研 07§17);这一准则与 empty 部件条目一致。
+
+## 样式与参数
+
+四个参数全部为 JS 型(demo 订阅 store 切换 `data-*` 属性),密度分档对齐 antd Table 的单元格内边距 token:
+
+```css
+/* 三档密度:antd cellPadding large 16 / medium 12·8 / small 8
+   (table/style/index.ts:457-462;padding 16、paddingSM 12、paddingXS 8) */
+.tb-table[data-size="lg"] th, .tb-table[data-size="lg"] td { padding: 16px; }
+.tb-table[data-size="md"] th, .tb-table[data-size="md"] td { padding: 12px 8px; }
+.tb-table[data-size="sm"] th, .tb-table[data-size="sm"] td { padding: 8px; }
+
+/* bordered(antd 默认 false):外框 colorBorder #d9d9d9、列线 colorBorderSecondary #f0f0f0 */
+.tb-table[data-bordered="on"] { border: 1px solid #d9d9d9; }
+.tb-table[data-bordered="on"] td:not(:last-child) { border-right: 1px solid #f0f0f0; }
+
+/* 斑马纹(antd 无此 prop,默认 off 取 TDesign stripe @default false);
+   斑马 2% / hover 4% 取 antd 中性填充透明度档(FillQuaternary/Tertiary) */
+.tb-table[data-striped="on"] tbody tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+.tb-table tbody tr:hover { background: rgba(0,0,0,0.04); }
+
+/* 数值列:右对齐 + 等宽数字(antd 推荐 tabular-nums,06-antdesign.md §1.3) */
+.tb-num { text-align: right; font-variant-numeric: tabular-nums; }
+```
+
+数值出处:
+
+- `size` 默认 **large**、`bordered` 默认 **false**,均核对自 antd 6.7.1 文档源(out/design-study/06-antdesign.md §4.15,本地 `.scratch/antd06` 复核 index.zh-CN.md:129、:148);
+- 斑马纹:antd 6.7.1 无 `striped` prop;默认 off 取 TDesign Table `stripe` 的官方注释 `@default false`;
+- 行 hover 恒开是 Carbon 的明确要求(「行 hover 态应始终启用辅助扫读」,调研 07§13),hover 不依赖斑马纹参数。
+
+## 动效与交互
+
+- **行 hover**:底色 0.2s 过渡(antd motionDurationMid),缓动 `cubic-bezier(0.645,0.045,0.355,1)`(motionEaseInOut);hover 只做底色,不位移不高亮整行边框;
+- **排序点击**:asc → desc → 取消,三态循环,表头 `aria-sort` 同步更新;antd `sortDirections` 默认 `['ascend','descend']`(6.7.1);
+- **入场**:表格淡入 + 8px 上移,只动 `opacity/translate`;`prefers-reduced-motion: reduce` 时取消动画与 hover 过渡;
+- **空状态切换**:rowCount 调 0 时整表替换为空状态块,带 `role="status"` 让读屏播报;空状态里的「创建记录」是唯一主操作(避免多空态并存时出现多个主按钮,Carbon 调研 07§17)。
+
+## 真实产品案例
+
+- **GitHub 仓库文件列表**:名称 / 最近一次提交说明 / 时间的三列表格,行 hover 高亮辅助扫读,目录与文件用图标前缀区分——表格用来扫读结构化记录的典型形态;
+- **Ant Design 官网组件页的 API 文档表**:「参数 / 说明 / 类型 / 默认值」四列表,本仓调研(out/design-study/06-antdesign.md)逐条读取的正是这类表;默认值列固定类型标注,长类型换行不溢出列;
+- **Stripe Dashboard 交易列表**:每行一笔支付,状态以彩色徽标表达、金额右对齐——金额右对齐 + 等宽数字是财务类表格的通行做法,避免纵向比对错位。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size`(sm→lg) | 密度变疏、行高增大,可读性上升但一屏容纳行数变少 | 密度变紧,大屏一屏更多信息;sm(8px)时行间呼吸感消失,只适合短字段表 |
+| `bordered` | 外框 + 列线让列边界清晰,适合多列宽数据;边框过多会显得像表单 | 只有行分隔线,更轻更「内容向」;列多时列边界会漂移难对齐 |
+| `striped` | 偶数行底色让横向扫读不易串行,适合行高较小、字段较多的表 | 回到纯白底,靠 hover 单行定位;行很疏时斑马纹反而显脏 |
+| `rowCount` | 行数增多,页面纵向变长;超过一屏应配分页或虚拟滚动 | 行数减少;到 0 时空状态**整表替换**(不保留表头),与 empty 部件同一准则 |
+
+经验区间:后台主数据表用 md 密度 + hover 恒开;窄容器给横向滚动而不是压缩列宽;不要把表格当 spreadsheet 用、不要嵌套表格(Carbon,调研 07§13)。

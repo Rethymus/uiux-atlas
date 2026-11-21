@@ -1,0 +1,103 @@
+{
+  "name": "Tabs",
+  "nameZh": "标签页",
+  "aliases": ["页签", "选项卡", "Tab Bar", "Tabbed Interface"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "在同一视图内平铺切换多份平级内容:一条标签轴 + 一块内容面板,点选或方向键切换,不打断所在页面的上下文。",
+    "en": "Switches between peer content sets inside one view: a tab axis plus one content panel, toggled by click or arrow keys, without leaving the current page context."
+  },
+  "origin": {
+    "zh": "文件夹索引标签与浏览器多标签的界面化:WAI-ARIA APG「Tabs」模式给出 tablist/tab/tabpanel 语义与「内容预载才自动激活」的判据(调研 07§11 一手);生产参照系是 Ant Design Tabs(props 对齐 antd 6.7.1 文档核对,见 out/design-study/06-antdesign.md §4.20)。",
+    "en": "The digitization of folder index tabs and browser tabs: the WAI-ARIA APG \"Tabs\" pattern defines the tablist/tab/tabpanel semantics and the \"auto-activate only with preloaded content\" criterion (research 07§11, first-hand); the production reference is Ant Design Tabs (props aligned to the antd 6.7.1 docs audit, see out/design-study/06-antdesign.md §4.20)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "position",
+      "options": [
+        { "value": "top", "label": { "zh": "顶部(top)", "en": "Top" } },
+        { "value": "left", "label": { "zh": "左侧(left)", "en": "Left" } }
+      ],
+      "default": "top",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换布局)。top=标签轴横排在面板上方(左右方向键切换);left=标签轴纵排在面板左侧(上下方向键切换,tablist 声明 aria-orientation=vertical)。Ant Design v6 的 tabPlacement(取代 v5 tabPosition)官方默认 top(06-antdesign.md §4.20),demo 同取 top;v6 的 start/end 还覆盖右置形态,本条目按任务规格收敛为 top/left。",
+        "en": "JS-type param (the demo subscribes and switches layout). top = horizontal axis above the panel (Left/Right arrows switch); left = vertical axis beside the panel (Up/Down arrows switch, tablist declares aria-orientation=vertical). Ant Design v6's tabPlacement (replacing v5 tabPosition) officially defaults to top (06-antdesign.md §4.20), and the demo uses the same; v6's start/end also cover right-side placement, which this entry collapses to top/left per the task spec."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "type",
+      "options": [
+        { "value": "line", "label": { "zh": "线条(line)", "en": "Line" } },
+        { "value": "card", "label": { "zh": "卡片(card)", "en": "Card" } }
+      ],
+      "default": "line",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换形态)。line=下划线式,活动项由滑动指示条(ink bar)标记,轻量、适合页面主体;card=卡片式,标签带边框,活动卡片底与面板连成一体,适合多标签并置的管理界面。Ant Design Tabs type 官方默认 line(line|card|editable-card,06-antdesign.md §4.20)。",
+        "en": "JS-type param (the demo subscribes and switches form). line = underline style, the active tab marked by a sliding ink bar — lightweight, suited to page body content; card = card style with bordered tabs where the active card merges into the panel — suited to admin surfaces with many parallel tabs. Ant Design Tabs type officially defaults to line (line|card|editable-card, 06-antdesign.md §4.20)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "animated",
+      "options": [
+        { "value": "on", "label": { "zh": "开(on)", "en": "On" } },
+        { "value": "off", "label": { "zh": "关(off)", "en": "Off" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后开关过渡)。on=指示条滑动 + 面板淡入上移;off=瞬时切换。Ant Design 的 animated 官方默认为 {inkBar: true, tabPane: false}(指示条动效默认开、面板过渡默认关,06-antdesign.md §4.20);本条目把两处合并为单一开关,默认 on 取的是 inkBar 默认 true 的部分,面板过渡属条目规格扩展,zh/en MDX 已注明。",
+        "en": "JS-type param (the demo subscribes and toggles transitions). on = ink bar slides + panel fades in with a small rise; off = instant switching. Ant Design's animated officially defaults to {inkBar: true, tabPane: false} (ink-bar motion on, pane transition off, 06-antdesign.md §4.20); this entry merges both into a single switch whose default on takes the inkBar-defaults-true half, while the pane transition is an entry-spec extension — noted in both MDX files."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 兼容性门槛:结构是普通 DOM + CSS;语义由 ARIA tablist/tab/tabpanel 与 aria-selected/aria-controls 提供,方向键漫游需作者自行实现(APG 键盘界面实践,调研 07§35);「选中随焦点」的自动激活只在面板内容已预载时允许(调研 07§11)。",
+      "en": "No CSS compatibility gate: plain DOM + CSS; semantics come from ARIA tablist/tab/tabpanel with aria-selected/aria-controls; roving-focus arrow keys must be implemented by the author (APG keyboard interface practices, research 07§35); selection-follows-focus auto-activation is allowed only when panel content is preloaded (research 07§11)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时降级为平铺小节:每张标签变成小标题、全部面板顺序展开(内容都可见),或只保留首个面板并配页内锚点;信息不丢失。",
+    "en": "Without JS it degrades to flat sections: each tab becomes a heading with all panels expanded in order (everything visible), or keep only the first panel plus in-page anchors; no information is lost."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "同视图内切换平级内容:概览/明细/设置等并列视图,不离开当前页面", "en": "Peer views in one surface: overview/details/settings side by side without leaving the page" },
+      { "zh": "长表单/详情页按域分组,降低单屏信息密度", "en": "Long forms and detail pages grouped by domain to cut single-screen density" },
+      { "zh": "面板内容已预载、切换瞬时完成时,可用方向键自动激活(APG 推荐,调研 07§11)", "en": "When panels are preloaded and switching is instant, arrow-key auto-activation is the APG-recommended mode (research 07§11)" },
+      { "zh": "内容需要独立 URL/SEO 或步骤有先后依赖时,不要用标签页——改用路由 + 面包屑或分步组件", "en": "The inverse guard: content needing its own URL/SEO, or order-dependent steps, belongs to routes + breadcrumbs or a stepper instead" }
+    ],
+    "avoid": [
+      { "zh": "标签数量过多——横向溢出后要靠「更多」折叠(antd more 图标,06-antdesign.md §4.20),超过 7 个优先重构信息架构", "en": "Too many tabs — overflow forces a \"more\" fold (antd more icon, 06-antdesign.md §4.20); beyond 7, restructure the IA instead" },
+      { "zh": "把有先后顺序的流程装进标签页——用户可能跳步,改用分步/向导", "en": "Sequential flows in tabs — users may skip steps; use a stepper/wizard" },
+      { "zh": "嵌套标签页(标签里再放标签)——层级混乱,认知成本陡增", "en": "Nested tabs (tabs inside tabs) — confused hierarchy and steep cognitive cost" },
+      { "zh": "标签文案长短悬殊导致轴宽抖动——文案控制在 2–6 字/词", "en": "Wildly varying tab labels jittering the axis — keep labels to 2–6 characters/words" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG Tabs 语义:tablist 容器 + role=tab(aria-selected、aria-controls 指向面板)+ role=tabpanel(aria-labelledby 指回标签,无可聚焦元素时 tabIndex=0 进 Tab 序列);垂直布局声明 aria-orientation=vertical;方向键在标签间漫游(focus ≠ selection,二者视觉必须可区分,调研 07§35);自动激活(选中随焦点)仅在面板已预载、切换瞬时完成时推荐,否则用手动激活(Enter/Space)(调研 07§11);demo 内容全部预载,采用自动激活并实现 Home/End。",
+    "en": "APG Tabs semantics: a tablist container + role=tab (aria-selected, aria-controls pointing at the panel) + role=tabpanel (aria-labelledby back to the tab, tabIndex=0 to enter the Tab order when it holds no focusable elements); vertical layouts declare aria-orientation=vertical; arrow keys rove across tabs (focus ≠ selection — the two must be visually distinct, research 07§35); automatic activation (selection follows focus) is recommended only when panels are preloaded and switching is instant, otherwise manual activation (Enter/Space) applies (research 07§11); the demo preloads all content, uses auto-activation, and implements Home/End."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/",
+    "https://ant.design/components/tabs-cn"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块标签页:横排(或左置)标签轴 + 内容面板,点选与方向键均可切换,线条式带滑动指示条、卡片式带边框,支持开关切换动效。",
+      "en": "Replicate a tabbed interface: a horizontal (or left-placed) tab axis + content panel, switchable by click and arrow keys, with a sliding ink bar in line style and bordered cards in card style, plus a toggle for switching motion."
+    },
+    "acceptance": [
+      { "zh": "role=tablist/tab/tabpanel 齐备,aria-selected/aria-controls/aria-labelledby 指向正确", "en": "role=tablist/tab/tabpanel in place, with aria-selected/aria-controls/aria-labelledby wired correctly" },
+      { "zh": "方向键在标签间漫游焦点,垂直布局声明 aria-orientation=vertical,Home/End 跳首尾", "en": "Arrow keys rove across tabs; vertical layout declares aria-orientation=vertical; Home/End jump to the ends" },
+      { "zh": "线条式指示条滑动对齐活动标签;卡片式活动卡片与面板底连成一体", "en": "Line style: the ink bar slides to the active tab; card style: the active card merges seamlessly into the panel" },
+      { "zh": "animated=off 时瞬时切换、无过渡残留;动效尊重 prefers-reduced-motion", "en": "animated=off switches instantly with no transition residue; motion respects prefers-reduced-motion" },
+      { "zh": "全部面板内容预载,选中随焦点(自动激活)成立且在 MDX 中说明判据", "en": "All panel content is preloaded so selection-follows-focus holds, with the criterion explained in the MDX" }
+    ]
+  }
+}

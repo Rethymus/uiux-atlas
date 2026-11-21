@@ -6,9 +6,25 @@ export const CATEGORIES = [
   { id: "color", zh: "色彩与主题", en: "Color" },
   { id: "type", zh: "排版", en: "Typography" },
   { id: "layout", zh: "布局与响应式", en: "Layout" },
+  { id: "components", zh: "前端部件", en: "Components" },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
+
+/**
+ * 子分组(仅 components 分类使用;组件库分类学:基础/表单/反馈/数据/导航/其他)。
+ * 条目 schema.json 里的 subgroup 可选字段取这里的 id。
+ */
+export const SUBGROUPS = [
+  { id: "basic", zh: "基础", en: "Basic" },
+  { id: "form", zh: "表单", en: "Form" },
+  { id: "feedback", zh: "反馈", en: "Feedback" },
+  { id: "data", zh: "数据", en: "Data" },
+  { id: "navigation", zh: "导航", en: "Navigation" },
+  { id: "other", zh: "其他", en: "Other" },
+] as const;
+
+export type SubgroupId = (typeof SUBGROUPS)[number]["id"];
 
 /** 来源体系 */
 export const SYSTEMS = [
@@ -114,6 +130,8 @@ export interface EntrySchema {
   nameZh?: string;
   aliases: string[];
   category: CategoryId;
+  /** 子分组(仅 category="components" 条目使用;值域 SUBGROUPS 的 id,缺省归 other) */
+  subgroup?: SubgroupId;
   system: SystemId;
   /** 参数化程度 1-3 */
   star: number;
@@ -134,6 +152,8 @@ export interface EntryMeta {
   name: string;
   /** 中文名(zh 站展示名;缺省回退 name,与 EntrySchema.nameZh 同步透传) */
   nameZh?: string;
+  /** 子分组(仅 components 条目;与 EntrySchema.subgroup 同步透传,缺省归 other) */
+  subgroup?: SubgroupId;
   system: SystemId;
   star: number;
   tagline: LocalizedText;

@@ -1,0 +1,81 @@
+## Structure & DOM
+
+Two mainstream implementations; the demo uses option A:
+
+**Option A — CSS/DOM tile repetition (used by the demo)**: an absolutely positioned watermark layer holds N tile spans, laid out by CSS Grid `auto-fill` + `gap`, with rotation and opacity driven by CSS variables:
+
+```html
+<div class="content-card">…body…</div>
+<div class="wm-layer" aria-hidden="true">      <!-- pointer-events:none; z-index:9 -->
+  <div class="wm-grid">                        <!-- repeat(auto-fill, 120px) + gap -->
+    <span class="wm-tile">UIUX Atlas</span>    <!-- ×N tiles -->
+  </div>
+</div>
+```
+
+**Option B — canvas → dataURL → background-repeat (antd's official route)**: draw one tile into a canvas (sized tile + gap), export with `toDataURL`, and let the browser repeat it as a `background-image`. The tradeoffs:
+
+| | A: CSS/DOM tiles | B: canvas dataURL |
+| --- | --- | --- |
+| Parameter changes | CSS variables apply instantly, zero re-rendering | every change redraws the canvas + re-encodes |
+| Text quality | vector, crisp at any zoom | bitmap, needs 2x sampling on high-DPI screens |
+| DOM/memory | dozens of spans (~20 in the demo) | a single background node |
+| Tamper resistance | weak — DevTools can delete the nodes | strong — antd watches removal with a MutationObserver and redraws automatically |
+
+A watermark signals "deterrence + provenance" and carries no required information — the layer must be `aria-hidden` and `pointer-events: none`, while the content card remains the actual body of the document flow.
+
+## Styling & Parameters
+
+Four parameters: three via CSS variables (rotate/opacity/gap), one via store subscription (content):
+
+```css
+.wm-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 9;                    /* antd zIndex default 9, below the overlay system */
+  opacity: var(--wm-opacity);    /* 0.15, matching the alpha of antd's rgba(0,0,0,.15) */
+  pointer-events: none;
+  overflow: hidden;
+}
+.wm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 120px);   /* tile 120×64 = antd default */
+  grid-auto-rows: 64px;
+  column-gap: var(--wm-gap);                          /* 100px = antd gap [100,100] */
+  row-gap: var(--wm-gap);
+}
+.wm-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(var(--wm-rotate));                /* -22deg = antd rotate default */
+  font: 400 16px sans-serif;                          /* antd font defaults fontWeight/fontSize/fontFamily */
+  white-space: nowrap;
+}
+```
+
+Where the numbers come from (06-antdesign §4.24, verified against antd 6.7.1 source): `rotate` defaults to **-22**, tile **120×64**, `gap` defaults to **[100, 100]**, `offset` defaults to [gap/2, gap/2], font defaults to **rgba(0,0,0,.15) / fontSize 16 / fontWeight 400 / fontFamily sans-serif / textAlign center**, `zIndex` defaults to **9**, `inherit` defaults to **true** (propagating to Modal/Drawer overlays), the container is forced to `overflow: hidden` since 5.18.0 to prevent height collapse, and a built-in MutationObserver redraws on tamper; TDesign's light/dark watermark text token `--td-text-color-watermark` is rgba(0,0,0,10%) / rgba(255,255,255,10%) (02-tdesign §1.6 — the demo's dark scene flips text white on the same idea).
+
+## Motion & Interaction
+
+- **Static-layer discipline**: no ambient animation on the watermark layer — re-rendering a large tiled pattern every frame is expensive; the demo re-lays out only on parameter changes, with Grid doing incremental layout and rotate/opacity/gap applying live via CSS variables;
+- **Entrance**: the content card fades in + rises 8px (cancelled under `prefers-reduced-motion`); the watermark appears immediately or fades in as a whole over 0.25s — never per-tile animation, a tiled pattern that "moves" becomes pure interference;
+- **Interaction isolation**: `pointer-events: none` guarantees the watermark never intercepts clicks, text selection or focus; body selection and button hover pass through untouched;
+- **Overlay propagation**: with antd's `inherit: true` the watermark propagates above Modal/Drawer overlays (its zIndex 9 sits below the 1000-based popup system) — the demo contains no overlays; the rule is recorded for reference.
+
+## Real-world examples
+
+- **Feishu/Lark external document sharing**: when a doc is shared outside the organization, the page overlays a visitor-identity watermark (name etc.) so leaked screenshots are traceable — the typical production form of the "user identity" tier;
+- **Ant Design Watermark**: the official component draws one canvas tile repeated via `background-repeat`, with a MutationObserver guarding against manual deletion (auto-redraw when nodes are removed) — the engineering reference for option B (official docs, verified in 06-antdesign §4.24);
+- **Stock-asset site previews**: unpurchased assets carry a tiled logo watermark to deter theft — the generic form of the "product name" tier, usually denser than document scenarios; site-specific parameters are uncertain, so no numbers are claimed.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `rotate` | steeper tiles, more clearly offset from the text baseline; near ±45° tiles invade their neighbors and overlap risk rises as gap shrinks | approaches horizontal; at 0° the tiles align with the body rows — defeating crop-resistance and easier to ignore visually |
+| `opacity` | a bolder, more assertive watermark; past 0.2 body contrast approaches the 4.5:1 red line (WCAG 1.4.3) — unacceptable over dense text | stealthier; under 0.05 it nearly vanishes on light backgrounds and may disappear entirely after screenshot compression, losing provenance value |
+| `gap` | sparser — fewer tiles per screen, less interference, but weaker coverage and trivially bypassed by cropping | denser — stronger coverage and deterrence; at 40px tiles nearly merge and readability over dense body text visibly suffers |
+| `content` | longer copy widens each tile visually; antd accepts arrays for multi-line watermarks carrying "name + time + IP" provenance | short copy (product name) keeps interference low but carries little provenance — deterrence outweighs traceability |
+
+Working ranges: opacity 0.08–0.15 (antd 0.15 / TDesign 0.10 both sit in-band), rotate near -22°, gap 80–120px; use the lower band over dense body text, the upper band with higher density for preview-image protection.

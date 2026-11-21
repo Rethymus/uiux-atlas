@@ -1,0 +1,104 @@
+{
+  "name": "Tooltip",
+  "nameZh": "文字提示",
+  "aliases": ["气泡提示", "提示框", "Hint", "气泡卡片"],
+  "category": "components",
+  "subgroup": "feedback",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "悬停/聚焦时出现的小气泡:纯鼠标放大器,hover 与 focus 双触发、Esc 隐藏、纯文本短句——不能承载必须阅读的信息。",
+    "en": "A small bubble on hover/focus: a pure mouse amplifier — hover and focus both trigger it, Esc hides it, plain short text — never for must-read information."
+  },
+  "origin": {
+    "zh": "交互契约来自 W3C APG Tooltip 模式(30 模式之一,调研 07§34):不自动获得焦点、hover+focus 双触发、Esc 隐藏;实现参数参照 Ant Design Tooltip:placement 12 向默认 top、arrow 默认 true、mouseEnterDelay 默认 0.1s、trigger 默认 hover(antd 6.7.1 核对,design-study 06§4.14)。",
+    "en": "The interaction contract comes from the W3C APG Tooltip pattern (one of the 30 patterns, research 07 §34): never takes focus, triggered by both hover and focus, Esc hides; implementation follows Ant Design Tooltip: placement across 12 positions defaulting to top, arrow default true, mouseEnterDelay 0.1s, trigger default hover (antd 6.7.1, design-study 06 §4.14)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "placement",
+      "options": [
+        { "value": "top", "label": { "zh": "上", "en": "Top" } },
+        { "value": "right", "label": { "zh": "右", "en": "Right" } },
+        { "value": "bottom", "label": { "zh": "下", "en": "Bottom" } },
+        { "value": "left", "label": { "zh": "左", "en": "Left" } }
+      ],
+      "default": "top",
+      "effect": {
+        "zh": "气泡相对触发元素的方位(JS 型参数)。AntD Tooltip placement 共 12 向、默认 **top**(demo 收敛为四方位起步);top 也是最不易被视口边缘裁切的方位,生产组件库另配 autoAdjustOverflow 兜底(antd 默认 true)。",
+        "en": "Bubble position relative to the trigger (JS-type param). AntD Tooltip placement spans 12 positions defaulting to **top** (demo narrows to the four starting directions); top is also the least likely to clip at viewport edges — production libs add autoAdjustOverflow as a safety net (antd default true)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "theme",
+      "options": [
+        { "value": "dark", "label": { "zh": "深色", "en": "Dark" } },
+        { "value": "light", "label": { "zh": "浅色", "en": "Light" } }
+      ],
+      "default": "dark",
+      "effect": {
+        "zh": "气泡明暗主题(JS 型参数)。默认 **dark**=深色浮层:antd Tooltip 默认深色底(系统色板 colorBgSpotlight = rgba(0,0,0,0.85),06§2.3⑤),Semi/Arco 暗色模式 tooltip 底 #373739(design-study 03§bytedance)。**light**=白底描边浅色变体,常见于 TDesign theme 体系等实现;注意 antd 官方并无 dark/light 枚举(以 color 属性自定义),light 未证实为任何库的默认值。",
+        "en": "Bubble light/dark theme (JS-type param). Default **dark** = dark bubble: AntD tooltips are dark by default (system token colorBgSpotlight = rgba(0,0,0,0.85), design-study 06 §2.3⑤); Semi/Arco dark-mode tooltip ground is #373739 (design-study 03). **light** = white bordered variant, seen in TDesign's theme system; note antd itself has no dark/light enum (custom color prop instead), and light is unverified as any library's default."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "arrow",
+      "options": [
+        { "value": "on", "label": { "zh": "开启", "en": "On" } },
+        { "value": "off", "label": { "zh": "关闭", "en": "Off" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "是否显示指向触发元素的小箭头(JS 型参数)。AntD Tooltip arrow 默认 **true**(Popover/Popconfirm 共享此默认);箭头建立「气泡属于这个元素」的视觉从属,关掉后气泡更像独立浮层。",
+        "en": "Whether the small arrow pointing at the trigger shows (JS-type param). AntD Tooltip arrow defaults to **true** (shared by Popover/Popconfirm); the arrow visually binds the bubble to its element — without it the bubble reads as a detached layer."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现为相对定位浮层 + opacity/visibility 过渡,均为 Baseline 能力;纯 CSS 定位(不用 JS 测量),不支持过渡时直接显隐。",
+      "en": "Implemented as a relatively positioned floating layer with opacity/visibility transitions, all Baseline; pure CSS positioning (no JS measuring), showing/hiding instantly where transitions are unsupported."
+    }
+  },
+  "fallback": {
+    "zh": "触屏设备没有 hover——关键信息不能只放在 tooltip 里,须另有可见载体(APG:tooltip 不得承载必要信息);不支持 transition 的环境直接显隐;Esc 隐藏路径保留。",
+    "en": "Touch devices have no hover — never leave key information only in a tooltip; provide a visible carrier (APG: tooltips must not hold essential info); without transitions, toggle instantly; keep the Esc-hide path."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "图标按钮的名称/快捷键补充(鼠标用户的放大器)", "en": "Icon-button names / shortcut hints (an amplifier for mouse users)" },
+      { "zh": "被截断文本的完整内容(单行短句)", "en": "Full content of truncated text (one short line)" },
+      { "zh": "表单字段名的补充说明(不参与校验报错)", "en": "Supplementary notes for form field labels (never validation errors)" }
+    ],
+    "avoid": [
+      { "zh": "必须阅读的信息——APG 明令 tooltip 不得承载必要信息(触屏/hover 不可达)", "en": "Must-read information — APG forbids tooltips as carriers of essential info (unreachable on touch)" },
+      { "zh": "表单错误提示——NN/g 准则⑨:勿用 tooltip 报错(图标不明显、用户不知道要 hover)", "en": "Form validation errors — NN/g guideline 9: no errors via tooltip (icons are inconspicuous; users don't know to hover)" },
+      { "zh": "富交互内容(按钮、链接、多段文字)——改用 Popover", "en": "Rich interactive content (buttons, links, paragraphs) — use a Popover" },
+      { "zh": "移动端首选项——改用长按/点按可见的说明或直接展示", "en": "Mobile-first choices — use press/ tap-visible notes or inline text" }
+    ]
+  },
+  "a11y": {
+    "zh": "触发元素以 aria-describedby 关联气泡(气泡 role=tooltip,纯文本);hover 与 focus 双触发——键盘用户 Tab 到按钮同样出提示;Esc 隐藏(APG);气泡不自动获得焦点、不进入 Tab 序列;延迟出现(antd mouseEnterDelay 默认 0.1s)避免扫过时闪烁;触屏无 hover,必要信息必须另有载体。",
+    "en": "Trigger references the bubble via aria-describedby (bubble role=tooltip, plain text); both hover and focus trigger — keyboard users Tab-ing to the button see it too; Esc hides (APG); the bubble never takes focus and stays out of the Tab order; a show delay (antd mouseEnterDelay default 0.1s) avoids flicker while sweeping; no hover on touch, so essential info needs another carrier."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/",
+    "https://ant.design/components/tooltip"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻文字提示气泡:按钮 hover/focus 出提示,placement 四方位即时切换,深/浅主题与箭头开关生效,Esc 隐藏,reduced-motion 直达。",
+      "en": "Replicate the text bubble: buttons show it on hover/focus, placement switches instantly among four directions, dark/light themes and the arrow toggle apply, Esc hides, reduced-motion goes instant."
+    },
+    "acceptance": [
+      { "zh": "触发元素 hover 与 focus 双触发,气泡 role=tooltip 且经 aria-describedby 关联", "en": "Both hover and focus trigger; bubble role=tooltip linked via aria-describedby" },
+      { "zh": "placement/theme/arrow 严格使用参数快照值;气泡 z-index 高于舞台内容", "en": "placement/theme/arrow use the exact snapshot values; bubble z-index above stage content" },
+      { "zh": "深色主题底 rgba(0,0,0,0.85)(antd colorBgSpotlight);出现延迟 100ms(antd mouseEnterDelay 默认)", "en": "Dark theme ground rgba(0,0,0,0.85) (antd colorBgSpotlight); 100ms show delay (antd mouseEnterDelay default)" },
+      { "zh": "Esc 隐藏;prefers-reduced-motion 时取消过渡", "en": "Esc hides; transitions collapse under prefers-reduced-motion" },
+      { "zh": "气泡为纯文本短句,不承载关键信息,不进入 Tab 序列", "en": "Bubble is a plain short text line, holds no critical info, outside the Tab order" }
+    ]
+  }
+}

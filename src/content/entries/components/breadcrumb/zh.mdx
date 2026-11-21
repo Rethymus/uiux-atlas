@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+面包屑 = **navigation landmark + 有序列表 + 层级链接**。按层级排列的父页面链接列表,帮助用户定位当前位置;放在主内容之前的水平位置(APG,调研 07§12)。
+
+```html
+<nav aria-label="面包屑">
+  <ol>
+    <li><a href="/">首页</a></li>
+    <li aria-hidden="true">/</li>
+    <li><a href="/resources">资源</a></li>
+    <li aria-hidden="true">/</li>
+    <li aria-current="page">面包屑</li>
+  </ol>
+</nav>
+```
+
+关键点:
+
+- 当前页**不是链接**,设 `aria-current="page"`;若产品把当前页也做成链接,`aria-current` 仍要保留(APG:若当前页不是链接则可选,调研 07§12);
+- 分隔符是纯装饰:`aria-hidden`(显式 li)或 CSS 伪元素渲染,读屏不朗读(MUI 无障碍说明,2026-11-21 实抓核验);
+- 超长路径的折叠:中层收进一个**可聚焦的「…」按钮**,点击展开全部层级(MUI「Collapsed breadcrumbs」模式:超出 `maxItems` 折叠为省略号,2026-11-21 实抓核验);
+- 上层每个节点都是可点链接,点击即「回退到该层」。
+
+## 样式与参数
+
+两个参数:`separator` 切层间符号、`maxItems` 控折叠阈值,均为 JS 型(demo 订阅 store)。
+
+```css
+.crumbs ol { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.crumbs a { font-size: 14px; color: rgba(0, 0, 0, 0.65); text-decoration: none; border-radius: 6px; padding: 2px 6px; }
+.crumbs a:hover { color: #1677ff; background: rgba(0, 0, 0, 0.04); } /* 主色 + 4% 中性填充(§2.3-⑤) */
+.crumbs a:focus-visible { outline: 2px solid #1677ff; outline-offset: 1px; }
+.crumbs [aria-current="page"] { font-size: 14px; color: rgba(0, 0, 0, 0.88); font-weight: 500; } /* 中性文字 88% */
+.crumbs .sep { color: rgba(0, 0, 0, 0.45); }
+.crumbs .expander {
+  border: 1px solid #d9d9d9; background: #fff; border-radius: 6px;
+  padding: 2px 10px; cursor: pointer; font-size: 14px;
+}
+```
+
+数值出处(经 out/design-study/06-antdesign.md 对 antd 6.7.1 核对):分隔符官方默认「/」(§4.21);非当前项文字 `65%`(colorTextSecondary)、当前项文字 `88%`(colorText)、hover 填充 `4%`(FillTertiary 分档)、主色 `#1677ff`、描边 `#d9d9d9`(colorBorder);折叠行为对齐 MUI Breadcrumbs `maxItems`(首尾层保留、中层折叠,官方示例 `maxItems={2}`,未记载官方默认值——本条目默认 3 为任务规格演示值)。
+
+## 动效与交互
+
+- **回退**:点击任意上层节点,路径截断到该层——面包屑的交互本质是「在层级树上移动指针」,不是浏览器历史回退;
+- **折叠/展开**:点击「…」展开被折叠的中层(带「收起」路径);展开/收起默认无动画,若加过渡用 0.2s 内的淡入并尊重 `prefers-reduced-motion`;
+- **hover**:非当前项 hover 变主色 + 4% 填充,给出「可点」暗示;当前项永远不可点;
+- 与顶部导航的关系:导航响应「换区」,面包屑响应「上楼」——两者并用时不互相替代。
+
+## 真实产品案例
+
+- **MDN 文档页**:每篇文档顶部一行层级路径(如 Home → CSS → CSS 布局),当前页加粗不可点;文档站信息层级深,面包屑是标配定位件。
+- **Windows 资源管理器地址栏**:路径以面包屑形式呈现,每个目录段可点直达,段间下拉箭头展开同层兄弟目录——「面包屑 + 下拉」的混合形态。
+- **电商商品页类目路径**:商品详情顶部展示「首页 → 类目 → 子类目 → 商品」,点击任一上层类目回到对应列表页,是流量回流的重要入口。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `separator`(符号选择) | `>` 指向性更强、有「进入」动感;`·` 最轻,适合视觉安静的界面;`/` 是 antd 默认与文档类惯例,认知成本最低 | 符号越重(如图标箭头)视觉越抢,与内容争夺注意力;分层数多时重符号会放大噪声 |
+| `maxItems` | 折叠越少发生,路径全貌可见,但长路径占宽线性增长,窄屏易溢出 | 折叠越早发生,面包屑越紧凑;低于 3 时中层信息几乎全部隐藏,回退要先多点一次展开 |
+
+经验区间:路径 3–5 层;移动端或 \<6 层路径不折叠;「…」展开钮宽约 32px、命中区 ≥24px。

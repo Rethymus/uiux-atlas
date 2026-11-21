@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+下拉菜单 = **触发按钮 + 浮层动作列表**。与 tooltip 的区别一句话:tooltip 承载**只读说明**,dropdown 承载**可点击的操作列表**(APG 对 menu button 的定义就是「opens a menu of actions or commands」,2026-11-21 实抓核验)。
+
+```html
+<div class="dd"> <!-- 相对定位锚点 -->
+  <button type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="dd-menu">
+    更多操作 ▾
+  </button>
+  <ul role="menu" id="dd-menu" aria-label="更多操作">
+    <li role="none"><button role="menuitem" tabindex="-1">重命名</button></li>
+    <li role="none"><button role="menuitem" tabindex="-1">移动到…</button></li>
+    <li role="none"><button role="menuitem" tabindex="-1">复制链接</button></li>
+    <li role="separator"></li>
+    <li role="none"><button role="menuitem" tabindex="-1" class="danger">删除</button></li>
+  </ul>
+</div>
+```
+
+关键点:
+
+- 浮层是触发钮的兄弟节点、绝对定位(`placement` 决定四角锚点);demo 内落在演示台内部,不挂 body,所以不需要 Portal;
+- 菜单项 `tabindex="-1"` 不进 Tab 序列,焦点由方向键漫游管理(roving focus);`role="separator"` 分隔项不可聚焦(APG Menu and Menubar);
+- 状态三件套:`aria-haspopup="menu"` 常驻、`aria-expanded` 随开合、可选 `aria-controls` 指向浮层(APG Menu Button,2026-11-21 实抓核验);
+- 危险操作与普通操作之间放 `role="separator"`,危险项标红。
+
+## 样式与参数
+
+三个参数全部是 JS 型(demo 订阅 store):`trigger` 切展开方式、`placement` 切四角锚点、`arrow` 开关指向小箭头。
+
+```css
+.dd { position: relative; display: inline-block; }
+.dd-menu {
+  position: absolute; z-index: 1000; /* antd zIndexPopupBase(§2.2) */
+  min-width: 168px; margin: 0; padding: 4px; list-style: none;
+  background: #fff; border-radius: 8px; /* colorBgElevated + borderRadiusLG */
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05); /* boxShadow token */
+}
+.dd[data-placement="bottomLeft"]  .dd-menu { top: calc(100% + 8px); left: 0; }
+.dd[data-placement="bottomRight"] .dd-menu { top: calc(100% + 8px); right: 0; }
+.dd[data-placement="topLeft"]     .dd-menu { bottom: calc(100% + 8px); left: 0; }
+.dd[data-placement="topRight"]    .dd-menu { bottom: calc(100% + 8px); right: 0; }
+
+.dd-item { display: block; width: 100%; text-align: left; padding: 7px 12px; font-size: 14px; border-radius: 6px; }
+.dd-item:hover { background: rgba(0, 0, 0, 0.04); } /* 4% 中性填充(FillTertiary 分档) */
+.dd-item[data-danger] { color: #ff4d4f; }           /* antd colorError(§2.2) */
+.dd-arrow { position: absolute; width: 10px; height: 10px; transform: rotate(45deg); background: #fff; }
+.dd-menu[data-arrow="off"] .dd-arrow { display: none; }
+```
+
+数值出处(经 out/design-study/06-antdesign.md 对 antd 6.7.1 核对):`trigger` 官方默认 `['hover']`、`placement` 官方默认 `bottomLeft`、`arrow` 官方默认 `false`(§4.22)——三个默认值 demo 全部对齐;浮层底 `#fff`(colorBgElevated)、圆角 8(borderRadiusLG)、阴影 = boxShadow token 三段值、层级基准 zIndexPopupBase = 1000、危险色 `#ff4d4f`(colorError)、字号 14(fontSize seed)。
+
+## 动效与交互
+
+- **展开/收起**:淡入 + 4px 位移,0.2s(motionDurationMid)+ motionEaseOut 缓出;`prefers-reduced-motion: reduce` 时取消过渡;
+- **hover 触发**(antd 官方默认):进入触发钮立即展开,移出后延时约 **0.1s** 收起(对齐 antd Menu `subMenuCloseDelay` 官方默认);hover 打开**不抢焦点**;click 触发则点击切换、点击外部收起;
+- **键盘**(APG Menu Button):Enter/Space 打开并把焦点放进首项;↑/↓/Home/End 在项间漫游;Escape 关闭并把焦点还给触发钮;Tab 移出时收起;
+- **点击外部关闭**:`document` 级 mousedown 监听,点浮层与触发钮之外即收起;选择某项后收起并在页内给出结果反馈。
+
+## 真实产品案例
+
+- **GitHub 头部「+」与头像按钮**:点击展开操作/账户菜单——「+」聚合新建仓库、导入等入口,头像菜单聚合个人资料、仓库列表与 Sign out;均以紧凑浮层承载一批命令。
+- **Google Docs 工具栏字号/字体控件**:按钮显示当前值、点击弹出一列可选项,选中后回填——「菜单按钮 + 选择型 menuitem」的文档工具形态。
+- **后台表格行「更多」**:每行尾部的省略/更多按钮展开行级操作(编辑/复制/删除),是管理后台最高频的下拉场景;删除类危险项通常分隔并标红。
+
+## 参数敏感度
+
+| 参数 | 切到这一侧会… | 切到另一侧会… |
+| --- | --- | --- |
+| `trigger` | click:意图明确、无路过误开,触屏天然可用;多一次点击成本 | hover:桌面端零成本探出,但需 0.1s 收起延时 + click/键盘等价路径,否则误触与不可达并存 |
+| `placement` | topLeft/topRight:向上展开,适合贴近视口底部的触发钮(表格底行、底部工具条);注意上方要有足够空间 | bottomLeft/bottomRight:向下展开最常见;页面底部边缘会被裁剪,需 autoAdjustOverflow 自动翻转 |
+| `arrow` | on:浮层与触发钮的指向关系更明确,视觉更「重」;多个浮层并存时箭头会互相干扰 | off(默认):界面更干净,靠阴影与位置判断从属关系;密集工具栏上推荐保持关闭 |
+
+经验区间:菜单宽 160–240px;单项高约 32px(antd controlHeight);菜单项 4–10 个;危险项永远放最后一项并用分隔线隔开。

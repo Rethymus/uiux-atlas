@@ -1,0 +1,75 @@
+## 结构与 DOM
+
+卡片是四段式容器,顺序固定:可选封面(cover)→ 头部(标题 + extra 操作)→ 正文(body)→ 操作区(actions)。容器是布局节点,不是控件——可点击性属于卡内的真实按钮/链接。
+
+```html
+<article class="card">
+  <div class="cover" aria-hidden="true"></div>   <!-- 可选封面 -->
+  <header class="card-head">
+    <h3 class="card-title">设计周报</h3>
+    <a class="extra" href="/more">更多</a>
+  </header>
+  <div class="card-body">
+    <p>本周聚焦卡片容器的层级表达……</p>
+  </div>
+  <footer class="card-actions">
+    <button type="button">赞 128</button>
+    <button type="button">评论 32</button>
+    <button type="button">分享</button>
+  </footer>
+</article>
+```
+
+关键点:
+
+- 卡片 = 格式塔「共同区域」的具象化:一条边框或一层底色就能把相关内容感知为一组(调研 07§35);
+- 整卡可点时,键盘等价路径靠卡内一个拉伸覆盖全卡的真链接实现,hover 浮起只是视觉预告;容器不要加 `role="button"`;
+- 操作区(antd actions)在底部分隔线之下,动作均分排布;extra 是头部右侧的次要操作位。
+
+## 样式与参数
+
+三个参数都是 JS 型(订阅 store 切换 `data-size` / `data-hoverable`,cover 决定是否渲染封面节点):
+
+```css
+.card {
+  background: #fff; border: 1px solid #d9d9d9;      /* variant outlined(colorBorder) */
+  border-radius: 8px;                                /* 圆角 LG = seed 6 + 2 */
+  box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 1px 6px -1px rgba(0,0,0,.03), 0 2px 4px rgba(0,0,0,.03);
+}                                                    /* 轻阴影档 boxShadowTertiary */
+.card[data-hoverable="on"]:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05);
+  translate: 0 -2px;
+}                                                    /* 浮层阴影档 boxShadow + 2px 上浮 */
+.card[data-size="md"] .card-head { padding: 16px 24px; }  /* sm 档 10px 12px(演示值) */
+```
+
+数值出处(antd 6.7.1,经 out/design-study/06-antdesign.md §4.18 + 本地 `.scratch/antd06` 源码复核):
+
+- `size` 默认 **medium**(index.zh-CN.md:55)→ demo 默认 md;两档 padding 像素为演示值(antd Card 头部/正文 padding 规格调研未记载,未证实);
+- `hoverable` 默认 **false**(index.zh-CN.md:52;Card.Grid 内默认 true,:68);
+- `variant` 默认 **outlined**(index.zh-CN.md:47,v6 取代 v5 `bordered: true`)——1px 边框是卡片的默认形态;
+- `cover` 是 ReactNode 内容插槽,默认 -(index.zh-CN.md:49),demo 以渐变色带模拟,off 为演示默认;
+- 两组阴影是 antd 实测 token:boxShadowTertiary(轻)与 boxShadow(浮层),见 06-antdesign.md §2.3 ⑥;浮起过渡 0.2s = motionDurationMid、缓动 motionEaseOut `cubic-bezier(0.215,0.61,0.355,1)`(§3)。
+
+## 动效与交互
+
+- **hoverable 浮起**:阴影从轻阴影档过渡到浮层阴影档 + 整卡上移 2px,0.2s easeOut——阴影档位有官方 token,浮起高度(2px)是演示值;`prefers-reduced-motion: reduce` 时去掉过渡与上浮;
+- **静态卡(hoverable=off)没有任何 hover 反馈**——antd 默认即如此,浮起只属于「整卡可点」的卡片;
+- 操作区按钮 hover 变主色(anticipation 提示可点),焦点环 `focus-visible` 2px 主色描边;
+- 入场:整卡淡入 + 8px 上移,只动 `opacity/translate`;reduced-motion 下取消。
+
+## 真实产品案例
+
+- **GitHub 仓库页右侧 About 卡**:无边框纯底色形态——描述、topics 标签行、star/watch/fork 数据与链接区被一层圆角底色圈成共同区域,证明「边框与底色二选一即可成卡」;
+- **App Store 的应用详情卡**:顶部封面媒体区(cover 插槽)+ 标题与「获取」操作区——封面承载视觉、操作区承载动作,是 cover + actions 组合的教科书布局;
+- **Dribbble 作品流卡片**:封面图 + 作者行,hover 时轻微浮起预示可点击进入作品页——hoverable 语义的正确用法:整卡可点才浮起,卡片流一屏多卡时仍保持轻阴影不互相打架。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size`(sm→md) | 内边距与标题字号增大,呼吸感强,适合正文阅读与仪表盘主卡 | 更紧凑,一屏能排更多卡,适合摘要流;sm 时标题/正文层级差距缩小,扫读略吃力 |
+| `hoverable` | on:整卡浮起,「可点」信号明确;误配在静态卡上就是虚假 affordance | off(antd 默认):零 hover 反馈,静态卡的正确形态;列表中多卡同开 hoverable 会互相抢注意力 |
+| `cover` | on:封面带占据视觉入口,卡片更「内容向」,信息从图开始;高度过大挤压正文 | off(演示默认):纯文本卡,信息密度更高;antd 的 cover 本就是可选插槽,不存在默认值 |
+
+经验区间:内容流卡 md + 无 hover(可点才加);仪表盘统计卡 md + hoverable;摘要列表用 sm;嵌套永远只做一层,卡内分区用分隔线而不是子卡。

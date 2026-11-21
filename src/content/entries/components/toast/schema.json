@@ -1,0 +1,106 @@
+{
+  "name": "Toast",
+  "nameZh": "全局提示",
+  "aliases": ["轻提示", "Snackbar", "Message", "全局轻提示"],
+  "category": "components",
+  "subgroup": "feedback",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "不打断操作的轻量反馈条:固定定位浮于页面之上、按时长自动消失、经 role=alert 播报,只承载非关键信息。",
+    "en": "Lightweight non-blocking feedback: fixed positioning over the page, auto-dismiss on a timer, announced via role=alert — for non-critical messages only."
+  },
+  "origin": {
+    "zh": "融合自两条一手范式:Ant Design message(顶部居中、默认 3s 自动消失、不打断操作)与 MUI Snackbar(仅限非关键通知、role=alert 内容容器);「不得自动消失关键信息」的规范依据来自 WAI-APG Alert 模式对 WCAG 2.2.3 的告诫(调研 07§8/§9)。",
+    "en": "Fused from two first-hand paradigms: Ant Design message (top-center, 3s auto-dismiss default, non-blocking) and MUI Snackbar (non-critical only, role=alert content container); the 'never auto-dismiss critical info' rule comes from the WAI-APG Alert pattern citing WCAG 2.2.3 (research 07 §8/§9)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "duration",
+      "min": 500,
+      "max": 6000,
+      "step": 100,
+      "default": 3000,
+      "unit": "ms",
+      "effect": {
+        "zh": "单条 toast 的停留时长,超时整块移除(antd 出场不排队原则)。默认 3000ms 对齐 AntD message.duration 默认 3(秒,0=不自动关闭);MUI 提醒 autoHideDuration 必须给足阅读处理时间——消失过快违反 WCAG 2.2.3(WAI-APG Alert 告诫)。JS 型参数,demo 订阅后驱动计时器。",
+        "en": "How long one toast stays before the whole block is removed (antd's no-queue-exit principle). Default 3000ms matches AntD message.duration default 3 (seconds; 0 = never auto-close); MUI warns autoHideDuration must leave enough reading time — disappearing too fast violates WCAG 2.2.3 (WAI-APG Alert). JS-type param; the demo subscribes and drives the timer."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "placement",
+      "options": [
+        { "value": "top-left", "label": { "zh": "上左", "en": "Top left" } },
+        { "value": "top-center", "label": { "zh": "上中", "en": "Top center" } },
+        { "value": "top-right", "label": { "zh": "上右", "en": "Top right" } },
+        { "value": "bottom-left", "label": { "zh": "下左", "en": "Bottom left" } },
+        { "value": "bottom-center", "label": { "zh": "下中", "en": "Bottom center" } },
+        { "value": "bottom-right", "label": { "zh": "下右", "en": "Bottom right" } }
+      ],
+      "default": "top-center",
+      "effect": {
+        "zh": "堆栈锚定的六方位(纵向 top/bottom × 横向 left/center/right)。默认 top-center 对齐 AntD message 的固定顶部居中(message.config.top 默认 8px);六方位自由组合来自 MUI Snackbar anchorOrigin 的纵横二维模型。JS 型参数,demo 订阅后切换容器对齐。",
+        "en": "Six anchor positions for the stack (vertical top/bottom × horizontal left/center/right). Default top-center aligns with AntD message's fixed top-center (message.config.top defaults to 8px); the 6-way free composition comes from MUI Snackbar's anchorOrigin vertical×horizontal model. JS-type param; the demo subscribes and switches the container alignment."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxCount",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "同时并存的最大条数,超出即移除最旧一条。AntD message.config.maxCount 默认不限制(-),本 demo 为演示堆栈收敛为 1–5;默认 3 为演示取值,非任何库的官方默认(调研未证实 3 为官方值)。",
+        "en": "Max simultaneous toasts; the oldest is removed once exceeded. AntD message.config.maxCount defaults to unlimited (-); this demo narrows the range to 1–5, and the default 3 is a demo value, not any library's official default (3-as-default is unverified in research)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只依赖 CSS 固定定位 + transform/opacity 过渡与 JS 计时/事件,均为 Baseline 能力;prefers-reduced-motion 自 2020-01 起全浏览器可用(调研 07§37)。",
+      "en": "Implementation only needs CSS fixed positioning + transform/opacity transitions and JS timers/events, all Baseline; prefers-reduced-motion is supported across browsers since 2020-01 (research 07 §37)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 transform 过渡的旧环境退化为直接出现/消失(无动效不影响信息传达);JS 禁用时 toast 无法触发,关键信息必须另有页面内持久承载,不能只靠 toast。",
+    "en": "Without transform transitions the toast simply appears/disappears with no motion — the message itself is unaffected; with JS disabled toasts cannot fire, so critical information must also live in persistent in-page UI, never in a toast alone."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "保存成功、复制成功等非关键过程反馈(不打断操作)", "en": "Non-critical process feedback like 'saved' or 'copied' (non-blocking)" },
+      { "zh": "带撤销动作的轻反馈(Gmail 式『已发送+撤销』)", "en": "Light feedback with an undo action (Gmail-style 'Sent + Undo')" },
+      { "zh": "批量操作结果汇总(『已归档 12 项』)", "en": "Batch result summaries ('12 items archived')" }
+    ],
+    "avoid": [
+      { "zh": "关键/必须处理的信息——走 Dialog(alertdialog)或持久 banner(APG:自动消失太快违反 WCAG 2.2.3)", "en": "Critical, must-act messages — use Dialog (alertdialog) or a persistent banner (APG: too-fast auto-dismiss violates WCAG 2.2.3)" },
+      { "zh": "错误表单校验——错误要紧贴字段持久呈现(NN/g:勿用浮层报错)", "en": "Form validation errors — keep errors persistent next to the field (NN/g: no floating-layer-only errors)" },
+      { "zh": "长时间进度(>10s)——改用进度条 + 可中断途径(NN/g 三限)", "en": "Long progress (>10s) — use a progress bar with an interrupt path (NN/g response-time limits)" },
+      { "zh": "大量堆叠刷屏——MUI 明确不鼓励堆叠多条 Snackbar", "en": "Stacking floods — MUI explicitly discourages stacking multiple Snackbars" }
+    ]
+  },
+  "a11y": {
+    "zh": "每条 toast 容器用 role=alert,动态插入时多数屏幕阅读器自动播报(WAI-APG Alert);不得夺取键盘焦点,要打断用户就改用 alertdialog;必须提供 Esc 关闭(MUI Snackbar 无障碍要求);自动消失仅限非关键信息,消失过快违反 WCAG 2.2.3、频繁打断违反 2.2.4(APG Alert 告诫)。",
+    "en": "Give each toast a role=alert container — dynamic insertion is auto-announced by most screen readers (WAI-APG Alert); never steal keyboard focus, use alertdialog when you must interrupt; Esc must dismiss (MUI Snackbar a11y requirement); auto-dismiss only for non-critical info — too fast violates WCAG 2.2.3, frequent interruptions violate 2.2.4 (APG Alert)."
+  },
+  "sources": [
+    "https://ant.design/components/message",
+    "https://mui.com/material-ui/react-snackbar/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/alert/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一套全局轻提示:按钮触发后浮层按锚定位堆叠出现,到时长整块自动消失,支持 maxCount 截断最旧条目与 Esc 关闭。",
+      "en": "Replicate a toast system: buttons spawn floating notifications that stack at the anchored position, auto-dismiss wholesale after the duration, honor maxCount by dropping the oldest, and dismiss on Esc."
+    },
+    "acceptance": [
+      { "zh": "每条 toast 用 role=alert 且不夺取焦点;Esc 可关闭", "en": "Each toast uses role=alert without stealing focus; Esc dismisses" },
+      { "zh": "duration/maxCount/placement 严格使用参数快照值", "en": "duration/maxCount/placement use the exact parameter snapshot values" },
+      { "zh": "计时超时后整块移除(出场不排队),入场 0.2s 淡入+滑入", "en": "Expiry removes the whole block at once (no exit queue); entrance is a 0.2s fade+slide" },
+      { "zh": "命中 prefers-reduced-motion 时取消滑入动画", "en": "Disable the slide-in animation under prefers-reduced-motion" },
+      { "zh": "只承载非关键信息;关键操作结果另行持久呈现", "en": "Non-critical messages only; critical outcomes get persistent treatment elsewhere" }
+    ]
+  }
+}

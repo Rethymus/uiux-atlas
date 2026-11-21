@@ -1,0 +1,73 @@
+## Structure & DOM
+
+The skeleton of text hierarchy is a dual channel of "semantic tags × visual steps": headings live in real `h1–h4` elements while visual styling (size/leading/color) is controlled by classes — the two stay decoupled.
+
+```html
+<h1 class="lv-h1">Page title</h1>
+<h2 class="lv-h2">Section heading</h2>
+<p class="lv-body">Body copy: 14px base, 1.5714 leading.</p>
+<p class="lv-caption ty-secondary">Helper text: 12px, secondary 65% black.</p>
+
+<!-- Single-line ellipsis trio -->
+<p class="ty-ell ell-on" title="Full text">One very long line…</p>
+```
+
+Key points:
+
+- **No skipped levels**: h1 is followed by h2, keeping the outline continuous; antd Typography's `Title level` defaults to 1 (06-antdesign §4.4), i.e. `fontSizeHeading1 = 38px`;
+- **Color is an independent channel**: antd `Text`'s `type` (secondary/success/warning/danger) only changes color, never size (06 §4.4) — the demo mirrors this: `level` owns size, `type` owns color;
+- **The ellipsis trio**: `white-space: nowrap` + `overflow: hidden` + `text-overflow: ellipsis` — all three or nothing; antd's `Paragraph.ellipsis` additionally supports `rows`/`expandable`/`suffix` (06 §4.4);
+- The demo's ladder uses `div` + `role="heading"`/`aria-level` for its specimens, avoiding injection of duplicate real `h1`s into the host page's outline.
+
+## Styling & Parameters
+
+`level`/`type`/`ellipsis` are all JS-typed params (the demo subscribes to the store and toggles classes):
+
+```css
+/* antd's natural-exponential scale (genFontSizes): size[i] = round(14 × e^((i-1)/5)),
+   line-height fixed at (size+8)/size — one formula, not a pile of numbers */
+.lv-h1      { font-size: 38px; line-height: 1.23;   font-weight: 600; } /* fontWeightStrong */
+.lv-h2      { font-size: 30px; line-height: 1.2667; font-weight: 600; }
+.lv-h3      { font-size: 24px; line-height: 1.3333; font-weight: 600; }
+.lv-h4      { font-size: 20px; line-height: 1.4;    font-weight: 600; }
+.lv-body    { font-size: 14px; line-height: 1.5714; font-weight: 400; } /* base size/leading */
+.lv-caption { font-size: 12px; line-height: 1.6667; font-weight: 400; } /* fontSizeSM */
+
+/* The three type colors: neutral text alphas + functional color */
+.ty-spec { color: rgba(0, 0, 0, 0.88); }            /* colorText 88% */
+.ty-spec[data-type="secondary"] { color: rgba(0, 0, 0, 0.65); } /* colorTextSecondary */
+.ty-spec[data-type="danger"] { color: #ff4d4f; }    /* seed colorError */
+.ty-ell.ell-on { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+```
+
+Where the numbers come from (cross-checked against antd 6.7.1 in out/design-study/06-antdesign.md):
+
+- **h1–h4** = fontSizeHeading1..4 = **38 / 30 / 24 / 20px** with leadings 1.23 / 1.2667 / 1.3333 / 1.4 (the genFontSizes.ts natural-exponential curve, 06 §2.3①);
+- **body** = the 14px base / 1.5714 leading (≈22px; derived from a 50cm reading distance and 0.3° visual angle, 06 §1.3);
+- **caption** = fontSizeSM 12px / 1.6667 (an official token; "caption" is this demo's name — antd has no such named step);
+- **Weights**: regular 400 / medium 500 / strong 600 (`fontWeightStrong: 600`, 06 §1.3);
+- **Secondary** 65% black, default 88% black: the neutral text alpha steps 88/65/45/25% (06 §2.3⑤);
+- **danger** `#ff4d4f` = seed colorError (06 §2.2); antd `Text type` unset = default color, `ellipsis` defaults to false (06 §4.4).
+
+## Motion & Interaction
+
+- Typography itself has no motion — size/leading changes should apply **instantly**; animating text reflow hurts readability;
+- **Ellipsis convention**: pair the truncated line with a `title` (or antd's ellipsis tooltip, 06 §4.4) carrying the full text; expandable content uses `expandable` (supported by antd Paragraph);
+- **Copy support**: antd Typography also ships `copyable` (default false, tooltips defaulting to "Copy/Copied") and `editable` — interaction extensions of the text components (06 §4.4);
+- Instant-feedback principles still apply: link color and danger-red hover deepen are reasonable micro-motion at the 0.1s step (motionDurationFast, 06 §3.1).
+
+## Real-world examples
+
+- **GitHub README** — rendered Markdown organizes long documents with a clear heading ladder (h1–h3), body copy at a single size, and secondary info (version numbers, instructions) in small gray text — hierarchy expressed purely through size and color.
+- **WeChat chat list** — each row stacks three text layers: contact name (default color), message preview (secondary gray), timestamp (smaller, paler); tone alone encodes information priority at a glance.
+- **Notion** — the page title takes a large, heavy step, body copy stays at one size, and placeholders/hints use pale gray; hierarchy comes from size and color, with never more than a few sizes per page.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `level` | h1 (38px) carries maximum visual weight — one per screen; multiple large headings break the outline and slow scanning | caption (12px) raises density but lowers readability; long-form at 12px fatigues, and below 12px leaves the accessible comfort zone |
+| `type` | danger red pushes text to the foreground — a whole paragraph in red is no longer an alert (WCAG SC 1.4.1: needs textual redundancy too) | secondary 65% black is right for helper text; going paler (45%/25%) for body copy nears the 4.5:1 contrast line |
+| `ellipsis` | on compresses long lines into one row, raising table/card density — but truncated content is invisible to screen readers unless a title carries the full text | off keeps everything through wrapping, losing no information; without ellipsis, long list cells blow the grid |
+
+Working ranges: keep 3–5 font sizes per system (antd's suggestion, 06 §1.3); body copy always uses the body step; headings follow h1→h4 without skipping; caption is reserved for timestamps, notes and other helper text.

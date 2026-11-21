@@ -1,0 +1,70 @@
+## Structure & DOM
+
+A single avatar is a square box whose radius decides the shape; the glyph/photo is fill content. A group is a stack of **siblings joined by negative margins**, with the overflow folded into one `+N` chip.
+
+```html
+<!-- single -->
+<div class="avatar" role="img" aria-label="Lin Wan">林</div>
+
+<!-- group: overlap + overflow +N (antd Avatar.Group max semantics) -->
+<div class="avatar-group" role="group" aria-label="8 members total, 4 shown">
+  <div class="avatar">林</div>
+  <div class="avatar">陈</div>
+  <div class="avatar">王</div>
+  <div class="avatar">赵</div>
+  <div class="avatar avatar-more">+4</div>
+</div>
+```
+
+Key points:
+
+- Avatars must be nameable: `role="img"` + `aria-label`, or an adjacent visible name; `alt=""` is only for purely decorative ones;
+- The overlap is sibling flow with `margin-inline-start: -8px`; each later item sits above the previous (DOM order is the stacking order);
+- The group must expose the full roster to screen readers (declare the total and folded counts in aria-label), not just the visual `+N`.
+
+## Styling & Parameters
+
+`size` is CSS-variable driven (`--av-size` feeds width, height and font size from one source); `shape` and `groupCount` are JS-typed (store subscription toggles `data-shape` / re-slices the roster):
+
+```css
+.avatar, .avatar-more {
+  width: var(--av-size); height: var(--av-size);   /* default 32px */
+  font-size: calc(var(--av-size) * 0.4375);        /* glyph 14 / size 32 */
+  border-radius: 50%;                              /* circle */
+  border: 2px solid #fff;                          /* group ring = colorBorderBg */
+}
+[data-shape="square"] .avatar { border-radius: 6px; } /* antd seed borderRadius = 6 */
+.avatar + .avatar, .avatar + .avatar-more { margin-inline-start: -8px; } /* overlap */
+.avatar-more { background: #f5f5f5; }             /* overflow chip fill = colorBgLayout */
+```
+
+Where the numbers come from (antd 6.7.1, verified via out/design-study/06-antdesign.md §4.16 plus the local `.scratch/antd06` source):
+
+- 32px default: Avatar `size` defaults to medium with pixel base `containerSize = controlHeight = 32` (avatar/style/index.ts:209; controlHeight seed default 32);
+- 14px glyph: `textFontSize = fontSize = 14` (style/index.ts:212), ≈ 0.4375 of 32px;
+- Overlap: `groupOverlapping = -marginXS = -8px` (style/index.ts:220), **not scaled by size**;
+- Group ring: `groupBorderColor = colorBorderBg` (white, style/index.ts:221) — the white ring separates stacked avatars;
+- Shape: `shape` defaults to circle (index.zh-CN.md:44); square radii follow the token `borderRadius = 6` (style/index.ts:98-100, 118);
+- Overflow folding: Group `max = { count, style, popover }`, since 5.18.0 (index.zh-CN.md:58); `count` has no documented default, so this entry's default of 4 is a demo value.
+
+## Motion & Interaction
+
+- An avatar is a static identity marker — **avoid idle animation**; the demo's entrance fades the whole group in with an 8px rise (0.4s, easeOut `cubic-bezier(0.215,0.61,0.355,1)` = antd motionEaseOut), disabled under `prefers-reduced-motion: reduce`;
+- Only two interaction surfaces exist: hover shows the full name via title/tooltip (small sizes can't spell the full name); antd's Group overflow chip is a popover trigger that expands the folded members — this demo expresses the same semantics with `title` + aria-label;
+- Dragging `size` re-derives box and glyph together (shared `calc` source) and the group width follows; overlap stays at a constant -8px and never scales.
+
+## Real-world examples
+
+- **The collaborator stack in Feishu (Lark) docs, top right**: members currently viewing the same document appear as overlapping avatars in the page's top-right corner, folding away when crowded — exactly this entry's demo form; avatar fills double as identity colors and newcomers join the tail of the queue live;
+- **GitHub's top-right user avatar**: a small circular (~32px) avatar with a dropdown carrying account actions — the avatar itself never navigates, it only anchors the menu; the contributor row along the bottom of PR/Issue pages is the same component in group form;
+- **Sender avatars in Slack message flow**: rounded squares (square container with a ~6px-class radius) aligned with the message text column — the square-plus-radius choice is Slack's differentiation from the round ecosystem, proof that shape carries product identity.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | more presence and readable glyphs; past 40px it starts competing for focus — right for profile pages, not lists | higher density, more people per row; under 24px glyphs stop reading and photos stop resolving, leaving tooltips to carry names |
+| `shape` | square (6px radius) shows product personality and echoes card/button corners; circle is the neutral default | — (no magnitude difference, only style; pushing the 6px radius smaller approaches a sharp corner, larger decays into a circle) |
+| `groupCount` | more members shown, a wider group with more overlap layers and less per-avatar legibility | more members fold into +N; below 4 the group reads weak, closer to a loose row |
+
+Working ranges: lists/threads 24–32px, page headers/profiles 40–64px; 4–5 avatars is the overlap ceiling — past that, fold into +N; -8px overlap is the antd default, and proportional values like -size/4 are custom choices, not official defaults.

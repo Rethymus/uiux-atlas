@@ -1,0 +1,75 @@
+## Structure & DOM
+
+A card is a four-part container in a fixed order: optional cover → header (title + extra action) → body → actions. The container is a layout node, not a control — clickability belongs to the real buttons/links inside.
+
+```html
+<article class="card">
+  <div class="cover" aria-hidden="true"></div>   <!-- optional cover -->
+  <header class="card-head">
+    <h3 class="card-title">Design Weekly</h3>
+    <a class="extra" href="/more">More</a>
+  </header>
+  <div class="card-body">
+    <p>This week: how card containers express hierarchy…</p>
+  </div>
+  <footer class="card-actions">
+    <button type="button">Like 128</button>
+    <button type="button">Comment 32</button>
+    <button type="button">Share</button>
+  </footer>
+</article>
+```
+
+Key points:
+
+- A card is the concrete form of the Gestalt "common region": one border or one fill is enough for related content to read as a group (research 07 §35);
+- When the whole card is clickable, the keyboard path is one real link stretched over the card — the hover lift is only a visual preview; never put `role="button"` on the container;
+- The action row (antd actions) sits under a divider at the bottom with actions spread evenly; extra is the secondary action slot on the header's right.
+
+## Styling & Parameters
+
+All three parameters are JS-typed (store subscription toggles `data-size` / `data-hoverable`; cover decides whether the cover node renders at all):
+
+```css
+.card {
+  background: #fff; border: 1px solid #d9d9d9;      /* variant outlined (colorBorder) */
+  border-radius: 8px;                                /* radius LG = seed 6 + 2 */
+  box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 1px 6px -1px rgba(0,0,0,.03), 0 2px 4px rgba(0,0,0,.03);
+}                                                    /* light tier boxShadowTertiary */
+.card[data-hoverable="on"]:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05);
+  translate: 0 -2px;
+}                                                    /* elevation tier boxShadow + 2px lift */
+.card[data-size="md"] .card-head { padding: 16px 24px; }  /* sm tier 10px 12px (demo value) */
+```
+
+Where the numbers come from (antd 6.7.1, verified via out/design-study/06-antdesign.md §4.18 plus the local `.scratch/antd06` source):
+
+- `size` defaults to **medium** (index.zh-CN.md:55) → demo default md; the two tiers' pixel paddings are demo values (antd's pixel specs for Card head/body padding aren't recorded in the research — unverified);
+- `hoverable` defaults to **false** (index.zh-CN.md:52; true inside Card.Grid, :68);
+- `variant` defaults to **outlined** (index.zh-CN.md:47, v6 replacing v5's `bordered: true`) — a 1px border is the card's default form;
+- `cover` is a ReactNode content slot with no default (index.zh-CN.md:49); the demo simulates it with a gradient band and off is the demo default;
+- The two shadows are antd's measured tokens: boxShadowTertiary (light) and boxShadow (elevation), see 06-antdesign.md §2.3 ⑥; the lift transition is 0.2s = motionDurationMid on motionEaseOut `cubic-bezier(0.215,0.61,0.355,1)` (§3).
+
+## Motion & Interaction
+
+- **hoverable lift**: the shadow transitions from the light tier to the elevation tier while the card rises 2px, 0.2s easeOut — the shadow tiers have official tokens; the 2px lift height is a demo value; transition and lift are removed under `prefers-reduced-motion: reduce`;
+- **Static cards (hoverable=off) get no hover feedback at all** — antd's default; lifting belongs only to fully clickable cards;
+- Action buttons turn primary-colored on hover (an anticipation cue), with a `focus-visible` 2px primary outline;
+- Entrance: the card fades in with an 8px rise, animating only `opacity/translate`; disabled under reduced-motion.
+
+## Real-world examples
+
+- **The About card on the right side of GitHub repo pages**: the borderless pure-fill form — description, topic-tag row, star/watch/fork data and links are circled into one common region by a rounded fill alone, proving a card needs a border *or* a fill, not both;
+- **App Store app-detail cards**: a top cover media area (the cover slot) + title and "Get" action row — the cover carries the visual and the action row carries the deed, the textbook cover + actions composition;
+- **Dribbble shot cards**: cover image + author line, lifting slightly on hover to preview the click into the shot page — hoverable semantics used correctly: only fully clickable cards lift, and the card stream keeps its shadows light so multiple cards per screen don't fight.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` (sm→md) | bigger padding and title size — more breathing room, right for body reading and dashboard feature cards | tighter, more cards per screen, right for summary feeds; at sm the title/body hierarchy narrows and scanning gets slightly harder |
+| `hoverable` | on: the whole card lifts, an explicit "clickable" signal; misconfigured on a static card it's a false affordance | off (antd default): zero hover feedback — the correct form for static cards; hoverable on every card in a list makes them compete for attention |
+| `cover` | on: the cover band owns the visual entry, making the card more "content-first", information starting from the image; oversized covers squeeze the body | off (demo default): a plain text card with higher information density; antd's cover is an optional slot with no default by design |
+
+Working ranges: feed cards md + no hover (add it only when clickable); dashboard stat cards md + hoverable; summary lists sm; never nest more than one level — partition inside a card with dividers, not child cards.

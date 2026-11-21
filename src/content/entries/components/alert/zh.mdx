@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+警告提示是**文档流内**的驻留警示块(与浮层 toast、阻断 Dialog 三分反馈职责):一个语义色块,可带图标、说明文字与关闭按钮。
+
+```html
+<div class="alert" role="alert" data-type="warning">
+  <svg class="icon" aria-hidden="true">…</svg>
+  <div>
+    <strong>标题</strong>
+    <span>说明文字</span>
+  </div>
+  <button aria-label="关闭">×</button>
+</div>
+```
+
+关键点:
+
+- 容器 `role="alert"`:动态插入时多数屏幕阅读器**自动播报**,且**不夺取键盘焦点**——需要打断用户就升级为 alertdialog(APG Alert);
+- 图标是辅助通道:`aria-hidden`,靠 `currentColor` 与语义色同源;「仅靠颜色传达」违反 WCAG 1.4.1,颜色+图标双通道兜底;
+- 关闭按钮是真实 `<button>`(可聚焦、带 aria-label);警告**默认不自动消失**——APG 明确告诫:自动消失太快违反 WCAG 2.2.3。
+
+## 样式与参数
+
+四个参数均为 JS 型(demo 订阅 store 驱动):`type` 切 `data-type` 语义色、`closable`/`showIcon` 增删元素、`banner` 切换通栏布局。
+
+```css
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-radius: 8px; border: 1px solid;
+  background: color-mix(in srgb, var(--c) 10%, #fff);   /* 浅底 ≈ 色板阶1 */
+  border-color: color-mix(in srgb, var(--c) 40%, #fff); /* 描边 ≈ 色板阶3 */
+  color: rgba(0, 0, 0, 0.88);                            /* antd colorText */
+}
+.alert[data-type="success"] { --c: #52c41a; }
+.alert[data-type="info"]    { --c: #1677ff; }
+.alert[data-type="warning"] { --c: #faad14; }
+.alert[data-type="error"]   { --c: #ff4d4f; }
+.alert.is-banner { border-radius: 0; border-top: 0; border-left: 0; border-right: 0; }
+```
+
+数值出处(antd 6.7.1 核对):`type` 默认 **info**、`showIcon`/`closable`/`banner` 默认均 **false**;四色取 seed 功能色 colorSuccess `#52c41a`、colorWarning `#faad14`、colorError `#ff4d4f`、colorPrimary `#1677ff`(design-study 06 §2.2);「Bg=色板阶1 / Border=阶3 / 主=阶6」派生规则出自 genColorMapToken(06 §2.3⑤),demo 用 color-mix 近似阶1/阶3。**banner 模式下 type 默认翻转为 warning、showIcon 默认翻转为 true**(06 §4.13)。
+
+## 动效与交互
+
+- **无入场动画是常态**:警告的目标是「驻留到被读完」,toast 式的滑入滑出反而是噪音;demo 仅保留 0.15s 的轻淡入,reduced-motion 下取消;
+- **关闭交互**:`closable=on` 时点真实按钮移除,焦点处理从简(移除的是非焦点承载元素);关闭后提供重新显示入口,避免演示不可恢复;
+- **banner 模式**:通栏贴顶、内容下移让位——站点级公告与页面内容分层;开关 banner 时注意 antd 的默认翻转(warning/true);
+- **不要轮播多条警告**:APG 告诫频繁打断妨碍视觉/认知障碍用户(WCAG 2.2.4);多条信息合并为一条或调整页面结构。
+
+## 真实产品案例
+
+- **GitHub**:仓库页顶部的通栏警告——归档仓库的「This repository has been archived」横幅、以及检测到敏感依赖时的安全告警条,均为全宽、可关闭、驻留顶部的 banner 形态;
+- **Gmail**:免费配额将满时,页面顶部出现通栏警告(存储空间不足,附「管理存储」入口)——不阻塞收发邮件但持续驻留,直到用户清理空间;
+- **VS Code**:右下角通知中心的提醒卡片带图标、说明与关闭按钮,驻留直到手动处理——编辑器内「不中断工作流的持续提醒」与流内警告同一套语义。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `type` | 无大小可言,换的是语义与情绪:success 收尾感、info 中性、warning 预警、error 紧急——用错语义比用错颜色更糟 | 同上;同页多态警告时 error 数量应最少( Von Restorff:强调要有节制) |
+| `closable` | on:用户获得清除权,适合「读完即无用」的通知型内容 | off:驻留到底,适合持续有效的约束型信息(如归档状态);两者都**不可自动消失** |
+| `showIcon` | on:形状先于文字被识别,扫读快、色盲可用,块高略增 | off:更素净,靠纯色底传达语义——弱视/色盲用户只剩文字标题一条通道 |
+| `banner` | on:站点级强制曝光,占一整行高度,内容被迫下移;只应同时存在一条 | off:文档流内的普通块,可多条并存但每屏建议 ≤1 条;通栏+非通栏混用层级会乱 |
+
+经验区间:每屏 1 条、error 用最少、需要站点级曝光才开 banner;文字保持「标题一行 + 说明一行」以内。

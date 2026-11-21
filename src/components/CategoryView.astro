@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import EntryCard from "@/components/EntryCard.astro";
 import FilterBar from "@/components/FilterBar";
-import { CATEGORIES } from "@/lib/types";
+import { CATEGORIES, SUBGROUPS } from "@/lib/types";
 import type { CategoryId, EntryMeta, Locale } from "@/lib/types";
 import { t } from "@/i18n/ui";
 import { categoryUrl, entryUrl } from "@/lib/urls";
@@ -19,6 +19,18 @@ const dict = t(locale);
 const cat = CATEGORIES.find((c) => c.id === categoryId)!;
 const catName = locale === "en" ? cat.en : cat.zh;
 const altUrl = locale === "en" ? categoryUrl("zh", categoryId) : categoryUrl("en", categoryId);
+
+// components 分类按 subgroup 分组(组件库分类学):组序 = SUBGROUPS 声明序,
+// 未标注 subgroup 的条目归 other;空组不渲染。其余分类保持单一网格不变。
+const isComponents = categoryId === "components";
+const groups = isComponents
+  ? SUBGROUPS.map((sg) => ({
+      id: sg.id,
+      /** zh 行「基础 Basic」双名并列(术语对应,en 站只用英文名) */
+      name: locale === "en" ? sg.en : `${sg.zh} ${sg.en}`,
+      items: metas.filter((m) => (m.subgroup ?? "other") === sg.id),
+    })).filter((g) => g.items.length > 0)
+  : [];
 ---
 
 <Base
@@ -42,21 +54,46 @@ const altUrl = locale === "en" ? categoryUrl("zh", categoryId) : categoryUrl("en
 
     <div data-filter-scope>
       <FilterBar client:visible entries={metas} locale={locale} />
-      <div class="entry-grid">
-        {
-          metas.map((m, i) => (
-            <EntryCard
-              entry={m}
-              locale={locale}
-              href={entryUrl(locale, m.slug)}
-              style={`--i: ${i};`}
-              data-slug={m.slug}
-              data-system={m.system}
-              data-star={m.star}
-            />
+      {
+        isComponents ? (
+          groups.map((g) => (
+            <section class="subgroup" data-subgroup={g.id}>
+              {/* 组标题行:mono 元数据纪律(spec §2.2;计数 tabular-nums) */}
+              <h2 class="subgroup-head">
+                <span class="subgroup-name">{g.name}</span>
+                <span class="subgroup-count">({g.items.length})</span>
+              </h2>
+              <div class="entry-grid">
+                {g.items.map((m, i) => (
+                  <EntryCard
+                    entry={m}
+                    locale={locale}
+                    href={entryUrl(locale, m.slug)}
+                    style={`--i: ${i};`}
+                    data-slug={m.slug}
+                    data-system={m.system}
+                    data-star={m.star}
+                  />
+                ))}
+              </div>
+            </section>
           ))
-        }
-      </div>
+        ) : (
+          <div class="entry-grid">
+            {metas.map((m, i) => (
+              <EntryCard
+                entry={m}
+                locale={locale}
+                href={entryUrl(locale, m.slug)}
+                style={`--i: ${i};`}
+                data-slug={m.slug}
+                data-system={m.system}
+                data-star={m.star}
+              />
+            ))}
+          </div>
+        )
+      }
     </div>
   </div>
 </Base>

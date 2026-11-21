@@ -1,0 +1,75 @@
+## 结构与 DOM
+
+自绘选择器是「触发器 + 浮层列表」两层结构,全部收在同一个相对定位容器里:
+
+```html
+<div class="select-wrap" data-size="md" data-status="default">
+  <button type="button" class="select-trigger" role="combobox"
+          aria-haspopup="listbox" aria-expanded="true"
+          aria-controls="city-list" aria-activedescendant="city-sh">
+    上海 <span class="arrow" aria-hidden="true">▾</span>
+  </button>
+  <ul class="select-list" id="city-list" role="listbox" aria-label="城市">
+    <li class="opt" role="option" id="city-bj" aria-selected="false">北京</li>
+    <li class="opt" role="option" id="city-sh" aria-selected="true">上海</li>
+  </ul>
+</div>
+```
+
+关键点:
+
+- 触发器是**原生 button**(天然可 Tab、可 Enter/Space 激活),combobox 角色负责把「高亮选项」经 `aria-activedescendant` 播报给读屏;
+- 浮层是 `role="listbox"`,选项 `role="option"` + `aria-selected`;展开状态必须实时同步 `aria-expanded`;
+- 浮层绝对定位在触发器下方(bottomLeft),宽度与触发器同宽(antd `popupMatchSelectWidth` 默认 true,调研 06§4.6),不进入 Tab 序列。
+
+## 样式与参数
+
+三个参数都是 JS 型(经 store 订阅改 `data-*`),CSS 按 `data-size` / `data-status` / `data-clearable` 分支:
+
+```css
+.select-trigger { border: 1px solid #d9d9d9; border-radius: 6px; background: #fff;
+                  color: rgba(0, 0, 0, 0.88); display: flex; justify-content: space-between; }
+.select-wrap[data-size="sm"] .select-trigger { height: 24px; font-size: 12px; padding: 0 8px; border-radius: 4px; }
+.select-wrap[data-size="md"] .select-trigger { height: 32px; font-size: 14px; padding: 0 12px; border-radius: 6px; }
+.select-wrap[data-size="lg"] .select-trigger { height: 40px; font-size: 16px; padding: 0 12px; border-radius: 6px; }
+.select-wrap[data-status="error"]   .select-trigger { border-color: #ff4d4f; }
+.select-wrap[data-status="warning"] .select-trigger { border-color: #faad14; }
+.select-list {
+  position: absolute; top: calc(100% + 4px); left: 0; width: 100%;
+  max-height: 256px; overflow: auto;                    /* antd listHeight 默认 256 */
+  background: #fff; border-radius: 6px; z-index: 10;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+}
+.opt[aria-selected="true"] { background: #E6F4FF; color: #1677ff; }  /* blue-1 主色浅底 */
+.opt:hover { background: rgba(0, 0, 0, 0.04); }                      /* controlItemBgHover */
+.is-placeholder { color: rgba(0, 0, 0, 0.25); }                      /* colorTextQuaternary */
+```
+
+数值出处:
+
+- 尺寸 24/32/40 与字号 12/14/16 = antd 控件高度/字阶派生档(设计调研 06§2.3①③);antd Select `size` 默认 **medium**(06§4.6,v5 时代同名默认为 middle);
+- 浮层最大高度 256px = antd `listHeight` 默认;浮层阴影逐字取 antd 浮层主阴影 boxShadow;选中底色 `#E6F4FF` = antd 蓝色板第 1 阶(controlItemBgActive=PrimaryBg);hover 底 rgba(0,0,0,0.04) = FillTertiary(06§1.2/§2.3);
+- `clearable` 对齐 `allowClear`(默认 **false**)、`status` 对齐表单控件 `status: error|warning` 语义(06§4.5/§4.6)。
+
+## 动效与交互
+
+- **展开/收起**:浮层 opacity + 4px 上移入场,0.2s(antd motionDurationMid + motionEaseInOut);`prefers-reduced-motion` 时直接显隐;
+- **键盘全路径**(APG combobox,调研 07§5):Down/Up 展开并移动高亮;Enter 确认高亮项;**Esc 关闭并恢复打开前的值**——「探索不丢选择」是 combobox 区别于单选 listbox 的关键;Tab 离开即收起;
+- **点击外部关闭**:document 级 pointerdown 监听,目标不在容器内即收起;
+- **焦点管理**:焦点始终留在触发器上,高亮经 `aria-activedescendant` 表达(focus ≠ selection,二者视觉可区分,调研 07§35)。
+
+## 真实产品案例
+
+- **GitHub Issue/PR 列表筛选**:「Label」「Assignee」「Milestone」都是触发器 + 浮层下拉,浮层顶部带搜索框、支持勾选,选中项有勾选标记——大量选项场景在 listbox 之上叠加了过滤能力;
+- **12306 出发/到达车站选择**:点击输入框展开车站列表,支持拼音与首字母检索,常用城市置顶——搜索 + listbox 的组合应对数千选项;
+- **电商收货地址(省/市/区)**:三级级联 Select 逐级联动,上一级变更即重置下一级——级联是 Select 的典型复合用法。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | lg(40px)在触屏上命中更稳,浮层选项行高同步变大、可视选项数变少 | sm(24px)让筛选栏更紧凑,但 12px 选项文字与更小的行高增加扫视与点击成本 |
+| `status` | error 档触发器整体转红、权重最高,应配字段下方文字说明(不能只靠色,WCAG 1.4.1) | 回到 default 后所有视觉提示消失,错误信息必须换由文案承载 |
+| `clearable` | on 时已选状态多一个 × 命中区,便于一键回到占位态 | off 时撤销选择需重开浮层点回原选项,移动端尤其费劲 |
+
+经验区间:选项 5–15 个直接平铺 listbox;超过 15 个加搜索;收起态永远显示当前值或占位文案,不要留空白触发器。

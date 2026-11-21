@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)定位的容器按锚定位摆放,每条 toast 是容器内的一张小卡片,出现与消失都不影响页面文档流。
+
+```html
+<div class="toast-stack" data-placement="top-center">
+  <div class="toast" role="alert">
+    <span class="toast-icon" aria-hidden="true"></span>
+    已保存到草稿箱
+  </div>
+</div>
+```
+
+关键点:
+
+- 每条 toast 容器挂 `role="alert"`,动态插入 DOM 时多数屏幕阅读器会自动播报(WAI-APG Alert);toast **不得夺取键盘焦点**,需要打断用户就改用 alertdialog;
+- 容器层 `pointer-events: none`、卡片层恢复 `auto`,浮层不能挡住下方页面的操作;
+- MUI 把 Snackbar(即 toast)与 Alert(流内提醒)、Dialog(阻断)三者明确区分:toast 只放**非关键**信息。
+
+## 样式与参数
+
+三个参数全部是 JS 型(demo 订阅 store 驱动):`duration` 控制计时器、`placement` 切换容器六方位对齐、`maxCount` 截断最旧条目。视觉上对应这几条声明:
+
+```css
+.toast-stack {
+  position: fixed;            /* 或舞台内 absolute */
+  inset: 0;
+  padding: 14px;              /* AntD message.config.top 默认 8(视口) */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 1010;              /* AntD message 层级位于 Modal(1000)之上 */
+}
+.toast-stack[data-placement="top-center"] { align-items: center; justify-content: flex-start; }
+.toast {
+  background: #fff;
+  border: 1px solid #f0f0f0;  /* antd colorBorderSecondary */
+  border-radius: 8px;         /* antd borderRadiusLG */
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.05), 0 1px 6px -1px rgba(0,0,0,.03), 0 2px 4px 0 rgba(0,0,0,.03);
+}
+```
+
+数值出处(均核对自 antd 6.7.1):功能色 success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff`(seed 功能色);默认 3s 自动消失、`maxCount` 默认不限制、`pauseOnHover` 默认 true(AntD message 文档)。六方位模型来自 MUI Snackbar 的 `anchorOrigin`(纵向 top/bottom × 横向 left/center/right)。
+
+## 动效与交互
+
+- **入场**:0.2s 淡入 + 8px 滑入,只用 `opacity/translate`(antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`,时长对齐 `motionDurationMid = 0.2s`);
+- **出场不排队**:计时到点**整块直接消失**,不做逐条退出动画——AntD 动效原则「出场比进场更快」;`maxCount` 超限时同样直接移除最旧一条;
+- **Esc 关闭**:MUI 无障碍要求 Snackbar 可用 Esc 关闭;demo 在有 toast 时监听 keydown,按 Esc 清空;
+- **悬停暂停**(`pauseOnHover`,AntD 默认 true)与**手动关闭**是可选增强;
+- `prefers-reduced-motion: reduce` 时取消滑入动画,直接出现(MDN:大幅位移动画对前庭障碍用户不友好)。
+
+## 真实产品案例
+
+- **Gmail**:发送邮件后左下角弹出「邮件已发送」黑色 toast,并附「撤销」动作按钮——toast 携带动作的典型范式,撤销窗过了时限邮件才真正发出;
+- **Google Docs**:编辑时左下角持续显示「所有更改已保存在云端硬盘」状态条,把异步保存结果以不打断写作的方式呈现;
+- **GitHub**:在仓库设置页保存后,页面底部出现自动消失的确认 toast;GitHub(Primer)的 Toast 组件即固定在视口底部、数秒后自行消失。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `duration` | 信息停留更久、更易读到,但堆积的旧提示会掩盖新反馈;超过 5–6s 用户会误以为它需要手动关闭 | 快节奏但读不完即消失——低于 2s 违反 WCAG 2.2.3 的风险陡增(MUI:给足处理时间);500ms 只适合「已复制」这类瞬间可确认的反馈 |
+| `placement` | 无「大小」可言,换的是注意力锚点:底部方位贴近拇指/视线收尾区,顶部方位更醒目但可能挡导航 | 同上;关键是**同站固定一个方位**,频繁换位会让用户错过提示 |
+| `maxCount` | 并发上限高,信息全保留但堆栈占屏、时间线混乱(MUI 不鼓励堆叠) | 只留最新 1 条,页面干净但中间结果被吞——批量触发场景至少留 2–3 条 |
+
+经验区间:duration 2–5s(默认 3s 对齐 AntD)、maxCount 1–3、placement 全站统一(antd 系顶部居中、MUI 系底部)。关键信息永远不走 toast,走持久 banner 或 alertdialog。

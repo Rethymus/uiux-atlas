@@ -435,6 +435,16 @@ const CATEGORY_TOOLS: Record<CategoryId, DeepLink[]> = {
       url: "https://mobbin.com",
     },
   ],
+  components: [
+    {
+      label: { zh: "shadcn/ui 文档", en: "shadcn/ui docs" },
+      url: "https://ui.shadcn.com",
+    },
+    {
+      label: { zh: "Radix Primitives 文档", en: "Radix Primitives docs" },
+      url: "https://www.radix-ui.com/primitives/docs",
+    },
+  ],
 };
 
 /**

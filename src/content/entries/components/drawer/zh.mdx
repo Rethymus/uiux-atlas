@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+抽屉是「贴边停靠的滑入面板」:一个绝对定位、贴某条边停靠的面板,平时用 `transform: translate` 把自己推到视口外,打开时滑回原位;可选一层遮罩垫在页面与面板之间。
+
+```html
+<button id="trigger">打开</button>
+<div class="mask" aria-hidden="true"></div>
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drw-title" tabindex="-1">
+  <header><h2 id="drw-title">标题</h2><button aria-label="关闭">×</button></header>
+  <div class="body">…</div>
+</aside>
+```
+
+关键点:
+
+- 面板 `role="dialog"` + `aria-modal`(带遮罩时 true;mask=false 时为非模态,页面仍可交互);
+- 滑入方向由停靠边决定:right/left 用 `translateX`,top/bottom 用 `translateY`,**绝不动 width/height**(动尺寸会触发逐帧重排);
+- AntD 官方定位:承载「Form 中创建/编辑」「对 Popover 太重的子任务」等需要留在主任务上下文的信息组(调研 07§4)。
+
+## 样式与参数
+
+`thickness` 是 CSS 变量型参数(`--drawer-thickness`,左右抽屉=宽度、上下抽屉=高度);`placement` / `mask` 是 JS 型参数,分别驱动 `data-placement` 与遮罩渲染。
+
+```css
+.drawer {
+  position: absolute; z-index: 1000;          /* antd Drawer zIndex 默认 1000 */
+  background: #fff;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08),
+              0 3px 6px -4px rgba(0,0,0,.12),
+              0 9px 28px 8px rgba(0,0,0,.05);
+  transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.drawer[data-placement="right"] { top: 0; right: 0; bottom: 0; width: var(--drawer-thickness); transform: translateX(100%); }
+.drawer[data-placement="top"]   { left: 0; right: 0; top: 0; height: var(--drawer-thickness); transform: translateY(-100%); }
+.drawer.is-open { transform: translate(0, 0); }
+.mask { position: absolute; inset: 0; background: rgba(0,0,0,0.45); } /* antd colorBgMask */
+```
+
+数值出处(antd 6.7.1 核对):`placement` 默认 **right**、`size` 默认档 **378px** / large 档 **736px**(旧 `width/height` 默认 378 已废弃)、`mask` 默认 true、`keyboard`(Esc)默认 true、`push` 多层抽屉推挤默认 `{distance: 180}`(design-study 06 §4.12)。
+
+## 动效与交互
+
+- **滑入滑出**:`transform 0.3s`(antd `motionDurationSlow`)+ `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`,只用 transform 合成器属性,100% 直达不重排;
+- **reduced-motion 直达**:`prefers-reduced-motion: reduce` 时 `transition: none`,抽屉直接出现在终态——大幅位移动画对前庭障碍用户不友好(MDN);这也是本条目的硬性降级路径;
+- **键盘**:Esc 关闭(antd `keyboard` 默认 true);带遮罩时 Tab 困焦在面板内(antd 6.2.0 起可经 `focusable` 配置焦点陷阱);mask=false 时非模态、不困焦;
+- **多层抽屉**:AntD 用 `push`(默认推挤 180px)表达分支任务,后开抽屉把先开的往边上推一段,层级关系一目了然;
+- 关闭后焦点归还触发元素(APG Dialog 同源规则)。
+
+## 真实产品案例
+
+- **Notion**:左侧边栏可整体收起/展开,展开时内容区被推向右侧而非被覆盖——「停靠式左抽屉」在宽屏文档工具里的用法;
+- **GitHub**:窄视口下头部导航折叠为汉堡按钮,点开后菜单面板从左侧滑入、带遮罩,选完即关——响应式导航抽屉的典型形态;
+- **移动端电商(App 端)**:商品列表的筛选条件普遍做成**底部抽屉**(bottom sheet 式):上滑呼出、内放多组筛选项、底部「确定/重置」,与 AntD `placement="bottom"` + 大厚度的组合一致。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `placement` | 无「大小」可言,换的是空间语义:right/left 适合表单与详情(阅读流竖向),top/bottom 适合通知栏、筛选器(横向铺开) | 同上;右侧是 antd 默认也是主流心智——换方位要有信息架构理由 |
+| `thickness` | 容纳双列表单与宽表格;左右抽屉超过 ~50% 视口宽时「抽屉感」退化成半屏页面 | 只剩单列窄面板——低于 280px 表单标签与按钮开始换行;240px 已是移动端下限 |
+| `mask` | on:模态化,注意力强制聚焦,子任务完成后必须显式关闭 | off:非模态,可以边看抽屉边操作页面(对照场景神器),但用户可能忘记它在开着 |
+
+经验区间:thickness 320–480(锚点 378)、表单/详情默认 right、筛选器可用 bottom、需要同屏对照时 mask=off。

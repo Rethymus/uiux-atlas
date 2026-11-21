@@ -1,0 +1,66 @@
+## Structure & DOM
+
+A badge has no standalone form — it must parasitize a host (button, icon, avatar, tab): the host is a `position: relative` anchor and the badge is an absolutely positioned child at the top-right corner, with the count decision made before render.
+
+```html
+<button class="host" aria-label="Inbox, 8 unread">
+  Inbox
+  <span class="badge" aria-hidden="true">8</span>
+</button>
+```
+
+Key points:
+
+- The count decision chain (antd semantics): `count === 0` → hide entirely (showZero defaults to false); `count > max` → render `${max}+`; otherwise the raw number;
+- To screen readers the badge is not a standalone control: the count goes into the host's `aria-label` and the badge itself is `aria-hidden` (so it isn't announced twice);
+- The red dot (dot) is another fill state of the same element: number removed, shrunk to a circle;
+- Never casually set `overflow: hidden` on the host — it clips the badge protruding past the corner.
+
+## Styling & Parameters
+
+`offset` is CSS-variable driven (`--bd-offset` feeds translate); `count` / `max` / `dot` are JS-typed (store subscription, with the demo computing the rendered value):
+
+```css
+.badge {
+  position: absolute; top: 0; right: 0;
+  transform: translate(50%, -50%) translate(var(--bd-offset, 0px), var(--bd-offset, 0px));
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; background: #ff4d4f; color: #fff;  /* red = antd colorError seed */
+  font-size: 12px; line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px #fff;   /* white ring: separates the badge from the host fill */
+}
+[data-dot="on"] .badge { min-width: 0; width: 8px; height: 8px; border-radius: 50%; font-size: 0; }
+```
+
+Where the numbers come from (antd 6.7.1, verified via out/design-study/06-antdesign.md §4.17 plus the local `.scratch/antd06` source):
+
+- `overflowCount` defaults to **99** and appends `+` past the cap (index.zh-CN.md:51; Badge.tsx:70 default 99, :112 appending `+`) — this entry's param name `max` maps to it;
+- `count` hides at 0: `showZero` defaults to false (index.zh-CN.md:52, :47);
+- `dot` defaults to false (index.zh-CN.md:49);
+- `offset` is a two-value `[number, number]` with no default (index.zh-CN.md:50); the demo simplifies it to one value applied on both x/y axes;
+- The badge red is antd's `colorError` seed default `#ff4d4f` (06-antdesign.md §2.2); the 20px badge height and 8px dot diameter are demo values (the pixel specs of antd's medium|small badge size tiers aren't recorded in the research — unverified).
+
+## Motion & Interaction
+
+- A badge may pop on appearance (scale 0.6 → 1, 0.25s = antd motionDurationMid, easeInOut curve) — but only **when the count changes**, never looping; disabled under `prefers-reduced-motion: reduce`;
+- The host's interaction never changes because of the badge: the button still opens the list; the badge is not a click target;
+- Clearing to zero is a content change, not an effect: at count = 0 the badge simply disappears — no "zeroing animation";
+- The +1 / clear toolbar rewrites count through `store.set`, and the panel slider follows — a two-way channel over the same store, with every change visible instantly.
+
+## Real-world examples
+
+- **WeChat's bottom-tab unread badges**: the "Chats" tab shows the exact unread count while tabs like "Discover" use a red dot for "new content exists but the amount doesn't matter" — count and dot splitting the work by information value within one nav bar;
+- **The Pull requests / Issues counters on GitHub repo pages**: a gray counter beside the tab name, keeping "open items" permanently visible at the entry — unlike red unread badges it's a low-emphasis neutral count, proving badges don't have to be red warnings;
+- **The blue dot on iOS App Store's "Today" tab**: Apple uses a numberless dot for "new content" — when the number carries no action value, the system-level choice is exactly the dot form.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `count` | bigger, more urgent numbers; past max everything folds into `N+`, never widening further | 1 is the smallest valid value; at 0 the badge hides entirely and the host returns to its unbadged state |
+| `max` | later capping keeps exact numbers longer (audit/reconciliation scenarios need precision) | earlier folding: at max=9, ten renders as `9+` — browsing-first entries prefer small caps for faster scanning |
+| `dot` | on = number hidden, only a red dot — "there is", not "how many", reducing noise | off = the full count, when the number itself drives action (like a cart) |
+| `offset` | the badge drifts away from the host corner and can collide with neighbors; watch container overflow | 0 returns the standard straddling corner position; negative values would burrow into the host (this demo clamps ≥ 0) |
+
+Working ranges: unread counts cap at 99 (antd default); browsing-first entries may cap at 9; nudge offset 1–4px only to resolve occlusion at the host corner; keep two or three badges per screen, or their attention value dilutes each other.

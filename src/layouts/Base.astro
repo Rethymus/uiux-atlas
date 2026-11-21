@@ -69,7 +69,7 @@ const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
               </a>
             ))
           }
-          {/* 「资源」排在六分类之后;仅资源页标记当前(activeCategory 不覆盖它) */}
+          {/* 「资源」排在七分类之后;仅资源页标记当前(activeCategory 不覆盖它) */}
           <a href={resourcesUrl(locale)} aria-current={activeNav === "resources" ? "true" : undefined}>
             {dict.nav.resources}
           </a>

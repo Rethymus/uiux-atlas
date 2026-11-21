@@ -1,0 +1,115 @@
+{
+  "name": "Switch",
+  "nameZh": "开关",
+  "aliases": ["切换开关", "Toggle", "Toggle Switch"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "二态即时开关:拨杆在轨道左右滑动表达 on/off,状态即改即生效,不需要「提交」按钮。",
+    "en": "An instant two-state toggle: the thumb slides across the track to express on/off — the change takes effect immediately, no submit button needed."
+  },
+  "origin": {
+    "zh": "APG 把 switch 定义为仅 on/off 二态的开关类型,键盘 Space 切换、aria-checked 表达状态,并立下「标签不得随状态改变」的铁律(调研 07§6);checkbox 与 toggle button 才允许第三态/半态。生产参照系是 Ant Design Switch(antd 6.7.1 核对:checked 默认 false、size 默认 medium(v6 由 v5 的 default 更名)、loading 默认 false、disabled 默认 false,见设计调研 06§4.7)。",
+    "en": "APG defines switch as an on/off-only control: Space toggles, aria-checked expresses state, and the label must never change with the state (research 07 §6); checkbox and toggle button are the ones allowed a third/half state. The production reference is Ant Design Switch (checked against antd 6.7.1: checked defaults false, size defaults medium (renamed from v5's default), loading false, disabled false — design study 06 §4.7)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "size",
+      "options": [
+        { "value": "sm", "label": { "zh": "小 sm", "en": "Small sm" } },
+        { "value": "md", "label": { "zh": "中 md", "en": "Medium md" } }
+      ],
+      "default": "md",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-size)。对齐 antd Switch 的 size:medium|small 默认 **medium**(v5 为 default|small 默认 default,设计调研 06§4.7/§5.1);demo 的轨道/滑块像素为自绘示意,不代表官方轨道尺寸(调研未记载)。",
+        "en": "JS-type param (demo subscribes and toggles data-size). Aligns with antd Switch size: medium|small defaulting to **medium** (v5 was default|small defaulting to default, design study 06 §4.7/§5.1); the demo's track/thumb pixel values are drawn for illustration and are not official track dimensions (not documented in the research)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "loading",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-loading)。对齐 antd Switch 的 loading:默认 false(06§4.7);loading 时滑块内显示旋转指示、交互被抑制——语义是「变更已受理、正在生效」。",
+        "en": "JS-type param (demo subscribes and toggles data-loading). Aligns with antd Switch loading, default false (06 §4.7); while loading the thumb shows a spinner and interaction is suppressed — the semantics of 'change accepted, taking effect'."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "disabled",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-disabled)。对齐 antd Switch 的 disabled:默认 false(06§4.7);disabled 表示无权限或上级条件不满足,视觉减淡且不响应键盘。",
+        "en": "JS-type param (demo subscribes and toggles data-disabled). Aligns with antd Switch disabled, default false (06 §4.7); disabled means no permission or an unmet parent condition — visually dimmed and unresponsive to keyboard."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "checked",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 aria-checked,点击开关也回写本参数,双向)。对齐 antd Switch 的 checked/defaultChecked:默认 **false**(06§4.7);这就是开关状态本身——面板与 demo 里的开关是同一个值。",
+        "en": "JS-type param (demo subscribes to drive aria-checked; clicking the switch writes back to this param — two-way). Aligns with antd Switch checked/defaultChecked, default **false** (06 §4.7); this IS the switch state — the panel and the demo switch share one value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "button + role=\"switch\" + aria-checked 在全部主流浏览器可用;滑块位移用 transform 实现(合成器友好)。读屏对 switch 角色的播报(「开/关」状态)各 AT 均已成熟;loading 指示为纯 CSS 旋转,无 JS 动画 API 依赖。",
+      "en": "button + role=\"switch\" + aria-checked works in all mainstream browsers; the thumb slides via transform (compositor-friendly). Screen-reader announcement of the switch role ('on/off' state) is mature across ATs; the loading indicator is pure CSS rotation with no JS animation API dependency."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 或 AT 不支持 role=\"switch\" 时,退化路径是原生 <input type=\"checkbox\">(checkbox 模式);APG 的选型建议按语义选——「灯的开关」用 switch 友好,流程清单用 checkbox 更自然(调研 07§6)。",
+    "en": "Without JS, or when AT lacks role=\"switch\" support, fall back to a native <input type=\"checkbox\"> (checkbox mode); APG advises choosing by semantics — 'lights switch on' reads better as a switch, while checklist flows read better as checkboxes (research 07 §6)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设置项的即时生效开关:通知、免打扰、深色模式等,改变即刻生效无需保存", "en": "Instant-effect settings: notifications, do-not-disturb, dark mode — change lands immediately, no save step" },
+      { "zh": "功能开关(feature flag)面板:一组开关用 fieldset/legend 或 role=group 命名(调研 07§6)", "en": "Feature-flag panels: a group of switches named via fieldset/legend or role=group (research 07 §6)" },
+      { "zh": "二态且互斥的配置:只用开/关表达,不需要「部分选中」语义", "en": "Strictly binary config: only on/off, no 'partially selected' semantics needed" }
+    ],
+    "avoid": [
+      { "zh": "需要「提交才生效」的表单字段——改用 checkbox,并配保存按钮;开关的「即改即生效」心智会被破坏", "en": "Form fields that only take effect after submit — use a checkbox with a save button; switches promise instant effect" },
+      { "zh": "标签随状态变化的写法(如标签本身在「开/关」间切换)——APG 铁律:焦点处朗读的名称必须恒定(调研 07§6)", "en": "Labels that flip with the state (the label itself toggling on/off) — APG iron rule: the announced name at focus must stay constant (research 07 §6)" },
+      { "zh": "三态需求(全选/半选)——switch 只有二态,半选语义归 checkbox 的 indeterminate(调研 07§6)", "en": "Needing a third state (all/partial) — switch is strictly binary; partial belongs to checkbox's indeterminate (research 07 §6)" },
+      { "zh": "同一屏出现大量开关——滑杆式控件扫视成本高于复选列表,批量设置优先 checkbox 组", "en": "Screens packed with switches — sliders cost more to scan than a checklist; prefer a checkbox group for bulk settings" }
+    ]
+  },
+  "a11y": {
+    "zh": "button(role=\"switch\")+ aria-checked 表达状态;**可访问名称必须恒定**——demo 用外部 label 文案做名称、拨杆内的「开/关」文字 aria-hidden(否则状态变化时名称与播报错位,调研 07§6);键盘 Space 切换(Enter 可选);loading/disabled 时 aria-disabled 表达不可交互;成组用 fieldset/legend 或 role=group + aria-labelledby(调研 07§6)。",
+    "en": "button (role=\"switch\") + aria-checked expresses state; **the accessible name must stay constant** — the demo uses the external label copy as the name and hides the on/off glyphs inside the thumb with aria-hidden (otherwise name and announcement desync on state change, research 07 §6); Space toggles (Enter optional); loading/disabled set aria-disabled; groups use fieldset/legend or role=group + aria-labelledby (research 07 §6)."
+  },
+  "sources": [
+    "https://ant.design/components/switch-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/switch/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个拨杆开关:恒定文案的 label + role=\"switch\" 拨杆,Space 切换、aria-checked 表达状态,滑块位移过渡,sm/md 两档,loading 显示旋转指示并抑制交互,disabled 减淡。",
+      "en": "Replicate a thumb switch: a constant-copy label + a role=\"switch\" thumb, Space to toggle, aria-checked for state, a sliding thumb transition, sm/md tiers, loading showing a spinner and suppressing interaction, disabled dimming."
+    },
+    "acceptance": [
+      { "zh": "role=\"switch\" + aria-checked 状态实时同步;可访问名称恒定,拨杆内的开/关文字 aria-hidden", "en": "role=\"switch\" + aria-checked stays in sync; the accessible name is constant and the on/off glyphs inside the thumb are aria-hidden" },
+      { "zh": "Space 切换(原生 button 行为);loading/disabled 下不响应交互并设置 aria-disabled", "en": "Space toggles (native button behavior); loading/disabled ignore interaction and set aria-disabled" },
+      { "zh": "滑块位移走 transform 过渡约 0.2s;loading 旋转动画与位移过渡均尊重 prefers-reduced-motion", "en": "Thumb slides via a transform transition over ~0.2s; the loading spin and slide transition both honor prefers-reduced-motion" },
+      { "zh": "on 轨道主色 #1677ff(antd colorPrimary),尺寸档位与 antd size 语义一致(md 默认)", "en": "On-track uses primary #1677ff (antd colorPrimary); size tiers match antd size semantics (md default)" },
+      { "zh": "checked 状态与参数面板双向同步:面板改动立即反映到开关,点击开关回写面板", "en": "checked syncs both ways with the parameter panel: panel edits reflect instantly on the switch, clicks write back to the panel" }
+    ]
+  }
+}

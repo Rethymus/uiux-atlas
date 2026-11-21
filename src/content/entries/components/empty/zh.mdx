@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+空状态是「替换者」而不是「填充物」:Carbon 的最佳实践是空态**替换**原元素——表格无数据时,连表头/页脚一起收起,只留空态卡;否则读屏用户要先听完整个表格结构,才听到「无内容」。
+
+```html
+<div class="table-region">
+  <!-- 有数据:正常表格;无数据:整表被空态卡替换 -->
+  <div class="empty-card" role="status">
+    <svg class="empty-art" aria-hidden="true">…</svg>
+    <p class="empty-title">暂无数据</p>
+    <p class="empty-desc">建立第一条数据后,记录会展示在这里。</p>
+    <button class="empty-btn">新建数据</button>
+  </div>
+</div>
+```
+
+解剖结构(Carbon):可选插画 → 简短标题(尽量正向表述,如 "Start by adding data assets")→ 正文说明下一步 → 可选主操作按钮 → 可选次级链接。Carbon 建议文案左对齐成块;antd Empty 默认为居中布局——demo 采用 antd 的居中卡片形态,Carbon 文档场景可改左对齐,两者不冲突。
+
+与 [数据表格](/components/table) 的空态呼应:容器组件(Table/List/TreeSelect)在数据为空时通常内嵌 Empty 作为占位(antd 官方用法);表格条目展示的是表格本体的完整能力,本条目聚焦被内嵌的那张空态卡。
+
+## 样式与参数
+
+两个开关对应 antd Empty 的两个关键形态决策:
+
+```css
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 32px;
+  border-radius: 12px;
+}
+.empty-art { width: 121px; height: 116px; }   /* 默认档 = antd PRESENTED_IMAGE_DEFAULT 尺寸 */
+.empty-card[data-simple="on"] .empty-art {
+  width: 55px; height: 35px;                  /* 简洁档 = antd PRESENTED_IMAGE_SIMPLE 尺寸 */
+}
+.empty-title { font-size: 16px; font-weight: 600; color: rgba(0, 0, 0, 0.88); }
+.empty-desc  { font-size: 13px; color: rgba(0, 0, 0, 0.45); }
+```
+
+数值出处:
+
+- `image` 默认 **Empty.PRESENTED_IMAGE_DEFAULT(121×116)**,内置简洁档 **Empty.PRESENTED_IMAGE_SIMPLE(55×35)**;`description` 无显式默认值列,实际文案由 locale 提供「暂无数据」(antd 6.7.1 源码核对,06-antdesign §4.23;调研 §5.2-6 如实标注其为实现层默认);
+- Carbon 空态解剖:标题正向表述;多空态并存的仪表盘里 CTA 用 tertiary 按钮,避免一屏多个主按钮;
+- `footerAction` 不是官方 props:antd 是 children 可选插槽(`<Empty><Button>创建</Button></Empty>`),Carbon 将主操作列为可选——demo 默认 on 仅为展示完整解剖,已如实标注为编辑性选择。
+
+## 动效与交互
+
+- **入场**:空态卡淡入 + 8px 上移,只动 `opacity/transform` 合成器属性;`prefers-reduced-motion` 时取消。空态常出现在数据清空或加载结束的收尾时刻(峰终定律的高权重时刻),动效宜轻;
+- **出现时机**:数据加载结束才渲染空态——加载中用骨架屏/进度指示,不要让空态闪现(NN/g:任何动作立即给视觉反馈;循环动画只用于 2–10s 的等待);
+- **交互出口**:主操作按钮 hover/active 反馈即时;「搜索无结果」类空态必须提供「清除筛选/修改关键词」的次级出口(Carbon user-action 类的核心要求);
+- **反例演示**:demo 的「保留表框」开关展示 Carbon 反模式——表头/页脚仍在时空态卡被压在中间,读屏顺序错误,视觉上也像「坏掉的表格」而非有意为之的空态。
+
+## 真实产品案例
+
+- **GitHub 搜索无结果**:结果区居中显示插画 + "No results matched your search",并给出调整关键词或过滤条件的建议——典型的 user-action 类空态:说明原因 + 给出口;
+- **Gmail 清空收件箱**:"You're all caught up" 配一张轻量插画——把「空」表达为成就而非缺失,是 Carbon「正向表述」原则的教科书案例;
+- **Ant Design Table 无数据**:官方 Table 在 `dataSource` 为空时内嵌 Empty 组件,展示 locale 默认文案「暂无数据」——容器嵌空态的标准形态(antd 官方文档用法,调研 07§17)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `simple` | on:插画缩至 55×35,卡片更紧凑,适合卡片内嵌与仪表盘多空态并存;情绪感染力下降,更依赖文字传达 | off:恢复 121×116 默认插画,首屏首次使用更有引导感;空间代价大,多空态并存时互相挤压 |
+| `footerAction` | on:多一条显式「下一步」出口,空态从死胡同变引导;但仪表盘多空态并存时会出现多个主按钮(Carbon 告诫场景) | off:只剩说明文字,页面更安静;用户没有显式出口,适合纯信息展示或页面级已有 CTA 的场景 |
+
+经验区间:插画两档(55×35 / 121×116)足够覆盖全部场景;标题约 16px、说明 13–14px、次级文案 12px;同一视图只保留一个主操作 CTA,其余出口用链接或次级按钮。

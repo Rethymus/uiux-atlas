@@ -1,8 +1,9 @@
 import { z } from "astro:schema";
-import { CATEGORIES, SYSTEMS, type EntrySchema, type Param } from "./types";
+import { CATEGORIES, SUBGROUPS, SYSTEMS, type EntrySchema, type Param } from "./types";
 
 export const categoryIdSchema = z.enum(CATEGORIES.map((c) => c.id) as [string, ...string[]]);
 export const systemIdSchema = z.enum(SYSTEMS.map((s) => s.id) as [string, ...string[]]);
+export const subgroupIdSchema = z.enum(SUBGROUPS.map((s) => s.id) as [string, ...string[]]);
 
 const localizedText = z.object({ zh: z.string(), en: z.string() });
 
@@ -49,6 +50,8 @@ export const entrySchemaZod = z.object({
   nameZh: z.string().min(1).optional(),
   aliases: z.array(z.string()).default([]),
   category: categoryIdSchema,
+  /** 子分组(仅 category="components" 条目使用;值域六子分组 id) */
+  subgroup: subgroupIdSchema.optional(),
   system: systemIdSchema,
   star: z.number().int().min(1).max(3),
   tagline: localizedText,

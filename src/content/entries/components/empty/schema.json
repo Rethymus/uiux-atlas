@@ -1,0 +1,90 @@
+{
+  "name": "Empty",
+  "nameZh": "空状态",
+  "aliases": ["空状态", "Empty State", "无数据占位", "暂无数据"],
+  "category": "components",
+  "subgroup": "other",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "数据为空时的友好占位:插画 + 简短标题 + 下一步说明 + 可选操作按钮,把『死胡同』变成引导。",
+    "en": "A friendly placeholder for no data: artwork + short title + next-step copy + an optional action button — turning a dead end into guidance."
+  },
+  "origin": {
+    "zh": "IBM Carbon 把空状态模式化为三类(no data / user action / error management)并给出解剖结构与最佳实践(空态应替换原元素);Ant Design 将其产品化为 Empty 组件并可嵌入 Table/TreeSelect 等容器(调研 07§17;antd props 默认值经 06-antdesign §4.23 于 6.7.1 源码核对)。",
+    "en": "IBM Carbon formalizes empty states into three patterns (no data / user action / error management) with an anatomy and best practices (the empty state should replace the original element); Ant Design productizes it as the Empty component, embeddable in Table/TreeSelect and more (research 07 §17; antd prop defaults verified against the 6.7.1 source in 06-antdesign §4.23)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "simple",
+      "options": [
+        { "value": "off", "label": { "zh": "默认插画(121×116)", "en": "Default art (121×116)" } },
+        { "value": "on", "label": { "zh": "简洁插画(55×35)", "en": "Simple art (55×35)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "对应 antd image 属性的两档内置图:默认 Empty.PRESENTED_IMAGE_DEFAULT(121×116)与内置 Empty.PRESENTED_IMAGE_SIMPLE(55×35),简洁档适合卡片内嵌与多空态并存的仪表盘。off = antd 默认档。demo 以中性几何插画示意两档比例,非官方素材。",
+        "en": "Maps to the two built-in images behind antd's image prop: Empty.PRESENTED_IMAGE_DEFAULT (121×116) and the built-in Empty.PRESENTED_IMAGE_SIMPLE (55×35); the simple tier suits compact cards and dashboards with several empty states. off = the antd default. The demo draws neutral geometric art to show the two aspect ratios — not official artwork."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "footerAction",
+      "options": [
+        { "value": "on", "label": { "zh": "显示操作按钮", "en": "Show action button" } },
+        { "value": "off", "label": { "zh": "隐藏操作按钮", "en": "Hide action button" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "空态底部的引导操作。antd 无此布尔 props——官方形态是 children 可选插槽(如 <Button>创建</Button>),Carbon 亦把主操作列为『可选』;on 是 demo 为展示完整解剖而选的编辑性默认,非官方 props 默认值。",
+        "en": "The guiding action at the bottom of the empty state. antd has no such boolean prop — the official form is an optional children slot (e.g. <Button>Create</Button>), and Carbon likewise lists the primary action as optional; on is an editorial demo default to present the full anatomy, not an official prop default."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "空状态是纯文档流组件(SVG 插画 + 文本 + 按钮),不依赖新式 CSS 能力,现代浏览器全兼容。",
+      "en": "Empty states are plain document-flow components (SVG art + text + a button) with no reliance on modern CSS features — fully compatible across current browsers."
+    }
+  },
+  "fallback": {
+    "zh": "无降级风险:SVG 插画应 aria-hidden(或 alt=\"\"),即使加载失败,标题文案仍是唯一信息载体;不要把空态文案做进图片里。",
+    "en": "No degradation risk: keep the SVG art aria-hidden (or alt=\"\"); even if it fails to load, the title copy remains the sole information carrier — never bake empty-state copy into an image."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表格/列表首次使用无数据——说明这里将有什么、怎么添加(Carbon no-data 类)", "en": "First-use tables/lists with no data — say what will live here and how to add it (Carbon no-data type)" },
+      { "zh": "搜索/筛选无结果——解释原因并给撤销或改写筛选的出口(Carbon user-action 类)", "en": "No search/filter results — explain why and offer an exit to revise or clear filters (Carbon user-action type)" },
+      { "zh": "权限/系统/配置问题导致的空——给更多细节与修复选项(Carbon error-management 类)", "en": "Emptiness caused by permissions/system/config — give more detail and a fix path (Carbon error-management type)" },
+      { "zh": "嵌入 Table/List/TreeSelect 等容器作为无数据占位(antd Empty 官方用法)", "en": "Embedded in Table/List/TreeSelect as the no-data placeholder (official antd Empty usage)" }
+    ],
+    "avoid": [
+      { "zh": "保留表头/页脚再塞空态卡——读屏会先读完整个表格结构才听到『无内容』(Carbon 明确反例)", "en": "Keeping table header/footer and stuffing the empty card inside — screen readers read the whole table structure before hearing 'no content' (explicit Carbon anti-pattern)" },
+      { "zh": "多个空态并存时各配一个主按钮——仪表盘场景 CTA 用次级样式避免多主按钮(Carbon)", "en": "Several concurrent empty states each with a primary button — dashboards should use tertiary CTAs (Carbon)" },
+      { "zh": "用空态承载错误详情或营销内容——空态不是错误页也不是广告位", "en": "Using empty states to carry error details or marketing content — an empty state is neither an error page nor ad space" },
+      { "zh": "插画面积远大于文字信息——首次使用引导之外的空态应保持轻量", "en": "Artwork dwarfing the message — beyond first-use onboarding, empty states should stay light" }
+    ]
+  },
+  "a11y": {
+    "zh": "插画 aria-hidden(或 alt=\"\"),标题文案是唯一信息载体;空态应替换原表格结构而非嵌在其内,避免读屏先读完表头(Carbon);操作按钮需可键盘聚焦且文案具体(『新建数据』优于『确定』);空态出现可用 role=\"status\" 播报。",
+    "en": "Mark the artwork aria-hidden (or alt=\"\") so the title copy is the sole information carrier; replace the table structure rather than nesting inside it so screen readers don't read the full header first (Carbon); keep the action button keyboard-focusable with concrete copy ('Create data' beats 'OK'); announce the empty state via role=\"status\"."
+  },
+  "sources": [
+    "https://ant.design/components/empty",
+    "https://carbondesignsystem.com/patterns/empty-states-pattern/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个表格无数据时的空状态卡:居中插画(或简洁小图)+『暂无数据』标题 + 正向的下一步说明 + 主操作按钮,替换整个表格区域而非嵌在表头之下。",
+      "en": "Replicate the no-data empty state card of a table: centered artwork (or the compact simple art) + a 'No data' title + positive next-step copy + a primary action button, replacing the table region rather than nesting under its header."
+    },
+    "acceptance": [
+      { "zh": "空态卡替换原表格区域:无数据时不保留表头/页脚(Carbon 最佳实践)", "en": "The empty card replaces the table region: no header/footer retained when there is no data (Carbon best practice)" },
+      { "zh": "插画按所选档位取 121×116(默认)或 55×35(简洁)比例,并 aria-hidden", "en": "Artwork follows the selected tier — 121×116 (default) or 55×35 (simple) proportions — and is aria-hidden" },
+      { "zh": "标题对齐 locale 默认文案『暂无数据』风格,副文案正向表述下一步", "en": "Title follows the locale default 'No data' style; the sub-copy states the next step positively" },
+      { "zh": "底部操作可选:关闭时不渲染任何按钮占位", "en": "The bottom action is optional: when off, no button placeholder is rendered" },
+      { "zh": "空态出现时以 role=\"status\" 播报,插画不承载关键信息", "en": "The empty state announces via role=\"status\"; the artwork never carries key information" }
+    ]
+  }
+}

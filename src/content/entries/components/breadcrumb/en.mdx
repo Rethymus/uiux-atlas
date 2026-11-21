@@ -1,0 +1,63 @@
+## Structure & DOM
+
+A breadcrumb = **navigation landmark + ordered list + hierarchical links**. A list of parent-page links ordered by hierarchy that helps users locate themselves; placed horizontally before the main content (APG, research 07§12).
+
+```html
+<nav aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/">Home</a></li>
+    <li aria-hidden="true">/</li>
+    <li><a href="/resources">Resources</a></li>
+    <li aria-hidden="true">/</li>
+    <li aria-current="page">Breadcrumb</li>
+  </ol>
+</nav>
+```
+
+Key points:
+
+- The current page is **not a link** and carries `aria-current="page"`; if a product makes it clickable, the attribute stays (APG: optional when the current page is not a link, research 07§12);
+- Separators are pure decoration: `aria-hidden` (as explicit list items) or rendered via CSS pseudo-elements, never read aloud (MUI accessibility notes, verified live 2026-11-21);
+- Long trails collapse: middle levels fold into a **focusable "…" button** that expands the full trail on click (MUI "Collapsed breadcrumbs": past `maxItems` the middle collapses into an ellipsis, verified live 2026-11-21);
+- Every ancestor is a clickable link — clicking it means "go back up to that level".
+
+## Styling & Parameters
+
+Two parameters: `separator` switches the between-level glyph and `maxItems` sets the collapse threshold; both are JS-type (the demo subscribes to the store).
+
+```css
+.crumbs ol { display: flex; align-items: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.crumbs a { font-size: 14px; color: rgba(0, 0, 0, 0.65); text-decoration: none; border-radius: 6px; padding: 2px 6px; }
+.crumbs a:hover { color: #1677ff; background: rgba(0, 0, 0, 0.04); } /* primary + 4% neutral fill (§2.3-⑤) */
+.crumbs a:focus-visible { outline: 2px solid #1677ff; outline-offset: 1px; }
+.crumbs [aria-current="page"] { font-size: 14px; color: rgba(0, 0, 0, 0.88); font-weight: 500; } /* neutral text 88% */
+.crumbs .sep { color: rgba(0, 0, 0, 0.45); }
+.crumbs .expander {
+  border: 1px solid #d9d9d9; background: #fff; border-radius: 6px;
+  padding: 2px 10px; cursor: pointer; font-size: 14px;
+}
+```
+
+Where the numbers come from (cross-checked against antd 6.7.1 in out/design-study/06-antdesign.md): separator officially defaults to "/" (§4.21); non-current text `65%` (colorTextSecondary), current-page text `88%` (colorText), hover fill `4%` (FillTertiary tier), primary `#1677ff`, stroke `#d9d9d9` (colorBorder); collapsing aligns with MUI Breadcrumbs `maxItems` (first/last kept, middle folded; official example `maxItems={2}`, no default documented — this entry's default of 3 is a task-spec demo value).
+
+## Motion & Interaction
+
+- **Backtracking**: clicking any ancestor truncates the trail there — the interaction is fundamentally "move a pointer on the hierarchy tree", not browser history back;
+- **Collapse/expand**: clicking "…" reveals the folded middle levels (with a way back); no animation by default — if you add one, keep it under 0.2s of fade and respect `prefers-reduced-motion`;
+- **Hover**: non-current items hover to primary color + 4% fill as the "clickable" cue; the current item is never clickable;
+- Relationship to top navigation: the nav answers "switch areas", the breadcrumb answers "go up a floor" — they complement, not replace.
+
+## Real-world examples
+
+- **MDN doc pages**: every article opens with a hierarchy line (e.g. Home → CSS → CSS layout), the current page bold and non-clickable; deep information hierarchy makes the trail a standard fixture of doc sites.
+- **Windows Explorer address bar**: the path renders as a breadcrumb where each directory segment is clickable and a per-segment dropdown reveals sibling directories — a hybrid "breadcrumb + dropdown" form.
+- **E-commerce product pages**: product detail pages show "Home → Category → Subcategory → Product", and clicking any upper category returns to its listing — an important traffic-return entry.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `separator` (glyph choice) | `>` points harder with a sense of "entering"; `·` is the quietest, fitting visually calm surfaces; `/` is antd's default and the docs-site convention with the lowest recognition cost | Heavier glyphs (icon arrows) grab attention and compete with content; with many levels, heavy glyphs amplify the noise |
+| `maxItems` | Less collapsing, the full trail stays visible, but long trails grow linearly in width and overflow narrow screens | Collapsing kicks in earlier and the trail stays compact; below 3 the middle is almost entirely hidden and backtracking first costs an extra expansion click |
+
+Working ranges: trails of 3–5 levels; no folding on mobile or for trails under 6; the "…" expander about 32px wide with a hit area ≥24px.

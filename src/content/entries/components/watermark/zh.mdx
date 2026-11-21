@@ -1,0 +1,81 @@
+## 结构与 DOM
+
+两种主流实现,任选其一,demo 采用方案 A:
+
+**方案 A:CSS/DOM 瓦片重复(demo 采用)**——一个绝对定位的水印层内放置 N 个瓦片 span,CSS Grid `auto-fill` + `gap` 平铺,旋转与透明度走 CSS 变量:
+
+```html
+<div class="content-card">…正文…</div>
+<div class="wm-layer" aria-hidden="true">      <!-- pointer-events:none; z-index:9 -->
+  <div class="wm-grid">                        <!-- repeat(auto-fill, 120px) + gap -->
+    <span class="wm-tile">UIUX Atlas</span>    <!-- ×N 个瓦片 -->
+  </div>
+</div>
+```
+
+**方案 B:canvas → dataURL → background-repeat(antd 官方路线)**——把单格文字画进 canvas(尺寸 = 单格 + gap),`toDataURL` 后作为 `background-image` 由浏览器平铺。两种取舍:
+
+| | A:CSS/DOM 瓦片 | B:canvas dataURL |
+| --- | --- | --- |
+| 参数改动 | CSS 变量即时生效,零重绘 | 每次改动都要重绘 canvas + 重新编码 |
+| 文字质量 | 矢量,任意缩放不糊 | 位图,高 DPI 屏需 2x 采样 |
+| DOM/内存 | 数十个 span(demo 约 20 个) | 单个背景节点 |
+| 防篡改 | 弱,DevTools 可直接删节点 | 强,antd 以 MutationObserver 监听移除并自动重绘 |
+
+水印发的是「威慑 + 溯源」信号,不承担任何必读信息——层必须 `aria-hidden` 且 `pointer-events: none`,内容卡才是文档流主体。
+
+## 样式与参数
+
+四个参数,三个走 CSS 变量(rotate/opacity/gap),一个走 store 订阅(content):
+
+```css
+.wm-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 9;                    /* antd zIndex 默认 9,位于弹层体系之下 */
+  opacity: var(--wm-opacity);    /* 0.15,对齐 antd rgba(0,0,0,.15) 的 alpha */
+  pointer-events: none;
+  overflow: hidden;
+}
+.wm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 120px);   /* 单格 120×64 = antd 默认 */
+  grid-auto-rows: 64px;
+  column-gap: var(--wm-gap);                          /* 100px = antd gap [100,100] */
+  row-gap: var(--wm-gap);
+}
+.wm-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(var(--wm-rotate));                /* -22deg = antd rotate 默认 */
+  font: 400 16px sans-serif;                          /* antd font 默认 fontWeight/fontSize/fontFamily */
+  white-space: nowrap;
+}
+```
+
+数值出处(06-antdesign §4.24,antd 6.7.1 官方源码核对):`rotate` 默认 **-22**、单格 **120×64**、`gap` 默认 **[100, 100]**、`offset` 默认 [gap/2, gap/2]、font 默认 **rgba(0,0,0,.15) / fontSize 16 / fontWeight 400 / fontFamily sans-serif / textAlign center**、`zIndex` 默认 **9**、`inherit` 默认 **true**(传导给 Modal/Drawer 等弹层)、5.18.0 起容器强制 `overflow: hidden` 防高度归零、内置 MutationObserver 防篡改自动重绘;TDesign 亮/暗水印文字色 `--td-text-color-watermark` rgba(0,0,0,10%) / rgba(255,255,255,10%)(02-tdesign §1.6,demo 暗色场景即按此思路反白)。
+
+## 动效与交互
+
+- **静态层纪律**:水印层不做常驻动画——大面积重复元素每帧重绘代价高;demo 只在参数变化时重排,Grid 布局由浏览器增量计算,rotate/opacity/gap 经 CSS 变量即时生效;
+- **入场**:内容卡淡入 + 8px 上移(`prefers-reduced-motion` 时取消),水印层直接呈现或整体淡入 0.25s——绝不加逐瓦片动画,平铺图案一旦「动起来」就成了干扰源;
+- **交互隔离**:`pointer-events: none` 保证水印不拦截任何点击、文本选择与焦点;正文选择、按钮 hover 全部如常穿透;
+- **弹层传导**:antd `inherit: true` 时水印会传导到 Modal/Drawer 等弹层之上(自身 zIndex 9、弹层体系 1000 之下)——demo 未含弹层,规则记录备查。
+
+## 真实产品案例
+
+- **飞书/Lark 文档外发分享**:把文档分享给组织外成员时,页面叠加访客身份水印(姓名等),截图外传可溯源——「用户标识」档的典型生产形态;
+- **Ant Design Watermark**:官方组件用 canvas 单格图案 + `background-repeat` 平铺,内置 MutationObserver 防手动删除(节点被移除后自动重绘)——方案 B 的工程化参照(官方文档,06-antdesign §4.24 核对);
+- **图库/素材网站预览图**:未购买的素材预览图平铺 logo 水印防止盗用——「产品名」档的通用做法,密度通常高于文档场景;不确定具体站点的参数细节,故不展开数值。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `rotate` | 字样更斜、与正文基线错开更明显;接近 ±45° 时字样侵入相邻瓦片,重叠风险随 gap 减小上升 | 趋向水平;0° 时与正文行列对齐,既不防截图裁剪也更容易被视觉忽略 |
+| `opacity` | 水印更醒目、威慑感更强;>0.2 后正文对比度逼近 4.5:1 红线(WCAG 1.4.3),密集正文不可接受 | 更隐蔽;低于 0.05 在浅底上几乎不可见,截图压缩后可能直接消失,失去溯源价值 |
+| `gap` | 更稀疏,单屏字样更少、干扰小,但保护覆盖度下降,裁剪截图易绕过 | 更密集,覆盖与威慑更强;40px 时字样近乎连片,密集正文区可读性明显受损 |
+| `content` | 文案越长单格视觉越宽,密度感受上升;antd 支持数组逐行,可承载「姓名+时间+IP」组合溯源 | 短文案(产品名)干扰小,但溯源信息量少,威慑意义大于追溯价值 |
+
+经验区间:opacity 0.08–0.15(antd 0.15 / TDesign 0.10 都落在带内)、rotate -22° 附近、gap 80–120px;正文密集区取带内下限,预览图防盗可取上限并提高密度。

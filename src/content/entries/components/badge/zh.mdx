@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+徽标没有独立形态——它必须寄生在一个宿主(按钮、图标、头像、Tab)上:宿主是 `position: relative` 的锚,徽标是绝对定位在右上角的子元素,计数逻辑在渲染前完成。
+
+```html
+<button class="host" aria-label="收件箱,8 条未读">
+  收件箱 Inbox
+  <span class="badge" aria-hidden="true">8</span>
+</button>
+```
+
+关键点:
+
+- 计数决策链(antd 语义):`count === 0` → 整体隐藏(showZero 默认 false);`count > max` → 显示 `${max}+`;否则显示原数;
+- 徽标对读屏不是独立控件:数量写进宿主的 `aria-label`,徽标本体 `aria-hidden`(避免播报两遍);
+- 小红点(dot)是同一元素的另一种填充态:去掉数字、缩成圆点;
+- 宿主不能随手 `overflow: hidden`——会把探出角外的徽标剪掉。
+
+## 样式与参数
+
+`offset` 是 CSS 变量型(`--bd-offset` 注入 translate),`count` / `max` / `dot` 是 JS 型(订阅 store,由 demo 计算显示值):
+
+```css
+.badge {
+  position: absolute; top: 0; right: 0;
+  transform: translate(50%, -50%) translate(var(--bd-offset, 0px), var(--bd-offset, 0px));
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; background: #ff4d4f; color: #fff;  /* 红底 = antd colorError seed */
+  font-size: 12px; line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px #fff;   /* 白环:与宿主底色分离 */
+}
+[data-dot="on"] .badge { min-width: 0; width: 8px; height: 8px; border-radius: 50%; font-size: 0; }
+```
+
+数值出处(antd 6.7.1,经 out/design-study/06-antdesign.md §4.17 + 本地 `.scratch/antd06` 源码复核):
+
+- `overflowCount` 默认 **99**,超出拼 `+`(index.zh-CN.md:51;Badge.tsx:70 缺省 99、:112 拼 `+`)——本条目参数名 `max` 对应它;
+- `count` 为 0 默认隐藏:`showZero` 默认 false(index.zh-CN.md:52、:47);
+- `dot` 默认 false(index.zh-CN.md:49);
+- `offset` 为 `[number, number]` 双值,默认 -(index.zh-CN.md:50);demo 简化为单值作用于 x/y 两轴;
+- 徽标红色取 antd `colorError` seed 默认 `#ff4d4f`(06-antdesign.md §2.2);徽标盒的 20px 高 / 8px dot 直径为 demo 演示值(antd size 分档 medium|small 的像素规格调研未记载,未证实)。
+
+## 动效与交互
+
+- 徽标出现的瞬间可以弹一下(scale 0.6 → 1,0.25s = antd motionDurationMid,easeInOut 缓动),只在**计数变化**时触发,不循环;`prefers-reduced-motion: reduce` 时取消;
+- 宿主不因徽标改变交互:按钮点击仍然打开列表,徽标不是可点目标;
+- 清零是内容变化不是动效:count = 0 时徽标直接消失,不给「归零动画」;
+- `+1` / 清零工具条经 `store.set` 改写 count,参数面板滑块同步——同一 store 的双向通道,数值改动即时可见。
+
+## 真实产品案例
+
+- **微信底部 Tab 的未读角标**:「微信」Tab 上显示具体未读条数、「发现」等 Tab 用小红点表达「有新内容但数量不重要」——count 与 dot 两种形态在同一个导航条上按信息量分工;
+- **GitHub 仓库页的 Pull requests / Issues 计数徽标**:Tab 名旁的灰色计数器,把「打开中的条目数」常驻在入口上——与红色未读徽标不同,它是低强调的中性计数,说明徽标不必都是红色警示;
+- **iOS App Store「今日」Tab 的蓝点**:Apple 用无数字圆点表达「有新内容」——当数字对用户没有行动价值时,系统级选择就是 dot 形态。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `count` | 数字更大更紧迫;超过 max 后一律折叠成 `N+`,再大也不加宽 | 到 1 是最小有效值;到 0 整体隐藏,宿主回到无徽标状态 |
+| `max` | 封顶更晚,精确数字保留得更久(审计/对账场景需要精确值) | 更早折叠:比如 max=9 时 10 显示为 `9+`——浏览型入口偏爱小封顶,扫读更快 |
+| `dot` | on = 数字隐藏只留红点,「有」但不「多少」,信息降噪 | off = 完整计数,数量本身有行动价值(如购物车) |
+| `offset` | 徽标更远离宿主角,容易与相邻元素打架;调大要留意溢出容器 | 0 回到标准角位(骑缝在右上角);负方向会钻进宿主内部(本 demo 限定 ≥0) |
+
+经验区间:未读计数 max=99(antd 默认);浏览型入口可压到 max=9;offset 只在宿主角上有遮挡冲突时微调 1-4px;同屏徽标控制在两三个以内,否则注意力互相稀释。

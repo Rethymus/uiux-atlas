@@ -1,0 +1,92 @@
+## Structure & DOM
+
+A switch is a "constant label + thumb" structure; the thumb itself is a native button carrying `role="switch"`:
+
+```html
+<label class="switch-row" id="mail-label">Receive product update emails</label>
+<button type="button" role="switch" aria-checked="true" aria-labelledby="mail-label">
+  <span class="thumb">
+    <span class="glyph" aria-hidden="true">ON</span>
+  </span>
+</button>
+```
+
+Key points:
+
+- **The accessible name is constant**: the external label supplies the name via `aria-labelledby`, and the ON/OFF glyphs inside the thumb are `aria-hidden` — if the name changed with the state, what a screen reader announces at focus would desync (APG iron rule, research 07 §6);
+- `aria-checked` is the sole state carrier ("true"/"false") — no mixing with pressed/checked;
+- The thumb slide is written as `transform` only, transitioning on the compositor with no reflow;
+- loading/disabled add `aria-disabled="true"` so screen readers know why Space does nothing.
+
+## Styling & Parameters
+
+All four parameters are JS-typed (store-subscribed `data-*` and `aria-checked` switches); the CSS branches on `data-size` / `data-loading` / `data-disabled`:
+
+```css
+.switch-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.switch-btn[aria-checked="true"] { background: #1677ff; }   /* colorPrimary */
+.switch-btn .thumb {
+  position: absolute;
+  left: 2px;
+  border-radius: 50%;
+  background: #fff;
+  translate: 0 0;
+  transition: translate 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.switch-btn[aria-checked="true"] .thumb { translate: var(--thumb-travel) 0; }
+.switch-btn[data-loading="on"] .thumb::after {              /* spinner */
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sw-spin 0.6s linear infinite;
+}
+.switch-btn[data-disabled="on"] { opacity: 0.45; cursor: not-allowed; }
+@keyframes sw-spin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .switch-btn, .switch-btn .thumb { transition: none; }
+  .switch-btn[data-loading="on"] .thumb::after { animation: none; }
+}
+```
+
+Where the numbers come from:
+
+- `size` aligns with antd v6 `medium|small` defaulting to **medium** (v5 was default|small, design study 06 §4.7/§5.1); the demo's track pixel values are drawn for illustration — the research holds no official track dimensions, so no official claim is made;
+- `checked`/`loading`/`disabled` defaults align item-by-item with the antd 6.7.1 doc audit (06 §4.7): false/false/false;
+- On-track color `#1677ff` = antd colorPrimary (06 §2.2); the 0.2s transition = motionDurationMid (06 §3.1); easing = motionEaseInOut;
+- Off-track gray rgba(0,0,0,0.25) is a demo illustration (semantically aligned with the neutral 25% alpha tier, 06 §2.3⑤ — not an official track token).
+
+## Motion & Interaction
+
+- **Thumb slide**: 0.2s cubic-bezier(0.645, 0.045, 0.355, 1) (antd motionDurationMid + motionEaseInOut); only `translate` (transform) animates;
+- **Keyboard**: Space toggles (native button behavior, Enter optional) — no custom keyboard code; leave predictability to the platform (APG, research 07 §6);
+- **loading**: a 0.6s linear spinner inside the thumb with interaction suppressed but **the state not rolled back** — it expresses "accepted, taking effect"; under `prefers-reduced-motion` the spinner freezes into a ring;
+- **disabled**: the whole key dims, cursor becomes not-allowed, Space does nothing; it stays reachable in Tab order semantics via aria-disabled (a disabled button is unfocusable, so the aria state carries the meaning).
+
+## Real-world examples
+
+- **iOS Settings (UISwitch)**: nearly every row in system settings is "copy + thumb on the right", green when on and gray when off, with the whole row acting as the hit area — the most ubiquitous switch form on mobile;
+- **WeChat chat settings**: "Mute notifications" and "Pin to top" in chat details are instant-effect thumbs with no confirmation dialog — the canonical carrier of the instant-effect mental model;
+- **Android M3 Switch**: the selected thumb carries a check icon, the track widens with state, and the thumb scales on press — Material's more emphatic take on the same semantics.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | md gives a larger hit area — better for touch and primary settings rows | sm fits compact lists/toolbars, but the smaller thumb raises mis-tap rate |
+| `loading` | on locks interaction and absorbs rapid re-clicks — right for genuinely async saves; if the backend is unreliable users get stuck in "forever taking effect" | off returns to instant toggling; loading should only exist for real async waits, never as decoration |
+| `disabled` | on clearly says "not touchable", cutting dead clicks; a fully disabled group needs a reason (parent condition / no permission) | off restores interactivity; a permanently disabled setting should be removed from the UI rather than gray forever |
+| `checked` | on turns the track primary and slides the thumb — a strong instant-feedback signal; many switches on at once flood the screen with primary color | off returns to the gray track; defaulting everything to on dilutes the scarcity and discoverability of "enabled" |
+
+Working ranges: no more than 6–8 switches per screen; default conservatively — most settings start off, leaving "enable" as an explicit user decision; every loading state needs a timeout fallback, never spin forever.

@@ -1,0 +1,101 @@
+{
+  "name": "Avatar",
+  "nameZh": "头像",
+  "aliases": ["用户头像", "头像组", "Avatar Group"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "以小尺寸图像或字符代表人:圆/方两形,组内以负 margin 重叠、溢出折叠为 +N——尺寸与重叠宽度都是 token 化的,不是随手写死的。",
+    "en": "A small image or glyph standing in for a person: circle or square, overlapping in a group via negative margins with the overflow folded into +N — size and overlap are tokenized, not eyeballed."
+  },
+  "origin": {
+    "zh": "规格对齐 Ant Design Avatar / Avatar.Group(antd 6.7.1):shape 默认 circle(index.zh-CN.md:44)、size 默认 medium 且像素基准 containerSize = controlHeight = 32(avatar/style/index.ts:209);组重叠宽度 groupOverlapping = -marginXS = -8px、组描边 groupBorderColor = colorBorderBg(白)(style/index.ts:219-221);Group 溢出折叠 max = { count, style, popover } 自 5.18.0(index.zh-CN.md:58)。",
+    "en": "Spec aligned with Ant Design Avatar / Avatar.Group (antd 6.7.1): shape defaults to circle (index.zh-CN.md:44); size defaults to medium with the pixel base containerSize = controlHeight = 32 (avatar/style/index.ts:209); group overlap groupOverlapping = -marginXS = -8px and group border groupBorderColor = colorBorderBg (white) (style/index.ts:219-221); group overflow folding max = { count, style, popover } since 5.18.0 (index.zh-CN.md:58)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "size",
+      "unit": "px",
+      "min": 24,
+      "max": 64,
+      "step": 1,
+      "default": 32,
+      "cssVar": "--av-size",
+      "effect": {
+        "zh": "CSS 变量型参数(--av-size 驱动宽高与字符字号)。默认 32px 对齐 antd:Avatar size 默认 medium,像素基准 containerSize = controlHeight = 32(style/index.ts:209 + seed controlHeight 32,06-antdesign.md §2.2);字符字号随尺寸按 14/32 ≈ 0.4375 比例缩放(antd textFontSize 默认 fontSize = 14,style/index.ts:212)。",
+        "en": "CSS-variable param (--av-size drives width/height and the glyph font size). The 32px default matches antd: Avatar size defaults to medium with pixel base containerSize = controlHeight = 32 (style/index.ts:209 + seed controlHeight 32, 06-antdesign.md §2.2); the glyph scales with size at the 14/32 ≈ 0.4375 ratio (antd textFontSize defaults to fontSize = 14, style/index.ts:212)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "shape",
+      "options": [
+        { "value": "circle", "label": { "zh": "圆形", "en": "Circle" } },
+        { "value": "square", "label": { "zh": "方形", "en": "Square" } }
+      ],
+      "default": "circle",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-shape)。antd shape 默认 circle(index.zh-CN.md:44);circle 圆角 50%,square 圆角取 antd seed borderRadius = 6(avatar/style/index.ts:98-100、118:非圆形头像用 token borderRadius 族,与尺寸无关)。",
+        "en": "JS-type param (demo subscribes and toggles data-shape). antd shape defaults to circle (index.zh-CN.md:44); circle uses a 50% radius while square uses antd's seed borderRadius = 6 (avatar/style/index.ts:98-100, 118: non-circle avatars take the token borderRadius family regardless of size)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "groupCount",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "effect": {
+        "zh": "JS 型参数:8 人内存名单中前 N 位实像展示,其余折叠为一个 +N 徽标。默认 4 为演示值(antd Avatar.Group max.count 无官方默认);对应 antd Group max = { count } 折叠语义(5.18.0+,index.zh-CN.md:58)。组内重叠固定 -8px(antd groupOverlapping = -marginXS,style/index.ts:220),不随 size 缩放。",
+        "en": "JS-type param: the first N members of an 8-person in-memory roster are shown, the rest fold into one +N chip. The default of 4 is a demo value (antd Avatar.Group max.count has no documented default); it mirrors antd Group max = { count } folding semantics (5.18.0+, index.zh-CN.md:58). The in-group overlap is a fixed -8px (antd groupOverlapping = -marginXS, style/index.ts:220) and does not scale with size."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "本条目仅用 div + CSS(calc、border-radius、负 margin),全浏览器基线能力,无特性开关要适配;若改用真实图片,补 srcSet 与 loading 优化属增强而非兼容。",
+      "en": "This entry uses only div + CSS (calc, border-radius, negative margins) — baseline capabilities in every browser, nothing to feature-detect. Real images would add srcSet and loading optimizations as enhancements, not compatibility work."
+    }
+  },
+  "fallback": {
+    "zh": "图片加载失败时的降级链与 antd 一致:icon > 子元素(字符);本 demo 直接用姓氏字符,即天然降级形态。字符头像务必保证底色与字符对比度 ≥ 4.5:1,否则回退到更深底色。",
+    "en": "On image failure the fallback chain matches antd: icon > children (glyph); this demo uses surname glyphs directly, which is already the degraded form. Ensure glyph-on-fill contrast ≥ 4.5:1, otherwise fall back to a deeper fill."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "会话/评论/成员列表中标识「谁在说话」——尺寸小(24-32px),靠相邻文字补充身份", "en": "Identifying 'who is speaking' in threads/comments/member lists — small (24–32px), identity carried by adjacent text" },
+      { "zh": "协作者组:文档/项目页顶部重叠排列 + 溢出 +N(antd Group max 语义)", "en": "Collaborator stacks: overlapping avatars with a +N overflow on doc/project pages (antd Group max semantics)" },
+      { "zh": "个人设置、账户切换等需要「人」的心理暗示的位置", "en": "Places that need the psychological cue of a person: profile settings, account switchers" }
+    ],
+    "avoid": [
+      { "zh": "把头像当装饰图标用——它会暗示一个真实的人;装饰位请用 icon", "en": "Using avatars as decorative icons — they imply a real person; use icons for decoration" },
+      { "zh": "小尺寸(<24px)硬塞字符或图片——字符不可读、图片不可辨", "en": "Cramming glyphs or photos below 24px — glyphs stop being readable and photos stop being recognizable" },
+      { "zh": "重叠组里塞大量头像却不折叠——超过 4-5 个必须折叠 +N,否则辨识度为零", "en": "Piling many avatars into an overlap without folding — past 4–5 they must fold into +N or identity is lost" }
+    ]
+  },
+  "a11y": {
+    "zh": "头像必须可命名:配可见文字名,或 alt/aria-label 给出人名(纯装饰头像才允许 alt=\"\");重叠组对外要表达完整名单——antd 用 popover 承载被折叠成员,demo 的 +N 徽标旁以 aria-label 声明总人数;方形圆角 6px 保留 3:1 边界对比(WCAG 2.1 SC 1.4.11);字符头像底色与字符对比 ≥ 4.5:1(SC 1.4.3)。",
+    "en": "Avatars must be nameable: pair with a visible name or give alt/aria-label the person's name (alt=\"\" only for purely decorative ones); an overlap group must still expose the full roster — antd carries folded members in a popover, and this demo declares the total via aria-label next to the +N chip; the 6px square radius keeps a 3:1 boundary contrast (WCAG 2.1 SC 1.4.11); glyph avatars keep ≥ 4.5:1 fill-to-glyph contrast (SC 1.4.3)."
+  },
+  "sources": [
+    "https://ant.design/components/avatar-cn",
+    "https://github.com/ant-design/ant-design/blob/6.7.1/components/avatar/style/index.ts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组重叠头像:8 人名单按 groupCount 实像展示、其余折叠为 +N 徽标;头像尺寸参数化(24-64px),圆/方两形,组内固定 -8px 重叠 + 白色描边。",
+      "en": "Replicate an overlapping avatar group: an 8-person roster shows the first groupCount members and folds the rest into a +N chip; avatar size parameterized (24–64px), circle/square shapes, fixed -8px overlap with white ring borders."
+    },
+    "acceptance": [
+      { "zh": "头像尺寸严格用参数快照值驱动宽高与字号(字号 = 尺寸 × 0.4375)", "en": "Avatar size drives both box and glyph size from the exact snapshot value (glyph = size × 0.4375)" },
+      { "zh": "circle 圆角 50%、square 圆角 6px,两者切换不改其他样式", "en": "circle uses a 50% radius and square 6px; switching shapes changes nothing else" },
+      { "zh": "组内重叠固定 -8px 负 margin,白色 2px 描边(groupBorderColor)", "en": "In-group overlap is a fixed -8px negative margin with 2px white ring borders (groupBorderColor)" },
+      { "zh": "溢出项折叠为一个 +N 徽标,N = 总数 - 展示数,徽标样式与头像同尺寸", "en": "Overflow folds into one +N chip, N = total − shown, sized like the avatars" },
+      { "zh": "每个头像可命名(可见文字名或 aria-label),组声明完整名单", "en": "Every avatar is nameable (visible name or aria-label) and the group declares its full roster" }
+    ]
+  }
+}

@@ -11,6 +11,7 @@ export async function listEntryMetas(): Promise<EntryMeta[]> {
     slug: e.id,
     name: e.data.name,
     nameZh: e.data.nameZh,
+    subgroup: e.data.subgroup as EntryMeta["subgroup"],
     system: e.data.system as EntryMeta["system"],
     star: e.data.star,
     tagline: e.data.tagline,

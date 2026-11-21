@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+线性图标是「内联 `<svg>` + currentColor」的单色结构:形状用 `path`/`circle`/`polygon` 描出,颜色完全交给 CSS `color` 继承。
+
+```html
+<!-- 装饰图标:aria-hidden,读屏跳过 -->
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <circle cx="11" cy="11" r="7" />
+  <path d="m16.5 16.5 4.5 4.5" />
+</svg>
+
+<!-- 语义图标按钮:必须补可访问名(MUI 要求) -->
+<button type="button" aria-label="搜索 Search">
+  <svg aria-hidden="true" …>…</svg>
+</button>
+```
+
+关键点:
+
+- 统一 `viewBox="0 0 24 24"`、`fill="none"`、`stroke="currentColor"`——一套网格一套风格;
+- `stroke-width` 是 SVG 继承属性,设在 `<svg>` 根上即可传导给全部子形状,demo 的线宽联动即基于此;
+- antd 的做法可作参照:独立包 `@ant-design/icons` 注入 `width/height="1em"` 与 `fill="currentColor"`(06-antdesign §4.2),图标随文字缩放与变色;4.0 起主包不再内置图标;
+- `spin`/`rotate` 是 antd 图标仅有的行为 props(`spin` 默认 false,06 §4.2),双色图标另有 `twoToneColor`。
+
+## 样式与参数
+
+`size`/`strokeWidth` 为 CSS 变量型(`--icon-size` / `--icon-stroke-width`),`color` 为 JS 型(data 属性切换):
+
+```css
+.ic {
+  width: var(--icon-size, 14px);   /* 默认 14 = antd 主字号,1em 即等高 */
+  height: var(--icon-size, 14px);
+  stroke-width: var(--icon-stroke-width, 2);
+  color: rgba(0, 0, 0, 0.88);      /* current 模式:antd colorText 88% */
+}
+.icon-scene[data-icon-color="accent"] .ic { color: #1677ff; } /* seed colorPrimary */
+.icon-scene[data-icon-color="danger"] .ic { color: #ff4d4f; } /* seed colorError */
+/* 行内用法:1em 与文字天然等高(antd width/height=1em) */
+.icon-inline .ic { width: 1em; height: 1em; }
+```
+
+数值出处:
+
+- **默认 14px**:antd seed `fontSize: 14`(06 §2.2)+ 图标 `1em`(06 §4.2)——文字旁图标与文字等高;
+- **accent `#1677ff` / danger `#ff4d4f`**:antd seed `colorPrimary` / `colorError`(06 §2.2);
+- **strokeWidth 默认 2**:Lucide/Feather 线性图标集的社区惯例值——**未证实为任何官方默认**,antd 图标多为填充路径、无 stroke-width 属性(06 §4.2),如实标注;
+- 中性文字色 88% 取 antd `colorText` 档(06 §2.3⑤)。
+
+## 动效与交互
+
+- 图标本体是静态字形,**不建议**给普通图标加动画;唯一常见例外是「加载中」图标的旋转(spin)——命中 `prefers-reduced-motion` 时应静止(07 §37);
+- **颜色联动**是图标最重要的「动效」:`stroke="currentColor"` 让 hover 变色一条规则同时作用于文字与图标,零额外 JS;
+- 尺寸/线宽经 CSS 变量改动即时生效,无重绘闪烁;批量换图标不建议逐个改 DOM,优先换 `class`/CSS 变量;
+- 触控目标:点击式图标的热区不要小于控件舒适区——视觉 16px 的图标应配 32px+ 热区(Fitts 定律,07 §22)。
+
+## 真实产品案例
+
+- **GitHub Octicons** — 官方图标集按 16px 网格设计,仓库页 star/fork 等图标与文字同色渲染(即 currentColor 思路),悬停高亮时文字与图标一起变色。
+- **VS Code** — 左侧活动栏的文件/搜索/源代码管理图标为单色线条图标,选中项反白高亮、未选中为暗灰,状态只靠深浅与细指示条表达,风格高度统一。
+- **Apple SF Symbols** — 系统图标以模板(template)单色渲染,颜色由 tint color 驱动:标签栏选中变色、按钮禁用整体变淡,同一形状在不同语境自动换色——与 currentColor 机制同源。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | 视觉分量骤增,40–48px 可当空状态插画;但与 14px 文字混排会破坏基线 | 12px 以下线条粘连、细节丢失,24×24 网格里的复杂图形最先糊掉 |
+| `color` | accent/danger 强调显著——多图标同时强调会互相抵消(Von Restorff,07 §30);danger 红需形状冗余兜底 | current 随文字最稳,但弱强调场景(禁用、次要)图标可能不够醒目 |
+| `strokeWidth` | 3 视线粗壮醒目,大尺寸下更稳;小图标上易堵死内部留白 | 1 细线精致,48px 大图标上甚至显轻;12px 小图标上细线会断续发虚 |
+
+经验区间:正文旁 14–16px、菜单项 16px、工具栏 16–20px、空状态 40–48px;线宽 2 为通用默认,1 只给 ≥24px 的展示型图形。

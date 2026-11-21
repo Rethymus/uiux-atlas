@@ -1,0 +1,92 @@
+## Structure & DOM
+
+A date picker is a two-layer "trigger + calendar overlay" structure (a self-drawn simplified implementation borrowing the row/column idea of the APG grid pattern):
+
+```html
+<div class="dp-wrap" data-size="md">
+  <button type="button" class="dp-trigger" aria-haspopup="dialog" aria-expanded="true">
+    Nov 21, 2026 <span aria-hidden="true">📅</span>
+  </button>
+  <div class="dp-panel" role="dialog" aria-label="Choose a date">
+    <div class="dp-head">
+      <button type="button" aria-label="Previous month">‹</button>
+      <span class="dp-title">November 2026</span>
+      <button type="button" aria-label="Next month">›</button>
+    </div>
+    <table role="grid">
+      <thead>
+        <tr><th role="columnheader" aria-label="Monday">Mo</th>…</tr>
+      </thead>
+      <tbody>
+        <tr role="row">
+          <td role="gridcell"><button type="button" tabindex="-1">1</button></td>
+          <td role="gridcell"><button type="button" tabindex="0" aria-pressed="true">21</button></td>
+          …
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```
+
+Key points:
+
+- The calendar is a **7-column grid**: weekday headers are `columnheader`, and each date cell is a native button inside a `gridcell` — focusability and Space/Enter activation are native capabilities;
+- Focus uses a **roving tabindex**: exactly one `tabindex="0"` in the whole table (the selected day, or today), with arrow keys moving focus ±1/±7;
+- The overlay is absolutely positioned right below the trigger (bottomLeft, antd placement default), closes on outside click and Esc, and hands focus back to the trigger on close;
+- Leading blanks align the first row (offset decided by firstDay), trailing rows stay empty — only the current month renders, no cross-month spill cells (the APG official example includes cross-month keys; the simplified drawn version omits them and says so honestly).
+
+## Styling & Parameters
+
+All three parameters are JS-typed (store-subscribed); the CSS branches on `data-size` / `data-lang`:
+
+```css
+.dp-trigger {
+  border: 1px solid #d9d9d9; border-radius: 6px; background: #fff;
+  color: rgba(0, 0, 0, 0.88); display: inline-flex; gap: 8px; align-items: center;
+}
+.dp-stage[data-size="sm"] .dp-trigger { height: 24px; font-size: 12px; padding: 0 8px; }
+.dp-stage[data-size="md"] .dp-trigger { height: 32px; font-size: 14px; padding: 0 12px; }
+.dp-stage[data-size="lg"] .dp-trigger { height: 40px; font-size: 16px; padding: 0 12px; }
+.dp-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 10;
+  width: 252px; padding: 8px; background: #fff; border-radius: 8px;
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05);
+  animation: dp-pop 0.2s cubic-bezier(0.645, 0.045, 0.355, 1) both;
+}
+.dp-cell { width: 32px; height: 28px; border-radius: 4px; }
+.dp-cell[aria-pressed="true"] { background: #1677ff; color: #fff; }   /* selected day */
+.dp-cell.is-today { box-shadow: inset 0 0 0 1px #1677ff; }            /* today outline */
+.dp-cell:not([aria-pressed="true"]):hover { background: rgba(0, 0, 0, 0.04); }
+```
+
+Where the numbers come from:
+
+- The three trigger heights **24/32/40px** and 12/14/16px fonts = antd DatePicker's explicitly documented size tiers ("size default 32px, large 40px, small 24px") plus the derived type scale, design study 06 §4.9/§2.3①③;
+- The overlay shadow copies antd's floating-layer boxShadow verbatim, radius 8px = the borderRadiusLG tier (06 §2.3②); day-cell hover rgba(0,0,0,0.04) = FillTertiary (06 §2.3⑤);
+- Selected fill `#1677ff` = colorPrimary (06 §2.2); the 0.2s open transition = motionDurationMid + motionEaseInOut (06 §3.1);
+- `lang` aligns with antd's "en-US default, zh_CN via ConfigProvider locale" i18n mechanism; the `firstDay` default mon pairs the task spec with the zh locale convention (component implementations derive it from locale, 06 §4.9);
+- antd DatePicker's `allowClear` defaults to **true** — the demo keeps a "Clear" button echoing that default (06 §4.9).
+
+## Motion & Interaction
+
+- **Open/close**: the overlay enters with opacity + a 4px rise over 0.2s; under `prefers-reduced-motion` it appears/disappears instantly;
+- **Keyboard** (simplified, self-drawn): Tabbing into the panel lands on the roving focus cell; ←/→/↑/↓ move ±1/±7 (within the current month only, stopping at edges); Enter/Space select and close; Esc closes and returns focus to the trigger; Tabbing out collapses the panel;
+- **Month paging**: ‹ › change the displayed month only, never the selected value; year-range limits are implementation-defined — the demo sets none;
+- **Click-outside close**: a document-level pointerdown collapses the panel when the target lies outside the container; picking a date fills the trigger and collapses (the instant-confirm behavior of the single-select form, matching antd's default).
+
+## Real-world examples
+
+- **12306 ticketing date picker**: the booking page calendar only exposes "today and later", with past dates dimmed and inert; selection fills the departure field in place — the strongest case for the "unavailable dates" semantics;
+- **Airbnb / Trip.com check-in–check-out**: the range-form calendar shows two side-by-side months, previews the stay interval on hover, and dims unavailable dates; range selection is the most important compound variant of the single calendar;
+- **Google Flights date panel**: the calendar grid carries lowest-fare labels on individual dates, turning "which day is cheap" into a scannable surface — an extension of calendar cells as a data-visualization container.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | lg (40px trigger) steadies touch hits and enlarges day cells, but the panel eats more vertical space | sm (24px) fits toolbars/inline table rows, but day-cell targets shrink enough that neighboring-cell mis-taps rise |
+| `firstDay` | sun-first pairs the weekend at the right, matching North-American mental models and printed-calendar tradition | mon-first runs weekdays first with the weekend closing the row, matching mainland-China office calendars; neither is better — audience decides, and mixing them is the real risk |
+| `lang` | en copy runs shorter (abbreviated month names), letting the panel compact | zh date formats carry 年月日 characters — more complete information at slightly more width; when switching, aria-labels must switch too, or screen-reader announcements desync from visible copy |
+
+Working ranges: panel width locks to the 7-column rhythm (~252–280px) with 28–32px square day cells; dimmed unavailable dates must remain discernible (WCAG 1.4.11 non-text 3:1); always keep a "Today" quick path next to month paging.

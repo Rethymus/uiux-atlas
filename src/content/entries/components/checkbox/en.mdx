@@ -1,0 +1,80 @@
+## Structure & DOM
+
+A checkbox group is "fieldset + legend naming, with a select-all box + children inside", using native checkboxes:
+
+```html
+<fieldset class="ck-group">
+  <legend>Notification channels</legend>
+  <label class="ck-row">
+    <input type="checkbox" id="ck-all" aria-checked="mixed" />
+    <span>Select all</span>
+  </label>
+  <label class="ck-row">
+    <input type="checkbox" name="channel" value="email" />
+    <span>Email</span>
+  </label>
+  <label class="ck-row">
+    <input type="checkbox" name="channel" value="sms" />
+    <span>SMS</span>
+  </label>
+</fieldset>
+```
+
+Key points:
+
+- `fieldset/legend` provides the group semantics — screen readers announce the group name before any child; the equivalent is `role="group"` + `aria-labelledby`;
+- The select-all half state needs **both channels**: JS sets `input.indeterminate = true` (visual dash) + `aria-checked="mixed"` (announced state) — React does not pass through the indeterminate property, so it must be set via a ref;
+- Native `input[type=checkbox]` gives Space toggling and a full-row hit area via the wrapping `label` for free — do not rebuild it with divs and drawn checks;
+- A shared `name` (e.g. `channel`) makes form submission naturally aggregate into an array (the same semantics as antd Checkbox.Group's `value/defaultValue` defaulting to `[]`, research 06 §4.8).
+
+## Styling & Parameters
+
+Both parameters are JS-typed (store-subscribed / written back); the CSS branches on `data-disabled`:
+
+```css
+.ck-group { border: 0; padding: 0; margin: 0; }
+.ck-group legend { font-size: 14px; color: rgba(0, 0, 0, 0.88); padding: 0; margin-bottom: 8px; }
+.ck-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
+.ck-row input {
+  appearance: none;
+  width: 16px; height: 16px;                    /* controlInteractiveSize = controlHeight/2 */
+  border: 1px solid #d9d9d9; border-radius: 4px; /* borderRadiusSM */
+  display: grid; place-items: center;
+  transition: background 0.2s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.2s;
+}
+.ck-row input:checked { background: #1677ff; border-color: #1677ff; }  /* colorPrimary */
+.ck-row input:checked::after { content: ""; width: 8px; height: 4px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(0, -1px); }
+.ck-row input:indeterminate { background: #1677ff; border-color: #1677ff; }
+.ck-row input:indeterminate::after { content: ""; width: 8px; height: 2px; background: #fff; }
+.ck-group[data-disabled="on"] .ck-row { opacity: 0.45; cursor: not-allowed; }
+```
+
+Where the numbers come from:
+
+- The 16px control = antd `controlInteractiveSize` (half of controlHeight 32, design study 06 §2.3④); radius 4px = borderRadiusSM (06 §2.3②);
+- Checked fill `#1677ff` = colorPrimary, border `#d9d9d9` = colorBorder, the 0.2s transition = motionDurationMid + motionEaseInOut (06 §2.2/§2.3/§3.1);
+- `checked`/`disabled` defaults, `indeterminate`'s "false by default, style-only" nature, and Group's `[]` default align item-by-item with the antd 6.7.1 doc audit (06 §4.8).
+
+## Motion & Interaction
+
+- **Check feedback**: fill/border transition over 0.2s; the check mark appears instantly via `::after`; the indeterminate dash works the same; transitions cancel under `prefers-reduced-motion`;
+- **Keyboard**: Space toggles (native); Tab order = select-all → children, naturally linear;
+- **The linkage is a derivation, not a state machine**: any child changes → recompute select-all = all checked? indeterminate = some checked?; select-all changes → broadcast the value to every child — one-directional, testable logic with no two-way feedback loop;
+- **Group disable**: clicks and keyboard both go dead, visuals dim; on restore the checked states survive untouched.
+
+## Real-world examples
+
+- **Gmail mail list**: the header select-all carries a dropdown (All / Read / Unread / Starred…), turning half-checked when only some rows are selected; checking rows surfaces a bulk-action toolbar — the canonical "tristate select-all + bulk bar" pattern;
+- **Taobao/JD shopping carts**: each item row has a checkbox linked up through store-level and cart-level select-alls, with the checkout bar summing selected amount and count live — the linkage drives business totals directly;
+- **Windows/macOS installers**: the single "I have read and agree to the license" checkbox keeps "Continue" disabled until checked — the minimal use of a checkbox as consent confirmation.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `selectAll` | on lifts all three children at once — one step for batch flows; the cost of an accidental select-all is a full reset | off empties everything; note that tapping select-all from the half state should **complete to all-selected** (the mainstream behavior), not clear |
+| `disabled` | on locks the group for "parent condition unmet" cases; the reason must be stated in copy, or users cannot tell when it unlocks | off restores interaction; a permanently disabled group should be collapsed or removed |
+
+Working ranges: 3–7 children in a single column; past ~7 consider columns or subgroups; the select-all always comes first and keeps the same indentation rhythm as the children.

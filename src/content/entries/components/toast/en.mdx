@@ -1,0 +1,68 @@
+## Structure & DOM
+
+A toast is a floating stack above page content: a fixed (or stage-relative) container positioned at the anchor spot, with each toast as a small card inside it — appearing and leaving without touching the document flow.
+
+```html
+<div class="toast-stack" data-placement="top-center">
+  <div class="toast" role="alert">
+    <span class="toast-icon" aria-hidden="true"></span>
+    Saved to drafts
+  </div>
+</div>
+```
+
+Key points:
+
+- Each toast carries `role="alert"`, so most screen readers auto-announce it on DOM insertion (WAI-APG Alert); a toast **must never steal keyboard focus** — if you need to interrupt, use an alertdialog instead;
+- The container gets `pointer-events: none` while cards restore `auto`, so the floating layer never blocks the page underneath;
+- MUI separates Snackbar (= toast) from Alert (in-flow) and Dialog (blocking): toasts carry **non-critical** messages only.
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store): `duration` drives the timer, `placement` switches the container's 6-way alignment, `maxCount` trims the oldest entries. Visually they map to:
+
+```css
+.toast-stack {
+  position: fixed;            /* or absolute within a stage */
+  inset: 0;
+  padding: 14px;              /* AntD message.config.top defaults to 8 (viewport) */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 1010;              /* AntD message sits above Modal (1000) */
+}
+.toast-stack[data-placement="top-center"] { align-items: center; justify-content: flex-start; }
+.toast {
+  background: #fff;
+  border: 1px solid #f0f0f0;  /* antd colorBorderSecondary */
+  border-radius: 8px;         /* antd borderRadiusLG */
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.05), 0 1px 6px -1px rgba(0,0,0,.03), 0 2px 4px 0 rgba(0,0,0,.03);
+}
+```
+
+Where the numbers come from (all checked against antd 6.7.1): functional colors success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff` (seed tokens); 3s auto-dismiss default, unlimited `maxCount`, `pauseOnHover` true (AntD message docs). The 6-way model comes from MUI Snackbar's `anchorOrigin` (vertical top/bottom × horizontal left/center/right).
+
+## Motion & Interaction
+
+- **Entrance**: 0.2s fade + 8px slide, only `opacity/translate` (antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`, duration matching `motionDurationMid = 0.2s`);
+- **No exit queue**: when the timer fires the whole block disappears at once — no per-item exit animation, per AntD's "exits are faster than entrances" principle; hitting `maxCount` likewise drops the oldest immediately;
+- **Esc to close**: MUI's accessibility requirement for Snackbar; the demo listens for keydown while toasts exist and clears on Esc;
+- **Pause on hover** (`pauseOnHover`, AntD default true) and a manual close button are optional enhancements;
+- Under `prefers-reduced-motion: reduce`, drop the slide-in and just appear (MDN: large translation animations discomfort vestibular users).
+
+## Real-world examples
+
+- **Gmail**: after sending, a dark toast appears bottom-left saying the mail was sent, with an Undo action button — the canonical "toast with action" pattern; once the undo window lapses the mail truly goes out;
+- **Google Docs**: while editing, a bottom-left status line continuously reads "All changes saved in Drive", surfacing async save results without interrupting writing;
+- **GitHub**: saving a repository settings page raises an auto-dismissing confirmation toast at the bottom; GitHub's (Primer) Toast component is fixed to the viewport bottom and disappears after a few seconds.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `duration` | messages linger and get read, but stale toasts pile up and mask fresh feedback; past 5–6s users assume a manual close is needed | snappier, but unread messages vanish — below 2s the WCAG 2.2.3 risk climbs fast (MUI: leave processing time); 500ms only suits instantly-verifiable feedback like "Copied" |
+| `placement` | no "size" per se — it changes the attention anchor: bottom spots sit near thumb/eye rest, top spots are more visible but may cover nav | same; the real rule is **one fixed anchor per product** — jumping positions makes users miss toasts |
+| `maxCount` | higher ceilings keep every message but flood the stack and scramble the timeline (MUI discourages stacking) | keeping only the newest 1 keeps things clean but swallows intermediate results — batch scenarios want at least 2–3 |
+
+Working ranges: duration 2–5s (default 3s matching AntD), maxCount 1–3, one placement per product (antd-family top-center, MUI-family bottom). Critical information never rides a toast — use a persistent banner or an alertdialog.

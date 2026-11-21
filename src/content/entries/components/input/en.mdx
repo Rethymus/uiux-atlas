@@ -1,0 +1,69 @@
+## Structure & DOM
+
+An input is "label + native textbox + optional suffix"; the native elements already implement the APG textbox pattern, so no explicit role is needed:
+
+```html
+<div class="field">
+  <label for="username">Username</label>
+  <div class="input-wrap" data-size="md" data-status="default">
+    <input id="username" type="text" placeholder="4-16 characters" aria-describedby="username-help" />
+    <button type="button" class="clear" aria-label="Clear username">×</button>
+  </div>
+  <p id="username-help">Letters, digits and underscores</p>
+</div>
+```
+
+Key points:
+
+- `label` is explicitly tied via `for/id` — clicking the label focuses the field; `placeholder` is an example only and must not replace the field name;
+- Status copy (error/warning/help) is attached to the input with `aria-describedby` so screen readers announce it on focus;
+- The clear button sits at the right end of the input, must carry an `aria-label`, and keeps focus in the input after clearing;
+- The counter sits below the field, right-aligned (the layout of antd's TextArea showCount), with `aria-live="polite"` so over-limit changes are announced gently.
+
+## Styling & Parameters
+
+All four parameters are JS-typed (store-subscribed `data-*` switches); the CSS branches on `data-size` / `data-status` / `data-clearable`:
+
+```css
+.input-wrap[data-size="sm"] input { height: 24px; font-size: 12px; padding: 0 8px; border-radius: 4px; }
+.input-wrap[data-size="md"] input { height: 32px; font-size: 14px; padding: 0 12px; border-radius: 6px; }
+.input-wrap[data-size="lg"] input { height: 40px; font-size: 16px; padding: 0 12px; border-radius: 6px; }
+
+.input-wrap[data-status="default"] input { border-color: #d9d9d9; }        /* colorBorder */
+.input-wrap[data-status="error"]   input { border-color: #ff4d4f; }        /* colorError */
+.input-wrap[data-status="warning"] input { border-color: #faad14; }        /* colorWarning */
+
+.input-wrap[data-clearable="on"] .clear { display: grid; }                 /* shown when valued */
+.count.is-over { color: #ff4d4f; }                                         /* over-limit: red, no truncation */
+```
+
+Where the numbers come from:
+
+- The 24/32/40px size tiers and 12/14/16px font sizes follow antd's control-height derivation (controlHeight 32 → SM×0.75=24, LG×1.25=40) and type-scale derivation (fontSizeSM 12 / fontSize 14 / fontSizeLG 16), design study 06 §2.3①③;
+- Border `#d9d9d9` = antd colorBorder, error `#ff4d4f` = colorError, warning `#faad14` = colorWarning, radius 6/4 = borderRadius/borderRadiusSM, horizontal padding 12/8 = controlPaddingHorizontal/SM (06 §2.2/§2.3);
+- Placeholder color rgba(0,0,0,0.25) matches antd colorTextQuaternary (neutral at 25% alpha, 06 §2.3⑤);
+- `status` aligns with antd Input's `status: error|warning` (unset = default); `clearable` aligns with `allowClear` (unset by default); the counter follows `count.max`'s "mark red, do not truncate" semantics (06 §4.5).
+
+## Motion & Interaction
+
+- **Border transitions**: hover/focus/status switches all run `border-color 0.2s` (antd motionDurationMid); focus adds a 2px primary soft ring;
+- **Never strip the focus ring bare**: WebAIM explicitly forbids removing the focus indicator (research 07 §36); the demo replaces the native outline with a 2px primary ring (box-shadow), and adds a matching solid outline via `:focus-visible` as the keyboard fallback;
+- **Clearing**: clicking × clears the value immediately, keeps focus in the input and fires onChange — the keyboard-equivalent path is Ctrl/Cmd+A + Delete;
+- **Over-limit feedback**: the counter turning red is instant feedback with no shake animation (errors should be diagnosable, not punitive); all transitions are cancelled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **GitHub header search**: on any page, `/` focuses the search input; once typed, a clear × appears at the right end and clearing returns to the placeholder — shortcut focus + clearability are the standard pair for code-hosting search;
+- **Google search box**: focusing reveals a suggestion dropdown, and a clear × appears once text is entered; the field itself stays minimal and borderless-feeling with all interaction revealed on focus;
+- **Taobao/JD sign-in forms**: the phone-number field pins a "+86" prefix on the left and embeds a "Get code" action on the right (suffix action); when the code is wrong the border turns red with copy directly under the field — prefix, suffix action and inline error all at once.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | lg (40px) gives surer touch targets (Fitts' law) but lowers form density; the 16px font competes with body copy in forms | sm (24px) suits toolbars/inline table editing, but the touch target shrinks and 12px type only carries auxiliary fields |
+| `status` | error turns the whole border plus counter red at once — highest visual weight; several failing fields at once create a "red sea" | back to default all hints vanish — make sure an in-progress state isn't silently swallowed |
+| `clearable` | on shows × whenever valued, occupying right-side space (keep breathing room between hit area and text) | off leaves select-all-and-delete as the only path; on mobile, long-press word selection is costly |
+| `maxLength` | a 40 cap approaches title length; if the red over-limit state shows up routinely, the cap is set too low | 0 = unlimited with the counter hidden; users get no signal about what length the system actually tolerates |
+
+Working ranges: main form fields use md (32px/14px); toolbars and inline table edits use sm; error copy always sits directly under the field — never aggregated only at the top of the form.

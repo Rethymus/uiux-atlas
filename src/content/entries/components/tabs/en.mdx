@@ -1,0 +1,73 @@
+## Structure & DOM
+
+Tabs = a **tab axis** (tablist) + one **content panel** (tabpanel). Every panel's DOM lives in the document (content is preloaded); only the active panel is visible. Switching changes the display, never the page.
+
+```html
+<div class="tabs">
+  <div role="tablist" aria-label="Detail sections">
+    <button role="tab" id="tab-overview" aria-selected="true"
+            aria-controls="panel-overview" tabindex="0">Overview</button>
+    <button role="tab" id="tab-spec" aria-selected="false"
+            aria-controls="panel-spec" tabindex="-1">Design spec</button>
+    <button role="tab" id="tab-code" aria-selected="false"
+            aria-controls="panel-code" tabindex="-1">Code sample</button>
+  </div>
+  <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+    …active panel content…
+  </div>
+</div>
+```
+
+Key points:
+
+- Buttons inside the axis use **roving tabindex**: the active tab has `tabindex=0`, the rest `-1`; Tab enters and leaves the group as a unit while arrow keys move within it (research 07§35);
+- The panel's `aria-labelledby` points back to its tab and `tabindex=0` lets a panel without focusable elements enter the Tab order; `aria-selected` and the focus style must stay visually distinct (focus ≠ selection);
+- A vertical layout declares `aria-orientation="vertical"` on the tablist and swaps the arrow keys to Up/Down;
+- The line-style **sliding ink bar** is decorative only — its width/position is measured from the active tab.
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store): `position` switches the layout, `type` switches the form, `animated` toggles transitions.
+
+```css
+.tab { padding: 8px 16px; font-size: 14px; border: 0; background: none; cursor: pointer; }
+.tab[aria-selected="true"] { color: #1677ff; }          /* antd primary (seed colorPrimary) */
+.tab:hover { color: #4096ff; }                          /* blue palette step 5 (§1.2) */
+.tab:not([aria-selected="true"]) { color: rgba(0, 0, 0, 0.65); } /* neutral text 65% (§2.3-⑤) */
+
+/* Line style: axis underline + sliding ink bar */
+.tablist[data-type="line"] { border-bottom: 1px solid #f0f0f0; } /* colorBorderSecondary */
+.ink-bar {
+  position: absolute; bottom: -1px; left: 0; height: 2px; background: #1677ff;
+  transition: transform 0.2s cubic-bezier(0.215, 0.61, 0.355, 1), width 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/* Card style: the active card merges into the panel */
+.tablist[data-type="card"] .tab { border: 1px solid #d9d9d9; border-radius: 6px 6px 0 0; background: #fafafa; }
+.tablist[data-type="card"] .tab[aria-selected="true"] { background: #fff; border-bottom-color: #fff; margin-bottom: -1px; }
+```
+
+Where the numbers come from (cross-checked against antd 6.7.1 in out/design-study/06-antdesign.md): primary `#1677ff`, hover blue `#4096ff` (blue step 5), inactive text `65%` (colorTextSecondary), axis line `#f0f0f0` (colorBorderSecondary), card stroke `#d9d9d9` (colorBorder), radius 6 (borderRadius), transitions 0.2s = motionDurationMid with motionEaseOut; type defaults to line and position to top as antd's official defaults (§4.20), while animated defaults to on, matching the inkBar-defaults-true half of antd's `{inkBar:true, tabPane:false}` (the pane transition is an entry-spec extension).
+
+## Motion & Interaction
+
+- **Keyboard**: arrow keys rove the tabs with **selection following focus** (automatic activation) — APG recommends this only when panel content is preloaded and switching is instant, otherwise use manual activation (Enter/Space) (research 07§11); Home/End jump to the ends; the demo preloads all content and uses auto-activation;
+- **Ink-bar slide**: 0.2s (motionDurationMid) with motionEaseOut; with `animated=off` the transition is removed — the bar jumps and panels switch instantly;
+- **Pane transition**: fade in + 6px rise over 0.2s; everything is cancelled under `prefers-reduced-motion: reduce`, leaving show/hide only;
+- Switching must not disturb the page scroll position; when panel content loads asynchronously, keep the old panel visible with an inline loading state (response-time limits: flow stays unbroken under 1s, research 07§20).
+
+## Real-world examples
+
+- **GitHub repository header**: Code / Issues / Pull requests / Actions render as one horizontal tab axis with count badges, the active item underlined — the axis doubles as the repo's second-level navigation.
+- **Browser tabs**: the direct ancestor of the metaphor — one page per tab, closable, drag-reorderable, overflow folded into a list; card-style tabs in admin surfaces re-create this mental model.
+- **VS Code editor tab groups**: card-style tabs with splittable groups, where the active file tab merges into the editor — the canonical "many parallel tabs + active item blending into the panel" form.
+
+## Parameter Sensitivity
+
+| Parameter | One side… | The other side… |
+| --- | --- | --- |
+| `position` | left: a vertical axis gives long labels room and consumes horizontal panel space; arrow keys become Up/Down and need aria-orientation declared | top: the most common form with a natural reading flow; many tabs overflow horizontally first, so a "more" fold is the safety net |
+| `type` | card: crisp boundaries suit admin surfaces with many parallel tabs; heavier visually, and noisy when several tab groups share a page | line: lightweight with an ink bar that carries a sense of place; borderless tabs lose legibility on busy backgrounds |
+| `animated` | on: the sliding bar + pane transition give spatial continuity, making switches feel settled; under rapid switching the motion itself becomes noise | off: instant switching with zero waiting, right for high-frequency tool surfaces; loses the continuity cue |
+
+Working ranges: 2–7 tabs per group; labels of 2–6 characters; ink bar 2px tall; pane transitions ≤0.2s (antd motionDurationMid).

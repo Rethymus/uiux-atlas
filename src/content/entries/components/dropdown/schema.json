@@ -1,0 +1,106 @@
+{
+  "name": "Dropdown",
+  "nameZh": "下拉菜单",
+  "aliases": ["下拉", "Dropdown Menu", "弹出菜单", "操作菜单"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "按钮触发的临时操作菜单:点击/悬停展开一组可执行的动作列表,浮层定位在触发钮四周;与 tooltip 的区别是它承载可点击的操作,不是只读提示。",
+    "en": "A button-triggered temporary action menu: a click/hover opens a list of executable commands in a layer anchored to the trigger; unlike a tooltip it carries clickable actions, not read-only hints."
+  },
+  "origin": {
+    "zh": "桌面右键菜单与菜单栏的网页化收敛:WAI-ARIA APG「Menu Button」模式给出 button + menu 语义(2026-11-21 实抓核验);生产参照系是 Ant Design Dropdown(trigger 默认 ['hover']、placement 默认 bottomLeft、arrow 默认 false,props 对齐 antd 6.7.1 核对,见 out/design-study/06-antdesign.md §4.22)。",
+    "en": "The web convergence of desktop context menus and menu bars: the WAI-ARIA APG \"Menu Button\" pattern defines the button + menu semantics (verified live 2026-11-21); the production reference is Ant Design Dropdown (trigger defaults to ['hover'], placement to bottomLeft, arrow to false — props aligned to the antd 6.7.1 audit, see out/design-study/06-antdesign.md §4.22)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "trigger",
+      "options": [
+        { "value": "hover", "label": { "zh": "悬停(hover)", "en": "Hover" } },
+        { "value": "click", "label": { "zh": "点击(click)", "en": "Click" } }
+      ],
+      "default": "hover",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换展开方式)。Ant Design Dropdown 的 trigger 官方默认 ['hover'](06-antdesign.md §4.22);hover 模式应保留 click/键盘等价路径,关闭加约 0.1s 延时防误收(延时对齐 antd Menu subMenuCloseDelay 官方默认 0.1s,§4.19)。",
+        "en": "JS-type param (the demo subscribes and switches how the menu opens). Ant Design Dropdown's trigger officially defaults to ['hover'] (06-antdesign.md §4.22); hover mode should keep click/keyboard equivalents and close with a ≈0.1s delay against accidental collapse (aligned to antd Menu subMenuCloseDelay's official default 0.1s, §4.19)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "placement",
+      "options": [
+        { "value": "bottomLeft", "label": { "zh": "下左(bottomLeft)", "en": "Bottom left" } },
+        { "value": "bottomRight", "label": { "zh": "下右(bottomRight)", "en": "Bottom right" } },
+        { "value": "topLeft", "label": { "zh": "上左(topLeft)", "en": "Top left" } },
+        { "value": "topRight", "label": { "zh": "上右(topRight)", "en": "Top right" } }
+      ],
+      "default": "bottomLeft",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换浮层锚点)。Ant Design Dropdown 的 placement 支持 12 向、官方默认 bottomLeft(06-antdesign.md §4.22);本条目按任务规格收敛为四角(下左/下右/上左/上右),默认对齐官方 bottomLeft。生产实现应叠加 autoAdjustOverflow(antd 官方默认 true)在视口边缘自动翻转。",
+        "en": "JS-type param (the demo subscribes and switches the popup anchor). Ant Design Dropdown's placement supports 12 directions and officially defaults to bottomLeft (06-antdesign.md §4.22); this entry collapses it to the four corners (bottom-left/right, top-left/right) per the task spec, with the default aligned to the official bottomLeft. Production should layer autoAdjustOverflow (antd's official default true) to flip at viewport edges."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "arrow",
+      "options": [
+        { "value": "off", "label": { "zh": "无箭头(off)", "en": "Off" } },
+        { "value": "on", "label": { "zh": "带箭头(on)", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后开关指向小箭头)。Ant Design Dropdown 的 arrow 官方默认 false(06-antdesign.md §4.22)——箭头是可选的视觉指向,不是默认;开启时箭头应落在指向触发钮的一角。",
+        "en": "JS-type param (the demo subscribes and toggles the pointing arrow). Ant Design Dropdown's arrow officially defaults to false (06-antdesign.md §4.22) — the arrow is an optional visual pointer, not the default; when on, it should sit at the corner facing the trigger."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 兼容性门槛:结构是普通按钮 + 绝对定位列表;demo 用相对定位浮层落在 DemoStage 内(不挂 body),无需 Portal;语义由 aria-haspopup/aria-expanded + role=menu/menuitem 提供(2026-11-21 实抓核验)。",
+      "en": "No CSS compatibility gate: a plain button + absolutely positioned list; the demo's popup is a relatively positioned layer inside DemoStage (not appended to body), so no Portal is needed; semantics come from aria-haspopup/aria-expanded + role=menu/menuitem (verified live 2026-11-21)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时降级为页内平铺操作组:把动作列表渲染成触发钮下方的一组可见按钮,操作能力不丢失;不要把唯一操作藏进无法展开的浮层。",
+    "en": "Without JS it degrades to an in-page flat action group: render the command list as visible buttons under the trigger so no capability is lost; never hide the only actions inside a popup that cannot open."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "按钮触发的操作列表:表格行「更多」、工具条溢出动作、批量操作收纳", "en": "Button-triggered command lists: table-row \"more\", toolbar overflow actions, batch-operation overflow" },
+      { "zh": "空间紧张处收纳低频动作,保持主界面干净", "en": "Stashing low-frequency actions where space is tight, keeping the main surface clean" },
+      { "zh": "与 tooltip 的分界:要承载「可执行的操作列表」用 dropdown,只承载「说明文字」用 tooltip", "en": "The boundary with tooltip: executable command lists belong to dropdowns; explanatory text belongs to tooltips" },
+      { "zh": "导航项的二级聚合(见 nav-menu 条目)——同一 menu 语义挂在导航父项上", "en": "Second-level aggregation under nav items (see the nav-menu entry) — the same menu semantics on a nav parent" }
+    ],
+    "avoid": [
+      { "zh": "往浮层里塞表单输入/复杂布局——改用 Popover/Dialog(APG:menu 承载 actions or commands,2026-11-21 实抓核验)", "en": "Form inputs or complex layouts inside the popup — use a Popover/Dialog instead (APG: a menu carries actions or commands, verified live 2026-11-21)" },
+      { "zh": "超过一屏的长菜单——分组、搜索或改多级结构,别让用户滚动找命令", "en": "Menus longer than one screen — group, search or restructure; never make users scroll to find a command" },
+      { "zh": "破坏性操作与普通操作贴在一起——危险项要用分隔线隔开并标红(antd colorError #ff4d4f)", "en": "Destructive items glued to normal ones — separate dangerous items with a divider and color them (antd colorError #ff4d4f)" },
+      { "zh": "hover 触发却不给 click/键盘等价路径——触屏与键盘用户将无法到达", "en": "Hover-only triggering without click/keyboard equivalents — touch and keyboard users can never reach it" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG Menu Button 语义(2026-11-21 实抓核验):触发钮 role=button + aria-haspopup=\"menu\";菜单显示时 aria-expanded=\"true\",隐藏为 false;可选 aria-controls 指向 role=menu 容器;菜单项 role=menuitem,不进 Tab 序列;Enter/Space 打开并把焦点放进首项(APG 键盘交互),方向键在项间漫游,Escape 关闭并把焦点还给触发钮;hover 打开不得抢焦点,hover 不得是唯一路径。分隔项 role=separator 不聚焦(APG Menu and Menubar)。",
+    "en": "APG Menu Button semantics (verified live 2026-11-21): trigger role=button + aria-haspopup=\"menu\"; aria-expanded=\"true\" while shown, false while hidden; optional aria-controls pointing at the role=menu container; items role=menuitem, excluded from the Tab order; Enter/Space opens and moves focus to the first item (APG keyboard interaction), arrows rove between items, Escape closes and returns focus to the trigger; hover opening must not steal focus, and hover must never be the only path. Separators use role=separator and are not focusable (APG Menu and Menubar)."
+  },
+  "sources": [
+    "https://ant.design/components/dropdown-cn",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/menubar/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个按钮触发的下拉操作菜单:「更多操作」按钮 hover/点击展开动作列表(重命名/移动/复制链接/删除),placement 可切四角、arrow 可开关,危险项分隔并标红,浮层落在演示台内并支持点击外部关闭。",
+      "en": "Replicate a button-triggered dropdown action menu: a \"More actions\" button opening a command list (rename/move/copy link/delete) on hover/click, placement switchable across four corners, arrow toggleable, with the dangerous item separated and colored red, the popup living inside the stage and closing on outside clicks."
+    },
+    "acceptance": [
+      { "zh": "触发钮 aria-haspopup=\"menu\" + aria-expanded;浮层 role=menu + menuitem,分隔线 role=separator", "en": "Trigger carries aria-haspopup=\"menu\" + aria-expanded; popup is role=menu + menuitem with role=separator dividers" },
+      { "zh": "Enter/Space 打开并把焦点放进首项,方向键漫游,Esc 关闭且焦点回触发钮", "en": "Enter/Space opens and focuses the first item, arrows rove, Esc closes and returns focus to the trigger" },
+      { "zh": "placement 四角即时生效;arrow 默认关(antd 官方默认),开启时箭头指向触发钮", "en": "All four placements switch instantly; arrow defaults off (antd's official default) and points at the trigger when on" },
+      { "zh": "hover 模式关闭延时 ≈0.1s;点击外部关闭;浮层 z-index 盖过内容且尊重 prefers-reduced-motion", "en": "Hover mode closes with a ≈0.1s delay; outside clicks close; the popup z-index covers content and motion respects prefers-reduced-motion" },
+      { "zh": "危险操作用分隔线隔开并以 #ff4d4f 标红;菜单项激活后在页面内有结果反馈", "en": "The destructive item is divider-separated and colored #ff4d4f; activating any item yields visible feedback on the page" }
+    ]
+  }
+}

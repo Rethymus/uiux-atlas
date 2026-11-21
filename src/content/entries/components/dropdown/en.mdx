@@ -1,0 +1,74 @@
+## Structure & DOM
+
+A dropdown = **trigger button + floating command list**. The one-line difference from a tooltip: a tooltip carries **read-only hints**, a dropdown carries **clickable actions** (the APG defines a menu button as one that "opens a menu of actions or commands", verified live 2026-11-21).
+
+```html
+<div class="dd"> <!-- relative anchor -->
+  <button type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="dd-menu">
+    More actions ▾
+  </button>
+  <ul role="menu" id="dd-menu" aria-label="More actions">
+    <li role="none"><button role="menuitem" tabindex="-1">Rename</button></li>
+    <li role="none"><button role="menuitem" tabindex="-1">Move to…</button></li>
+    <li role="none"><button role="menuitem" tabindex="-1">Copy link</button></li>
+    <li role="separator"></li>
+    <li role="none"><button role="menuitem" tabindex="-1" class="danger">Delete</button></li>
+  </ul>
+</div>
+```
+
+Key points:
+
+- The popup is a sibling of the trigger, absolutely positioned (`placement` anchors it to one of four corners); the demo keeps it inside the stage instead of appending to body, so no Portal is needed;
+- Menu items carry `tabindex="-1"` and stay out of the Tab order; focus is managed by arrow-key roving; `role="separator"` dividers are not focusable (APG Menu and Menubar);
+- The state trio: `aria-haspopup="menu"` always on the trigger, `aria-expanded` tracking open/closed, and an optional `aria-controls` pointing at the popup (APG Menu Button, verified live 2026-11-21);
+- A `role="separator"` sits between normal and destructive items; the destructive item is colored red.
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store): `trigger` switches how it opens, `placement` anchors the popup, `arrow` toggles the pointing arrow.
+
+```css
+.dd { position: relative; display: inline-block; }
+.dd-menu {
+  position: absolute; z-index: 1000; /* antd zIndexPopupBase (§2.2) */
+  min-width: 168px; margin: 0; padding: 4px; list-style: none;
+  background: #fff; border-radius: 8px; /* colorBgElevated + borderRadiusLG */
+  box-shadow: 0 6px 16px 0 rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05); /* boxShadow token */
+}
+.dd[data-placement="bottomLeft"]  .dd-menu { top: calc(100% + 8px); left: 0; }
+.dd[data-placement="bottomRight"] .dd-menu { top: calc(100% + 8px); right: 0; }
+.dd[data-placement="topLeft"]     .dd-menu { bottom: calc(100% + 8px); left: 0; }
+.dd[data-placement="topRight"]    .dd-menu { bottom: calc(100% + 8px); right: 0; }
+
+.dd-item { display: block; width: 100%; text-align: left; padding: 7px 12px; font-size: 14px; border-radius: 6px; }
+.dd-item:hover { background: rgba(0, 0, 0, 0.04); } /* 4% neutral fill (FillTertiary tier) */
+.dd-item[data-danger] { color: #ff4d4f; }           /* antd colorError (§2.2) */
+.dd-arrow { position: absolute; width: 10px; height: 10px; transform: rotate(45deg); background: #fff; }
+.dd-menu[data-arrow="off"] .dd-arrow { display: none; }
+```
+
+Where the numbers come from (cross-checked against antd 6.7.1 in out/design-study/06-antdesign.md): `trigger` officially defaults to `['hover']`, `placement` to `bottomLeft`, `arrow` to `false` (§4.22) — the demo aligns with all three; popup surface `#fff` (colorBgElevated), radius 8 (borderRadiusLG), shadow = the three-part boxShadow token, stacking base zIndexPopupBase = 1000, danger color `#ff4d4f` (colorError), font size 14 (fontSize seed).
+
+## Motion & Interaction
+
+- **Open/close**: fade in + 4px shift over 0.2s (motionDurationMid) with the motionEase-out curve; transitions removed under `prefers-reduced-motion: reduce`;
+- **Hover trigger** (antd's official default): opens immediately on entering the trigger, closes ≈**0.1s** after leaving (aligned to antd Menu's official `subMenuCloseDelay` default); hover opening **does not steal focus**; click trigger toggles on click and closes on outside click;
+- **Keyboard** (APG Menu Button): Enter/Space opens and focuses the first item; ↑/↓/Home/End rove between items; Escape closes and returns focus to the trigger; Tabbing away dismisses;
+- **Outside-click close**: a `document`-level mousedown listener dismisses when clicking outside both popup and trigger; picking an item closes and reports the result on the page.
+
+## Real-world examples
+
+- **GitHub header "+" and avatar buttons**: click opens command/account menus — "+" aggregates create-repository and import entries, the avatar menu gathers profile, repository list and Sign out; compact popups carrying a batch of commands.
+- **Google Docs toolbar font-size/font control**: a button showing the current value that pops open a list of options, filling back on selection — the "menu button + selector-style menuitem" document-tool form.
+- **Admin table-row "more"**: an ellipsis button at each row's end opening row-level commands (edit/duplicate/delete) — the highest-frequency dropdown scenario in admin surfaces; destructive entries are typically separated and colored red.
+
+## Parameter Sensitivity
+
+| Parameter | One side… | The other side… |
+| --- | --- | --- |
+| `trigger` | click: explicit intent, no drive-by openings, naturally touch-usable; the cost is one extra click | hover: zero-cost exploration on desktop, but it demands the 0.1s close delay plus click/keyboard equivalents, or misfires and dead ends coexist |
+| `placement` | topLeft/topRight: opens upward, right for triggers near the viewport bottom (last table rows, bottom toolbars); watch for room above | bottomLeft/bottomRight: the most common downward opening; near the page's bottom edge it gets clipped, so autoAdjustOverflow must flip it |
+| `arrow` | on: makes the popup→trigger relationship explicit but visually heavier; with several popups open the arrows start interfering | off (default): a cleaner surface that relies on shadow and position for attachment; keep it off on dense toolbars |
+
+Working ranges: menu width 160–240px; item height ≈32px (antd controlHeight); 4–10 items per menu; destructive items always last, divider-separated.

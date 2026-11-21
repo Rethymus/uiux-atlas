@@ -53,8 +53,10 @@
   --warn: #ffb86b; /* 警告/删除 hover(11.34:1) */
   --danger: #ff6165; /* 错误(Apple 官方暗色高对比 Red) */
 
-  /* ── 六分类 accent(styles/materials/motion/color/type/layout;
+  /* ── 七分类 accent(styles/materials/motion/color/type/layout/components;
         Apple 暗色色板一手值,对三层背景 ≥4.76:1,装饰与文本可同值。
+        components = 暗色色板 systemYellow(黄 hue 为前六分类未占用),
+        对 bg/bg-elev/surface min 12.24:1(2026-11-21 实算)。
         用法纪律:只出现在 ① bento 标识条与数字 ② 条目页头部渐变带
         ③ 面包屑/列表页头当前分类;不进链接/按钮/正文字段(spec §2.1) ── */
   --cat-styles: #db34f2;
@@ -63,6 +65,7 @@
   --cat-color: #ff375f;
   --cat-type: #6d7cff;
   --cat-layout: #30d158;
+  --cat-components: #ffd60a;
   /* 当前分类语义色的运行时指向(容器上按分类覆写) */
   --cat: var(--accent);
 
@@ -193,7 +196,7 @@
   --warn: #995a00; /* 警告/删除 hover(5.04:1) */
   --danger: #c93040; /* 错误(4.83:1;TDesign error-6 #d54941=4.32:1,加深) */
 
-  /* ── 六分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
+  /* ── 七分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
         (装饰条/文本两用纪律与深色一致,spec §2.1 用法纪律) ── */
   --cat-styles: #a426cc; /* min 4.83:1 */
   --cat-materials: #0b7491; /* min 4.60:1 */
@@ -201,6 +204,7 @@
   --cat-color: #cf1d52; /* min 4.56:1 */
   --cat-type: #4353e6; /* min 4.98:1 */
   --cat-layout: #0a753c; /* min 4.97:1 */
+  --cat-components: #7d6200; /* 黄 hue 加深,min 4.98:1(2026-11-21 实算) */
 
   /* ── 阴影:浅色减弱(02 §4.1 TDesign 亮色三层投影 5–12% 黑 同比例档;
         深色为 35/45/55%) ── */
@@ -838,9 +842,10 @@ html {
   margin-top: var(--space-3);
 }
 
-/* ── 六分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
+/* ── 七分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
      4 列 × 140px 行 × gap 16 × radius-xl;显式 areas 不用 dense,
-     DOM 顺序 = 阅读顺序 = 焦点顺序(WCAG 2.4.3)) ── */
+     DOM 顺序 = 阅读顺序 = 焦点顺序(WCAG 2.4.3)。
+     components 与 materials/motion 同为 1×2 tall,info 变行尾 3 宽收束条 ── */
 .bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -849,7 +854,8 @@ html {
   grid-template-areas:
     "styles styles materials motion"
     "styles styles materials motion"
-    "color type layout info";
+    "color type layout components"
+    "info info info components";
 }
 @media (max-width: 899px) {
   .bento {
@@ -858,7 +864,8 @@ html {
       "styles styles"
       "materials motion"
       "color type"
-      "layout info";
+      "layout components"
+      "info info";
   }
 }
 @media (max-width: 639px) {
@@ -874,6 +881,7 @@ html {
       "color"
       "type"
       "layout"
+      "components"
       "info";
   }
 }
@@ -907,6 +915,9 @@ html {
 }
 .bento-cell.area-layout {
   grid-area: layout;
+}
+.bento-cell.area-components {
+  grid-area: components;
 }
 .bento-cell.area-info {
   grid-area: info;
@@ -1048,6 +1059,28 @@ html {
   background-position: 4px center;
   background-size: calc(100% - 8px) 56%;
   background-repeat: no-repeat;
+}
+/* components:部件线框一帧(卡框 + 内嵌钮条,纯 CSS 零 JS,两主题通用) */
+.bp-components {
+  color: var(--cat-components);
+}
+.bp-components::before {
+  content: "";
+  position: absolute;
+  inset: 8px 14px;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  opacity: 0.85;
+}
+.bp-components::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: 18px;
+  width: 36%;
+  height: 6px;
+  border-radius: 3px;
+  background: currentColor;
 }
 /* 非点击统计格(info-card 变体):不可点击卡无 hover 态(spec §3 Card) */
 .bento-cell.is-info {
@@ -1300,6 +1333,27 @@ html {
   border-radius: 2px;
   background: var(--cat);
   margin-top: var(--space-3);
+}
+
+/* components 分组的组标题行(mono 元数据纪律 spec §2.2:mono + tabular-nums;
+   「基础 Basic(4)」zh 双名并列、en 单英名;组间距 --space-8,§4.4 同构) */
+.subgroup {
+  margin-top: var(--space-8);
+}
+.subgroup:first-of-type {
+  margin-top: 0;
+}
+.subgroup-head {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  margin: 0 0 var(--space-4);
+}
+.subgroup-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
 }
 
 /* sticky 过滤栏(spec §4.2 / §6-11):初始透明;停靠后玻璃化(玻璃第二条带) */
