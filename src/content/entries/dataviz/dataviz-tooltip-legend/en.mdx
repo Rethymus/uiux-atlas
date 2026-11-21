@@ -1,0 +1,63 @@
+## Structure & DOM
+
+Legend and tooltip are the chart's "**two reading channels**": the legend answers "whose line/bars are these", the tooltip answers "what exactly is this value". In the DOM the legend is normal flow (a top row or right column); the tooltip is an **overlay**.
+
+```html
+<div class="chart-panel">  <!-- position: relative — the tooltip's positioning context -->
+  <div class="legend legend--top">…swatch + series name…</div>
+  <svg>…<rect class="bar" tabindex="0" aria-label="This year, Jan: 64" />…</svg>
+  <div class="tooltip" role="status" hidden>
+    This year · Jan  value: 64
+  </div>
+</div>
+```
+
+Key points:
+
+- The tooltip's positioning context is the **panel container** (not body): follow mode converts `clientX/Y - container rect`; docked mode pins `right/top` — it can never escape the card;
+- Bars are focusable elements (`tabindex=0` + `aria-label`) and focus triggers the same tooltip — WCAG 1.4.13 governs focus content equally, giving keyboard users the value channel;
+- Trade-off vs ECharts/D3: ECharts' tooltip ships five defaults out of the box (trigger 'item' / triggerOn 'mousemove|click' / showDelay 0 / hideDelay 100 / transitionDuration 0.4, source-verified) plus four-edge legend placement; the hand-drawn demo exists to implement the 1.4.13 trio (Esc/hoverable/persistent) by hand — most chart libraries don't fully satisfy all three, so audit item by item instead of trusting defaults.
+
+## Styling & Parameters
+
+Two parameters with source-level defaults:
+
+| Parameter | Default | Source |
+| --- | --- | --- |
+| `legendPos` | **right** | ggplot2 `theme-defaults.R` L262: `legend.position = "right"` (source verified); Power BI theme presets add the BottomCenter/Right/Left/RightCenter enum (official example) |
+| `tooltipFollow` | **on** (follow) | ECharts' default `triggerOn: 'mousemove|click'` (TooltipModel.ts source verified) |
+
+Tooltip behavior constants (ECharts v5.5.1 defaults, verified verbatim): `trigger: 'item'`, `showDelay: 0`, `hideDelay: 100`, `transitionDuration: 0.4`. The demo's hide grace is exactly hideDelay=100: after the pointer leaves the trigger, hiding waits 100ms — the window for "move into the tooltip body" (Hoverable). The legend's `none` slot is not a bare removal but a switch to jfly's principle — direct labeling (the demo labels series names above the first group).
+
+```css
+.tooltip {
+  position: absolute;
+  pointer-events: auto;   /* Hoverable: the tooltip can receive the pointer */
+  /* after pointer-out, JS hides it 100ms later; entering the tooltip cancels the hide */
+}
+```
+
+## Motion & Interaction
+
+The tooltip is the easiest place to over-animate a chart — discipline first:
+
+- **The trio (WCAG 1.4.13, Level AA)**: Esc closes instantly without moving pointer or focus; the pointer can enter the tooltip body without it vanishing; the tooltip persists until the pointer leaves trigger+tooltip, the user dismisses it, or the information goes stale — the demo implements all three and they pass as an acceptance checklist;
+- Appear/disappear: transitionDuration 0.4 (ECharts' default) is an upper-bound reference; the demo shows/hides instantly; any transition animates only `opacity/transform` and is disabled under reduce;
+- Legend switches (top/right/none): flow re-layout with no animation — position-mode changes don't cross-fade, or the legend "flies";
+- The demo mounts its Esc listener only while the tooltip is visible — no resident window keydown.
+
+## Real-world examples
+
+- **ECharts v5.5.1**: the five tooltip defaults (trigger 'item' / triggerOn 'mousemove|click' / showDelay 0 / hideDelay 100 / transitionDuration 0.4) are verbatim in `TooltipModel.ts`; on the a11y side `aria.label.enabled` defaults on and `aria.decal.show` defaults off (v5.5.1 source verified).
+- **ggplot2**: legend defaults to the right (`legend.position = "right"`, theme-defaults.R L262) and one theme statement moves it — the origin of the paradigm "legend position is a theme property, not a chart property" (source verified).
+- **Power BI**: official theme presets enumerate legend positions as BottomCenter/Right/Left/RightCenter, with the example pushing bar-chart legends to bottom-center; a Report Tooltips official doc page also exists (official docs verified / search hit).
+- **jfly CUD guide**: "For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult" — the academic original of direct labeling over legends (official page verified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `legendPos` | a top legend suits wide charts (horizontal room to spare); none saves the most space but hands lookup to direct labels — with many series the labels fight each other | right consumes a vertical column, trading chart height for legend width; cheapest with ≤4 short-named series |
+| `tooltipFollow` | follow mode reads fastest, but the tooltip always sits 14px off the pointer — hard for magnifier users to enter (the weak form of 1.4.13 Hoverable) | docked mode is Hoverable at its strongest, at the cost of the eye ping-ponging between bar and tooltip |
+
+Rules of thumb: desktop wide charts take right + follow; embedded minis take none + direct labels; any accessibility audit walks the "Esc / hoverable / persistent" checklist — library implementations get no exemption.

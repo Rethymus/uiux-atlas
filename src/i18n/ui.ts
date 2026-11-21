@@ -33,6 +33,7 @@ export const ui = {
       copyPrompt: "复制复刻 Prompt",
       copied: "已复制 ✓",
       viewPrompt: "查看 Prompt",
+      shareLink: "分享参数链接",
       breakdown: "代码拆解",
       scenarios: "适用场景",
       avoid: "何时不要用",
@@ -44,7 +45,7 @@ export const ui = {
       aliases: "别名",
       officialDefault: "官方默认",
       paramEffectHint: "改动即时生效",
-      categories: { styles: "风格流派", materials: "材质与光影", motion: "动效与微交互", color: "色彩与主题", type: "排版", layout: "布局与响应式", components: "前端部件" },
+      categories: { styles: "风格流派", materials: "材质与光影", motion: "动效与微交互", color: "色彩与主题", type: "排版", layout: "布局与响应式", components: "前端部件", icons: "图标体系", dataviz: "数据可视化" },
       subgroups: { basic: "基础", form: "表单", feedback: "反馈", data: "数据", navigation: "导航", other: "其他" },
     },
     footer: {
@@ -100,6 +101,7 @@ export const ui = {
       copyPrompt: "Copy replication prompt",
       copied: "Copied ✓",
       viewPrompt: "View prompt",
+      shareLink: "Share parameter link",
       breakdown: "Code breakdown",
       scenarios: "When to use",
       avoid: "When not to use",
@@ -111,7 +113,7 @@ export const ui = {
       aliases: "Aliases",
       officialDefault: "official default",
       paramEffectHint: "changes apply instantly",
-      categories: { styles: "Styles", materials: "Materials", motion: "Motion", color: "Color", type: "Typography", layout: "Layout", components: "Components" },
+      categories: { styles: "Styles", materials: "Materials", motion: "Motion", color: "Color", type: "Typography", layout: "Layout", components: "Components", icons: "Icons", dataviz: "Data Viz" },
       subgroups: { basic: "Basic", form: "Form", feedback: "Feedback", data: "Data", navigation: "Navigation", other: "Other" },
     },
     footer: {

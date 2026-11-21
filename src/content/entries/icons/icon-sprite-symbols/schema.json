@@ -1,0 +1,93 @@
+{
+  "name": "SVG Symbol Sprites",
+  "nameZh": "SVG Symbol 雪碧图",
+  "aliases": ["雪碧图", "symbol/use", "SVG Sprite", "Icon Sprite", "use 引用"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "一份 <symbol> 模板多处 <use> 实例化:定义不可渲染、引用深克隆进 shadow DOM,染色只走 CSS 继承——currentColor 一处上色,写死 fill/stroke 的 path 封死继承。",
+    "en": "One <symbol> template, many <use> instances: definitions never render, references deep-clone into shadow DOM, and painting flows only through CSS inheritance — one currentColor tints everything, while a hardcoded fill/stroke seals it off."
+  },
+  "origin": {
+    "zh": "symbol/use 机制为 MDN 一手:<symbol> 本身不可渲染、仅经 <use> 实例化,<use> 把引用节点深克隆进不暴露的 shadow DOM;「CSS 属性不被克隆 DOM 继承,除非显式经 CSS 继承请求」与「use 上已定义属性被忽略」是两大染色坑位(out/design-study/07-icons.md §5.1);currentColor 语义出自 CSS Color 4 §6.4(07 §5.2);外链雪碧图官方实践范例为 Feather README 的 feather-sprite.svg#circle(07 §1.2/§5.1)。",
+    "en": "The symbol/use mechanics are first-hand MDN: <symbol> never renders itself and is only instantiated via <use>, which deep-clones the referenced node into a non-exposed shadow DOM; 'CSS properties are not guaranteed to be inherited by the cloned DOM unless explicitly requested via CSS inheritance' and 'attributes on <use> are ignored if already defined' are the two painting pitfalls (out/design-study/07-icons.md §5.1); currentColor semantics come from CSS Color 4 §6.4 (07 §5.2); the official external-sprite exemplar is Feather's README feather-sprite.svg#circle (07 §1.2/§5.1)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "symbol",
+      "options": [
+        { "value": "bell", "label": { "zh": "铃铛 bell", "en": "bell" } },
+        { "value": "heart", "label": { "zh": "心形 heart", "en": "heart" } },
+        { "value": "star", "label": { "zh": "星形 star", "en": "star" } },
+        { "value": "bolt", "label": { "zh": "闪电 bolt", "en": "bolt" } }
+      ],
+      "default": "bell",
+      "effect": {
+        "zh": "当前实例化的 symbol。一个模板多处引用:demo 用同一 <symbol id> 实例化 16/24/32 三种尺寸 + 行内一枚——<symbol> 自带 viewBox,width/height 只在被引用对象是 svg/symbol 时生效,任意尺寸实例共用一个 24 网格定义(MDN symbol/use,07 §5.1)。",
+        "en": "The currently instantiated symbol. One template, many references: the demo instantiates one <symbol id> at 16/24/32 plus one inline instance — <symbol> carries its own viewBox while width/height apply only when the referenced object is an svg/symbol, so any instance size shares a single 24-grid definition (MDN symbol/use, 07 §5.1)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ink",
+      "options": [
+        { "value": "current", "label": { "zh": "currentColor 随文字", "en": "currentColor follows text" } },
+        { "value": "inverse", "label": { "zh": "深底反白", "en": "Inverted on dark" } },
+        { "value": "duotone", "label": { "zh": "Duotone 双层", "en": "Duotone layers" } }
+      ],
+      "default": "current",
+      "effect": {
+        "zh": "染色模式。current = 宿主设一处 color,图标经 CSS 继承吃 currentColor(CSS Color 4 §6.4:currentcolor 即同元素 color 值,07 §5.2);inverse = 深底 chip + 反白,同一继承链换宿主 color 即得;duotone = 切换到双层 symbol——背景层 fill=currentColor opacity 0.2 + 前景描边层,复刻 Phosphor Duotone 官方配方(实测双 path,背景层 opacity=\"0.2\",07 §1.4)。注意 duotone 是「换 symbol」而非 CSS 切换——克隆树不吃文档选择器,use 引用对象换 href 才是正道。",
+        "en": "Inking mode. current = the host sets one color and icons inherit currentColor (CSS Color 4 §6.4: currentcolor is the element's own color value, 07 §5.2); inverse = a dark chip + light ink — the same inheritance chain with the host color swapped; duotone = switching to a two-layer symbol — a background layer at fill=currentColor opacity 0.2 plus a foreground stroke layer, replicating Phosphor's official Duotone recipe (measured double path with background opacity=\"0.2\", 07 §1.4). Note duotone is a 'symbol swap', not a CSS toggle — the clone tree ignores document selectors, so swapping the use href is the right move."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "内联 symbol/use 全主流浏览器可用;SVG2 起 href 取代 xlink:href(旧环境仍需 xlink 兼容);外链雪碧图 <use href=\"sprite.svg#id\"> 受同源策略限制,浏览器可拒绝跨域引用;data: URI 方式已因安全弃用(MDN,07 §5.1)。",
+      "en": "Inline symbol/use works in all mainstream browsers; SVG2 replaced xlink:href with href (older environments still want the xlink fallback); external sprites via <use href=\"sprite.svg#id\"> are subject to same-origin policy and browsers may reject cross-origin references; data: URI sprites are deprecated on security grounds (MDN, 07 §5.1)."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "不支持 SVG2 href 的旧环境补写 xlink:href 双写;跨域外链被拒时把雪碧图内联进页面(首屏图标尤应内联);不支持 <use> 的极老环境退回每个位置内联完整 <svg>(打包器可代劳)。",
+    "en": "For environments without SVG2 href, write both href and xlink:href; when a cross-origin sprite is rejected, inline the sprite into the page (first-screen icons especially); for environments without <use>, fall back to inlining a full <svg> at every spot (bundlers can do this)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "站点级图标系统:一份雪碧图多处引用,新增图标只加 symbol 不动结构(Feather 官方 feather-sprite.svg 范式,07 §1.2)", "en": "Site-wide icon systems: one sprite referenced everywhere; adding an icon means adding a symbol, not touching structure (Feather's official feather-sprite.svg pattern, 07 §1.2)" },
+      { "zh": "主题换肤:图标 path 裸写 + 顶层 currentColor,宿主一处 color 全站图标换装(07 §5.2)", "en": "Theme reskinning: bare paths + currentColor at the top; one host color re-inks every icon (07 §5.2)" },
+      { "zh": "Phosphor 式双层图标:背景层 opacity 0.2 + 实色前景,单色 currentColor 下靠双 path 保留层次(07 §1.4)", "en": "Phosphor-style layered icons: background at opacity 0.2 + solid foreground; under monochrome currentColor, two paths preserve the depth (07 §1.4)" }
+    ],
+    "avoid": [
+      { "zh": "path 上写死 fill/stroke 再想整体换色——use 引用时已定义属性被忽略,染色链在此断裂(MDN,07 §5.1/§5.2)", "en": "Hardcoding fill/stroke on paths and then re-theming — defined attributes are ignored at use sites, severing the paint chain (MDN, 07 §5.1/§5.2)" },
+      { "zh": "跨域外链雪碧图——同源策略可拒绝;首屏图标也不要依赖二次请求的外链(07 §5.1)", "en": "Cross-origin external sprites — same-origin policy may reject them; and never put first-screen icons behind a second request (07 §5.1)" },
+      { "zh": "对 <use> 克隆内容写文档 CSS 选择器——克隆树不吃文档样式,只吃继承属性(07 §5.1)", "en": "Targeting cloned <use> content with document CSS selectors — the clone tree ignores document styles and only eats inherited properties (07 §5.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "雪碧图不改变无障碍规则:装饰实例照旧 aria-hidden;语义实例靠宿主按钮/链接的可访问名;<symbol> 结构化定义本身有利可访问性(MDN:\"promote accessibility\")。染色不要成为唯一信息通道——状态含义需有非色彩冗余(如文字标签),对比维持 ≥3:1(WCAG 1.4.11,07 §4.3/§5.1)。",
+    "en": "Sprites change no accessibility rules: decorative instances stay aria-hidden; semantic instances rely on the host button/link's accessible name; structured <symbol> definitions themselves promote accessibility (MDN). Never make color the sole information channel — state meanings need non-color redundancy (text labels), and contrast holds at ≥3:1 (WCAG 1.4.11, 07 §4.3/§5.1)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/symbol",
+    "https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/use",
+    "https://github.com/feathericons/feather",
+    "https://www.w3.org/TR/css-color-4/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "构建一份内联 SVG 雪碧图:<defs> 内定义 4 个 24 网格 <symbol>(path 裸写),页面多处 <use> 以 16/24/32 与 1em 实例化,宿主单点 color 经 currentColor 全量染色,并提供一个写死 fill 的反例对照。",
+      "en": "Build an inline SVG sprite: four 24-grid <symbol>s in <defs> with bare paths, instantiated at 16/24/32 and 1em via <use>, tinted everywhere from a single host color through currentColor, with a hardcoded-fill counterexample."
+    },
+    "acceptance": [
+      { "zh": "<symbol> path 裸写(无 fill/stroke 属性),染色依赖继承——任何位置不改 path", "en": "Symbol paths stay bare (no fill/stroke attributes); painting relies on inheritance — never touch the paths" },
+      { "zh": "宿主组件只设一处 color,全部实例经 currentColor 换色;切换主题不改 SVG", "en": "The host sets exactly one color; every instance recolors via currentColor; theme switches never touch the SVG" },
+      { "zh": "外链雪碧图同源;首屏图标内联;<use> 双写 href 与 xlink:href 兜底旧环境", "en": "External sprites same-origin; first-screen icons inline; <use> carries both href and xlink:href for legacy fallback" },
+      { "zh": "Duotone 用双 symbol(背景 fill opacity 0.2 + 前景描边)而非对克隆树写 CSS", "en": "Duotone uses two symbols (background fill at opacity 0.2 + foreground stroke) instead of CSS targeting the clone tree" },
+      { "zh": "装饰实例 aria-hidden=\"true\";语义实例依赖宿主可访问名", "en": "Decorative instances carry aria-hidden=\"true\"; semantic instances rely on host accessible names" }
+    ]
+  }
+}

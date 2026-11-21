@@ -20,6 +20,18 @@ const COMPONENT_SLUGS = [
   "empty", "watermark",
 ];
 
+// 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,6 slug)。
+// 14 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components 批产收口同动作);
+// 条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
+const ICONS_SLUGS = [
+  "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
+  "icon-sprite-symbols", "icon-lucide-set", "icon-color-states", "icon-motion",
+];
+const DATAVIZ_SLUGS = [
+  "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
+  "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
+];
+
 const EXPECTED = {
   styles: [
     "glassmorphism", "neumorphism", "claymorphism", "neo-brutalism",
@@ -43,6 +55,8 @@ const EXPECTED = {
   type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
   layout: ["container-queries"],
   components: COMPONENT_SLUGS,
+  icons: ICONS_SLUGS,
+  dataviz: DATAVIZ_SLUGS,
 };
 
 const SUBGROUP_IDS = new Set(["basic", "form", "feedback", "data", "navigation", "other"]);
@@ -64,6 +78,7 @@ for (const cat of readdirSync(entriesRoot)) {
   if (!statSync(catPath).isDirectory()) continue;
   actual[cat] = [];
   for (const slug of readdirSync(catPath)) {
+    if (slug.startsWith(".")) continue; // 隐藏目录(.mimosa hook 状态等)不是条目
     if (statSync(join(catPath, slug)).isDirectory()) actual[cat].push(slug);
   }
 }
@@ -84,6 +99,9 @@ for (const cat of Object.keys(actual)) {
 }
 if (problems.length === 0) ok(`entry inventory matches expected ${totalExpected} entries`);
 ok(`components: ${(actual.components ?? []).length}/${COMPONENT_SLUGS.length} entries present (missing-check enforced)`);
+ok(
+  `icons: ${(actual.icons ?? []).length}/${ICONS_SLUGS.length}, dataviz: ${(actual.dataviz ?? []).length}/${DATAVIZ_SLUGS.length} entries present (missing-check enforced)`,
+);
 
 // ---------- 单条目检查 ----------
 function isBilingual(v, path) {
@@ -92,10 +110,8 @@ function isBilingual(v, path) {
   if (typeof v.en !== "string" || !v.en.trim()) problems.push(`${path}.en empty`);
 }
 
-// 单条目检查:EXPECTED 全部分类(components 已并入,与其他分类同规则)
-const checkList = EXPECTED;
-
-for (const [cat, slugs] of Object.entries(checkList)) {
+// 单条目检查:EXPECTED 全部分类(components/icons/dataviz 均已并入,与其他分类同规则)
+for (const [cat, slugs] of Object.entries(EXPECTED)) {
   for (const slug of slugs) {
     const id = `${cat}/${slug}`;
     const dir = join(entriesRoot, cat, slug);
@@ -131,7 +147,7 @@ for (const [cat, slugs] of Object.entries(checkList)) {
     }
 
     if (typeof schema.name !== "string" || !schema.name) problems.push(`${id}: schema.name missing`);
-    // nameZh:43 条必须全有(scripts/add-name-zh.mjs 映射保证);存在时必须是非空字符串
+    // nameZh:81 条必须全有(scripts/add-name-zh.mjs 映射保证);存在时必须是非空字符串
     if (typeof schema.nameZh !== "string" || !schema.nameZh.trim()) {
       problems.push(`${id}: schema.nameZh missing/empty`);
     }

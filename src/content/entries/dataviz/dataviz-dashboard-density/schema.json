@@ -1,0 +1,105 @@
+{
+  "name": "Dashboard Density",
+  "nameZh": "仪表盘密度",
+  "aliases": ["Grid Density", "Dashboard Spacing", "信息密度"],
+  "category": "dataviz",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "BI 网格的密度底座:Grafana 24 列 × 30px 行高 × 8px 面板间距(源码常量),联动 Power BI 官方示例字号阶梯 45/12/12/10——comfortable 与 compact 两档切换整盘呼吸感。",
+    "en": "The density base of BI grids: Grafana's 24 columns × 30px row height × 8px panel gap (source constants) driving Power BI's official example font ladder 45/12/12/10 — a comfortable/compact switch that retunes the whole board's breathing room."
+  },
+  "origin": {
+    "zh": "数值来源两家并核:Grafana 源码 public/app/core/constants.ts(GRID_COLUMN_COUNT=24 / GRID_CELL_HEIGHT=30 / GRID_CELL_VMARGIN=8 / MIN_PANEL_HEIGHT=90,逐字核验;官方文档只给档位名不给像素);Power BI 官方主题文档 textClasses 示例字号阶梯 callout 45 / title 12 / header 12 / label 10(官方文档示例值,非强制默认)。Tableau 数值惯例官方未公开(未找到)。",
+    "en": "Two sources cross-checked: Grafana source public/app/core/constants.ts (GRID_COLUMN_COUNT=24 / GRID_CELL_HEIGHT=30 / GRID_CELL_VMARGIN=8 / MIN_PANEL_HEIGHT=90, verified verbatim; official docs name the presets but publish no pixels) and Power BI's official theme-docs textClasses example ladder — callout 45 / title 12 / header 12 / label 10 (official example values, not enforced defaults). Tableau's numeric conventions are unpublished (not found)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "density",
+      "options": [
+        { "value": "comfortable", "label": { "zh": "舒适 Comfortable", "en": "Comfortable" } },
+        { "value": "compact", "label": { "zh": "紧凑 Compact", "en": "Compact" } }
+      ],
+      "default": "comfortable",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-density)。comfortable=调研值档:面板间距 --dvz-gap(默认 8px=Grafana GRID_CELL_VMARGIN)、行高 --dvz-row(默认 30px=GRID_CELL_HEIGHT)、字号阶梯 45/12/12/10(Power BI 官方示例);compact=demo 演示档:间距减半、行高 ×0.8、callout 45→32、label 10→9(演示值,官方未发布 compact 数值惯例——未证实)。",
+        "en": "JS-type param (the demo subscribes and toggles data-density). comfortable = the research-verified preset: panel gap --dvz-gap (default 8px = Grafana GRID_CELL_VMARGIN), row height --dvz-row (default 30px = GRID_CELL_HEIGHT), font ladder 45/12/12/10 (Power BI official example); compact = a demo-proposed preset: halved gaps, row ×0.8, callout 45→32, label 10→9 (demo values — no official compact conventions exist; unverified)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 2,
+      "max": 16,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--dvz-gap",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入)。面板间距,默认 8px 逐字取自 Grafana 源码 GRID_CELL_VMARGIN=8;网格列数同样固定 24(GRID_COLUMN_COUNT),demo 的迷你仪表盘即 24 列网格,面板按列跨度摆放。",
+        "en": "CSS-var param (injected by DemoStage). Panel gap; the 8px default is Grafana's GRID_CELL_VMARGIN=8 verbatim. The column count is likewise fixed at 24 (GRID_COLUMN_COUNT) — the demo's mini dashboard is a true 24-column grid with panels placed by column span."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "rowHeight",
+      "unit": "px",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "default": 30,
+      "cssVar": "--dvz-row",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入)。网格行高单元,默认 30px 逐字取自 Grafana GRID_CELL_HEIGHT=30;面板最小高度 = 3 格 = 90px(MIN_PANEL_HEIGHT),demo 的 KPI 面板即 3 行高。",
+        "en": "CSS-var param (injected by DemoStage). Grid row-height unit; the 30px default is Grafana's GRID_CELL_HEIGHT=30 verbatim. Minimum panel height = 3 rows = 90px (MIN_PANEL_HEIGHT) — the demo's KPI panels are exactly 3 rows tall."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 用 CSS Grid repeat(24, minmax(0,1fr)) + calc() 折算 compact 档,全现代浏览器可用;无 JS 布局依赖(参数只改 CSS 变量与 data 属性)。",
+      "en": "The demo uses CSS Grid repeat(24, minmax(0,1fr)) plus calc() for the compact preset — available in all modern browsers; no JS layout dependency (params only touch CSS variables and a data attribute)."
+    }
+  },
+  "fallback": {
+    "zh": "无兼容问题;真正的回退是「窄屏」:24 列网格在窄容器下应降级为单列堆叠(CSS Grid 的 auto-fit 或容器查询),面板顺序按信息优先级排列;compact 档的字号下限受可读性约束,label 9px 已逼近 AA 可读下限,再小就放弃密度改留白。",
+    "en": "No compat issue; the real fallback is narrow viewports: a 24-column grid degrades to a single-column stack on narrow containers (CSS Grid auto-fit or container queries), ordered by information priority; the compact preset's floor is readability — at label 9px you are near the AA readability floor, and below that trade density for whitespace."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "BI/监控仪表盘(可拖拽网格)——24 列 × 30px 行 × 8px 间距是 Grafana 十年验证的拖拽底座", "en": "BI/monitoring dashboards with draggable grids — 24 columns × 30px rows × 8px gaps is the drag base Grafana has hardened for a decade" },
+      { "zh": "KPI 卡片与大数字——callout 45px 官方示例档,一眼可读不抢图表", "en": "KPI cards and big numbers — the official callout 45px example tier: readable at a glance without stealing the chart's job" },
+      { "zh": "运营/运维密集屏( compact 档)——一屏塞下更多面板,间距减半换信息密度", "en": "Dense ops/monitoring screens (compact) — more panels per screen by halving gaps" },
+      { "zh": "设计 token 化——把 gap/row/字号阶梯沉淀为 --dvz-* 变量,主题与密度档只换变量", "en": "Design-token adoption — persist gap/row/font ladder as --dvz-* variables; themes and density presets swap variables only" }
+    ],
+    "avoid": [
+      { "zh": "移动端照搬 24 列网格——拖拽网格是桌面 BI 惯例,移动端应改卡片流", "en": "Porting the 24-column grid to mobile — drag grids are a desktop BI convention; mobile wants card flows" },
+      { "zh": "compact 档继续压字号换密度——label 9px 以下可读性崩,密度收益归零", "en": "Pushing compact further by shrinking type — below label 9px readability collapses and density gains vanish" },
+      { "zh": "把 45/12/12/10 当强制规范——Power BI 文档明示这是示例值,按产品实况调", "en": "Treating 45/12/12/10 as a mandatory spec — Power BI's docs present them as example values; tune to your product" },
+      { "zh": "面板内边距与网格间距混用一套值——面板 padding 属于面板内密度,与 GRID_CELL_VMARGIN 是两个层级", "en": "Reusing grid gap as panel padding — panel padding is intra-panel density, a different tier from GRID_CELL_VMARGIN" }
+    ]
+  },
+  "a11y": {
+    "zh": "密度的可读性底线:字号 45/12/12/10 中 label 10px 已低于 WCAG 大文字线(≥18.66px 粗体才享 3:1),按正常文字 4.5:1 核对色值;compact 档 label 9px 更逼近下限,建议高密度屏只放数字与短标签。Grafana 源码的 calculateSpace() 按 CSS 像素自适应刻度间距(防刻度挤压)——密度可压缩,轴刻度不许重叠;触控面板的拖拽手柄在 compact 下仍需 ≥24px 命中区。",
+    "en": "Density's readability floor: within the 45/12/12/10 ladder, label 10px is far under the WCAG large-text line (≥18.66px bold earns 3:1), so check colors at the 4.5:1 body-text ratio; compact's label 9px sits even closer to the floor — keep dense screens to numbers and short labels. Grafana's calculateSpace() adapts tick spacing in CSS pixels precisely to prevent tick crowding — density may compress, axis ticks may never overlap; drag handles under compact still need a ≥24px hit area."
+  },
+  "sources": [
+    "https://raw.githubusercontent.com/grafana/grafana/main/public/app/core/constants.ts",
+    "https://learn.microsoft.com/en-us/power-bi/create-reports/report-themes-create-custom",
+    "https://grafana.com/docs/grafana/latest/dashboards/use-dashboards/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG/CSS 实现一个迷你仪表盘 mock:24 列网格、行高与面板间距走 --dvz-* 变量,comfortable/compact 两档联动间距与字号阶梯,包含 KPI 大数字、迷你折线、迷你柱图与表格四种面板。",
+      "en": "Implement a mini dashboard mock in hand-drawn SVG/CSS: a 24-column grid whose row height and panel gap run off --dvz-* variables, with a comfortable/compact switch coupling spacing and the font ladder, containing KPI, mini-line, mini-bar and table panels."
+    },
+    "acceptance": [
+      { "zh": "网格常量逐字取自调研:24 列、行高 30px、面板间距 8px、最小面板 3 格 90px(Grafana 源码核验)", "en": "Grid constants verbatim from the research: 24 columns, 30px rows, 8px panel gaps, 3-row minimum panels (Grafana source-verified)" },
+      { "zh": "字号阶梯 45/12/12/10 标注为 Power BI 官方文档示例值,非强制默认", "en": "Font ladder 45/12/12/10 labeled as Power BI's official example values, not enforced defaults" },
+      { "zh": "compact 档数值如实标注为 demo 演示值(官方未发布 compact 惯例)", "en": "Compact-preset values honestly labeled as demo-proposed (no official compact conventions exist)" },
+      { "zh": "面板间距与面板内边距分层:间距走网格变量,padding 走面板内密度", "en": "Keep tiers separate: grid gap from grid variables, panel padding from intra-panel density" },
+      { "zh": "MDX 写明 Tableau 数值惯例官方未公开(未找到),不编造", "en": "MDX states Tableau's numeric conventions are unpublished (not found) — no invented values" }
+    ]
+  }
+}

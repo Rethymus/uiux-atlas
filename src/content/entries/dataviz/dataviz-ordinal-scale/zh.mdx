@@ -1,0 +1,57 @@
+## 结构与 DOM
+
+序数色阶把「值域 [0,1]」均匀分成 N 档,每档一个官方色值;热力格与图例**共用同一个色阶数组**,档数变化时两者同步。
+
+```html
+<svg viewBox="0 0 512 460">
+  <!-- 热力格:fill = scale[bin(value)],bin = floor(v * steps) -->
+  <rect fill="#6BAED6" />  <!-- 第 3 档(Blues 5) -->
+  <!-- 图例条:同一数组,浅→深 = 低→高 -->
+</svg>
+```
+
+关键点:
+
+- 分箱是**离散**的:值 → 档号 → 官方色值,不在成品里做连续渐变(CSV/热力图语境下的「渐变」交给图表库内部插值);
+- 图例必须与格子同源——demo 里二者读同一个 `scale` 数组,档数联动;
+- 与 ECharts/D3 的取舍:ECharts `visualMap` 与 d3-scale 的 `scaleQuantize` 都能把值域分箱上色,且 d3-scale-chromatic 内置全部 ColorBrewer 方案(均匀 B-spline 插值出连续版);手绘 SVG 的价值是色值逐字节等于官方 JSON、图例与格子强制同源——生产图表用库,demo/规范页用手绘保证「所见即官方值」。
+
+## 样式与参数
+
+两个参数,数值全部出自 ColorBrewer 官方导出 JSON(本会话 `curl https://colorbrewer2.org/export/colorbrewer.json` 直下解析,35 组 scheme):
+
+```css
+/* demo 只用 fill,格子描边 1px 用于暗色主题分隔 */
+.or-chart rect { stroke-width: 1; }
+```
+
+| 方案 | 官方 5 档 hex(JSON 核验) | 说明 |
+| --- | --- | --- |
+| Blues 5(单色线性) | `#EFF3FF #BDD7E7 #6BAED6 #3182BD #08519C` | 亮度单调递减,「值越大颜色越重」最忠实;7 档为 `#EFF3FF … #084594` |
+| YlGnBu 5(多色渐进) | `#FFFFCC #A1DAB4 #41B6C4 #2C7FB8 #253494` | 亮度+色相双通道,小差异更敏感 |
+| RdBu 5(双向,MDX 参考) | `#CA0020 #F4A582 #F7F7F7 #92C5DE #0571B0` | 两端饱和+正中白,中点锁数据零点/均值 |
+
+参数:`steps`(3-9,默认 5)、`mode`(单色线性/多色渐进)——均 JS 型。demo 在官方 5 锚点色之间做 **sRGB 线性插值**只为演示 3-9 任意档数;生产必须取 ColorBrewer 官方整档(3-9 档齐备)或 d3-scale-chromatic 的均匀 B-spline 插值,两者中间档取值与线性插值**不同**。许可:ColorBrewer 官方渠道未明示许可文本(署名 © Brewer/Harrower/Penn State;社区流传 Apache-2.0 说法未证实);Crameri Scientific Colour Maps v9.0.0 页面称可自由使用,具体许可未证实。
+
+## 动效与交互
+
+色阶是静态映射,动效只做阅读辅助:
+
+- 参数面板调 `steps`/`mode` 时格子与图例同步重算重绘,无过渡(数据映射变化不做颜色渐变动画);
+- hover 单格显示原生 `<title>`(数值 + 档号),静态、无延迟;
+- demo 无动画,尊重 `prefers-reduced-motion`;若做「值扫描」演示动画,只在 `transform` 上动一条高亮框,reduce 下静止。
+
+## 真实产品案例
+
+- **d3-scale-chromatic**:README 声明其方案「多数派生自 Cynthia A. Brewer 的 ColorBrewer」,离散 scheme 经均匀 B-spline 插值生成连续版;Viridis 系为感知均匀的连续方案(仓库已核)。
+- **Fabio Crameri Scientific Colour Maps**:v9.0.0,Zenodo 永久存档(DOI 10.5281/zenodo.1243862),IPCC Interactive Atlas 在用;配套论文 Crameri, Shephard & Heron (2020) 在 *Nature Communications* 11:5444 批评彩虹色阶扭曲数据(官方页已核)。
+- **ColorBrewer 2.0**(colorbrewer2.org):为地图分级设色的官方工具,三类选择法——Sequential 数值递增 / Diverging 围绕中点 / Qualitative 分类;支持 HEX/RGB/CMYK 导出(官方站与导出 JSON 已核)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `steps` | 9 档时相邻档在低质屏/打印上趋同,读者难以回指图例;超过 7 档建议改注关键断点值 | 3 档信息压缩最狠,但任意屏幕都分得清,是「概览优先」的选择 |
+| `mode` | multihue(YlGnBu)对小差异更敏感,但黄→绿的过渡可能被误读为「另一类」 | monochrome(Blues)只动亮度,色盲/灰度天然安全,是默认档 |
+
+经验区间:概览图 3-5 档,分析图 5-7 档,9 档仅在高保真输出上使用;双向数据一律换 RdBu 并锁中点,不要用单色阶硬扛正负值。

@@ -1,0 +1,67 @@
+## Structure & DOM
+
+Stroke and fill are two ways of "inking" the same SVG path: geometry is drawn once, while color and weight are handed entirely to **inherited attributes** — `stroke` and `fill` live on the `<svg>` root and child shapes stay bare.
+
+```html
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M13.5 2.75 6 13.5h4.9L10.5 21.25 18 10.5h-4.9z" />
+  <!-- Knockout sub-shape: inline fill="none" stays hollow even when fill is on -->
+  <circle cx="12" cy="10.7" r="2.4" fill="none" />
+</svg>
+```
+
+Key points:
+
+- `viewBox="0 0 24 24"` is the industry's common ancestor grid (Lucide/Feather/Heroicons/Material all share it, research 07 §0);
+- Color is written exactly once as `currentColor`: the component sets `color:` and icon plus text recolor together (CSS Color 4 §6.4: currentcolor is the element's own color value, 07 §5.2);
+- A hardcoded `fill`/`stroke` on a child path severs inheritance — `<use>` deep-clones into shadow DOM where only inherited properties apply; "attributes already defined ignore the reference value" (MDN use rule, 07 §5.1);
+- Open paths (segments) have no area to fill — switching fill on leaves only the stroke; filling requires a closed path.
+
+## Styling & Parameters
+
+Three parameters map to three attribute groups on the svg root; `strokeWidth` is injected through the `--sf-stroke` variable while `fill`/`capJoin` are JS-type switches:
+
+```css
+.sf-ic {
+  fill: none;                              /* Lucide source-defined fill: 'none' */
+  stroke: currentColor;                    /* Lucide source-defined */
+  stroke-width: var(--sf-stroke, 2);       /* default 2 = defaultAttributes.ts value */
+  stroke-linecap: round;                   /* source-defined round */
+  stroke-linejoin: round;                  /* source-defined round */
+}
+.sf-scene[data-fill="on"] .sf-art path { fill: currentColor; }
+.sf-scene[data-cap="square"] .sf-ic { stroke-linecap: square; stroke-linejoin: miter; }
+```
+
+Where the numbers come from:
+
+- **stroke-width 2 / round caps and joins / fill none / currentColor quartet**: source-defined in Lucide's `packages/lucide/src/defaultAttributes.ts`, confirmed by the real `icons/house.svg` (07 §1.1); Feather's attrs are isomorphic (07 §1.2);
+- **The 1.5 exception**: Heroicons' real `src/24/outline/bars-3.svg` measures `stroke-width="1.5"`; the README quick-start still says 2 — stale v1 copy; the file wins (07 §1.3);
+- **Thin-line debt**: the WCAG 1.4.11 understanding doc warns that antialiasing renders particularly thin lines far fainter than the specified color — avoid them (07 §3.3);
+- **The opposite extreme**: Phosphor delivers all six weights as filled paths (256×256 viewBox measured) with stroke width baked into the outline (07 §1.4).
+
+## Motion & Interaction
+
+Stroke/fill are static properties; motion happens at state switches:
+
+- **Fill-to-light**: the stroked and filled versions are two deliveries of one path — toggling fill on hover/selection "lights it up", the SVG counterpart of Material Symbols' FILL axis ("animated fill effect, to indicate user selection", 07 §6.1); keep 150–200ms with standard easing (07 §6.2);
+- **Do not animate stroke-width**: interpolating it re-rasters the whole glyph and jitters at small sizes; to read "heavier", prefer switching on fill rather than thickening strokes;
+- Under `prefers-reduced-motion`, the fill switch jumps straight to the end state (transition: none) — feedback kept, motion dropped (07 §6.3);
+- Stroke-dashoffset draw-in effects are covered in the icon-motion entry.
+
+## Real-world examples
+
+- **Heroicons' dual system**: maintained by the official Tailwind team, `24/outline` (1.5px stroke) and `24/solid` (filled) share semantics under the same names, imported tree-shakably via `@heroicons/react/24/outline`; the project officially declines new icon PRs (07 §1.3);
+- **Lucide all-stroke + experimental fill**: the default quartet is source-defined, fill weight is experimental; the lucide-react/vue/svelte family leaves animation to the host instead of embedding SMIL (07 §1.1/§6.3);
+- **Phosphor's filled route**: Fill/Duotone weights bake stroke into filled outlines and are the only two of the five sets that layer "translucent base + solid top" (Duotone background layer opacity 0.2, measured) (07 §1.4).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `strokeWidth` | at 3 strokes read bold, but at ≤16px knockouts clog and detail merges | at 1 it looks airy, yet low-dpi screens and small text render it far fainter than specified (WCAG 1.4.11 note), pressuring contrast |
+| `fill` | on solidifies closed paths — visual weight jumps; check the grayscale balance beside stroked versions with the blur test (07 §3.2) | off returns to stroke-only, the lightest look; visibility then rests on stroke width and color contrast |
+| `capJoin` | square/miter sprouts spikes and square tips — a harder style that gets ragged when small | round is the default and community norm; round caps transition most smoothly on curve corners |
+
+Working anchors: 24px grid with 2px stroke (Lucide/Feather official), 1.5px as Heroicons' measured exception; never mix stroked and filled sets ad hoc on one page.

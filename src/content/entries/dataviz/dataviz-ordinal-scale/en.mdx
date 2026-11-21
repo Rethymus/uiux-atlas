@@ -1,0 +1,57 @@
+## Structure & DOM
+
+An ordinal scale divides the value range [0,1] into N equal classes, one official color per class; heat cells and the legend **share the same scale array**, so the class count moves them in lockstep.
+
+```html
+<svg viewBox="0 0 512 460">
+  <!-- Heat cell: fill = scale[bin(value)], bin = floor(v * steps) -->
+  <rect fill="#6BAED6" />  <!-- class 3 of Blues 5 -->
+  <!-- Legend strip: same array, light → dark = low → high -->
+</svg>
+```
+
+Key points:
+
+- Binning is **discrete**: value → class index → official color; no continuous gradient in the shipped artifact (continuous interpolation is the chart library's internal business);
+- Legend and cells must be same-source — the demo reads one `scale` array for both, class count included;
+- Trade-off vs ECharts/D3: ECharts' `visualMap` and d3-scale's `scaleQuantize` both bin a range into colors, and d3-scale-chromatic carries every ColorBrewer scheme (continuous versions via uniform B-spline interpolation); hand-drawn SVG's value is byte-exact equality with the official JSON and a forced same-source legend — production charts use the library, spec pages use hand-drawing to guarantee "what you see is the official value".
+
+## Styling & Parameters
+
+Two parameters; every number comes from the official ColorBrewer export JSON (downloaded and parsed in-session via `curl https://colorbrewer2.org/export/colorbrewer.json`, 35 schemes):
+
+```css
+/* the demo only uses fill; a 1px outline separates cells on dark themes */
+.or-chart rect { stroke-width: 1; }
+```
+
+| Scheme | Official 5-class hex (JSON verified) | Notes |
+| --- | --- | --- |
+| Blues 5 (monochrome linear) | `#EFF3FF #BDD7E7 #6BAED6 #3182BD #08519C` | Monotonically decreasing lightness — the most faithful read of "bigger value, heavier color"; 7 classes run `#EFF3FF … #084594` |
+| YlGnBu 5 (multi-hue) | `#FFFFCC #A1DAB4 #41B6C4 #2C7FB8 #253494` | Lightness + hue dual channel; more sensitive to small differences |
+| RdBu 5 (diverging, MDX reference) | `#CA0020 #F4A582 #F7F7F7 #92C5DE #0571B0` | Saturated ends + white middle, midpoint locked to the data zero/mean |
+
+Parameters: `steps` (3–9, default 5), `mode` (monochrome linear / multi-hue) — both JS-type. The demo interpolates **linearly in sRGB between the 5 official anchors** purely to demonstrate arbitrary 3–9 class counts; production must take ColorBrewer's official per-class values (3–9 classes all exist) or d3-scale-chromatic's uniform B-spline — their middle classes **differ** from linear interpolation. Licensing: ColorBrewer states no license text on official channels (attribution © Brewer/Harrower/Penn State; the circulating Apache-2.0 claim is unverified); Crameri Scientific Colour Maps v9.0.0 is presented as free to use, with the specific license unverified.
+
+## Motion & Interaction
+
+A scale is a static mapping; motion stays a reading aid:
+
+- Adjusting `steps` / `mode` recomputes and redraws cells and legend together, with no transition (data-mapping changes get no color cross-fade);
+- Hovering a cell shows a native `<title>` (value + class index) — static, zero delay;
+- The demo has no animation and respects `prefers-reduced-motion`; if you add a value-sweep demo, animate only a highlight box's `transform`, static under reduce.
+
+## Real-world examples
+
+- **d3-scale-chromatic**: the README states most schemes are "derived from Cynthia A. Brewer's ColorBrewer", with discrete schemes turned continuous by uniform B-spline interpolation; the Viridis family provides perceptually uniform continuous ramps (repo verified).
+- **Fabio Crameri Scientific Colour Maps**: v9.0.0, permanently archived on Zenodo (DOI 10.5281/zenodo.1243862), in use by the IPCC Interactive Atlas; the companion paper Crameri, Shephard & Heron (2020), *Nature Communications* 11:5444, criticizes rainbow ramps for distorting data (official page verified).
+- **ColorBrewer 2.0** (colorbrewer2.org): the official color-picking tool for map classification, with three selection methods — Sequential for increasing values / Diverging around a midpoint / Qualitative for classes; HEX/RGB/CMYK export (official site and export JSON verified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `steps` | at 9 classes adjacent steps converge on low-grade screens or print, and readers struggle to match the legend; past 7 classes, annotate key break values instead | 3 classes compress hardest yet stay separable on any screen — the overview-first choice |
+| `mode` | multi-hue (YlGnBu) is more sensitive to small differences, but the yellow→green passage can be misread as "another category" | monochrome (Blues) moves only lightness — naturally safe under CVD and grayscale; the default |
+
+Working range: 3–5 classes for overviews, 5–7 for analysis, 9 only for high-fidelity output; diverging data always moves to RdBu with a locked midpoint — don't force-signed values through a single-hue ramp.

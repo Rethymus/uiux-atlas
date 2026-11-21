@@ -1,0 +1,66 @@
+## Structure & DOM
+
+Optical sizing has no DOM of its own — it is a correction discipline over **drawn coordinates**. The demo lays three 24-grid SVGs side by side with a center crosshair overlay:
+
+```html
+<!-- Square: geometrically centered, on the 18×18 keyline -->
+<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+
+<!-- Circle: optically grown to Ø20 (2dp larger than the square keyline) -->
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+
+<!-- Asymmetric triangle: allowed a ≤0.5-unit optical shift -->
+<svg viewBox="0 0 24 24">
+  <g transform="translate(0.5 0)">
+    <path d="M8 7.5v9l7.5-4.5z" fill="none" stroke="currentColor" stroke-width="2"/>
+  </g>
+</svg>
+```
+
+Key points:
+
+- Compensation touches only **size and sub-pixel position**, never semantics; aria information is unaffected;
+- At large render sizes the stroke holds a constant absolute width via `vector-effect: non-scaling-stroke`, indicating the opsz direction of "relatively thinner when enlarged";
+- Crosshair guides are design-time tools — strip them before shipping.
+
+## Styling & Parameters
+
+Both parameters are JS-type; the derivations:
+
+```text
+circle diameter = compensate ? 20 : 18        // official keyline Ø20 = square 18 + 2dp
+rendered px     = grid units / 24 × baseSize  // baseSize defaults to 24 (opsz official default)
+triangle offset = compensate ? +0.5px : 0     // Lucide allows "slightly off center" (demo value)
+```
+
+Where the numbers come from:
+
+- **Circle Ø20 / square 18×18**: Material system-icons keyline values (07 §2); the circle's +11.1% (20/18) is documented in 07 §3.1;
+- **opsz axis 20–48, default 24**: double-verified in the Material Symbols README and the Google Fonts guide (07 §1.5); only the 20px and 24px versions achieve perfect pixel-grid alignment;
+- **Asymmetric off-center allowed**: Lucide's design principles say "may be moved slightly off center so they look visually centered" (07 §3.2); **the 0.5px figure is a demo value — the spec gives no number**;
+- **Blur-test acceptance**: Lucide's own technique — blur the row beside a circle/square reference and compare grayscale weight (07 §3.2); the demo's blur-test button does exactly this;
+- **The inverse application**: light icons on dark backgrounds use GRAD −25 to −50 to cut glare — optical compensation in the negative direction (07 §3.1-4).
+
+## Motion & Interaction
+
+Optical sizing is a static discipline; the demo has two interactions:
+
+- **compensate switch**: circle radius and triangle offset snap between "equal size (geometric)" and "+11.1% (optical)" side-by-side states;
+- **Blur-test button**: applies `filter: blur(1.5px)` to the three shapes for a grayscale weight comparison (only button-state transitions, no motion);
+- Dragging baseSize scales the SVG by `width=baseSize`; with a constant 2px stroke you can see strokes grow relatively thinner as it enlarges;
+- No motion effects, so `prefers-reduced-motion` needs no fallback.
+
+## Real-world examples
+
+- **Material Symbols' opsz axis**: range 20–48, default 24, tuning stroke thickness automatically with size (Google Fonts guide) — "scaling compensation" made into an interpolable parameter (07 §1.5/§3.1);
+- **Lucide's contribution spec**: "geometric centering does not always look centered" and the blur method are written into its acceptance checklist — a small off-center shift is a sanctioned operation (07 §3.2);
+- **Material's GRAD axis**: GRAD −25 to −50 reduces glare for light icons on dark backgrounds, +200 for emphasis — the official optical knob in the negative direction (07 §1.5/§3.1).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `baseSize` | at 48px the constant 2px stroke reads relatively thinner (opsz direction) and the circle's +2dp advantage scales up to 3.3px | at 16px strokes read relatively thicker and clog; the circle-square compensation delta shrinks to 1.3px, close to rendering error |
+| `compensate` | on grows the circle to the official Ø20 — blurred beside the square it reads the same weight | off returns the circle to Ø18, geometrically correct but visibly lighter — inline weight falls out of balance |
+
+Anchors: circle +2dp, off-center ≤0.5px, blur test as final review; beyond these magnitudes it is no longer optical correction but a drawing error.

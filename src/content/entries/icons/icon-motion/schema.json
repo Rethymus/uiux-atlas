@@ -1,0 +1,101 @@
+{
+  "name": "Icon Micro-Motion",
+  "nameZh": "图标动效",
+  "aliases": ["图标微动效", "描边绘制", "hover 动效", "Icon Motion", "stroke-dashoffset"],
+  "category": "icons",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "hover 触发的三招路径微动效:stroke-dashoffset 描边绘制、≤90° 旋转、fill-opacity 填充点亮——150–200ms + standard 缓动是 M3 官方区间,prefers-reduced-motion 直切终态。",
+    "en": "Three hover-triggered path micro-effects: stroke-dashoffset draw-in, ≤90° rotation, fill-opacity light-up — 150–200ms with standard easing is M3's sanctioned range, and prefers-reduced-motion snaps straight to the end state."
+  },
+  "origin": {
+    "zh": "时长与缓动取 M3 官方 token(out/design-study/07-icons.md §6.2):duration.short3/short4 = 150/200ms(官方用例 \"Selection controls have a short duration of 200ms with Standard easing\"),easing.standard = cubic-bezier(0.2, 0, 1, 1)(\"simple, small, or utility-focused transitions\");填充点亮的官方通道是 Material Symbols FILL 轴(README:\"animated fill effect, to indicate user selection\",07 §6.1),SVG 侧等效实现为 fill-opacity 过渡;降级护栏出自 MDN prefers-reduced-motion:缩放/平移类动画可诱发前庭障碍,官方示例把 pulse 缩放降级为 opacity 溶解(07 §6.3)。",
+    "en": "Duration and easing come from M3's official tokens (out/design-study/07-icons.md §6.2): duration.short3/short4 = 150/200ms (official example \"Selection controls have a short duration of 200ms with Standard easing\"), easing.standard = cubic-bezier(0.2, 0, 1, 1) (\"simple, small, or utility-focused transitions\"); the sanctioned fill light-up channel is Material Symbols' FILL axis (README: \"animated fill effect, to indicate user selection\", 07 §6.1), whose SVG-side equivalent is a fill-opacity transition; the a11y guardrail is MDN's prefers-reduced-motion: scale/translate motion can trigger vestibular triggers, and the official example degrades a pulse scale into an opacity fade (07 §6.3)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "effect",
+      "options": [
+        { "value": "dash", "label": { "zh": "描边绘制 dashoffset", "en": "Draw-in (dashoffset)" } },
+        { "value": "rotate", "label": { "zh": "旋转 rotate(≤90°)", "en": "Rotate (≤90°)" } },
+        { "value": "fill", "label": { "zh": "填充点亮 fill-opacity", "en": "Fill light-up" } }
+      ],
+      "default": "dash",
+      "effect": {
+        "zh": "当前武装的动效技法(JS 型,未选中卡降为静态)。dash = pathLength=1 归一 + stroke-dashoffset 1→0 重绘(默认态全绘,hover 只重放);rotate = ≤90° 旋转——M3 惯例位移动效不进图标内部、rotate ≤90°/±1px(07 §6.2);fill = fill-opacity 0→1 点亮,是 Material FILL 轴(\"indicate user selection\")的 SVG 等效通道(07 §6.1/§6.3:等效降级 = 描边版与实底版换 use)。",
+        "en": "The armed motion technique (JS-type; unselected cards stay static). dash = pathLength=1 normalization + stroke-dashoffset 1→0 redraw (fully drawn at rest; hover only replays); rotate = ≤90° — M3 convention keeps travel out of the glyph, rotation ≤90°/±1px (07 §6.2); fill = fill-opacity 0→1 light-up, the SVG counterpart of Material's FILL axis (\"indicate user selection\", 07 §6.1/§6.3: the equivalent fallback is swapping a stroked for a solid symbol)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "duration",
+      "unit": "ms",
+      "min": 50,
+      "max": 400,
+      "step": 25,
+      "default": 200,
+      "cssVar": "--im-duration",
+      "effect": {
+        "zh": "动效时长(ms),CSS 变量注入。默认 200 = M3 duration.short4 官方值(\"Selection controls have a short duration of 200ms with Standard easing\");150 = short3;hover 微动效惯例 150–200ms(07 §6.2)。>250ms 进入 medium 档(跨区转场),hover 场景会显得迟钝;<100ms 趋近瞬切,失去「回应感」。",
+        "en": "Motion duration (ms), injected as a CSS variable. Default 200 = M3's official duration.short4 (\"Selection controls have a short duration of 200ms with Standard easing\"); 150 = short3; the hover micro-motion convention is 150–200ms (07 §6.2). Above 250ms enters the medium tier (spatial transitions) and feels sluggish for hover; below 100ms approaches a hard cut and loses the sense of response."
+      }
+    },
+    {
+      "type": "cubicBezier",
+      "name": "easing",
+      "default": [0.2, 0, 1, 1],
+      "cssVar": "--im-easing",
+      "effect": {
+        "zh": "缓动曲线,CSS 变量注入(序列化为 cubic-bezier())。默认 [0.2, 0, 1, 1] = M3 easing.standard(\"simple, small, or utility-focused transitions\",微动效首选,07 §6.2);emphasized-decelerate [0.05, 0.7, 0.1, 1] 用于进场型强调、emphasized-accelerate [0.3, 0, 0.8, 0.15] 用于退场——图标 hover 用 standard 即可。每次轴过渡都是字形重排,预算保持在 150–250ms 内(07 §6.1)。",
+        "en": "The easing curve, injected as a CSS variable (serialized to cubic-bezier()). Default [0.2, 0, 1, 1] = M3 easing.standard (\"simple, small, or utility-focused transitions\" — the micro-motion first choice, 07 §6.2); emphasized-decelerate [0.05, 0.7, 0.1, 1] serves entering emphasis and emphasized-accelerate [0.3, 0, 0.8, 0.15] exits — icon hover just needs standard. Every axis transition re-rasterizes the glyph, so keep budgets within 150–250ms (07 §6.1)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "三招全部基于稳定 Web 平台能力:stroke-dashoffset/pathLength(SVG 1.1/2,全主流浏览器)、transform 过渡(合成器友好)、fill-opacity 过渡;@media (prefers-reduced-motion) 全现代浏览器支持(MDN)。不使用 SMIL 与 JS 动画——与组件包 tree-shaking 兼容(React/Vue 组件库路线把动画留给宿主,07 §6.3)。",
+      "en": "All three techniques ride stable platform capabilities: stroke-dashoffset/pathLength (SVG 1.1/2, all mainstream browsers), transform transitions (compositor-friendly), fill-opacity transitions; @media (prefers-reduced-motion) is supported by all modern browsers (MDN). No SMIL and no JS animation — keeping tree-shaking intact (component libraries leave animation to the host, 07 §6.3)."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "reduced-motion 降级是本条目的一等公民:transition/animation 全部禁用,hover 直切终态(或按 MDN 示例把缩放类降为 opacity 溶解)——不删状态反馈本身(07 §6.3)。等效降级路线:描边版与实底版两枚 symbol 换 <use>,零动画成本完成填充点亮(07 §6.1/§6.3)。极老环境(不支持 pathLength 归一)时 dash 技法退化为 rotate/fill。",
+    "en": "The reduced-motion fallback is this entry's first-class citizen: all transitions/animations disabled, hover snaps to the end state (or degrades scale-type motion into an opacity fade per MDN's example) — never deleting the state feedback itself (07 §6.3). The equivalent fallback route: swap a stroked and a solid symbol via <use>, filling the light-up with zero animation cost (07 §6.1/§6.3). Environments without pathLength normalization degrade the dash technique to rotate/fill."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "选中态图标(收藏/书签)的填充点亮——FILL 轴官方盖章的语义(07 §6.1)", "en": "Selection-state icons (favorite/bookmark) filling up — the FILL axis's officially sanctioned semantics (07 §6.1)" },
+      { "zh": "刷新/发送类操作的 90° 旋转确认,时长 200ms standard(07 §6.2)", "en": "Refresh/send confirmations rotating 90° at 200ms standard (07 §6.2)" },
+      { "zh": "列表项 hover 的描边重绘提示,150ms short3", "en": "List-item hover redraw hints at 150ms short3" }
+    ],
+    "avoid": [
+      { "zh": "高频工具栏图标加动效——高频交互应省略动效(Apple HIG;07 §6.2 上下文),hover 微动效留给低频强调", "en": "Animating high-frequency toolbar icons — frequent interactions should skip motion; reserve hover micro-motion for low-frequency emphasis" },
+      { "zh": ">250ms 的图标动效——进入 medium 转场档,hover 显迟钝且字形重排开销翻倍(07 §6.1/§6.2)", "en": "Icon motion beyond 250ms — the medium transition tier: sluggish for hover and doubles glyph re-raster cost (07 §6.1/§6.2)" },
+      { "zh": "无 reduced-motion 降级的填充/旋转——缩放与位移类动画可诱发前庭障碍(MDN,07 §6.3)", "en": "Fill/rotate motion without a reduced-motion fallback — scale and travel motion can trigger vestibular triggers (MDN, 07 §6.3)" }
+    ]
+  },
+  "a11y": {
+    "zh": "prefers-reduced-motion 必须降级:MDN 定义该媒体特性探测用户「remove, reduce, or replace motion-based animations」的系统偏好,官方示例把 pulse 缩放动画降级为 opacity 溶解;图标动效降级策略 = transition/animation 禁用直切终态,状态反馈不删(07 §6.3)。demo 额外提供「模拟 reduced-motion」开关供无系统偏好的用户验收。键盘可达:hover 效果同步挂 :focus-visible;触屏无 hover,提供点击触发。",
+    "en": "prefers-reduced-motion must degrade: MDN defines it as detecting the user's system preference to 'remove, reduce, or replace motion-based animations', with the official example degrading a pulse scale into an opacity fade; icon strategy = disable transitions/animations and snap to the end state without deleting feedback (07 §6.3). The demo adds a 'simulate reduced motion' switch so users without the system preference can verify. Keyboard: hover effects also bind :focus-visible; touch has no hover, so click-triggered playback is provided."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/easing-and-duration/tokens-specs",
+    "https://fonts.google.com/icons",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现三枚 hover 触发的图标微动效(描边绘制/90° 旋转/填充点亮),时长与缓动经 CSS 变量注入(M3 short4 200ms + standard),reduced-motion 直切终态并保留状态反馈。",
+      "en": "Implement three hover-triggered icon micro-effects (draw-in / 90° rotation / fill light-up), duration and easing injected as CSS variables (M3 short4 200ms + standard), snapping to end states under reduced motion while keeping the feedback."
+    },
+    "acceptance": [
+      { "zh": "时长 150–200ms、缓动 standard cubic-bezier(0.2,0,1,1)(M3 官方 token),参数快照值不得自行调整", "en": "150–200ms with standard cubic-bezier(0.2,0,1,1) (M3 official tokens); snapshot values stay unadjusted" },
+      { "zh": "rotate ≤90°、位移 ≤1px——动效不进图标内部(M3 惯例)", "en": "Rotation ≤90°, travel ≤1px — motion stays out of the glyph (M3 convention)" },
+      { "zh": "@media (prefers-reduced-motion: reduce) 下所有 transition/animation 禁用,hover 直切终态,状态反馈不删", "en": "Under @media (prefers-reduced-motion: reduce) all transitions/animations disable; hover snaps to the end state; feedback survives" },
+      { "zh": "dash 技法默认态全绘(pathLength=1 归一),hover 只重放,不得默认隐藏图标", "en": "The dash technique draws fully at rest (pathLength=1); hover only replays — never hide the icon by default" },
+      { "zh": "动效落在 transform/stroke-dashoffset/fill-opacity,不用 SMIL,兼容 tree-shaking", "en": "Motion rides transform/stroke-dashoffset/fill-opacity; no SMIL; tree-shaking intact" }
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+## 结构与 DOM
+
+雪碧图是「**一份模板,多处引用**」的结构:`<defs>` 里 `<symbol>` 定义模板(自身不可渲染),页面任意位置 `<use href="#id">` 实例化——引用节点被深克隆进不暴露的 shadow DOM:
+
+```html
+<!-- 一次定义:24 网格模板,path 裸写(无 fill/stroke) -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="…" />
+    </symbol>
+  </defs>
+</svg>
+
+<!-- 多处引用:width/height 只在被引用对象是 svg/symbol 时生效,任意尺寸共用模板 -->
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <use href="#i-bell" />
+</svg>
+
+<!-- 外链雪碧图(SVG2 起 href 取代 xlink:href;必须同源) -->
+<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+  <use href="icons/feather-sprite.svg#circle" />
+</svg>
+```
+
+三条机制铁律(MDN 一手,07 §5.1):
+
+1. `<symbol>` 不可渲染,仅经 `<use>` 实例化;自带 viewBox,结构化定义 "promote accessibility";
+2. `<use>` 克隆树**不吃文档 CSS 选择器**——"CSS properties are not guaranteed to be inherited by the cloned DOM unless you explicitly request them using CSS inheritance";
+3. **引用时已定义属性被忽略**:"Most attributes on `<use>` are ignored if the corresponding attribute is already defined"——path 上写死 fill/stroke 会封死整条染色链。
+
+## 样式与参数
+
+染色链只有一条:**宿主设一处 `color:`,一切实例经 `currentColor` 继承**(CSS Color 4 §6.4:"The keyword currentcolor represents value of the color property on the same element",07 §5.2):
+
+```css
+/* 图标容器:唯一的颜色声明 */
+.toolbar { color: #1f2937; }          /* 所有 use 实例同步换色 */
+.toolbar:hover { color: #2563eb; }    /* hover 一处生效 */
+
+/* duotone 的正解是换 symbol,不是对克隆树写 CSS:
+   背景层 fill=currentColor + opacity 0.2(Phosphor 官方实测配方,07 §1.4),
+   前景层描边 currentColor——两层都烤在 symbol 定义里 */
+```
+
+参数行为:
+
+- **symbol**:切换 `<use href>` 指向的模板 id;16/24/32 与行内四实例同源;
+- **ink**:`current` = 浅底深墨;`inverse` = 深 chip + 反白,同一继承链换宿主 color;`duotone` = 换双层 symbol(背景 opacity 0.2 + 前景描边),演示「克隆树不吃选择器」时的正道是换引用。
+
+数值出处:duotone 背景层 `opacity="0.2"` 为 Phosphor 仓库 duotone 文件实测值(07 §1.4);currentColor 语义为 CSS Color 4 规范原文(07 §5.2);外链范例为 Feather README 雪碧图节原文(07 §1.2)。
+
+## 动效与交互
+
+雪碧图本身无动效;demo 的交互是「引用与染色」的即时反馈:
+
+- **symbol 切换**:四实例的 `href` 同步换——演示「一份模板多处引用」只需换一个 id;
+- **ink 切换**:宿主 chip 的 `color`/`background` 以 0.2s 过渡;`prefers-reduced-motion` 时 `transition: none` 直切;
+- **写死 fill 反例**:`fill="gray"` 烤在 path 上的实例在任何 ink 下都不变色——这是 MDN 引用遮蔽规则的活体演示;
+- hover 变色 = 宿主一处 `:hover { color }` 声明,不逐个改图标。
+
+## 真实产品案例
+
+- **Feather 官方雪碧图**:README 给出五套中唯一的外链雪碧图官方用法 `<use href="path/to/feather-sprite.svg#circle">`(07 §1.2/§5.1);
+- **Phosphor unplugin**:打包器雪碧图生成插件,把 symbol/use 流水线化(07 §1.4/§5.1);
+- **Heroicons 反例**:官方明确不提供雪碧图产物,只走内联/组件包——需要雪碧图得自己生成或选 Feather/Phosphor 路线(07 §5.1)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `symbol` | 换 id 即换图形,全部实例同步;模板自带 viewBox,任意尺寸实例无失真 | 模板越少复用越低;每加一枚图标都要回流一次 defs(结构成本前置) |
+| `ink` | inverse 深底反白只换宿主 color——继承链自动适配;duotone 换 symbol 保留 Phosphor 式 0.2 底层层次 | current 浅底深墨是默认;写死 fill 的 path 在任何模式下都拒绝换色,染色链断点即刻现形 |
+
+锚点:path 永远裸写;宿主一处 color;duotone 双层烤进 symbol;外链必须同源且首屏内联。

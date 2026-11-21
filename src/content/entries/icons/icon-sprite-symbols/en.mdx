@@ -1,0 +1,76 @@
+## Structure & DOM
+
+A sprite is "**one template, many references**": `<symbol>`s defined inside `<defs>` never render themselves, and `<use href="#id">` instantiates them anywhere — the referenced node is deep-cloned into a non-exposed shadow DOM:
+
+```html
+<!-- One definition: a 24-grid template with bare paths (no fill/stroke) -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="…" />
+    </symbol>
+  </defs>
+</svg>
+
+<!-- Many references: width/height apply only when the referenced object is an svg/symbol -->
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <use href="#i-bell" />
+</svg>
+
+<!-- External sprite (SVG2's href replaces xlink:href; must be same-origin) -->
+<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+  <use href="icons/feather-sprite.svg#circle" />
+</svg>
+```
+
+Three mechanical iron rules (first-hand MDN, 07 §5.1):
+
+1. `<symbol>` is not rendered; it only instantiates through `<use>`; it carries its own viewBox and its structured definition "promotes accessibility";
+2. The `<use>` clone tree **ignores document CSS selectors** — "CSS properties are not guaranteed to be inherited by the cloned DOM unless you explicitly request them using CSS inheritance";
+3. **Already-defined attributes are ignored at reference time**: "Most attributes on `<use>` are ignored if the corresponding attribute is already defined" — a hardcoded fill/stroke on the path seals off the whole paint chain.
+
+## Styling & Parameters
+
+The paint chain is exactly one link: **the host sets one `color:`, and everything inherits `currentColor`** (CSS Color 4 §6.4: "The keyword currentcolor represents value of the color property on the same element", 07 §5.2):
+
+```css
+/* The icon container: the only color declaration */
+.toolbar { color: #1f2937; }          /* every use instance re-inks in sync */
+.toolbar:hover { color: #2563eb; }    /* one hover rules all */
+
+/* Duotone's correct route is swapping the symbol, not CSS-targeting the clone tree:
+   background layer fill=currentColor + opacity 0.2 (Phosphor's official measured recipe, 07 §1.4),
+   foreground layer stroked with currentColor — both baked into the symbol definition */
+```
+
+Parameter behavior:
+
+- **symbol**: swaps which template `<use href>` points to; the 16/24/32 and inline instances share the source;
+- **ink**: `current` = light chip, dark ink; `inverse` = dark chip + light ink on the same inheritance chain; `duotone` = swaps to the two-layer symbol (background at opacity 0.2 + foreground stroke), demonstrating that when the clone tree ignores selectors, swapping the reference is the way.
+
+Number sources: the duotone background layer's `opacity="0.2"` is measured from Phosphor's repo files (07 §1.4); currentColor semantics are CSS Color 4 verbatim (07 §5.2); the external-sprite exemplar is Feather's README sprite section (07 §1.2).
+
+## Motion & Interaction
+
+Sprites have no motion of their own; demo interactions give instant reference/paint feedback:
+
+- **symbol switch**: all four instances' `href` change together — one id swap re-skins the row;
+- **ink switch**: the host chip's `color`/`background` cross-fade over 0.2s; under `prefers-reduced-motion`, `transition: none` snaps;
+- **The hardcoded-fill counterexample**: the instance whose path bakes `fill="gray"` refuses every ink change — MDN's reference-shadowing rule made visible;
+- Hover recoloring is one `:hover { color }` on the host, never per-icon edits.
+
+## Real-world examples
+
+- **Feather's official sprite**: the README ships the only officially documented external-sprite usage among the five sets — `<use href="path/to/feather-sprite.svg#circle">` (07 §1.2/§5.1);
+- **Phosphor unplugin**: a bundler plugin that generates sprite pipelines automatically (07 §1.4/§5.1);
+- **Heroicons as the counterexample**: the project explicitly ships no sprite artifact — inline/component packages only; you generate sprites yourself or choose the Feather/Phosphor route (07 §5.1).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `symbol` | one id swap changes the graphic everywhere in sync; the template's own viewBox keeps any instance size distortion-free | fewer templates means less reuse; every new icon flows back through the defs once (structural cost paid up front) |
+| `ink` | inverse re-inks on dark by touching only the host color — inheritance adapts automatically; duotone swaps symbols to keep Phosphor's 0.2-base layering | current on light is the default; the hardcoded-fill path rejects every mode, exposing the broken paint chain instantly |
+
+Anchors: paths stay bare forever; one host color; duotone layers baked into symbols; external sprites same-origin and first-screen inline.

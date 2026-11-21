@@ -1,0 +1,81 @@
+## Structure & DOM
+
+All three icon-motion techniques are **property transitions on existing DOM** — no new structure, no SMIL (component libraries leave animation to the host, keeping tree-shaking intact, 07 §6.3):
+
+```html
+<!-- Draw-in: pathLength=1 normalization; fully drawn at rest, hover only replays -->
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <circle cx="12" cy="12" r="8.25" pathLength="1"/>
+  <path d="M12 8.5v7M8.5 12h7" pathLength="1"/>
+</svg>
+
+<!-- Rotation: transform transition on the svg root -->
+<svg class="im-rot" viewBox="0 0 24 24" aria-hidden="true">…ringed arrow…</svg>
+
+<!-- Fill light-up: stroke always on, fill-opacity 0→1 (the FILL axis's SVG counterpart) -->
+<svg class="im-fill" viewBox="0 0 24 24" aria-hidden="true">…heart…</svg>
+```
+
+```css
+/* M3 official tokens injected as CSS variables */
+.im-scene {
+  --im-duration: 200ms;                          /* duration.short4 */
+  --im-easing: cubic-bezier(0.2, 0, 1, 1);       /* easing.standard */
+}
+
+/* dash: pathLength=1 + dasharray 1 → dashoffset 1→0 reads as a redraw */
+.im-dash path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.card:hover .im-dash path,
+.card[data-play="dash"] .im-dash path {
+  animation: im-draw var(--im-duration) var(--im-easing);
+}
+@keyframes im-draw { from { stroke-dashoffset: 1; } }
+
+/* rotate ≤90° (motion stays out of the glyph) */
+.im-rot { transition: transform var(--im-duration) var(--im-easing); }
+.card:hover .im-rot { transform: rotate(90deg); }
+
+/* fill: fill-opacity 0→1 — the SVG equivalent of Material's FILL axis ("indicate user selection") */
+.im-fill { fill: currentColor; fill-opacity: 0; transition: fill-opacity var(--im-duration) var(--im-easing); }
+.card:hover .im-fill { fill-opacity: 1; }
+```
+
+Key points: the dash rest state must be **fully drawn** (offset 0) — an icon never hides by default, hover merely replays; rotate sits on the svg root without disturbing paths; fill uses `fill-opacity` (an inherited property) instead of swapping fill values.
+
+## Styling & Parameters
+
+Three parameters — two CSS-variable types (duration/easing) and one JS-type (effect, arming the selected card):
+
+```text
+duration default 200ms  = M3 duration.short4 ("Selection controls have a short duration of 200ms with Standard easing")
+                        150ms = short3; the hover micro-motion range is 150–200ms (07 §6.2)
+easing   default [0.2,0,1,1] = M3 easing.standard ("simple, small, or utility-focused transitions")
+                        emphasized-decelerate [0.05,0.7,0.1,1] for entries / emphasized-accelerate [0.3,0,0.8,0.15] for exits
+effect   dash | rotate | fill — unselected cards drop to static (opacity 0.45)
+```
+
+One note on axis animation from Material Symbols (07 §6.1): **subset before animating** — only ~1.7KB-level fonts dare sit on first screen; every axis transition re-rasterizes the glyph, budget 150–250ms. The SVG route (fill-opacity) carries no font-loading burden — the lightweight equivalent.
+
+## Motion & Interaction
+
+This entry IS the motion spec, with three guardrails:
+
+1. **Reach channels**: hover triggers, `:focus-visible` mirrors it (keyboard parity), and click triggers for touch (no hover); the demo's three cards are real buttons;
+2. **Reduced-motion degradation (MDN, first-class)**: under `@media (prefers-reduced-motion: reduce)` all animation/transition disable and hover snaps to the end state — feedback kept, motion dropped; MDN's own example degrades a pulse scale into an opacity fade, the same spirit; the demo adds a "simulate reduced-motion" switch so users without the system preference can verify;
+3. **The equivalent fallback route**: swap a stroked and a solid symbol via `<use>` (07 §6.1/§6.3) — fill light-up at zero animation cost, no vestibular risk.
+
+## Real-world examples
+
+- **Material Symbols' FILL axis**: README verbatim — "It can also be manipulated for an animated fill effect, to indicate user selection" — fill-on-select is officially sanctioned semantics, not decoration (07 §6.1);
+- **M3 selection controls**: the official example runs 200ms with Standard easing — this entry's default (07 §6.2);
+- **MDN prefers-reduced-motion**: the first-hand source for the definition, example and degradation strategy (scale-type motion can trigger vestibular triggers; the official pulse degrades into an opacity fade) (07 §6.3).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `effect` | fill carries the strongest semantics (selection), dash is the flashiest and fatigues at high frequency; rotate suits directional meanings (refresh/send) | un-armed cards go static — motion itself is the emphasis channel; all-static leaves hover feedback missing |
+| `duration` | beyond 250ms enters the medium transition tier — sluggish for hover and doubling glyph re-raster cost (07 §6.1/§6.2) | below 100ms reads as a hard cut and loses the sense of response; 150–200ms is the sanctioned range (07 §6.2) |
+| `easing` | emphasized curves fit large entering/exiting transitions; on icon hover they over-act | standard [0.2,0,1,1] is the micro-motion first choice; linear easing makes "light-up" feel mechanical |
+
+Anchors: 150–200ms + standard; rotate ≤90°; dash fully drawn at rest; reduced-motion snaps without deleting feedback; subset before animating (the font route).

@@ -1,0 +1,62 @@
+## Structure & DOM
+
+Axis lines and grids are the "**reference layer**", separate from the data layer: in one SVG, grid and axes render at the bottom, data lines on top — references never occlude data.
+
+```html
+<svg viewBox="0 0 600 340">
+  <!-- Reference layer: value-axis horizontal grid (opacity: var(--dvz-grid-op)); no grid on the category axis -->
+  <g class="grid"><line x1="46" x2="554" y1="…" y2="…" stroke="currentColor" /></g>
+  <!-- Axis layer: #6E7079 width 1; tick length 5; the whole layer may hide (ggplot2 route) -->
+  <g class="axes" stroke="#6E7079"><line … /><line … /></g>
+  <!-- Label layer: fontSize 12 / margin 8 -->
+  <text x="38" y="…" text-anchor="end">25</text>
+  <!-- Data layer -->
+  <polyline points="…" stroke="#0072B2" stroke-width="2.5" />
+</svg>
+```
+
+Key points:
+
+- Horizontal grids **belong to the value axis only**: ECharts source forces the category axis' `splitLine` off — grid semantics are "what is the value", and categories have none;
+- Grid color uses `currentColor` (inherited text color) + opacity: a demo-friendly rendering of Grafana's formula — each theme inverts toward its text color at 9%, no second grey to maintain;
+- Trade-off vs ECharts/D3: ECharts/D3 axes are config objects (`axisLine.show / splitNumber / axisLabel.margin`) with all defaults built in; hand-drawn SVG makes every default visible and individually overridable — prototype with the library, then audit its defaults one by one against this entry's research values.
+
+## Styling & Parameters
+
+Three parameters, every default source-verifiable:
+
+| Parameter | Type | Default | Source (verified verbatim) |
+| --- | --- | --- | --- |
+| `gridOpacity` | CSS var `--dvz-grid-op` | **0.09** | Grafana `getGridColor()`: dark `rgba(240,250,255,.09)` / light `rgba(0,10,23,.09)` |
+| `axisLine` | JS-type | **on** (#6E7079, width 1) | ECharts `axisDefault.ts`: `axisLine.show: true, color: '#6E7079', width: 1` |
+| `tickCount` | JS-type | **5** | ECharts `splitNumber: 5` (6 on time axes) |
+
+Companion constants (ECharts defaults): tick length **5**, label `margin: 8`, `fontSize: 12`, solid grid color `#E0E6F1` (≈0.12 visual equivalent on white — same tier as this entry's 0.09); the ggplot2 counterpart removes axis lines via `element_blank()` by default, grey panel with white grid, minor gridlines at half width; FT Visual Vocabulary adds the baseline discipline: columns "Must always start at 0 on the axis", line charts may start elsewhere.
+
+License backdrop: ECharts and Grafana are Apache-2.0 (source headers/LICENSE verified), ggplot2 MIT-family; the FT poster is copyrighted and must not be reproduced — cite the principle only.
+
+## Motion & Interaction
+
+The reference layer's motion principle: **grids and axes never animate**.
+
+- Switching `axisLine` / dragging `tickCount`: data and ticks recompute and redraw instantly, no transition — if tick positions animated, readers would misread "moving ticks" as "moving data";
+- `gridOpacity` rides a CSS variable: the slider applies with zero JS reflow;
+- Data-line entrance animation (if any) animates only `stroke-dashoffset` or `opacity`, disabled under reduce; hovering a point shows a native `<title>` (series · month · value);
+- The demo has no sustained animation and respects `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **ECharts v5.5.1**: the default is "axis lines optional, grid kept and faint" — in a cartesian pair, the value axis' `axisLine/axisTick` flip to `auto` (not drawn) while `splitLine` defaults on at `#E0E6F1` (axisDefault.ts verified verbatim; master has tokenized default colors — watch `tokens.color.axisLine` on major upgrades).
+- **Grafana (on uPlot)**: `getGridColor()` hard-codes the grid as "9% of the theme-inverted color", flipped between dark and light; axis borders are hidden by default, axis text uses the theme's primary text color with `labelPad = 8` (UPlotAxisBuilder.ts verified verbatim).
+- **ggplot2**: the signature "grey panel, white grid" theme — axis lines removed by default, panel background at `col_mix(ink, paper, 0.92)`, minor gridlines at half width (`theme-defaults.R` L194/L271/L276 verified) — the academic origin of the "grid expresses the coordinate system, axis lines optional" route.
+- **FT Visual Vocabulary**: the authoritative baseline wording "Column must always start at 0 on the axis"; line charts may start elsewhere (citing ONS and Quartz); the poster is © FT and needs syndication to republish (README verified) — cite the principle, never reprint the poster.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `gridOpacity` | past 0.3 the grid outshouts the data and a line chart reads as a table; at 1 the grid weighs as much as text | below 0.05 it's near-invisible — value reading falls to point labels; at 0 you must add tooltips/direct labels |
+| `axisLine` | on gives the chart a definite frame, sturdier in print and pale themes; drawing both axes doubles the frame feel | off is the ggplot2/Grafana minimal route with the least visual noise — valid only while the grid stays and labels align |
+| `tickCount` | 8 classes crowd a 300px-tall chart — at 12px labels the class gap drops under 38px; the rounding algorithm will merge classes anyway | 2–3 classes is maximal restraint for overviews but cuts reading precision; interactive value-picking wants 5+ |
+
+Working range: gridOpacity 0.05–0.15 (Grafana's 0.09 sits mid-range), 4–6 tick classes, axis lines "keepable on light, droppable on dark"; in every case: no horizontal grid on the category axis, and a zero baseline for bars.

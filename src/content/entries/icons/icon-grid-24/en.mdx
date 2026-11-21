@@ -1,0 +1,72 @@
+## Structure & DOM
+
+The 24px icon grid is a **design-time underlay**: a 24×24 canvas (the trim area), content confined to the live area, and four official keylines governing visual weight. The demo draws grid, live area and keyline guides in one SVG with the sample glyph on top:
+
+```html
+<svg viewBox="0 0 24 24" width="192" height="192">
+  <!-- Grid lines (design-time guides, stripped from the deliverable) -->
+  <g stroke="#94a3b8" stroke-width="0.125">
+    <line x1="1" y1="0" x2="1" y2="24" /> <!-- one per unit -->
+  </g>
+  <!-- Live area: 24 − 2×2 = 20×20 -->
+  <rect x="2" y="2" width="20" height="20" fill="none"
+        stroke="#2563eb" stroke-dasharray="0.375 0.25"/>
+  <!-- Keylines: square 18×18 / circle Ø20 / rects 20×16 and 16×20 -->
+  <rect x="3" y="3" width="18" height="18" fill="none" stroke="#ea580c"/>
+  <circle cx="12" cy="12" r="10" fill="none" stroke="#16a34a"/>
+  <!-- The glyph itself -->
+  <path d="…" fill="none" stroke="#0f172a" stroke-width="2"/>
+</svg>
+```
+
+Key points:
+
+- Guides are **design-time tools** — the shipped SVG contains the glyph only;
+- The demo renders at an 8× integer scale (1 unit = 8px), where a 0.125-unit stroke lands exactly on 1px;
+- The sample "image" glyph is authored on the 24 grid and scaled by `scale(gridSize/24)` when the tier changes — purely for comparison: **the official practice is an independent redraw per tier** (see below).
+
+## Styling & Parameters
+
+Both parameters are JS-type (geometry recompute); the demo derives:
+
+```text
+live     = gridSize − 2×padding        // official 24 tier: 24 − 4 = 20
+square   = live − 2                    // square keyline: 20 − 2 = 18 (official)
+circle   = live                        // circle keyline: Ø20 (official)
+landscape = live × (live − 4)          // landscape rect: 20 × 16 (official)
+portrait  = (live − 4) × live          // portrait rect: 16 × 20 (official)
+```
+
+Where the numbers come from (m2.material.io system-icons, quoted line by line in research 07 §2):
+
+- Display **24×24 dp**; dense layouts scale down to **20dp**;
+- Live area **20×20 dp** with **2dp padding** all around; dense live area **16×16**;
+- Keylines: square **18×18**, circle **Ø20**, portrait **16×20**, landscape **20×16**;
+- X/Y must be **integers** ("on pixel"); corner radius defaults to **2dp**; corners of shapes ≤2dp wide stay unrounded;
+- Content may extend into the padding for extra weight but **must never leave the trim area**.
+
+Official template: Material's grid template AI file (Apache 2.0, 07 §2).
+
+## Motion & Interaction
+
+The grid is a static underlay; demo interaction is parameter-only:
+
+- **gridSize switch**: the SVG `viewBox` recomputes; the 16/20/24/32 tiers all render at 8px per unit, so visual size grows with the tier — showing what "switching tiers" means versus "scaling";
+- **padding drag**: the blue dashed live-area rect reflows live and the padding corridor (light canvas base) shows through; at 0 the live area fills the trim area;
+- Guides and legend carry `aria-hidden`; the readout row announces keyline values via `aria-live="polite"`;
+- No motion dependencies, so `prefers-reduced-motion` needs no fallback.
+
+## Real-world examples
+
+- **Material's official keyline template**: the m2.material.io system-icons page defines every number in the table above and ships an official grid template AI file (Apache 2.0) — "circle 2dp larger than square" is a written spec value, not visual folklore (07 §2/§3.1);
+- **Heroicons' three redrawn tiers**: 24 / 20 / 16 each carry their own viewBox (measured from real repo files); the official route is redrawing per tier, not scaling the 24 art (07 §1.3);
+- **Material Symbols' pixel-alignment boundary**: the opsz axis defaults to 24, and **only the 20px and 24px versions achieve perfect pixel-grid alignment** — even Google holds integer coordinates on just two tiers (07 §1.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `gridSize` | at 32 all keylines enlarge (derived values) with more detail headroom; but with no official anchor, cross-set alignment breaks | at 16 stroke spacing collapses — Lucide demands ≥2px gaps between adjacent elements and a 2px circle fitting through every counter, which small grids struggle to satisfy (07 §3.2) |
+| `padding` | the corridor narrows (0–2): glyphs touch the canvas edge and breathing room vanishes; the spec allows extending into padding for weight, never past the trim area | padding=2 is the official default; above it (3–4) the live area shrinks fast, the square keyline falls below live−2 and icons read small |
+
+Anchors: tier 24 + padding 2 = the official base; tier 20 + padding 2 = the official dense layout (live 16); every other combination is a derived demo — redraw independently for delivery.

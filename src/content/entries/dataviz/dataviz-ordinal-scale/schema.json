@@ -1,0 +1,90 @@
+{
+  "name": "Ordinal Scale",
+  "nameZh": "序数色阶",
+  "aliases": ["Sequential Scale", "Color Ramp", "顺序色阶"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "把有序数值映射为有序颜色的色阶:单色线性(浅→深)或多色渐进,取 ColorBrewer 官方整档、中点锚定数据零点,热力图与等值线图的默认选择。",
+    "en": "A scale mapping ordered values to ordered colors: monochrome linear (light → dark) or multi-hue progression, taken as official ColorBrewer classes with the midpoint anchored to the data zero — the default for heatmaps and choropleths."
+  },
+  "origin": {
+    "zh": "方法学源头是 Cynthia Brewer 的 ColorBrewer(colorbrewer2.org,© Brewer/Harrower/Penn State;35 组 scheme 的官方 JSON 已直下核验)与 Fabio Crameri 的 Scientific Colour Maps(v9.0.0,DOI 10.5281/zenodo.1243862);连续插值生态由 d3-scale-chromatic 承接(基于 ColorBrewer 的均匀 B-spline 插值)。",
+    "en": "Methodology originates from Cynthia Brewer's ColorBrewer (colorbrewer2.org, © Brewer/Harrower/Penn State; the official 35-scheme JSON was downloaded and verified in-session) and Fabio Crameri's Scientific Colour Maps (v9.0.0, DOI 10.5281/zenodo.1243862); continuous interpolation lives in d3-scale-chromatic (uniform B-spline interpolation of ColorBrewer schemes)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "steps",
+      "min": 3,
+      "max": 9,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "色阶档数(离散分箱数)。默认 5 对应 ColorBrewer 官方最常用的 Blues 5 档(#EFF3FF→#08519C);生产应直接取官方 3-9 档整档值(官方 JSON 齐备),禁止在成品里自行插值造档。档数越多,读者越难回指图例,打印/低质屏上相邻档趋同。",
+        "en": "Number of classes (discrete bins). The default of 5 matches ColorBrewer's most-used Blues 5 (#EFF3FF→#08519C); in production take the official 3–9 class values wholesale (the official JSON ships them all) — never invent classes by interpolating in the shipped artifact. More classes make legend lookup harder and adjacent classes converge on print or low-grade screens."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "monochrome", "label": { "zh": "单色线性(Blues)", "en": "Monochrome linear (Blues)" } },
+        { "value": "multihue", "label": { "zh": "多色渐进(YlGnBu)", "en": "Multi-hue (YlGnBu)" } }
+      ],
+      "default": "monochrome",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘热力格)。monochrome=Blues 单色浅→深,亮度单调递减,感知上最忠实于「值越大颜色越重」;multihue=YlGnBu 多色渐进,浅黄→蓝,同时利用亮度与色相两维,对小差异更敏感但可能被误读为类别。双向数据(RdBu)应两端饱和、正中白,并把中点锁在数据零点/均值上。",
+        "en": "JS-type param (demo subscribes and redraws the heat cells). monochrome = Blues, light→dark with monotonically decreasing lightness — the most faithful read of 'bigger value, heavier color'; multihue = YlGnBu, pale yellow → blue, exploiting lightness and hue at once, more sensitive to small differences but easier to misread as categories. Diverging data (RdBu) should be saturated at both ends with white at the exact middle, anchored to the data zero/mean."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为手绘 SVG + 内联十六进制色,无任何新 CSS/JS 特性依赖,所有浏览器可用;色阶值本身是设计资产,与浏览器无关。",
+      "en": "The demo is hand-drawn SVG with inline hex colors — no reliance on new CSS/JS features; available everywhere. The scale values themselves are design assets, independent of the browser."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容问题;真正的回退是「档数来源」:demo 在官方 5 个锚点色之间做 sRGB 线性插值只为演示 3-9 任意档数,生产必须改取 ColorBrewer 官方整档 JSON 或 d3-scale-chromatic(均匀 B-spline 插值)——两者对中间档的取值与线性插值不同。灰度打印时单色线性阶天然安全,多色阶需先过灰度模拟。",
+    "en": "No browser-compat issue; the real fallback is the source of intermediate classes: the demo interpolates linearly in sRGB between the 5 official anchor colors purely to demonstrate arbitrary 3–9 class counts — production must take ColorBrewer's official per-class JSON or d3-scale-chromatic (uniform B-spline), which differ from linear interpolation in the middle classes. Monochrome linear ramps survive grayscale printing naturally; multi-hue ramps need a grayscale check first."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "热力图/日历热力图/密度图的填充色——值序=色序,单色线性优先", "en": "Fills for heatmaps, calendar heatmaps and density maps — value order = color order, monochrome linear first" },
+      { "zh": "分级统计图(choropleth)的分级配色——ColorBrewer 本就为地图分级设色而生", "en": "Choropleth class breaks — ColorBrewer was built for map classification in the first place" },
+      { "zh": "双向数据(偏差、盈亏、温度联想)——RdBu 双色阶,中点锁数据零点", "en": "Diverging data (deviation, P&L, temperature) — the RdBu diverging scheme with its midpoint locked to the data zero" },
+      { "zh": "科学出版图——Crameri Scientific Colour Maps v9.0.0(IPCC Interactive Atlas 在用,感知均匀、灰度与色盲可读)", "en": "Scientific publication figures — Crameri Scientific Colour Maps v9.0.0 (used by the IPCC Interactive Atlas; perceptually uniform, readable in grayscale and under CVD)" }
+    ],
+    "avoid": [
+      { "zh": "无序的类别数据——序数阶暗示大小次序,类别数据请改用分类色板(dataviz-categorical-palette)", "en": "Unordered categorical data — an ordinal scale implies magnitude; use a categorical palette instead (dataviz-categorical-palette)" },
+      { "zh": "彩虹多色阶(jet 类)不分场合使用——Crameri 论文(Nature Communications 11:5444)专门批评其感知不均匀、扭曲数据", "en": "Rainbow ramps (jet-like) as a default — Crameri's paper (Nature Communications 11:5444) specifically criticizes their perceptual non-uniformity as data distortion" },
+      { "zh": "在成品里自行插值造中间档——生产取官方整档或 d3 B-spline,插值交给库", "en": "Interpolating your own in-between classes in the shipped artifact — take official classes or d3's B-spline; interpolation belongs to the library" },
+      { "zh": "把 diverging 中点漂离数据零点——「正中白」必须锚在 0/均值上,不许视觉漂移", "en": "Letting a diverging midpoint drift off the data zero — the 'white middle' must anchor at 0/mean, never at a visually convenient spot" }
+    ]
+  },
+  "a11y": {
+    "zh": "色阶的信息通道是「亮度渐变」:单色线性阶的浅→深天然携带亮度序,色盲读者与灰度打印都能读;多色阶(YlGnBu)同时动用色相,色盲下仍主要靠亮度序兜底;Crameri 色图以「Fair to the data / Readable by everyone」为设计目标(官方页已核)。热力格相邻色块对背景保持 3:1 非文本对比(WCAG 2.1 SC 1.4.11);图例必须随档数同步,超出 7 档后建议改注关键断点值。",
+    "en": "An ordinal scale's information channel is a lightness gradient: monochrome light→dark inherently carries the value order and survives both CVD and grayscale printing; multi-hue ramps (YlGnBu) add hue but still rely mainly on lightness under CVD; Crameri maps are explicitly designed to be 'Fair to the data / Readable by everyone' (official page verified). Keep heat cells at 3:1 non-text contrast against the backdrop (WCAG 2.1 SC 1.4.11); the legend must track the class count, and past 7 classes consider annotating key break values instead."
+  },
+  "sources": [
+    "https://colorbrewer2.org/",
+    "https://www.fabiocrameri.ch/colourmaps",
+    "https://github.com/d3/d3-scale-chromatic",
+    "https://clauswilke.com/dataviz/color-basics.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 实现一张热力图:数值矩阵按指定序数色阶(Blues/YlGnBu 官方锚点色,5 档)离散上色,附同阶图例条,浅→深方向与数值方向一致。",
+      "en": "Implement a heatmap in hand-drawn SVG: a value matrix colored discretely by the given ordinal scale (Blues/YlGnBu official anchors, 5 classes), with a legend strip of the same scale, light→dark matching low→high."
+    },
+    "acceptance": [
+      { "zh": "5 档取官方 ColorBrewer 整档 hex(Blues 5 / YlGnBu 5),不要自行调色", "en": "Use the official ColorBrewer class hex values wholesale (Blues 5 / YlGnBu 5); do not retune them" },
+      { "zh": "需要非 5 档时取官方 3-9 档 JSON 或 d3-scale-chromatic,不要在成品里线性插值", "en": "For class counts other than 5, take the official 3–9 class JSON or d3-scale-chromatic — never linear-interpolate inside the artifact" },
+      { "zh": "图例与热力格共用同一色阶数组,档数联动", "en": "Legend and heat cells share the same scale array, class count in lockstep" },
+      { "zh": "双向数据改用 RdBu 5(#CA0020/#F4A582/#F7F7F7/#92C5DE/#0571B0)并把中点锚在数据零点", "en": "For diverging data switch to RdBu 5 (#CA0020/#F4A582/#F7F7F7/#92C5DE/#0571B0) with the midpoint at the data zero" },
+      { "zh": "MDX 写明 ColorBrewer 署名(Brewer/Harrower/Penn State)与许可现状(官方渠道未明示,未证实)", "en": "MDX states ColorBrewer attribution (Brewer/Harrower/Penn State) and license status (not stated on official channels; unverified)" }
+    ]
+  }
+}

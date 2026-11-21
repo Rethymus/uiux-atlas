@@ -1,0 +1,93 @@
+{
+  "name": "Colorblind-Safe Palette",
+  "nameZh": "色盲安全配色",
+  "aliases": ["CVD-Safe Colors", "Color Vision Deficiency Simulation", "色觉缺陷模拟"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "在发布前用色觉缺陷模拟核查图表:同一组图表切正常/绿盲/红盲/蓝盲四种视图,并叠加形状/线型/纹理冗余编码——模拟矩阵只是近似,冗余编码才是保险。",
+    "en": "Audit charts with color-vision-deficiency simulation before shipping: flip the same charts between normal / deuteranopia / protanopia / tritanopia views, and add shape/line-style/texture redundancy — simulation is an approximation; redundancy is the insurance."
+  },
+  "origin": {
+    "zh": "方法学源头是 jfly CUD 指南(Okabe & Ito,2002)与 daltonlens.org 核查的三代模拟模型——Brettel 1997(LMS 双半平面)、Viénot 1999(单平面简化)、Machado 2009(生理模型 severity 插值);患病率口径为美国 NEI「约 1/12 男性」与 jfly 细分(白人男 8%/亚洲男 5%/非洲男 4%,蓝黄型 ≈0.001%)。",
+    "en": "Methodology originates from the jfly CUD guide (Okabe & Ito, 2002) and the three simulation generations verified on daltonlens.org — Brettel 1997 (two half-planes in LMS), Viénot 1999 (single-plane simplification), Machado 2009 (physiological model with severity interpolation); prevalence per the US NEI 'about 1 in 12 men' and jfly's breakdown (8% of white men / 5% of Asian men / 4% of African men; blue-yellow ≈ 0.001%)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "simulation",
+      "options": [
+        { "value": "normal", "label": { "zh": "正常视觉", "en": "Normal vision" } },
+        { "value": "deuteranopia", "label": { "zh": "绿色盲 Deuteranopia", "en": "Deuteranopia" } },
+        { "value": "protanopia", "label": { "zh": "红色盲 Protanopia", "en": "Protanopia" } },
+        { "value": "tritanopia", "label": { "zh": "蓝色盲 Tritanopia", "en": "Tritanopia" } }
+      ],
+      "default": "normal",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 SVG feColorMatrix 滤镜)。机制出处(调研已核):protan/deutan 推荐 Viénot 单平面模型、tritan 必须 Brettel 双半平面;demo 用 feColorMatrix 3×3 矩阵近似,系数为社区流传的 Machado 2009 severity=1 矩阵(社区常见值,未证实——调研未记载系数原文,论文亦未直接核)。注意:feColorMatrix 直接作用于 sRGB 编码值,正是调研点名的流行 bug(结果整体偏暗、假阳性),严谨管线须先 gamma 解码到线性 RGB。",
+        "en": "JS-type param (the demo subscribes and swaps the SVG feColorMatrix filter). Mechanism per the research: protan/deutan should use Viénot's single-plane model, tritan must use Brettel's two half-planes; the demo approximates with feColorMatrix 3×3 matrices whose coefficients are the widely circulated Machado 2009 severity=1 values (community-common, unverified — the research records no coefficient originals and the paper was not checked directly). Caveat: feColorMatrix operates on sRGB-encoded values directly — exactly the popular bug the research flags (results skew dark, false positives); a rigorous pipeline gamma-decodes to linear RGB first."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "redundancy",
+      "options": [
+        { "value": "on", "label": { "zh": "开(纹理+线型+标记)", "en": "On (texture + dash + markers)" } },
+        { "value": "off", "label": { "zh": "关(仅靠颜色)", "en": "Off (color only)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后叠加编码)。off=系列只靠色相区分——红绿混淆对在绿盲/红盲模拟下塌缩成同一色,图表报废;on=jfly CUD 原则 2 的冗余编码:柱图叠 SVG pattern 纹理、折线用实线/虚线/点线并配圆/方/三角标记,图例同步纹理。默认 off 是为了让用户先看到崩溃,再打开修复。",
+        "en": "JS-type param (the demo subscribes and layers encodings). off = series differ by hue alone — the red/green confusable pair collapses into one color under deutan/protan simulation and the chart fails; on = jfly CUD principle 2's redundant encoding: SVG pattern textures on bars, solid/dashed/dotted lines with circle/square/triangle markers, legend textures in sync. Defaults to off so you see the failure first, then toggle the fix."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "SVG 滤镜 feColorMatrix 是 SVG 1.1 标准,全主流浏览器支持(可经 CSS filter: url(#id) 引用);SVG pattern 同为基线特性。专业核查请用 Chrome DevTools Rendering 面板的视觉缺陷模拟(功能存在性经 devtools-frontend 测试代码佐证,官方文档页未定位)或 Color Oracle 全屏滤镜。",
+      "en": "feColorMatrix is SVG 1.1, supported by all mainstream browsers (referencable via CSS filter: url(#id)); SVG pattern is baseline too. For professional audits use Chrome DevTools' Rendering-panel vision-deficiency emulation (existence corroborated by devtools-frontend test code; official doc page never located) or the Color Oracle full-screen filter."
+    }
+  },
+  "fallback": {
+    "zh": "滤镜不可用时降级为「直接切换色板」:正常视图用原色,模拟视图整体套用预先算好的模拟色值(视觉等效,无滤镜依赖)。模拟本身有天花板:daltonlens.org 明确个体严重度与锥光谱差异、显示器差异使完美模拟不存在;所以发布前的最终保险永远是冗余编码+灰度打印测试,不是模拟器。",
+    "en": "If filters are unavailable, degrade to palette swapping: keep original colors in the normal view and apply pre-computed simulated colors in simulated views (visually equivalent, filter-free). Simulation has a ceiling: per daltonlens.org, individual severity, cone-spectral differences and display differences make a perfect simulation impossible — so the final pre-ship insurance is always redundant encoding plus a grayscale print test, not the simulator."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "图表组件库的验收流程——每组新色板上线路前跑三型模拟 × severity=1", "en": "Acceptance flow for chart component libraries — run all three simulation types × severity 1 before any palette ships" },
+      { "zh": "BI 平台的色盲安全主题——Power BI 官方文档直接提供 ColorblindSafe-Longer.json 主题下载", "en": "BI platform colorblind-safe themes — Power BI's official docs ship ColorblindSafe-Longer.json for download" },
+      { "zh": "面向公众的教育/医疗/政务图表——红绿混淆对(朱红/蓝绿)必须过模拟或直接弃用", "en": "Public-facing education/health/government charts — red/green confusable pairs must pass simulation or be dropped" },
+      { "zh": "工程团队的设计评审——demo 的「先看崩溃再开冗余」顺序就是评审动线", "en": "Design reviews in engineering teams — the demo's 'see the failure, then toggle redundancy' is the review flow" }
+    ],
+    "avoid": [
+      { "zh": "只用「色盲友好色板」不跑模拟——色板只是降低风险,堆叠段/相邻色块仍可能塌缩", "en": "Trusting a 'colorblind-friendly palette' without simulation — a palette only lowers risk; stacked segments and adjacent fills can still collapse" },
+      { "zh": "把 sRGB 值直接喂给模拟矩阵——调研点名的流行 bug:结果整体偏暗、误报色盲不安全", "en": "Feeding sRGB values straight into a simulation matrix — the popular bug the research flags: results skew dark and falsely report CVD-unsafe" },
+      { "zh": "复用 protan/deutan 平面做 tritan 模拟——daltonlens 明确「完全错误」,tritan 必须 Brettel", "en": "Reusing the protan/deutan plane for tritan simulation — daltonlens calls this 'completely wrong'; tritan requires Brettel" },
+      { "zh": "把模拟当权威判定——模拟无法覆盖个体差异,最终判定靠冗余编码与对比度实测", "en": "Treating simulation as the authoritative verdict — it cannot cover individual differences; the final verdict is redundant encoding plus measured contrast" }
+    ]
+  },
+  "a11y": {
+    "zh": "色盲安全的第一性原理不是「换一套颜色」,而是 jfly CUD 原则 2:颜色之外叠加形状/线型/纹理/直标冗余编码;原则 1 才是选各色觉类型都易分辨的配色(如 Okabe-Ito,其对各色觉人群反复实验筛选;常见引用的 8 色 hex 为 R grDevices 固化值,官方页不含文字 hex,作为官方发布值未证实)。web 端配套:ECharts aria.decal 纹理默认关闭需显式开启;模拟核查三型 × severity=1,protan/deutan 用 Viénot、tritan 强制 Brettel。",
+    "en": "The first principle of CVD safety is not 'swap in a safe palette' but jfly's CUD principle 2: redundant encoding via shape/line-style/texture/direct labels beyond color; principle 1 is choosing colors distinguishable by all vision types (e.g. Okabe-Ito, repeatedly screened across vision types; the commonly cited 8 hex values are R grDevices constants — the official page ships no textual hex, so as officially published values they are unverified). Web pairing: ECharts' aria.decal textures default off and must be enabled explicitly; audit with all three types × severity 1, Viénot for protan/deutan and Brettel mandatory for tritan."
+  },
+  "sources": [
+    "https://daltonlens.org/understanding-cvd-simulation/",
+    "https://jfly.uni-koeln.de/color/",
+    "https://www.nei.nih.gov/learn-about-eye-health/eye-conditions-and-diseases/color-blindness",
+    "https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-report-themes"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 实现一组柱状+折线双图,提供正常/绿盲/红盲/蓝盲四种模拟视图切换与颜色之外的冗余编码开关,演示色盲核查流程。",
+      "en": "Implement a bar+line chart pair in hand-drawn SVG with normal/deutan/protan/tritan simulation view switches and a redundant-encoding toggle beyond color, demonstrating the CVD audit flow."
+    },
+    "acceptance": [
+      { "zh": "模拟用 SVG feColorMatrix(或预先计算的模拟色),并注明系数出处与「sRGB 空间近似」的偏差声明", "en": "Simulate with SVG feColorMatrix (or pre-computed simulated colors) and note the coefficient provenance plus the 'sRGB-space approximation' bias statement" },
+      { "zh": "演示色板包含红绿混淆对(如朱红 #D55E00 vs 蓝绿 #009E73),让崩溃可见", "en": "The demo palette includes a red/green confusable pair (e.g. vermillion #D55E00 vs bluish green #009E73) so the failure is visible" },
+      { "zh": "冗余编码开启时:柱叠纹理、折线配线型+标记形状、图例同步纹理", "en": "With redundancy on: textured bars, dashed/dotted lines with marker shapes, legend textures in sync" },
+      { "zh": "MDX 写明:严谨管线须 gamma 解码→线性 RGB→矩阵,tritan 用 Brettel;模拟不替代冗余编码", "en": "MDX states: rigorous pipelines gamma-decode → linear RGB → matrix, tritan uses Brettel; simulation never replaces redundant encoding" },
+      { "zh": "患病率引用权威口径(NEI 约 1/12 男性;jfly 白人男 8%/亚洲男 5%)", "en": "Cite authoritative prevalence (NEI ~1 in 12 men; jfly 8% of white men / 5% of Asian men)" }
+    ]
+  }
+}

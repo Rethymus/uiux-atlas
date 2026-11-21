@@ -1,0 +1,71 @@
+## Structure & DOM
+
+Icon semantics split across **two layers**: the glyph layer (decorative or meaningful) and the interactive button layer (carrying the accessible name). The canonical split — decorative icons removed, focusable elements named:
+
+```html
+<!-- Icon + text button: the visible text IS the accessible name; the icon is purely decorative (MDN's canonical split) -->
+<button>
+  <svg aria-hidden="true" viewBox="0 0 24 24">…star path…</svg>
+  Favorite
+</button>
+
+<!-- Icon-only button: decorative icon + aria-label on the button, naming the action not the shape -->
+<button aria-label="Favorite">
+  <svg aria-hidden="true" viewBox="0 0 24 24">…star path…</svg>
+</button>
+```
+
+Four iron rules (first-hand W3C/MDN, 07 §4.1):
+
+1. **Purely decorative icons leave the tree**: `aria-hidden="true"` removes the element and all children from the accessibility tree; hideable objects explicitly include "Purely decorative content, such as icons";
+2. **Red line: never aria-hidden on focusable elements**, nor on their ancestors (hiding propagates down the tree and focus would land inside an invisible subtree);
+3. **Precondition for removal**: identical or equivalent meaning and functionality is already exposed to assistive technologies;
+4. **Name the action, not the shape**: the WAI tutorial prescribes "print this page" rather than "(image of a) printer", "search" rather than "magnifying lens".
+
+## Styling & Parameters
+
+Both parameters are JS-type, driving real aria attributes on two live buttons; the simulation panel emits utterances from the same rule function:
+
+```tsx
+// Decoration: aria-hidden always sits on the svg; the button stays focusable (red line intact)
+<svg aria-hidden={decorative === "on" || undefined}>…</svg>
+
+// Accessible name: "Favorite" (action), never "star shape"
+<button aria-label={named ? "Favorite" : undefined}>…</button>
+
+// Name computation (simplified accname): aria-label first, falling back to text content
+const name = btn.getAttribute("aria-label") ?? btn.textContent.trim();
+```
+
+The four-cell matrix (a W3C/MDN rule simulation; actual reader behavior varies, marked honestly):
+
+| aria-hidden | Name | Screen-reader utterance | Verdict |
+| --- | --- | --- | --- |
+| ✓ | ✓ | "Favorite, button" | Recommended (MDN's canonical split) |
+| ✓ | ✗ | "button" | Fails: unnamed button after the icon is removed |
+| ✗ | ✓ | "Favorite, button" (whether the graphic is announced varies by implementation) | Usable but redundant-risky |
+| ✗ | ✗ | "button"; with a missing-alt `<img>` the reader may also read the file name/URL | Fails: unnamed, no equivalent text |
+
+## Motion & Interaction
+
+This entry's interaction is instant "configuration → behavior" feedback:
+
+- **Parameters land on real buttons live**: the svg's `aria-hidden` and the button's `aria-label` change together; the simulation panel and the matrix highlight the current combination;
+- **Real keyboard behavior preserved**: Tab focus, Enter/Space activation, a `:focus-visible` ring — which is itself bound by WCAG 1.4.11's 3:1 (07 §4.3);
+- No motion in this demo, so `prefers-reduced-motion` needs no fallback;
+- The simulation panel is labeled a **rule-based inference** — it does not claim verbatim output from any reader (inline SVG announcements differ across NVDA/JAWS/VoiceOver).
+
+## Real-world examples
+
+- **MDN's aria-hidden example**: decorated icon + text label carrying the name — the structural prototype of this entry's icon+text button (07 §4.1);
+- **W3C WAI Images Tutorial**: functional-image alt text states intent ("search" rather than "magnifying lens"); an icon that merely accompanies link text gets `alt=""` (07 §4.1);
+- **Current WAI-APG practice**: after the old Images practice pages measured 404 in 2026-11, the duty moved to "Providing Accessible Names and Descriptions" and "Hiding Semantics with the presentation Role" — same substance: decorative removed, functional named (07 §4.2).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `decorative` | on removes the icon for clean announcements — but only while the button already carries an equivalent name; pair it with the name switch off and information instantly drops to zero | off keeps the icon in the tree — most readers skip untitled inline SVG anyway (varies by implementation), leaving uncertainty rather than added information |
+| `label` | with gives the button an action name — the only perfect pairing of the four (with aria-hidden) | without empties the accessible name — readers say just "button", and with a missing-alt `<img>` they may read the file name/URL; the worst failure |
+
+Anchors: decorative icons always aria-hidden and never on focusable elements; button names always state the action; confirm equivalent exposure before removing anything.

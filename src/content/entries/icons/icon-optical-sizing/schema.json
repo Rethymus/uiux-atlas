@@ -1,0 +1,90 @@
+{
+  "name": "Optical Sizing",
+  "nameZh": "光学缩放",
+  "aliases": ["光学对齐", "视觉补偿", "Optical Alignment", "Optical Compensation", "opsz"],
+  "category": "icons",
+  "system": "m3",
+  "star": 2,
+  "tagline": {
+    "zh": "同视觉重量 ≠ 同几何尺寸:圆形键程 Ø20 比方形 18×18 光学放大 2dp(约 +11%),不对称图形允许小幅光学偏心;Material opsz 轴把补偿参数化。",
+    "en": "Equal visual weight ≠ equal geometry: the circle keyline Ø20 optically overshoots the 18×18 square by 2dp (~+11%); asymmetric shapes earn a small optical off-center shift; Material's opsz axis parameterizes the compensation."
+  },
+  "origin": {
+    "zh": "「圆溢出方」是 Material 官方栅格的硬数值:方形键程 18×18、圆形键程直径 20——同视觉重量下圆要画得比方大约 11%(20/18)(out/design-study/07-icons.md §2/§3.1);Lucide 贡献规范把「几何居中不等于看着居中」写成规则:不对称图形允许小幅偏离几何中心(07 §3.2);Material Symbols 的 opsz 轴(20–48,默认 24)随尺寸自动调笔画粗细(07 §1.5/§3.1)。",
+    "en": "\"Circle overshoots square\" is a hard number in Material's official grid: square keyline 18×18, circle keyline Ø20 — at equal visual weight the circle must be drawn ~11% larger (20/18) (out/design-study/07-icons.md §2/§3.1); Lucide's contribution spec codifies that geometric centering does not always look centered and allows asymmetric shapes to sit slightly off center (07 §3.2); Material Symbols' opsz axis (20–48, default 24) tunes stroke thickness automatically as size changes (07 §1.5/§3.1)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "baseSize",
+      "unit": "px",
+      "min": 16,
+      "max": 48,
+      "step": 1,
+      "default": 24,
+      "effect": {
+        "zh": "渲染边长(px)。默认 24 = Material Symbols opsz 轴官方默认值(README:\"The default is 24\",07 §1.5);opsz 轴量程 20–48,且仅 20px 与 24px 版本做了完美像素栅格对齐。demo 用恒定 2px 绝对线宽(non-scaling-stroke)示意 opsz 方向——放大后线条相对变细、缩小后相对变粗;opsz 的官方补偿曲线未公开,demo 为方向示意而非曲线复刻。",
+        "en": "Rendered edge length (px). Default 24 = the official default of Material Symbols' opsz axis (README: \"The default is 24\", 07 §1.5); the axis spans 20–48, and only the 20px and 24px versions achieve perfect pixel-grid alignment. The demo keeps a constant 2px absolute stroke (non-scaling-stroke) to indicate the opsz direction — relatively thinner when enlarged, thicker when shrunk; the official opsz compensation curve is unpublished, so the demo indicates direction rather than replicating the curve."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "compensate",
+      "options": [
+        { "value": "on", "label": { "zh": "开(圆放大 + 偏心)", "en": "On (circle overshoot + off-center)" } },
+        { "value": "off", "label": { "zh": "关(纯几何对齐)", "en": "Off (pure geometric alignment)" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "光学补偿开关。on = 圆形键程按官方规则放大到 Ø20(方形 18×18,+11.1%),不对称三角形按 Lucide 规则做小幅光学偏心;off = 圆与方同尺寸 Ø18 的纯几何对照——并排模糊观察,圆会明显显轻(07 §2/§3.1/§3.2)。三角形偏移量 demo 取 0.5px(24 网格内),Lucide 只写 \"may be moved slightly off center\" 未给数值,0.5px 为演示取值(未证实为官方数)。",
+        "en": "Optical compensation switch. On = the circle keyline grows to the official Ø20 (square 18×18, +11.1%) and the asymmetric triangle takes a small optical off-center shift per Lucide's rule; off = a purely geometric control with circle and square both at Ø18 — blur them side by side and the circle clearly reads lighter (07 §2/§3.1/§3.2). The triangle's demo shift is 0.5px (in the 24 grid); Lucide only says \"may be moved slightly off center\" without a number, so 0.5px is a demo value (unverified as official)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示用到的 SVG 能力(viewBox 缩放、vector-effect: non-scaling-stroke、CSS filter: blur)全主流浏览器支持;non-scaling-stroke 为 SVG 1.1/2 标准属性。Material Symbols 的 opsz 轴本身是变量字体能力,依赖可变字体加载(见 browserSupport 基线)。",
+      "en": "The SVG capabilities used here (viewBox scaling, vector-effect: non-scaling-stroke, CSS filter: blur) are supported in all mainstream browsers; non-scaling-stroke is standard SVG. Material Symbols' opsz axis itself is a variable-font capability, contingent on variable font loading."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "无需回退:光学缩放是绘制准则,交付物是普通 SVG。若做 Material Symbols 变量字体路线,字体加载失败时退回静态 wght 400 实例(默认即 24px 光学设计),不会丢失图形。",
+    "en": "No fallback needed: optical sizing is a drawing discipline and the deliverable is plain SVG. On the Material Symbols variable-font route, a failed font load falls back to the static wght 400 instance (optically designed at 24) without losing the glyph."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自绘图标的验收:方形贴 18×18、圆形贴 Ø20、不对称元素允许 0.5px 级偏心(07 §2/§3.2)", "en": "Acceptance for self-drawn icons: squares on 18×18, circles on Ø20, asymmetric elements allowed a ~0.5px optical shift (07 §2/§3.2)" },
+      { "zh": "同一行混合圆/方/三角元素时消除「圆显轻、三角显偏」的观感", "en": "Removing the 'circle reads lighter, triangle reads off' impression when mixing circle/square/triangle in one row" },
+      { "zh": "图标从 24px 主网格扩展到 16/32/48px 渲染档时核对笔画粗细方向(opsz 思路,07 §3.1)", "en": "Checking stroke-thickness direction when a 24 master extends to 16/32/48px render tiers (opsz thinking, 07 §3.1)" }
+    ],
+    "avoid": [
+      { "zh": "把光学偏移当万能微调旋钮:偏移只服务「看着居中」,像素栅格让位但不能破坏形状识别(Lucide:pixel alignment should support the icon,07 §3.2)", "en": "Treating optical offsets as a universal nudge knob: they only serve perceived centering — the pixel grid yields but must not hurt shape recognition (Lucide: pixel alignment should support the icon, 07 §3.2)" },
+      { "zh": "只有圆做了补偿、方与三角不补偿的半套方案——行内重量反而更乱", "en": "A half-applied scheme where only circles compensate — inline weight consistency gets worse, not better" },
+      { "zh": "小尺寸(<16px)仍坚持严格像素对齐而牺牲流畅曲线——官方明确栅格对齐是手段不是目的(07 §3.2)", "en": "Insisting on strict pixel alignment at tiny sizes (<16px) at the cost of smooth curves — the spec says alignment supports the icon, not the reverse (07 §3.2)" }
+    ]
+  },
+  "a11y": {
+    "zh": "光学补偿不改变对比度义务:图形对象与邻接底色仍需 ≥3:1(WCAG 2.2 SC 1.4.11)。放大检查(opsz 方向)会让细线在小尺寸相对变粗、更易达标;反之放大到大尺寸时保持恒定 2px 绝对线宽会让线条相对变细,注意别跌破阈值(07 §3.1/§3.3/§4.3)。",
+    "en": "Optical compensation does not change contrast obligations: graphical objects still need ≥3:1 against adjacent colors (WCAG 2.2 SC 1.4.11). opsz-direction thinning helps small sizes (relatively thicker strokes) but a constant 2px absolute stroke at large sizes gets relatively thinner — watch the threshold (07 §3.1/§3.3/§4.3)."
+  },
+  "sources": [
+    "https://m2.material.io/design/iconography/system-icons.html",
+    "https://fonts.google.com/icons",
+    "https://developers.google.com/fonts/docs/material_symbols",
+    "https://github.com/lucide-icons/lucide/blob/main/docs/contribute/icons/design-principles.md"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在一行内绘制方、圆、三角三个 24 网格图形:方形键程 18×18、圆形键程 Ø20(+11.1% 光学放大)、三角形做 0.5px 光学偏心,并排模糊后三者灰度观感一致。",
+      "en": "Draw square, circle and triangle on the 24 grid in one row: square keyline 18×18, circle keyline Ø20 (+11.1% optical overshoot), triangle with a 0.5px optical shift — blurred together, all three read the same weight."
+    },
+    "acceptance": [
+      { "zh": "方形元素严格贴 18×18 键程;圆形元素贴 Ø20 键程(圆比方大 2dp,官方值)", "en": "Square elements sit exactly on the 18×18 keyline; circles on the Ø20 keyline (circle 2dp larger than square, official)" },
+      { "zh": "对称元素保持几何居中;不对称元素允许 ≤1px 级光学偏移并说明理由", "en": "Symmetric elements stay geometrically centered; asymmetric ones may shift ≤1px with a stated reason" },
+      { "zh": "全部 X/Y 坐标为整数;光学偏移是唯一允许的小数,且不超过 0.5 单位", "en": "All X/Y coordinates are integers; optical offsets are the only sanctioned fraction, never above 0.5 units" },
+      { "zh": "验收用模糊法:与 circle/square 参考并排整体模糊,灰度不得明显失衡(Lucide 原版技法)", "en": "Verify with the blur test: blur the row beside a circle/square reference; grayscale balance must hold (Lucide's own technique)" },
+      { "zh": "提供渲染档位说明:大尺寸渲染线相对变细是 opsz 方向,不是绘制错误", "en": "Document render tiers: relatively thinner strokes at larger sizes are the opsz direction, not a drawing bug" }
+    ]
+  }
+}

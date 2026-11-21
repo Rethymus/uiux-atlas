@@ -1,0 +1,91 @@
+{
+  "name": "24px Icon Grid",
+  "nameZh": "24px 图标栅格",
+  "aliases": ["图标栅格", "键程", "Keyline Shapes", "Icon Grid", "Live Area"],
+  "category": "icons",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "24×24 是全行业共同祖先网格:展示区 24dp、活动区 20dp(四周 2dp padding)、方形键程 18×18、圆形键程 Ø20;栅格与安全区参考线实时可视化。",
+    "en": "24×24 is the industry's common ancestor grid: 24dp display, 20dp live area (2dp padding around), 18×18 square keyline, Ø20 circle keyline — the grid and safe-area guides visualized live."
+  },
+  "origin": {
+    "zh": "键程数值全部出自 Material 经典规范页 m2.material.io system-icons(\"System icons are displayed as 24 x 24 dp\"、live area 20×20 with 2dp padding、Square 18×18、Circle Ø20、方形 16×20/横向 20×16,out/design-study/07-icons.md §2);Feather/Lucide 的 24×24 网格与 Heroicons 20/16 独立重绘网格为跨家族旁证(07 §1.2/§1.3)。",
+    "en": "All keyline numbers come from Material's classic spec page m2.material.io system-icons (\"System icons are displayed as 24 x 24 dp\", live area 20×20 with 2dp padding, Square 18×18, Circle Ø20, portrait 16×20 / landscape 20×16 — out/design-study/07-icons.md §2); Feather/Lucide's 24×24 grid and Heroicons' independently redrawn 20/16 grids serve as cross-family corroboration (07 §1.2/§1.3)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "gridSize",
+      "options": [
+        { "value": "16", "label": { "zh": "16 网格", "en": "16 grid" } },
+        { "value": "20", "label": { "zh": "20 网格", "en": "20 grid" } },
+        { "value": "24", "label": { "zh": "24 网格", "en": "24 grid" } },
+        { "value": "32", "label": { "zh": "32 网格", "en": "32 grid" } }
+      ],
+      "default": "24",
+      "effect": {
+        "zh": "绘制网格边长。24 = 官方基准:Material 展示区 24dp、Feather/Lucide/Heroicons 同规格(07 §0/§2);20 = Material 密集布局官方档(\"measurements may be scaled down to 20dp\",活动区缩至 16×16),也是 Heroicons mini 的独立重绘网格(07 §1.3/§2);16 = Heroicons micro 独立重绘网格(实测 viewBox,07 §1.3);32 = 常见的放大倍增网格,官方无锚值(社区常见,未证实)。官方做法是「换尺寸档独立重绘」而非等比缩放(07 §3.1);demo 对非 24 档按 24 基准等比推导键程,仅供参考。",
+        "en": "Drawing-grid edge length. 24 = the official base: Material displays at 24dp and Feather/Lucide/Heroicons share the size (07 §0/§2); 20 = Material's official dense layout (\"measurements may be scaled down to 20dp\", live area down to 16×16) and Heroicons mini's redrawn grid (07 §1.3/§2); 16 = Heroicons micro's redrawn grid (viewBox measured, 07 §1.3); 32 = a common doubled-up grid with no official anchor (community norm, unverified). The official practice is redrawing at a new size tier, not proportional scaling (07 §3.1); the demo derives keylines for non-24 tiers proportionally from 24 — indicative only."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "padding",
+      "unit": "px",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "活动区内边距(px,逐格整数步进以保持像素对齐)。官方定值 2:\"Icon content is limited to the 20dp x 20dp live area, with 2dp of padding around the perimeter\"(07 §2)。调到 0 时活动区吃满修剪区,内容会顶到画布边缘;官方补充:需要更强视觉重量时,内容可伸入 live area 与 trim area 之间的 padding,但绝不可出修剪区(07 §2)。",
+        "en": "Live-area inset (px, integer steps to keep pixel alignment). Official value 2: \"Icon content is limited to the 20dp x 20dp live area, with 2dp of padding around the perimeter\" (07 §2). At 0 the live area fills the trim area and content touches the canvas edge; per the spec, heavier content may extend into the padding between live and trim area, but never outside the trim area (07 §2)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "栅格与键程是设计期概念,交付物是普通 SVG(viewBox 缩放),全主流浏览器一致渲染;demo 的参考线用 0.125 单位描边在 8 倍整数缩放下保持 1px 细线,无浏览器兼容问题。",
+      "en": "Grid and keylines are design-time concepts; the deliverable is a plain SVG that scales by viewBox, rendered identically in all mainstream browsers. The demo's guide lines use 0.125-unit strokes at an 8× integer scale to stay 1px thin — no compatibility concerns."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "无回退需求:栅格是创作规范而非运行时特性;验收时把参考线 SVG 关掉、只留图形本身,即得到真实交付形态。",
+    "en": "No fallback needed: the grid is an authoring discipline, not a runtime feature; hide the guide SVG and keep the glyph itself to see the real deliverable."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自绘/评审图标时的验收底图:方形 18×18、圆形 Ø20、长方 20×16/16×20 四条键程逐一比对(07 §2)", "en": "Acceptance underlay for drawing/reviewing icons: compare against the four keylines — square 18×18, circle Ø20, landscape 20×16, portrait 16×20 (07 §2)" },
+      { "zh": "为桌面密集布局准备 20px 档位:展示区 20、活动区 16、padding 仍为 2(07 §2)", "en": "Preparing a 20px tier for dense desktop layouts: display 20, live 16, padding still 2 (07 §2)" },
+      { "zh": "跨图标集核对视觉重量:各家共用 24 祖先网格,键程铁律「圆比方大 2dp」是官方数值不是玄学(07 §3.1)", "en": "Cross-set weight checks: sets share the 24 ancestor grid, and the iron rule 'circle 2dp larger than square' is an official number, not folklore (07 §3.1)" }
+    ],
+    "avoid": [
+      { "zh": "把 24 网格图标等比硬缩到 16px 交付——官方做法是换档独立重绘(Heroicons 20/16 实测独立 viewBox,07 §1.3/§3.1)", "en": "Shipping a 24-grid icon scaled straight down to 16px — the official practice is an independently redrawn tier (Heroicons 20/16 measured standalone viewBoxes, 07 §1.3/§3.1)" },
+      { "zh": "内容出修剪区,或坐标出现小数——官方要求 X/Y 必须整数(「on pixel」,07 §2)", "en": "Content escaping the trim area, or fractional coordinates — the spec requires integer X/Y (\"on pixel\", 07 §2)" },
+      { "zh": "padding 调到 0 还想保住呼吸感——活动区吃满后图标之间会视觉粘连", "en": "Setting padding to 0 and still expecting breathing room — a full-bleed live area makes icons visually glue together" }
+    ]
+  },
+  "a11y": {
+    "zh": "栅格与可访问性间接相关:安全的活动区保证笔画间距,而 Lucide 规范要求相邻独立元素间隙 ≥2px、镂空里塞得进一个 2px 圆(07 §3.2)——间距过小会让小尺寸渲染糊成一片;参考线本身是装饰,交付物中不得出现(或标 aria-hidden)。",
+    "en": "The grid relates to accessibility indirectly: a sane live area preserves stroke spacing, and Lucide's spec requires ≥2px gaps between adjacent independent elements plus a 2px circle fitting through every counter (07 §3.2) — too-tight spacing turns to mush when rendered small. Guides are decoration: never ship them in the deliverable (or mark them aria-hidden)."
+  },
+  "sources": [
+    "https://m2.material.io/design/iconography/system-icons.html",
+    "https://storage.googleapis.com/material-io-design/downloads/gm_icon_template.ai.zip",
+    "https://github.com/tailwindlabs/heroicons"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在 24×24 栅格上绘制一个系统图标:内容限制在活动区(padding=2),对照方形 18×18 / 圆形 Ø20 键程,X/Y 坐标全整数,并提供 20px 密集档位。",
+      "en": "Draw a system icon on the 24×24 grid: content confined to the live area (padding=2), checked against the 18×18 square / Ø20 circle keylines, all X/Y integer, with a 20px dense tier."
+    },
+    "acceptance": [
+      { "zh": "画布 24×24,内容不出修剪区,默认活动区 20×20(四周 2dp padding)", "en": "Canvas 24×24, nothing outside the trim area, default live area 20×20 (2dp padding all around)" },
+      { "zh": "方形元素贴 18×18 键程、圆形元素贴 Ø20 键程,长方形遵循 20×16 / 16×20", "en": "Square elements follow the 18×18 keyline, circles the Ø20 keyline, rectangles 20×16 / 16×20" },
+      { "zh": "全部 X/Y 坐标为整数(on pixel)", "en": "All X/Y coordinates are integers (on pixel)" },
+      { "zh": "提供 20px 密集档位(活动区 16×16)时重新核对手绘稿,而非等比缩放交付", "en": "For a 20px dense tier (live 16×16), redraw from the master rather than scaling the 24px asset" },
+      { "zh": "参考线仅用于验收,不出现在交付 SVG 中", "en": "Guide lines exist for review only and never ship inside the deliverable SVG" }
+    ]
+  }
+}

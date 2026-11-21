@@ -1,0 +1,81 @@
+## 结构与 DOM
+
+图标动效的三招都发生在**既有 DOM 上的属性过渡**,不引入新结构、不用 SMIL(组件库路线把动画留给宿主,与 tree-shaking 兼容,07 §6.3):
+
+```html
+<!-- 描边绘制:pathLength=1 归一,常驻全绘,hover 只重放 -->
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <circle cx="12" cy="12" r="8.25" pathLength="1"/>
+  <path d="M12 8.5v7M8.5 12h7" pathLength="1"/>
+</svg>
+
+<!-- 旋转:transform 过渡在 svg 根 -->
+<svg class="im-rot" viewBox="0 0 24 24" aria-hidden="true">…环形箭头…</svg>
+
+<!-- 填充点亮:stroke 常驻,fill-opacity 0→1(FILL 轴的 SVG 等效) -->
+<svg class="im-fill" viewBox="0 0 24 24" aria-hidden="true">…心形…</svg>
+```
+
+```css
+/* M3 官方 token 经 CSS 变量注入 */
+.im-scene {
+  --im-duration: 200ms;                          /* duration.short4 */
+  --im-easing: cubic-bezier(0.2, 0, 1, 1);       /* easing.standard */
+}
+
+/* dash:pathLength=1 + dasharray 1 → dashoffset 1→0 即「重绘」 */
+.im-dash path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.card:hover .im-dash path,
+.card[data-play="dash"] .im-dash path {
+  animation: im-draw var(--im-duration) var(--im-easing);
+}
+@keyframes im-draw { from { stroke-dashoffset: 1; } }
+
+/* rotate ≤90°(动效不进图标内部) */
+.im-rot { transition: transform var(--im-duration) var(--im-easing); }
+.card:hover .im-rot { transform: rotate(90deg); }
+
+/* fill:fill-opacity 0→1 —— Material FILL 轴("indicate user selection")的 SVG 等效 */
+.im-fill { fill: currentColor; fill-opacity: 0; transition: fill-opacity var(--im-duration) var(--im-easing); }
+.card:hover .im-fill { fill-opacity: 1; }
+```
+
+要点:dash 默认态必须**全绘**(offset 0)——图标不可默认隐藏,hover 只是重放;rotate 加在 svg 根上不扰动路径;fill 用 `fill-opacity`(继承属性)而非换 fill 值。
+
+## 样式与参数
+
+三个参数,两个 CSS 变量型(duration/easing)+ 一个 JS 型(effect 选中武装卡):
+
+```text
+duration 默认 200ms  = M3 duration.short4("Selection controls have a short duration of 200ms with Standard easing")
+                      150ms = short3;hover 微动效钦定区间 150–200ms(07 §6.2)
+easing   默认 [0.2,0,1,1] = M3 easing.standard("simple, small, or utility-focused transitions")
+                      emphasized-decelerate [0.05,0.7,0.1,1] 进场 / emphasized-accelerate [0.3,0,0.8,0.15] 退场
+effect   dash | rotate | fill ——未选中卡片降为静态(opacity 0.45)
+```
+
+变量轴动画的注意点(Material Symbols 官方,07 §6.1):**先子集化再动画**——1.7KB 级别才敢上首屏;每次轴过渡都是字形重排,预算 150–250ms。SVG 路线(fill-opacity)没有字体加载负担,是轻量等效。
+
+## 动效与交互
+
+本条目即动效规范本体,三档护栏:
+
+1. **触达通道**:hover 触发 + `:focus-visible` 同步触发(键盘等效)+ 点击触发(触屏无 hover);demo 三卡均为真按钮;
+2. **reduced-motion 降级(MDN 一等规则)**:`@media (prefers-reduced-motion: reduce)` 下 animation/transition 全禁,hover 直切终态——状态反馈保留、运动取消;官方示例把 pulse 缩放降级为 opacity 溶解,同一精神;demo 另给「模拟 reduced-motion」开关供无系统偏好的用户验收;
+3. **等效降级路线**:描边版与实底版两枚 symbol 换 `<use>`(07 §6.1/§6.3)——零动画成本完成填充点亮,亦无前庭风险。
+
+## 真实产品案例
+
+- **Material Symbols FILL 轴**:README 原文 "It can also be manipulated for an animated fill effect, to indicate user selection"——填充点亮是被官方盖章的状态语义,不是装饰(07 §6.1);
+- **M3 selection controls**:官方用例 200ms + Standard easing,即本条目默认值(07 §6.2);
+- **MDN prefers-reduced-motion**:定义、示例与降级策略的一手出处(缩放类动画可诱发前庭障碍,官方把 pulse 降级为 opacity 溶解)(07 §6.3)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `effect` | fill 是语义最强的一招(选中态),dash 最「炫」但高频使用会疲劳;rotate 适合方向类语义(刷新/发送) | 三招未武装时卡片降为静态——动效本身是强调通道,全静止则 hover 反馈缺失 |
+| `duration` | >250ms 进入 medium 转场档,hover 显迟钝且字形重排开销翻倍(07 §6.1/§6.2) | 低于 100ms 趋近瞬切,失去「回应感」;150–200ms 是钦定区间(07 §6.2) |
+| `easing` | emphasized 系曲线适合进场/退场大转场,用在图标 hover 会过戏剧化 | standard [0.2,0,1,1] 是微动效首选;线性曲线会让「点亮」显得机械 |
+
+锚点:150–200ms + standard;rotate ≤90°;dash 常驻全绘;reduced-motion 直切终态不删反馈;先子集化再动画(字体路线)。

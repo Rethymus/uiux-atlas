@@ -1,0 +1,73 @@
+## Structure & DOM
+
+Choosing a set is not renaming files — it is swapping a **delivery form and style contract**. The six sets' real integration shapes:
+
+```html
+<!-- SVG file/inline route (Lucide / Feather / Heroicons / Phosphor core) -->
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="…" />
+</svg>
+
+<!-- Framework package route: lucide-react, @heroicons/react (tree-shaken by path) -->
+<House size={24} strokeWidth={2} aria-hidden="true" />
+
+<!-- Variable-font route (Material Symbols only): ligatures use words, not codepoints -->
+<span class="material-symbols-outlined" aria-hidden="true">home</span>
+```
+
+The comparison matrix (officially verified values, 07 §0/§1):
+
+| Set | Style | Grid | Default stroke | License | In one line |
+| --- | --- | --- | --- | --- | --- |
+| Lucide | Stroke (fill experimental) | 24×24 | **2px** (source-defined) | ISC | Feather community successor, most complete spec docs |
+| Feather | Stroke only | 24×24 | 2px | MIT | The minimalist origin; official sprite out of the box |
+| Heroicons | Stroke + fill dual | 24/20/16 | **1.5px** (24 outline measured) | MIT | Official Tailwind set; React/Vue first-class |
+| Phosphor | 6 weights incl. Fill/Duotone | **256×256** (measured) | weight system (baked fills) | MIT | The fullest-weight layered player |
+| Material Symbols | Outlined/Rounded/Sharp × FILL | 24 base | wght 100–700 (default 400) | Apache-2.0 | Variable font, four live axes |
+| Material Icons (classic) | Five styles | 24 | filled | Apache-2.0 | **Frozen since 2022** |
+
+## Styling & Parameters
+
+Two JS-type parameters drive the comparison view; the demo glyphs are **self-drawn illustrations** (no verbatim copies of official files), with style differences landing on four checkable numbers:
+
+```tsx
+// Line sets: stroke-width is each set's identity
+Lucide/Feather → strokeWidth 2 (Lucide defaultAttributes source value)
+Heroicons      → strokeWidth 1.5 (measured from the real repo file; README sample still says 2 — stale copy)
+Material Symbols → wght axis 100–700 (default 400), never by editing SVG widths
+
+// Solid sets: stroke baked into filled outlines
+Phosphor  → viewBox="0 0 256 256", fill="currentColor" (measured across six weights)
+Classic Material Icons → 24-grid filled paths, five styles frozen
+```
+
+The selection triad (07 §0's core narrative):
+
+1. **Grid**: 24 is the common ancestor (Lucide/Feather/Heroicons/Material); Phosphor's 256 grid is the other pole;
+2. **Stroke philosophy**: the 2px anchor (Lucide/Feather) vs the 1.5px exception (Heroicons) vs the variable axis (Material wght) — "never rescale an SVG to fake a stroke change";
+3. **License**: ISC (free for commercial and personal use, Lucide README), MIT ×3, Apache-2.0 ×2 — all commercial-friendly; one discrepancy recorded as-is: Lucide's site says "1600+" while the repo blurb says "2000+".
+
+## Motion & Interaction
+
+Set comparison is a static view; demo interaction lives in the switches:
+
+- **set switch**: the main preview and the six mini cards move together; mini cards are clickable (two-way sync with the parameter panel through the store);
+- **glyph switch**: one semantic redrawn across six sets makes the stroke/fill differences obvious;
+- No motion effects, so `prefers-reduced-motion` needs no fallback;
+- A maintenance note: Feather is long unreleased and classic Material Icons is frozen — "activeness" is itself a selection dynamic; the checklist sits in avoid.
+
+## Real-world examples
+
+- **The Lucide family**: lucide plus nine framework packages (lucide-react/vue/svelte/solid/preact/react-native/angular/astro/static per the README packages table); animation is left to the host, never embedded SMIL (07 §1.1/§6.3);
+- **@heroicons/react tree-shaking**: import by path like `@heroicons/react/24/outline`; the project officially declines new icon PRs — pick another set if you need growth (07 §1.3);
+- **Material Symbols subsetting**: the Google Fonts service serves ~1.7KB fonts per `icon_names` subset (e.g. home,palette,settings), ~2.6KB with axis combos, and mandates `&display=block` against FOUC — the only sane route for putting a huge set on first screen (07 §1.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `set` | moving to Phosphor/Symbols buys weight flexibility (Fill/Duotone/wght) at the cost of delivery-form changes (filled paths / a variable font) and subsetting overhead | staying on Lucide/Feather's fixed 2px stroke — the narrowest capability but lowest cost and the fullest package ecosystem |
+| `glyph` | swapping glyphs changes no style parameters — that is a "set's" value: one style contract over the whole library | hand-fitting a single glyph across sets (editing strokes/fills) breaks all three philosophies at once; migrate the set instead |
+
+Anchors: fix the grid first (24 or 256), then the stroke philosophy (fixed/exception/axis), then check license and maintenance; README sample values always get re-measured against repo files.

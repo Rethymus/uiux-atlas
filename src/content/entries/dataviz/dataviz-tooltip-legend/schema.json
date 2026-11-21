@@ -1,0 +1,92 @@
+{
+  "name": "Tooltip & Legend",
+  "nameZh": "图例与提示",
+  "aliases": ["Chart Tooltip", "Legend Positioning", "悬浮提示"],
+  "category": "dataviz",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "图表的「读值双通道」:图例管系列回指(默认右侧,ggplot2 源码默认),tooltip 管精确读值(ECharts 默认 mousemove 触发 / 100ms 延迟隐藏),并按 WCAG 1.4.13 做到 Esc 可关、可悬停、常驻。",
+    "en": "The chart's two reading channels: the legend handles series lookup (right by default — ggplot2's source default), the tooltip handles precise values (ECharts defaults: mousemove trigger / 100ms hide delay), and WCAG 1.4.13 demands Esc-dismissibility, hoverability and persistence."
+  },
+  "origin": {
+    "zh": "四条出处:jfly CUD 原则(「图上直标优于远处对色图例,远距颜色匹配极难」);ggplot2 theme-defaults.R L262 legend.position 默认 \"right\"(源码核验);ECharts v5.5.1 TooltipModel.ts(tooltip 默认 trigger 'item' / triggerOn 'mousemove|click' / showDelay 0 / hideDelay 100 / transitionDuration 0.4,源码核验);W3C WCAG 2.1 SC 1.4.13 官方理解页(hover/focus 内容必须 Dismissible+Hoverable+Persistent,失败模式 F95/F114)。",
+    "en": "Four provenances: the jfly CUD principle ('label elements on the graph itself rather than making a separate color-coded key — matching same colors in distant places is extremely difficult'); ggplot2 theme-defaults.R L262 with legend.position defaulting to \"right\" (source verified); ECharts v5.5.1 TooltipModel.ts (tooltip defaults: trigger 'item', triggerOn 'mousemove|click', showDelay 0, hideDelay 100, transitionDuration 0.4 — source verified); the W3C WCAG 2.1 SC 1.4.13 understanding page (hover/focus content must be Dismissible + Hoverable + Persistent; failure modes F95/F114)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "legendPos",
+      "options": [
+        { "value": "top", "label": { "zh": "顶部", "en": "Top" } },
+        { "value": "right", "label": { "zh": "右侧", "en": "Right" } },
+        { "value": "none", "label": { "zh": "无(改直标)", "en": "None (direct labels)" } }
+      ],
+      "default": "right",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重排)。right=ggplot2 源码默认(L262 legend.position=\"right\");top=Power BI 主题预设把柱图图例压到顶部居中(BottomCenter 枚举)的常见变体;none=关掉图例,jfly 原则的落地——demo 会在首组柱上直标系列名(图上直标优于远处对色)。ECharts legend 支持四边定位,但其默认布局值源码未逐字核到位(标注)。",
+        "en": "JS-type param (the demo subscribes and re-lays-out). right = ggplot2's source default (L262 legend.position = \"right\"); top = the common variant of Power BI's theme presets pushing bar-chart legends to BottomCenter; none = legend off, landing jfly's principle — the demo direct-labels series names above the first group (direct labeling beats distant color matching). ECharts legends support all four edges, but its default layout value was never verbatim-verified in source (annotated)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "tooltipFollow",
+      "options": [
+        { "value": "on", "label": { "zh": "跟随指针", "en": "Follow pointer" } },
+        { "value": "off", "label": { "zh": "锚定停靠", "en": "Docked" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换定位模式)。on=提示跟随指针移动(对应 ECharts triggerOn 'mousemove' 默认);off=提示停靠在图内固定角,鼠标可轻松移入提示本体——WCAG 1.4.13 Hoverable 的最强形态。触发/隐藏沿用 ECharts 默认:showDelay 0、hideDelay 100(移出 100ms 后才隐藏,给「移入提示」留窗口)。",
+        "en": "JS-type param (the demo subscribes and switches positioning). on = the tooltip follows the pointer (matching ECharts' default triggerOn 'mousemove'); off = the tooltip docks at a fixed corner where the pointer can easily move into it — the strongest form of WCAG 1.4.13 Hoverable. Trigger/hide follow ECharts defaults: showDelay 0, hideDelay 100 (hiding waits 100ms after pointer-out, leaving a window to move into the tooltip)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 用原生 Pointer Events + 绝对定位 div,全现代浏览器可用;不依赖 Popper 等第三方定位库(边界钳制手写);Esc 监听为 window keydown,仅在提示可见时激活。",
+      "en": "The demo uses native Pointer Events plus an absolutely positioned div — all modern browsers; no third-party positioning library like Popper (edge clamping is hand-written); the Esc listener is a window keydown active only while the tooltip is visible."
+    }
+  },
+  "fallback": {
+    "zh": "触屏无 hover:tooltip 必须同时响应 click/tap(ECharts 默认 triggerOn 本就是 'mousemove|click');键盘用户:柱体应为可聚焦元素并支持 focus 触发提示(1.4.13 同样管辖 focus 内容);提示本体承载的信息别只活在 tooltip 里——关键数值应有读值替代通道(直标/表格)。",
+    "en": "Touch has no hover: the tooltip must also answer click/tap (ECharts' default triggerOn is already 'mousemove|click'); keyboard users: bars should be focusable and trigger the tooltip on focus (1.4.13 governs focus content equally); never let critical values live only in the tooltip — keep an alternative channel (direct labels / table)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "多系列图表的系列回指——图例贴顶或贴右,swatch 与系列一一对应", "en": "Series lookup on multi-series charts — legend docked top or right, swatches one-to-one with series" },
+      { "zh": "交互式 BI 图表的精确读值——mousemove 跟随 + 100ms 隐藏宽限,快速扫值不断提示", "en": "Precise value reading on interactive BI charts — mousemove-follow with a 100ms hide grace for fast scanning" },
+      { "zh": "小空间嵌入图(卡片内迷你图)——关掉图例改直标,省一条图例的宽度", "en": "Space-constrained embedded charts (mini charts in cards) — drop the legend for direct labels and reclaim its width" },
+      { "zh": "无障碍审计的样板——Esc 可关/可悬停/常驻三件套是 WCAG 1.4.13 的验收清单", "en": "The template for accessibility audits — dismissible/hoverable/persistent is the WCAG 1.4.13 acceptance checklist" }
+    ],
+    "avoid": [
+      { "zh": "图例与色块距离过远或分页——jfly 原文:远距颜色匹配极难,能直标就直标", "en": "Legends far from their swatches or paginated — jfly's own words: matching same colors in distant places is extremely difficult; direct-label when possible" },
+      { "zh": "tooltip 挡住指针下的数据点、或移入即消失——1.4.13 失败模式 F95(不可悬停)", "en": "Tooltips that cover the hovered point or vanish on approach — WCAG 1.4.13 failure F95 (not hoverable)" },
+      { "zh": "tooltip 无 Esc 退出、指针移走仍不消失——失败模式 F114(不可关)/Persistent 被滥用", "en": "Tooltips without Esc dismissal that linger after the pointer leaves — failure F114 (not dismissible) / Persistent abused" },
+      { "zh": "只在 tooltip 里放关键数值——触屏与读屏用户拿不到;值要有第二通道", "en": "Putting critical values only in the tooltip — touch and screen-reader users never get them; values need a second channel" }
+    ]
+  },
+  "a11y": {
+    "zh": "WCAG 2.1 SC 1.4.13(Content on Hover or Focus,Level AA)三要求:①Dismissible——按 Esc 可关闭,且不移动指针/焦点;②Hoverable——指针能移入提示本体而不消失(适配放大镜/大光标);③Persistent——提示保持到触发移除、用户关闭或信息失效。demo 实现三件套:Esc 监听 + 提示可进入 + 移出 100ms 宽限(ECharts hideDelay)。配套:柱体带 aria-label;ECharts 生态另以 aria.label 自动摘要供读屏、aria.decal 纹理替代纯色相区分。",
+    "en": "WCAG 2.1 SC 1.4.13 (Content on Hover or Focus, Level AA) has three demands: (1) Dismissible — Esc closes it without moving pointer or focus; (2) Hoverable — the pointer can enter the tooltip body without it vanishing (for magnifiers and large cursors); (3) Persistent — it stays until the trigger is removed, the user dismisses it, or the information becomes stale. The demo implements all three: Esc listener + enterable tooltip + a 100ms post-out grace (ECharts hideDelay). Pairings: bars carry aria-label; the ECharts ecosystem adds aria.label auto-summaries for screen readers and aria.decal textures beyond hue."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html",
+    "https://raw.githubusercontent.com/apache/echarts/5.5.1/src/component/tooltip/TooltipModel.ts",
+    "https://github.com/tidyverse/ggplot2/blob/main/R/theme-defaults.R",
+    "https://jfly.uni-koeln.de/color/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 实现分组柱状图:图例位置可选 top/right/none(none 时首组直标系列名),hover 柱体显示 tooltip——跟随指针或锚定停靠可切换,满足 WCAG 1.4.13(Esc 可关/可悬停/移出 100ms 后隐藏)。",
+      "en": "Implement a grouped bar chart in hand-drawn SVG: legend position selectable top/right/none (none direct-labels the first group), hover shows a tooltip — pointer-follow or docked, honoring WCAG 1.4.13 (Esc-dismiss, hoverable, hides 100ms after pointer-out)."
+    },
+    "acceptance": [
+      { "zh": "tooltip 三件套可验收:按 Esc 立即关闭;指针可移入提示本体不消失;移出触发 100ms 后才隐藏(ECharts hideDelay)", "en": "The tooltip passes the trio: Esc closes instantly; the pointer can enter the tooltip body; hiding waits 100ms after pointer-out (ECharts hideDelay)" },
+      { "zh": "legendPos=none 时改用图上直标,不是简单删掉图例了事", "en": "legendPos=none switches to direct labeling on the chart — not a bare legend removal" },
+      { "zh": "图例默认右侧(ggplot2 源码默认),swatch 与系列一一对应且纹理/颜色同步", "en": "Legend defaults to right (ggplot2's source default), swatches one-to-one with series and in sync" },
+      { "zh": "触屏/键盘兜底:柱体可聚焦或可点按触发同一提示", "en": "Touch/keyboard fallback: bars are focusable or tappable to trigger the same tooltip" },
+      { "zh": "MDX 写明 ECharts tooltip 五个默认值(trigger/triggerOn/showDelay/hideDelay/transitionDuration)的源码出处", "en": "MDX cites the source provenance of ECharts' five tooltip defaults (trigger/triggerOn/showDelay/hideDelay/transitionDuration)" }
+    ]
+  }
+}

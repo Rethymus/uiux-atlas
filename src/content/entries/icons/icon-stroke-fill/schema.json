@@ -1,0 +1,103 @@
+{
+  "name": "Stroke & Fill Icons",
+  "nameZh": "描边与填充图标",
+  "aliases": ["描边图标", "填充图标", "Outline Icons", "Filled Icons", "Stroke Icons"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "SVG 图标的第一分叉:stroke 走 currentColor 的线性描边,或 fill 吃满 currentColor 的实底填充;同一路径两种交付,线宽 1–3 与填充开关实时切换。",
+    "en": "The first fork of an SVG icon: linear stroke via currentColor, or solid fill through it — same path, two deliveries; stroke width 1–3 and the fill switch are live-tunable."
+  },
+  "origin": {
+    "zh": "描边四件套(24 网格、stroke-width 2、round 圆头圆角、currentColor)在 Lucide packages/lucide/src/defaultAttributes.ts 中为源码定值,Feather attrs 同构(out/design-study/07-icons.md §1.1/§1.2);Heroicons 则是描边+填充双体系,24/outline 实测 stroke-width=1.5(07 §1.3)。",
+    "en": "The stroked quartet (24 grid, stroke-width 2, round caps/joins, currentColor) is source-defined in Lucide's packages/lucide/src/defaultAttributes.ts, with Feather's attrs isomorphic (out/design-study/07-icons.md §1.1/§1.2); Heroicons ships a stroke+fill dual system and its 24/outline measures stroke-width=1.5 (07 §1.3)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "strokeWidth",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "default": 2,
+      "cssVar": "--sf-stroke",
+      "effect": {
+        "zh": "SVG stroke-width(继承属性,设在 <svg> 根即可传导全部子形状)。默认 2 = Lucide/Feather 官方源码定值(defaultAttributes.ts,07 §1.1);Heroicons 24/outline 真实文件实测 1.5(README 快速上手仍写 2,系 v1 旧文案,以文件为准,07 §1.3)。WCAG 1.4.11 理解文档提醒:抗锯齿会让过细线条实际渲染远淡于定义色,避免特别细的线(07 §3.3)。",
+        "en": "SVG stroke-width (inherited property; set on the <svg> root to reach every child shape). Default 2 = the Lucide/Feather source-defined value (defaultAttributes.ts, 07 §1.1); Heroicons 24/outline measures 1.5 in the real file (README quick-start still says 2 — stale v1 copy; the file wins, 07 §1.3). WCAG 1.4.11 understanding doc warns antialiasing renders overly thin lines far fainter than specified — avoid particularly thin strokes (07 §3.3)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "fill",
+      "options": [
+        { "value": "off", "label": { "zh": "关(纯描边)", "en": "Off (stroke only)" } },
+        { "value": "on", "label": { "zh": "开(填充)", "en": "On (filled)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "填充开关。默认 off:Lucide defaultAttributes 定值 fill:'none',纯描边交付(07 §1.1);on 时闭合路径得到 fill:currentColor 的实底。注意两点:① 开放路径(线段、射线)fill 无形可填,只留描边;② 已写死 fill=\"none\" 的镂空子形状(本 demo 的镜头/圆点)会保持中空——fill/stroke 写死在 path 上会封死继承(MDN use 属性遮蔽规则,07 §5.1)。Phosphor 则相反:全系以填充路径交付,描边烘焙进轮廓(07 §1.4)。",
+        "en": "Fill switch. Default off: Lucide's defaultAttributes sets fill:'none' — stroke-only delivery (07 §1.1); on = closed paths gain a solid fill:currentColor. Two caveats: open paths (segments, rays) have no area to fill and keep only their stroke; sub-shapes with a hardcoded fill=\"none\" (this demo's lens/dot knockouts) stay hollow — a hardcoded fill/stroke on the path blocks inheritance (MDN use-attribute shadowing rule, 07 §5.1). Phosphor is the opposite: everything is delivered as filled paths with stroke baked into outlines (07 §1.4)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "capJoin",
+      "options": [
+        { "value": "round", "label": { "zh": "圆头圆角 round", "en": "Round caps/joins" } },
+        { "value": "square", "label": { "zh": "方头直角 square/miter", "en": "Square caps / miter joins" } }
+      ],
+      "default": "round",
+      "effect": {
+        "zh": "线帽与转角风格。默认 round:Lucide/Feather 源码定值 stroke-linecap/linejoin: 'round'(07 §1.1),圆头是描边图标的社区主流气质;square 档演示 stroke-linecap: square + stroke-linejoin: miter 的硬朗对照——转角处易出现尖刺,通常需再调 miter-limit。Material 体系对圆角另有数值规则:默认 2dp,≤2dp 宽的形状转角不倒圆(07 §2)。",
+        "en": "Cap and corner style. Default round: Lucide/Feather source-define stroke-linecap/linejoin as 'round' (07 §1.1) — round caps are the community signature of stroked sets; the square option shows stroke-linecap: square + stroke-linejoin: miter for a harder look — spikes appear at corners and usually need a miter-limit tune. Material adds numeric corner rules: 2dp default radius, no rounding on shapes 2dp wide or less (07 §2)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "stroke/fill 为 SVG 1.1 标准属性,全主流浏览器可用;经 CSS 控制(SVG2 把 stroke-width/linecap/linejoin 升级为几何属性)在 Chrome/Firefox/Safari/Edge 均受支持。图标交付形态本身与 CSS 特性查询无关,无需 @supports。",
+      "en": "stroke/fill are SVG 1.1 standard attributes, available in all mainstream browsers; CSS control of them (SVG2 promotes stroke-width/linecap/linejoin to geometry properties) works in Chrome/Firefox/Safari/Edge. The delivery format itself needs no @supports."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "描边/填充是内联 SVG 基础能力,现代浏览器无需回退;仅在把图标当 <img> 外链且旧环境不渲染 SVG 时,退回 PNG/雪碧图或图标字体。若继承链被破坏(图标不着色),先检查 path 上是否写死了 fill/stroke。",
+    "en": "Stroke/fill are inline-SVG fundamentals needing no fallback in modern browsers; only when icons ship as external <img> into environments that won't render SVG, fall back to PNG/sprites or an icon font. If inheritance breaks (icon won't recolor), first check for a hardcoded fill/stroke on the path."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "工具栏/导航线性图标——一套路径改线宽即得视觉梯度,2px 是 Lucide/Feather 的官方锚点", "en": "Toolbar/nav linear icons — one path set, stroke width gives the visual ladder; 2px is the Lucide/Feather anchor" },
+      { "zh": "hover/选中态要「点亮」的控件:描边版 + 填充版同路径切换,是 Material FILL 轴之外的 SVG 等效通道", "en": "Controls that 'light up' on hover/selection: stroke version + filled version from the same path — the SVG counterpart of Material's FILL axis" },
+      { "zh": "跟随文字颜色的正文内联图标(currentColor 一处染色)", "en": "Inline icons beside text that must follow text color (one currentColor tint)" }
+    ],
+    "avoid": [
+      { "zh": "同一页面混用描边集与填充集而不成体系——视觉重量不一致,模糊法一验就穿帮(07 §3.2)", "en": "Mixing stroked and filled sets ad hoc on one page — inconsistent visual weight, exposed by the blur test (07 §3.2)" },
+      { "zh": "小尺寸(≤16px)硬撑 3px 粗描边——线条粘连,镂空糊死;细分线条在低分屏又会渲染过淡(WCAG 1.4.11 提醒)", "en": "Pushing 3px strokes at ≤16px — strokes merge and counters clog; conversely ultra-thin strokes render too faint on low-dpi screens (WCAG 1.4.11 note)" },
+      { "zh": "把 fill/stroke 写死在复用 path 上——雪碧图/组件染色链会在此断掉(07 §5.1)", "en": "Hardcoding fill/stroke on reusable paths — it severs the sprite/component color chain (07 §5.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "图标作为图形对象需与相邻底色保持 ≥3:1 非文本对比(WCAG 2.2 SC 1.4.11;2.999:1 即不达标),且任何状态下不得失去;过细描边因抗锯齿实际更淡,应避免。装饰性图标一律 aria-hidden=\"true\" 且不得落在可聚焦元素上;语义图标靠可访问名补足(详见 icon-aria-accessible 条目)。",
+    "en": "As graphical objects, icons need ≥3:1 non-text contrast against adjacent colors (WCAG 2.2 SC 1.4.11; 2.999:1 fails) in every state; avoid overly thin strokes that antialiasing renders fainter. Decorative icons get aria-hidden=\"true\" and never sit on focusable elements; meaningful icons rely on accessible names (see the icon-aria-accessible entry)."
+  },
+  "sources": [
+    "https://github.com/lucide-icons/lucide/blob/main/packages/lucide/src/defaultAttributes.ts",
+    "https://lucide.dev/guide/",
+    "https://github.com/tailwindlabs/heroicons",
+    "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一组 24×24 内联 SVG 描边图标:stroke=currentColor、stroke-width 由参数注入、round 圆头圆角,并提供同路径的填充变体开关;图标随宿主文字颜色变色。",
+      "en": "Build a set of 24×24 inline stroked SVG icons: stroke=currentColor, parameter-injected stroke-width, round caps/joins, plus a same-path filled variant switch; icons recolor with the host text color."
+    },
+    "acceptance": [
+      { "zh": "<svg> 根统一 fill=\"none\" stroke=\"currentColor\",子路径不写死颜色属性", "en": "The <svg> root carries fill=\"none\" stroke=\"currentColor\"; child paths carry no hardcoded color attributes" },
+      { "zh": "stroke-width、linecap/linejoin 严格使用参数快照值,不自行调整", "en": "stroke-width and linecap/linejoin use the exact parameter snapshot values; do not adjust them" },
+      { "zh": "填充开关只作用于闭合路径;镂空子形状保持中空,不得被填死", "en": "The fill switch only affects closed paths; knockout sub-shapes stay hollow, never filled solid" },
+      { "zh": "图标颜色经 currentColor 继承,宿主只设一处 color", "en": "Icon color flows through currentColor; the host sets exactly one color declaration" },
+      { "zh": "装饰性图标标 aria-hidden=\"true\",不落在可聚焦元素上", "en": "Decorative icons carry aria-hidden=\"true\" and never sit on a focusable element" }
+    ]
+  }
+}

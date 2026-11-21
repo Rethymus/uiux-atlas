@@ -7,6 +7,8 @@ export const CATEGORIES = [
   { id: "type", zh: "排版", en: "Typography" },
   { id: "layout", zh: "布局与响应式", en: "Layout" },
   { id: "components", zh: "前端部件", en: "Components" },
+  { id: "icons", zh: "图标体系", en: "Icons" },
+  { id: "dataviz", zh: "数据可视化", en: "Data Viz" },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];

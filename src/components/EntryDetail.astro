@@ -20,7 +20,7 @@ interface Props {
 
 const { entryId, schema, locale } = Astro.props;
 const dict = t(locale);
-// entryId 首段必为七分类 id(getStaticPaths 只从 CATEGORIES 生成),这里收窄给 goDeeperLinks
+// entryId 首段必为九分类 id(getStaticPaths 只从 CATEGORIES 生成),这里收窄给 goDeeperLinks
 const [category] = entryId.split("/") as CategoryId[];
 const cat = CATEGORIES.find((c) => c.id === category)!;
 const sys = SYSTEMS.find((s) => s.id === schema.system);

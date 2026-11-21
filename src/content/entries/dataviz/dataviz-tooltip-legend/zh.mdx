@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+图例与 tooltip 是图表的「**读值双通道**」:图例解决「这条线/这组柱是谁」,tooltip 解决「这个点具体是多少」。DOM 上图例是普通文档流(顶部行或右侧列),tooltip 是**悬浮层**。
+
+```html
+<div class="chart-panel">  <!-- position: relative,tooltip 的定位上下文 -->
+  <div class="legend legend--top">…swatch+系列名…</div>
+  <svg>…<rect class="bar" tabindex="0" aria-label="本年 1月:64" />…</svg>
+  <div class="tooltip" role="status" hidden>
+    本年 · 1月  值: 64
+  </div>
+</div>
+```
+
+关键点:
+
+- tooltip 的定位上下文是**面板容器**(不是 body):跟随模式下用 `clientX/Y - 容器 rect` 换算,停靠模式下 `right/top` 固定——这样不会越出卡片;
+- 柱体是可聚焦元素(`tabindex=0` + `aria-label`),focus 触发同一 tooltip——WCAG 1.4.13 同样管辖 focus 内容,键盘用户才有读值通道;
+- 与 ECharts/D3 的取舍:ECharts tooltip 开箱即带五个默认值(trigger 'item' / triggerOn 'mousemove|click' / showDelay 0 / hideDelay 100 / transitionDuration 0.4,源码核验)与四边 legend 定位;手绘 demo 的价值是把 1.4.13 三件套(Esc/可悬停/常驻)亲手实现一遍——多数图表库的 tooltip 恰好做不全这三条,验收时要逐条核对而不是默认信任。
+
+## 样式与参数
+
+两个参数,默认值有源码级出处:
+
+| 参数 | 默认值 | 出处 |
+| --- | --- | --- |
+| `legendPos` | **right** | ggplot2 `theme-defaults.R` L262:`legend.position = "right"`(源码核验);Power BI 主题预设另有 BottomCenter/Right/Left/RightCenter 枚举(官方示例) |
+| `tooltipFollow` | **on**(跟随) | ECharts `triggerOn: 'mousemove|click'` 默认(TooltipModel.ts 源码核验) |
+
+tooltip 行为常量(ECharts v5.5.1 默认,逐字核验):`trigger: 'item'`、`showDelay: 0`、`hideDelay: 100`、`transitionDuration: 0.4`。demo 的隐藏宽限即取 hideDelay=100:移出触发区后 100ms 才消失,给「指针移入提示本体」留窗口(Hoverable)。图例缺省档 none 不是删图例了事,而是切到 jfly 原则——图上直标(demo 在首组柱顶直标系列名)。
+
+```css
+.tooltip {
+  position: absolute;
+  pointer-events: auto;   /* Hoverable:提示可被指针进入 */
+  /* 移出触发区后由 JS 在 100ms 后隐藏,进入提示本体则取消隐藏 */
+}
+```
+
+## 动效与交互
+
+tooltip 是全图表里最容易做过头的动效区,纪律先行:
+
+- **三件套(WCAG 1.4.13,Level AA)**:Esc 立即关闭且不动指针/焦点;指针可移入提示本体不消失;提示常驻到指针离开触发区+提示本体、用户关闭或信息失效——demo 三条全实现,可用验收清单逐条测;
+- 出现/消失:transitionDuration 0.4(ECharts 默认)属上限参考,demo 用即时显隐;若加过渡只动 `opacity/transform`,reduce 下取消;
+- 图例切换(top/right/none):文档流重排,无动画——位置模式切换不做过渡,避免「图例在飞」;
+- demo 的 Esc 监听仅在提示可见时挂载,窗口级 keydown 不常驻。
+
+## 真实产品案例
+
+- **ECharts v5.5.1**:tooltip 五默认值(trigger 'item' / triggerOn 'mousemove|click' / showDelay 0 / hideDelay 100 / transitionDuration 0.4)在 `TooltipModel.ts` 源码逐字可查;无障碍侧 `aria.label.enabled` 默认开、`aria.decal.show` 默认关(v5.5.1 源码核验)。
+- **ggplot2**:图例默认右侧(`legend.position = "right"`,theme-defaults.R L262),主题系统一条语句换边——「图例位置是主题属性,不是图表属性」的范式源头(源码核验)。
+- **Power BI**:官方主题预设的图例位置枚举 BottomCenter/Right/Left/RightCenter,示例把柱图图例压到底部居中;另有 Report Tooltips(报告页 tooltip)官方文档条目(官方 docs 已核/检索命中)。
+- **jfly CUD 指南**:「For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult」——直标优于图例的学术原话(官方页已核)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `legendPos` | 图例贴顶适合宽图(水平空间充裕),none 最省空间但把回指责任压给直标——系列多时直标会互相打架 | right 占一条纵向列,图高换图例宽;系列 ≤4 且名字短时代价最小 |
+| `tooltipFollow` | 跟随模式读值最顺手,但提示永远差指针 14px,放大镜用户难移入(1.4.13 Hoverable 弱形态) | 停靠模式是 Hoverable 最强形态,代价是视线要在柱体与提示间往返 |
+
+经验法则:桌面宽图 right + follow;嵌入式小图 none + 直标;无障碍审计一律按「Esc 可关/可悬停/常驻」三清单过一遍,库实现不豁免。

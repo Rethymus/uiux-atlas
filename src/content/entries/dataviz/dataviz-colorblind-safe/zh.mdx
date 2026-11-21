@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+色盲核查的 DOM 结构是「**内容层 + 滤镜层**」:图表本体不变,模拟滤镜以 SVG `<filter>` 定义、经 CSS `filter: url(#id)` 施加到图表容器上;冗余编码则是直接写进图表本体的第二视觉通道。
+
+```html
+<!-- 滤镜定义(隐藏 SVG;系数见下方「样式与参数」) -->
+<svg width="0" height="0" aria-hidden="true">
+  <defs>
+    <filter id="cvd-filter-deuteranopia" colorInterpolationFilters="sRGB">
+      <feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0 …" />
+    </filter>
+    <!-- 柱纹理 pattern ×3:斜线 / 交叉 / 圆点 -->
+  </defs>
+</svg>
+
+<!-- 同一组图表,切换容器滤镜即可 -->
+<figure style="filter: url(#cvd-filter-deuteranopia)">
+  <svg>…柱图/折线图…</svg>
+</figure>
+```
+
+关键点:
+
+- 滤镜加在**容器**(figure)上,图表 SVG 不感知模拟,正常/模拟视图共用同一份 DOM;
+- 冗余编码不是滤镜:柱叠 `<pattern>` 纹理、折线配 `stroke-dasharray` + 标记形状,图例同步——关掉滤镜它们依然在;
+- 与 ECharts/D3 的取舍:ECharts 用 `aria.decal` 贴花纹理做第二编码(demo 等价物就是 pattern)、无内置 CVD 模拟;D3 生态靠 d3-scale-chromatic 选安全色板,模拟要自己接 daltonlens 类工具。手绘 demo 的价值是把「模拟核查」变成可交互的产品内体验——生产图表用库,验收流程用模拟。
+
+## 样式与参数
+
+两个参数:`simulation`(正常/绿盲/红盲/蓝盲)与 `redundancy`(纹理+线型+标记,on/off)——均 JS 型。
+
+模拟矩阵的诚实声明(本条目最易被讹传的部分):
+
+- **调研未记载矩阵系数原文**:08 号调研核实的是三代模型的**机制**——Brettel 1997(LMS 双半平面,protan/deutan 不变波长 475/575nm、tritan 485/660nm)、Viénot 1999(protan/deutan 单平面简化,gamma 解码→3×3 矩阵→gamma 编码)、Machado 2009(生理模型,severity 经锥细胞峰值波长偏移插值,0-1 线性);
+- demo 用的 feColorMatrix 系数是**社区流传的 Machado 2009 severity=1 矩阵(社区常见值,未证实)**,论文原文调研未直接核;
+- **已知偏差**:feColorMatrix 直接作用于 sRGB 编码值,正是调研点名的开源界流行 bug——结果整体偏暗、产生假阳性;严谨管线必须先 gamma 解码到线性 RGB 再套矩阵;tritan 模拟应使用 Brettel(demo 的矩阵近似仅供演示,不得当权威判定);
+- 患病率(权威口径,已核):美国 NEI「约 1/12 男性」;jfly 细分:白人男 8%、亚洲男 5%、非洲男 4%,蓝黄型(tritanopia)≈0.001%。
+
+演示色板取 Okabe-Ito 三色:`#D55E00`(朱红)/ `#009E73`(蓝绿)/ `#0072B2`(蓝)——**故意入选红绿混淆对**,让绿盲/红盲下的塌缩肉眼可见(hex 为 R grDevices 固化值;官方页不含文字 hex,作为官方发布值未证实)。
+
+## 动效与交互
+
+核查动线本身就是交互设计:
+
+- 切模拟模式:容器 `filter` 立即切换,无过渡(模拟视图是「检查镜」,不应有渐变伪装);参数面板与 demo 工具栏双向同步(同一 store);
+- 冗余编码开关:on 时柱体叠纹理、折线切线型并出现标记形状,图例同步——0.25s 内完成,reduce 下直接切换无动画;
+- demo 无入场动画,尊重 `prefers-reduced-motion`;
+- 正确的核查顺序:先「关冗余 + 绿盲」看崩溃,再开冗余确认可救——这也是设计评审的推荐动线。
+
+## 真实产品案例
+
+- **Power BI**:官方报告主题文档直接提供「Color-blind friendly theme」——`ColorblindSafe-Longer.json` 一键下载(go.microsoft.com/fwlink 直链,官方 docs 已核)。
+- **Chrome DevTools**:Rendering 面板内置视觉缺陷模拟(含 protanopia/deuteranopia/tritanopia 词条),功能存在性经 devtools-frontend 仓库测试代码佐证;官方文档页多次 404 未定位(未找到)。
+- **ECharts**:无障碍模块 `aria.label.enabled` 默认开启(自动生成图形摘要供读屏),而 `aria.decal.show` 贴花纹理默认 **false**——色盲安全的第二编码需显式开启(v5.5.1 源码核验)。
+- **GitHub Primer**:官方主题清单含 `light-colorblind / dark-colorblind / light-tritanopia / dark-tritanopia` 四套色觉缺陷专用语义主题——「语义层换映射表即可生成色盲模式」的工业实证(仓库 README 已核)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `simulation` | 从 normal 走向三型模拟,红绿混淆对的塌缩逐步显形;tritan 影响面最小(≈0.001%)但矩阵近似误差最大 | 回到 normal 只证明「正常人看得清」,不构成色盲安全证据 |
+| `redundancy` | on 后图表在任何色觉类型下都保留纹理/线型/标记三重通道,代价是视觉密度上升 | off 时信息全押在色相上——绿盲/红盲占比最高的场景直接报废 |
+
+经验法则:模拟三型 × severity=1 全过 + 冗余编码默认开,才算「色盲安全」;只换安全色板不做冗余,是半套方案。

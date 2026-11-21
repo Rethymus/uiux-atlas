@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+图标的语义分工发生在**两层**:图标图形层(装饰 or 携带语义)与承载交互的按钮层(拿可访问名)。正确结构的分工是——装饰图标摘树、可聚焦元素拿名:
+
+```html
+<!-- 图标 + 文字按钮:可见文字就是可访问名,图标纯装饰(MDN 官方示例分工) -->
+<button>
+  <svg aria-hidden="true" viewBox="0 0 24 24">…星形路径…</svg>
+  收藏
+</button>
+
+<!-- 纯图标按钮:图标装饰化 + 按钮拿 aria-label,名写动作不写形状 -->
+<button aria-label="收藏">
+  <svg aria-hidden="true" viewBox="0 0 24 24">…星形路径…</svg>
+</button>
+```
+
+四条铁律(W3C/MDN 一手,07 §4.1):
+
+1. **纯装饰图标摘树**:`aria-hidden="true"` 把元素及其全部子节点从无障碍树移除,可隐藏对象明确列举 "Purely decorative content, such as icons";
+2. **红线:可聚焦元素不得 aria-hidden**,也不得加在可聚焦元素的祖先上(隐藏沿树传染,焦点会落进不可见子树);
+3. **摘除的前提**:等价信息已从其他通道暴露("identical or equivalent meaning and functionality" 暴露给 AT);
+4. **语义图标的名写动作不写形状**:WAI 教程原文 "print this page" 而非 "(image of a) printer"、"search" 而非 "magnifying lens"。
+
+## 样式与参数
+
+两个参数都是 JS 型,决定两个真实按钮的 aria 属性;读屏模拟面板按同一规则函数输出播报:
+
+```tsx
+// 装饰化:aria-hidden 始终落在 svg 上,按钮保持可聚焦(红线不破)
+<svg aria-hidden={decorative === "on" || undefined} …>…</svg>
+
+// 可访问名:名 = "收藏"(动作),不是 "星形"(形状)
+<button aria-label={named ? "收藏" : undefined}>…</button>
+
+// 可访问名计算(简化版 accname):aria-label 优先,回退到按钮文本内容
+const name = btn.getAttribute("aria-label") ?? btn.textContent.trim();
+```
+
+四格对照(W3C/MDN 规则推演,实际读屏器实现有差异,已如实标注):
+
+| aria-hidden | 可访问名 | 读屏播报 | 判定 |
+| --- | --- | --- | --- |
+| ✓ | ✓ | 「收藏,按钮」 | 推荐(MDN 官方分工) |
+| ✓ | ✗ | 「按钮」 | 失败:图标摘除后按钮无名 |
+| ✗ | ✓ | 「收藏,按钮」(图形是否播报因实现而异) | 可用但冗余风险 |
+| ✗ | ✗ | 「按钮」;`<img>` 缺 alt 场景会读文件名/URL | 失败:无名且无等价文本 |
+
+## 动效与交互
+
+无障碍条目的交互就是「配置 → 行为」的即时反馈:
+
+- **参数切换实时落到真实按钮**:svg 的 `aria-hidden` 与按钮的 `aria-label` 同步变化,读屏模拟面板与四格表高亮当前组合;
+- **按钮保留真实键盘行为**:Tab 聚焦、Enter/Space 激活、`:focus-visible` 焦点环——焦点环自身受 WCAG 1.4.11 的 3:1 约束(07 §4.3);
+- demo 内无运动动效,`prefers-reduced-motion` 无需降级;
+- 读屏模拟面板标明是**规则推演**,不逐字复刻任一读屏器(内联 SVG 播报因 NVDA/JAWS/VoiceOver 实现而异)。
+
+## 真实产品案例
+
+- **MDN aria-hidden 官方示例**:图标装饰化 + 文字标签拿名,即本条目 icon+text 按钮的结构原型(07 §4.1);
+- **W3C WAI Images Tutorial**:功能图替代文本写动作意图("search" 而非 "magnifying lens"),图标紧跟链接文字且不携带新信息时 → `alt=""`(07 §4.1);
+- **WAI-APG 现行实践**:旧版 Images 实践页 2026-11 实测 404 后,由 "Providing Accessible Names and Descriptions" 与 "Hiding Semantics with the presentation Role" 两页承接,规则实质不变——装饰性摘除、功能性给名(07 §4.2)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `decorative` | on 图标摘树、播报干净,但前提是按钮已有等价名;若同时把名也关掉,信息瞬间归零 | off 图标保留在树里——多数读屏器对无 title 内联 SVG 不播报(行为有差异),留下不确定性而非额外信息 |
+| `label` | with 给按钮动作名,四种组合中唯一的满分搭配(配 aria-hidden) | without 让可访问名为空——读屏只读「按钮」,针对 `<img>` 还可能朗读文件名/URL,是最严重的失败形态 |
+
+锚点:装饰图标一律 aria-hidden 且永不落在可聚焦元素上;图标按钮的名永远写动作;摘除前确认等价信息已在别的通道暴露。

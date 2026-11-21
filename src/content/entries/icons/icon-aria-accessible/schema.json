@@ -1,0 +1,89 @@
+{
+  "name": "Icon Semantics & Accessibility",
+  "nameZh": "图标语义与无障碍",
+  "aliases": ["装饰性图标", "图标可访问名", "aria-hidden", "Accessible Icon", "Decorative Icon"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "装饰图标一律 aria-hidden=\"true\" 摘出无障碍树且永不落在可聚焦元素上;语义图标用可访问名写动作(「搜索」不是「放大镜」);四种 aria-hidden × 可访问名组合逐一对照读屏行为。",
+    "en": "Decorative icons are removed from the accessibility tree with aria-hidden=\"true\" and never sit on focusable elements; semantic icons get an accessible name describing the action ('search', not 'magnifying lens'); all four aria-hidden × name combinations compared against screen-reader behavior."
+  },
+  "origin": {
+    "zh": "规则主干来自 W3C/MDN 一手:MDN aria-hidden 明确可隐藏对象包含 \"Purely decorative content, such as icons\",且不得用于可聚焦元素;W3C WAI 功能图教程要求替代文本传达动作意图——\"'print this page' rather than '(image of a) printer'\"(out/design-study/07-icons.md §4.1)。WAI-APG 旧版 Images 实践页已于 2026-11 实测 404,现行由 names-and-descriptions 与 hiding-semantics 两页承接(07 §4.2)。",
+    "en": "The rule backbone is first-hand W3C/MDN: MDN's aria-hidden page lists \"Purely decorative content, such as icons\" among hideable objects and forbids use on focusable elements; the W3C WAI functional-images tutorial requires alt text to convey intent — \"'print this page' rather than '(image of a) printer'\" (out/design-study/07-icons.md §4.1). The old WAI-APG Images practice pages measured 404 in 2026-11, succeeded by the names-and-descriptions and hiding-semantics pages (07 §4.2)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "decorative",
+      "options": [
+        { "value": "on", "label": { "zh": "aria-hidden=\"true\"(摘除)", "en": "aria-hidden=\"true\" (removed)" } },
+        { "value": "off", "label": { "zh": "无 aria-hidden(保留)", "en": "No aria-hidden (kept)" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "装饰化开关。默认 on:图标被摘出无障碍树(MDN:aria-hidden=\"true\" removes the element and all children from the accessibility tree),按钮只播报可访问名——MDN 官方示例即此分工(图标装饰 + 按钮拿名)。红线:aria-hidden 不得用在可聚焦元素或其祖先上(焦点会落进被隐藏子树);本 demo 的 aria-hidden 始终在 svg 上、按钮可聚焦不受影响(07 §4.1)。",
+        "en": "Decorative switch. Default on: the icon leaves the accessibility tree (MDN: aria-hidden=\"true\" removes the element and all children from it) and the button announces only its accessible name — the MDN example itself splits work this way (decorated icon + named button). Red line: never put aria-hidden on a focusable element or its ancestor (focus would land inside a hidden subtree); here aria-hidden always sits on the svg while the button stays focusable (07 §4.1)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "label",
+      "options": [
+        { "value": "with", "label": { "zh": "有可访问名(aria-label)", "en": "With accessible name (aria-label)" } },
+        { "value": "without", "label": { "zh": "无可访问名", "en": "Without accessible name" } }
+      ],
+      "default": "with",
+      "effect": {
+        "zh": "可访问名开关。默认 with:纯图标按钮必须有可访问名,且写动作不写形状——WAI 教程原文 \"'search' rather than 'magnifying lens'\",\"print this page\" 而非 \"printer\"(07 §4.1);demo 取「收藏」而非「星形」。without 档展示失败形态:按钮无可访问名,读屏只能读到「按钮」,信息全失;针对 <img> 缺 alt 时读屏会朗读文件名/URL(内联 SVG 行为因读屏器实现而异,未统一规定)。",
+        "en": "Accessible-name switch. Default with: an icon-only button must carry a name describing the action, not the shape — WAI tutorial wording \"'search' rather than 'magnifying lens'\", \"print this page\" not \"printer\" (07 §4.1); the demo names it 「收藏」 (favorite), never 「star shape」. The without option shows the failure: an unnamed button reads just “button”, losing all information; for <img> without alt, screen readers may announce the file name/URL (inline SVG behavior varies by reader implementation, not standardized)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "aria-hidden 与 aria-label 是 ARIA 标准属性,现代浏览器 + 主流读屏器(NVDA/JAWS/VoiceOver/Narrator)均支持;读屏器对无 title 内联 SVG 的具体播报行为存在实现差异(未统一规定),demo 的「读屏模拟」按 W3C/MDN 规则推演,不宣称逐字复刻任一读屏器。",
+      "en": "aria-hidden and aria-label are standard ARIA attributes supported by modern browsers and major screen readers (NVDA/JAWS/VoiceOver/Narrator); how a given reader treats untitled inline SVG varies by implementation (not standardized) — the demo's simulation follows W3C/MDN rules and does not claim to replicate any specific reader verbatim."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "ARIA 属性在极旧 AT 上可能被忽略,因此可访问名优先用**平台原生机制**:按钮内有真实文字(可见标签)> aria-label;装饰图标在无 ARIA 环境下退化为「多读一段无意义内容」,不破坏功能——这也是 MDN 示例保留文字标签的原因。",
+    "en": "Very old assistive tech may ignore ARIA, so prefer native mechanisms for names: real text inside the button (visible label) beats aria-label; without ARIA a decorative icon degrades to one extra meaningless utterance and never breaks function — which is why MDN's example keeps the text label."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "图标 + 文字按钮:图标纯装饰 aria-hidden,文字就是可访问名(MDN 官方示例分工)", "en": "Icon + text button: icon purely decorative with aria-hidden, the text is the accessible name (MDN's canonical split)" },
+      { "zh": "纯图标按钮(工具栏):图标 aria-hidden + 按钮拿 aria-label 写动作「收藏/搜索/打印此页」", "en": "Icon-only buttons (toolbars): icon aria-hidden + aria-label on the button stating the action (favorite / search / print this page)" },
+      { "zh": "信息型共享图标(如「新窗口」):替代文本承载图标语义本身(07 §4.1 例 3)", "en": "Shared informational icons (e.g. new window): the alt text carries the icon's meaning itself (07 §4.1 example 3)" }
+    ],
+    "avoid": [
+      { "zh": "aria-hidden 放在可聚焦元素或其祖先上——焦点落进隐藏子树是 ARIA 红线(MDN 原文,07 §4.1)", "en": "aria-hidden on a focusable element or its ancestor — focus landing inside a hidden subtree is an ARIA red line (MDN, 07 §4.1)" },
+      { "zh": "用形状描述当可访问名(「五角星」「放大镜」)——应写动作(「收藏」「搜索」,WAI 教程,07 §4.1)", "en": "Naming by shape ('star', 'magnifier') instead of by action ('favorite', 'search') — WAI tutorial, 07 §4.1" },
+      { "zh": "隐藏后没有等价信息暴露(\"identical or equivalent meaning and functionality\" 是摘除前提,07 §4.1)", "en": "Hiding without equivalent information exposed — 'identical or equivalent meaning and functionality' is the precondition for removal (07 §4.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目即无障碍本体:装饰图标 aria-hidden 摘树;图标按钮可访问名写动作;摘除前提是等价信息已从其他通道暴露。另两条相邻护栏:图形对比 ≥3:1(WCAG 1.4.11,见 icon-color-states)、焦点指示同样受 3:1 约束。读屏行为对照表以 W3C/MDN 规则推演,实际播报因读屏器而异(已如实标注)。",
+    "en": "This entry IS the accessibility content: decorative icons leave the tree via aria-hidden; icon buttons get action-named accessible names; removal presumes equivalent information is exposed elsewhere. Adjacent guardrails: ≥3:1 non-text contrast (WCAG 1.4.11, see icon-color-states) and focus indicators bound by the same 3:1. The behavior table is a rule-based simulation; actual utterances vary by screen reader (marked honestly)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-hidden",
+    "https://www.w3.org/WAI/tutorials/images/functional/",
+    "https://www.w3.org/WAI/ARIA/apg/practices/names-and-descriptions/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一个无障碍图标按钮:装饰图标 aria-hidden=\"true\",按钮携带写动作的可访问名,并给出图标+文字变体;四种 aria 组合的读屏行为对照表随实现交付。",
+      "en": "Build an accessible icon button: decorative icon with aria-hidden=\"true\", an action-stating accessible name on the button, plus an icon+text variant; deliver the four-combination screen-reader behavior table with the implementation."
+    },
+    "acceptance": [
+      { "zh": "装饰图标一律 aria-hidden=\"true\",且永不落在可聚焦元素或其祖先上", "en": "Decorative icons always carry aria-hidden=\"true\" and never sit on a focusable element or its ancestor" },
+      { "zh": "纯图标按钮可访问名写动作(「收藏」),不写形状(「星形」)", "en": "Icon-only buttons name the action (favorite), never the shape (star)" },
+      { "zh": "图标+文字按钮中,可见文字即唯一可访问名来源,图标摘除不冗余", "en": "In icon+text buttons the visible text is the sole name source; the icon is removed without duplication" },
+      { "zh": "不为 aria-hidden 元素保留焦点、交互或任何仅靠视觉传递的关键信息", "en": "No focus, interactivity or visually-only key information remains inside aria-hidden subtrees" },
+      { "zh": "实现附读屏行为对照(装饰/保留 × 有名/无名四格),注明为规则推演而非逐字读屏输出", "en": "Ship the four-cell behavior table (decorative/kept × named/unnamed), noted as rule-based simulation rather than verbatim reader output" }
+    ]
+  }
+}

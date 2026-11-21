@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+轴线/网格是「**参考层**」,与数据层分离:同一份 SVG 里,网格与轴线画在最底,数据线画在上层,参考线永远不遮数据。
+
+```html
+<svg viewBox="0 0 600 340">
+  <!-- 参考层:值轴横向网格(opacity: var(--dvz-grid-op));类目轴不画网格 -->
+  <g class="grid"><line x1="46" x2="554" y1="…" y2="…" stroke="currentColor" /></g>
+  <!-- 轴层:#6E7079 宽 1;刻度线长 5;可整体隐藏(ggplot2 路线) -->
+  <g class="axes" stroke="#6E7079"><line … /><line … /></g>
+  <!-- 标签层:fontSize 12 / margin 8 -->
+  <text x="38" y="…" text-anchor="end">25</text>
+  <!-- 数据层 -->
+  <polyline points="…" stroke="#0072B2" stroke-width="2.5" />
+</svg>
+```
+
+关键点:
+
+- 横向网格**只属于值轴**:ECharts 源码强制类目轴 `splitLine` 关闭——网格语义是「值是多少」,类目没有值;
+- 网格线颜色用 `currentColor`(继承文字色)+ opacity:这正是 Grafana 公式的 demo 化——暗色亮色主题各自翻转向主文字色再取 9%,不用维护两套灰值;
+- 与 ECharts/D3 的取舍:ECharts/D3 的轴是配置项对象(`axisLine.show / splitNumber / axisLabel.margin`),开箱即得全部默认值;手绘 SVG 的价值是每个默认值都看得见、可单独覆盖——原型用库,对齐规范时把库默认值逐项核对成本条目的调研值。
+
+## 样式与参数
+
+三个参数,默认值全部源码级可查:
+
+| 参数 | 类型 | 默认值 | 出处(逐字核验) |
+| --- | --- | --- | --- |
+| `gridOpacity` | CSS 变量 `--dvz-grid-op` | **0.09** | Grafana `getGridColor()`:暗 `rgba(240,250,255,.09)` / 亮 `rgba(0,10,23,.09)` |
+| `axisLine` | JS 型 | **on**(#6E7079,宽 1) | ECharts `axisDefault.ts`: `axisLine.show: true, color: '#6E7079', width: 1` |
+| `tickCount` | JS 型 | **5** | ECharts `splitNumber: 5`(time 轴为 6) |
+
+配套常量(ECharts 默认):刻度线长 **5**、标签 `margin: 8`、`fontSize: 12`、网格色实色 `#E0E6F1`(白底下视觉 ≈0.12,与本条目 0.09 同档);ggplot2 对照:轴线 `element_blank()` 默认删除、面板灰底白网格、次网格线宽减半;FT Visual Vocabulary 补基线纪律:柱/面积图「Must always start at 0 on the axis」,折线图可不从零。
+
+许可背景:ECharts 与 Grafana 均为 Apache-2.0(源码头/LICENSE 已核),ggplot2 为 MIT 系;FT 海报版权所有不可翻印,只引用原则。
+
+## 动效与交互
+
+参考层的动效原则:**网格与轴线不参与动画**。
+
+- 切 `axisLine` / 拖 `tickCount`:数据线与刻度即时重算重绘,无过渡——轴刻度变化若做动画,读者会把「刻度移动」误读为「数据移动」;
+- `gridOpacity` 走 CSS 变量,滑杆拖动即时生效、零 JS 重排;
+- 数据线入场动画(若有)只动 `stroke-dashoffset` 或 `opacity`,reduce 下取消;hover 数据点显示原生 `<title>`(系列·月份·值);
+- demo 无持续动画,尊重 `prefers-reduced-motion`。
+
+## 真实产品案例
+
+- **ECharts v5.5.1**:默认「轴线可去、网格保留且极浅」——笛卡尔系下另一轴是类目轴时,值轴的 `axisLine/axisTick` 置 `auto` 不画,而 `splitLine` 默认开、色 `#E0E6F1`(axisDefault.ts 逐字核验;master 分支已把默认色 token 化,升级大版本留意 `tokens.color.axisLine`)。
+- **Grafana(uPlot 底座)**:`getGridColor()` 把网格写死为「主背景反色 9%」,暗亮主题各自翻转;轴线(border)默认不显示,轴文字用主题主文字色、`labelPad = 8`(UPlotAxisBuilder.ts 逐字核验)。
+- **ggplot2**:签名主题「灰底白网格」——默认删轴线、面板底 `col_mix(ink, paper, 0.92)`、次网格线宽减半(`theme-defaults.R` L194/L271/L276 核验),是「网格表达坐标系、轴线可省」路线的学术源头。
+- **FT Visual Vocabulary**:轴基线权威表述「Column must always start at 0 on the axis」;line 图可不从零(引 ONS 与 Quartz 论证);海报版权所有、转载需 syndication(README 已核)——引用原则,不翻印海报。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `gridOpacity` | >0.3 后网格压过数据线,折线图变「表格图」;1 时网格与文字同重 | 0.05 以下接近无网格,读值靠数据点标签;0 时必须补 tooltip/直标 |
+| `axisLine` | on 给图表一个明确的「框」,打印与浅屏更稳;但双轴都画线会加重边框感 | off 走 ggplot2/Grafana 极简路线,视觉噪音最小;前提是网格还在、标签对位清晰 |
+| `tickCount` | 8 档在 300px 高的图里开始拥挤,标签 12px 时档距 &lt;38px;取整算法会自动并档 | 2-3 档最克制,适合概览;但读值精度下降,交互取值场景建议 5 档以上 |
+
+经验区间:gridOpacity 0.05-0.15(Grafana 0.09 居中)、刻度 4-6 档、轴线「亮底可留暗底可去」;任何情况下类目轴不画横网格、柱图零基线。

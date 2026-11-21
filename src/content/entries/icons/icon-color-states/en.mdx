@@ -1,0 +1,77 @@
+## Structure & DOM
+
+The structural goal of icon state color is "**one tint, whole chain**": paths stay bare, color inherits entirely from the host's `color`, and a state switch touches exactly one place:
+
+```html
+<!-- Host: the only color declaration; state carried by a data attribute -->
+<div class="toolbar" data-state="default">
+  <button aria-label="Favorite">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <polygon points="…" />
+    </svg>
+  </button>
+  <span>Favorite</span>
+</div>
+```
+
+```css
+/* State = one host color; icon + text move together (CSS Color 4 §6.4) */
+.toolbar { color: #1192e8; }                 /* default */
+.toolbar[data-state="hover"]   { color: #002d9c; }
+.toolbar[data-state="danger"]  { color: #da1e28; }
+/* Opacity de-emphasis rides the whole icon, never the semantics */
+.toolbar svg { opacity: 1; }
+.toolbar[aria-disabled="true"] svg { opacity: 0.2; }  /* Phosphor duotone's official de-emphasis magnitude */
+```
+
+Key points:
+
+- `currentColor` is "the value of the color property on the same element" (CSS Color 4 §6.4 verbatim); all five sets pre-configure it in their source files (Heroicons outline via stroke, solid via fill; Phosphor everywhere fill=currentColor — 07 §1.3/§1.4/§5.2);
+- State meaning cannot ride color alone — text/shape redundancy serves color-blind channels;
+- Decorative icons get `aria-hidden`; recoloring changes no semantics.
+
+## Styling & Parameters
+
+Two parameters — state (JS-type, drives the host color) and opacity (CSS variable `--cs-opacity`, whole-icon opacity); the demo ships a live contrast panel:
+
+```text
+WCAG 1.4.11 computation (official relative-luminance formula):
+  blended  = state color × alpha + white × (1 − alpha)
+  ratio    = (L_bright + 0.05) / (L_dark + 0.05)      pass at ≥ 3:1
+
+State colors (IBM Carbon dataviz palette; official page verified, Apache-2.0 LICENSE, 08 §1.3):
+  default #1192e8 (Cyan 50)  → 3.33:1 on white — passes by a hair
+  hover   #002d9c (Blue 80)  → 11.3:1 (Carbon defines no hover color; a verified deep slot stands in, noted)
+  danger  #da1e28 (alert danger) → 5.0:1
+```
+
+Measured anchors (drag the demo):
+
+- #1192e8 at full opacity is 3.33:1 — an **edge-of-threshold color**; at 80% opacity the blend already fails 3:1;
+- #da1e28 holds 5.0:1, still ≈3.9:1 at 80%, failing near 60%;
+- #002d9c has the largest margin, failing only near 50%;
+- 20% = Phosphor Duotone's official background-layer value — that is "decorative de-emphasis", not "interactive icon" territory (07 §1.4).
+
+## Motion & Interaction
+
+Motion discipline for state switches:
+
+- **Recolor transition**: `color` over 150–200ms with standard easing — M3's sanctioned micro-motion range (07 §6.2);
+- **Opacity transitions** signal de-emphasis, never state notifications (redundancy principle);
+- `prefers-reduced-motion`: `transition: none` snaps to the final state — feedback kept, motion dropped (07 §6.3);
+- Hover recoloring pairs with a non-color channel (shadow/underline); it should never be the entire hover feedback.
+
+## Real-world examples
+
+- **The Tailwind class pattern**: Heroicons' README tints with `text-gray-500` — exactly the currentColor mechanism, one class coloring icon and text together (07 §5.2);
+- **Material's dual-theme states**: light icons on black use GRAD −25 to −50 against glare and +200 for emphasis; the axis compensates when a state color is theme-inappropriate (07 §1.5/§3.1);
+- **Carbon's alert family**: danger #da1e28 / serious warning #ff832b / warning #f1c21b / success #198038, verified value-by-value on the official dataviz palette page with an Apache-2.0 LICENSE — the only one of the three mainstream palettes with a confirmed open license (08 §1.3).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `state` | hover's deep slot has the largest margin (11.3:1) for unstable backdrops; danger carries the heaviest semantics and dilutes its own warning power when overused | default is the edge-riding color (3.33:1) — any backdrop interference fails it; pure white backdrops only |
+| `opacity` | 100% is full strength and passes the 3:1 gate; opacity is a de-emphasis channel, not a state channel | from 80% #1192e8 already fails 3:1 (the demo flags it live); 20% is Phosphor duotone's decorative magnitude — unusable for interactive icons |
+
+Anchors: one host color; edge colors on pure white; de-emphasize at 0.2 (Phosphor official) rather than invented numbers; every state holds 3:1 — 2.999:1 fails.

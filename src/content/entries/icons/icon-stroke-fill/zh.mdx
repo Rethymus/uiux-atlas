@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+描边与填充是同一套 SVG 路径的两种「上墨」方式:路径(几何)只画一次,颜色与粗细全部交给**继承属性**——`stroke`、`fill` 设在 `<svg>` 根上,子形状保持裸路径。
+
+```html
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M13.5 2.75 6 13.5h4.9L10.5 21.25 18 10.5h-4.9z" />
+  <!-- 镂空子形状:内联 fill="none",填充开也保持中空 -->
+  <circle cx="12" cy="10.7" r="2.4" fill="none" />
+</svg>
+```
+
+关键点:
+
+- `viewBox="0 0 24 24"` 是全行业共同祖先网格(Lucide/Feather/Heroicons/Material 同规格,调研 07 §0);
+- 颜色只写 `currentColor` 一处:组件层设 `color:`,图标与文字同步变色(CSS Color 4 §6.4:currentcolor 即同元素 color 属性值,07 §5.2);
+- 子形状上写死 `fill`/`stroke` 会封死继承——`<use>` 深克隆进 shadow DOM 后只吃继承属性,「已定义的属性被引用值忽略」(MDN use 规则,07 §5.1);
+- 开放路径(线段)没有可填充的面积,`fill` 开了也只剩描边;要填充必须给闭合路径。
+
+## 样式与参数
+
+三个参数对应 svg 根上的三组属性,`strokeWidth` 经 `--sf-stroke` 变量注入,`fill`/`capJoin` 为 JS 型开关:
+
+```css
+.sf-ic {
+  fill: none;                              /* Lucide 源码定值 fill: 'none' */
+  stroke: currentColor;                    /* Lucide 源码定值 */
+  stroke-width: var(--sf-stroke, 2);       /* 默认 2 = defaultAttributes.ts 定值 */
+  stroke-linecap: round;                   /* 源码定值 round */
+  stroke-linejoin: round;                  /* 源码定值 round */
+}
+.sf-scene[data-fill="on"] .sf-art path { fill: currentColor; }
+.sf-scene[data-cap="square"] .sf-ic { stroke-linecap: square; stroke-linejoin: miter; }
+```
+
+数值出处:
+
+- **stroke-width 2 / round 圆头圆角 / fill none / currentColor 四件套**:Lucide `packages/lucide/src/defaultAttributes.ts` 源码定值,`icons/house.svg` 实测同上(07 §1.1);Feather attrs 同构(07 §1.2);
+- **1.5 的例外**:Heroicons `src/24/outline/bars-3.svg` 真实文件实测 `stroke-width="1.5"`,README 快速上手仍写 2 是 v1 旧文案,以文件为准(07 §1.3);
+- **细线负债**:WCAG 1.4.11 理解文档提醒抗锯齿会让特别细的线实际渲染远淡于定义色,建议避免(07 §3.3);
+- **填充路线的另一个极端**:Phosphor 六权重全系以填充路径交付(256×256 viewBox 实测),描边宽度烘焙进轮廓(07 §1.4)。
+
+## 动效与交互
+
+描边/填充本身是静态属性,动效发生在「状态切换」上:
+
+- **填充点亮**:描边版与填充版是同一路径的两种交付,hover/选中时切填充即「点亮」——这正是 Material Symbols FILL 轴("animated fill effect, to indicate user selection")的 SVG 等效通道(07 §6.1);过渡时长与缓动遵守 150–200ms + standard 缓动(07 §6.2);
+- **线宽不做动画**:stroke-width 插值会引发整图标重排,小尺寸下抖动感明显;需要「变重」的感受优先换填充而非加粗线条;
+- `prefers-reduced-motion` 时填充切换直切终态(transition: none),状态反馈保留、运动取消(07 §6.3);
+- `stroke-dashoffset` 描边绘制类动效详见 icon-motion 条目。
+
+## 真实产品案例
+
+- **Heroicons 双体系**:Tailwind 官方团队维护的 `24/outline`(描边 1.5px)与 `24/solid`(填充)共享语义同名文件,React/Vue 按路径摇树导入(`@heroicons/react/24/outline`),官方明确不再接受新图标 PR(07 §1.3);
+- **Lucide 全描边 + 实验性填充**:默认四件套源码定值,填充权重为实验性分支;lucide-react/vue/svelte 等全家桶把动画留给宿主,不在 SVG 内嵌 SMIL(07 §1.1/§6.3);
+- **Phosphor 填充路线**:Fill/Duotone 权重把描边烘焙为填充轮廓,是五套中唯二能做「半透明底 + 实心上」分层的(Duotone 背景层 opacity 0.2 实测)(07 §1.4)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `strokeWidth` | 3 时线条粗壮醒目,但 ≤16px 渲染时镂空糊死、细节粘连 | 1 时精致轻盈,但低分屏/小字号下实际渲染远淡于定义色(WCAG 1.4.11 提醒),对比度承压 |
+| `fill` | on 让闭合路径实底化,视觉重量陡增——与描边版并排需模糊法核对灰度是否失衡(07 §3.2) | off 回到纯描边,视觉最轻;依赖线宽与颜色对比支撑可见性 |
+| `capJoin` | square/miter 转角出现尖刺与方头,风格硬朗但小尺寸易毛糙 | round 是默认与社区主流;圆头在曲线转角处过渡最顺 |
+
+经验锚点:24px 网格配 2px 描边(Lucide/Feather 官方)、1.5px 是 Heroicons 的实测例外;描边与填充不要在同页面无体系混用。

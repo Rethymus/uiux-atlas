@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getEntryStore } from "@/lib/store";
 import { buildPrompt } from "@/lib/prompt";
+import { buildShareLink } from "@/lib/shareLink";
 import type { EntrySchema, Locale } from "@/lib/types";
 import { t } from "@/i18n/ui";
 
@@ -13,6 +14,8 @@ interface PromptExportProps {
 /**
  * Prompt 导出块:store.exportSnapshot() + buildPrompt 生成结构化复刻 prompt。
  * 「复制复刻 Prompt」写剪贴板;「查看 Prompt」折叠展开全文。
+ * 「分享参数链接」把当前参数快照序列化为 #s=name=value&… 追加到当前地址,
+ * 复制完整链接;打开该链接时由 DemoStage 挂载解析恢复(src/lib/shareLink.ts)。
  * 参数快照随 store 实时更新,复制到的永远是当前调节结果。
  *
  * 复制态 morph(spec §3 Button / §6-18):成功后按钮文案切换「已复制 ✓」+
@@ -26,47 +29,60 @@ export default function PromptExport({ entryId, schema, locale }: PromptExportPr
   const store = getEntryStore(entryId, schema);
   const [, setTick] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const timerRef = useRef<number | undefined>(undefined);
+  const linkTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const unsubscribe = store.subscribe(() => setTick((n) => n + 1));
     return () => {
       unsubscribe();
       if (timerRef.current !== undefined) window.clearTimeout(timerRef.current);
+      if (linkTimerRef.current !== undefined) window.clearTimeout(linkTimerRef.current);
     };
   }, [store]);
 
   const prompt = buildPrompt(schema, store.exportSnapshot(), locale);
 
-  const flashCopied = () => {
-    setCopied(true);
-    if (timerRef.current !== undefined) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => setCopied(false), 2000);
-  };
-
-  const copy = async () => {
-    let ok = false;
+  /** 剪贴板统一入口(主按钮/分享链接共用);非安全上下文走 execCommand 兜底 */
+  const writeClipboard = async (text: string): Promise<boolean> => {
     try {
-      await navigator.clipboard.writeText(prompt);
-      ok = true;
+      await navigator.clipboard.writeText(text);
+      return true;
     } catch {
       // 非安全上下文等场景的兜底
       try {
         const ta = document.createElement("textarea");
-        ta.value = prompt;
+        ta.value = text;
         ta.setAttribute("readonly", "");
         ta.style.position = "fixed";
         ta.style.opacity = "0";
         document.body.appendChild(ta);
         ta.select();
-        ok = document.execCommand("copy");
+        const ok = document.execCommand("copy");
         ta.remove();
+        return ok;
       } catch {
-        ok = false;
+        return false;
       }
     }
-    if (ok) flashCopied();
+  };
+
+  const flash = (set: (v: boolean) => void, ref: { current: number | undefined }) => {
+    set(true);
+    if (ref.current !== undefined) window.clearTimeout(ref.current);
+    ref.current = window.setTimeout(() => set(false), 2000);
+  };
+
+  const copy = async () => {
+    if (await writeClipboard(prompt)) flash(setCopied, timerRef);
+  };
+
+  const share = async () => {
+    if (await writeClipboard(buildShareLink(schema, (name) => store.get(name)))) {
+      flash(setLinkCopied, linkTimerRef);
+    }
   };
 
   return (
@@ -82,11 +98,20 @@ export default function PromptExport({ entryId, schema, locale }: PromptExportPr
         >
           {copied ? dict.entry.copied : dict.entry.copyPrompt}
         </button>
+        {/* 次级:分享参数链接(#s= 快照);btn-ghost 常规按钮,无磁吸 */}
+        <button type="button" className="btn-ghost" onClick={share}>
+          {linkCopied ? dict.entry.copied : dict.entry.shareLink}
+        </button>
         <button type="button" className="btn-ghost" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           {dict.entry.viewPrompt}
         </button>
         {/* 读屏回执:文案切换的视觉反馈对读屏不可靠,role="status" 兜底播报 */}
         {copied && (
+          <span className="copy-ok sr-only" role="status">
+            {dict.entry.copied}
+          </span>
+        )}
+        {linkCopied && (
           <span className="copy-ok sr-only" role="status">
             {dict.entry.copied}
           </span>

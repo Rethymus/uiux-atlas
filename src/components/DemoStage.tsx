@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { getEntryStore } from "@/lib/store";
+import { applyShareHash } from "@/lib/shareLink";
 import type { EntrySchema } from "@/lib/types";
+import ContrastChecker from "@/components/ContrastChecker";
 
 interface DemoStageProps {
   entryId: string;
@@ -19,17 +21,26 @@ interface DemoStageProps {
  * 左上角叠加舞台铭牌(stage-plate,条目名 + 分类色点,纯装饰 aria-hidden);
  * demo 侧右上工具/左下说明为既定占位,左上是空档;hero 舞台已有
  * hero-stage-tag,由 `.hero-live .stage-plate { display: none }` 让位。
+ *
+ * 挂载时解析分享参数链接(location.hash 的 #s=name=value&…):
+ * 仅恢复 schema 中存在的参数,逐参数 store.set(src/lib/shareLink.ts);
+ * 解析失败/非法值自动跳过,不影响默认参数。
+ *
+ * color 分类两条目(oklch-workflow / wcag-contrast)额外内嵌对比度校验
+ * 附加面板(ContrastChecker,舞台右下角可收起),不动这两条目的 schema 与 demo。
  */
 export default function DemoStage({ entryId, schema, children }: DemoStageProps) {
   const store = getEntryStore(entryId, schema);
   const rootRef = useRef<HTMLDivElement>(null);
+  const withChecker = entryId === "color/oklch-workflow" || entryId === "color/wcag-contrast";
 
   useEffect(() => {
     store.setRoot(rootRef.current);
+    applyShareHash(store, schema);
     return () => {
       store.setRoot(null);
     };
-  }, [store]);
+  }, [store, schema]);
 
   return (
     <div ref={rootRef} className="demo-stage">
@@ -38,6 +49,7 @@ export default function DemoStage({ entryId, schema, children }: DemoStageProps)
         {schema.name}
       </span>
       {children}
+      {withChecker && <ContrastChecker entryId={entryId} schema={schema} />}
     </div>
   );
 }

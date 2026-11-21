@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+光学缩放没有独立 DOM——它是对**绘制坐标**的修正纪律。demo 用三枚 24 网格 SVG 并排,叠加中心十字与键程参考:
+
+```html
+<!-- 方:几何居中,贴 18×18 键程 -->
+<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+
+<!-- 圆:光学放大到 Ø20(比方形键程大 2dp) -->
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+
+<!-- 不对称三角:允许 ≤0.5 单位光学偏心 -->
+<svg viewBox="0 0 24 24">
+  <g transform="translate(0.5 0)">
+    <path d="M8 7.5v9l7.5-4.5z" fill="none" stroke="currentColor" stroke-width="2"/>
+  </g>
+</svg>
+```
+
+要点:
+
+- 补偿只动**尺寸与亚像素位置**,不动语义;`aria` 信息不受影响;
+- 大尺寸渲染时线宽用 `vector-effect: non-scaling-stroke` 保持恒定绝对值,示意「放大后线相对变细」的 opsz 方向;
+- 十字参考线是设计期工具,交付删除。
+
+## 样式与参数
+
+两个参数都是 JS 型,换算关系:
+
+```text
+圆直径 = compensate ? 20 : 18          // 官方键程 Ø20 = 方 18 + 2dp
+渲染直径 px = 网格值 / 24 × baseSize    // baseSize 默认 24(opsz 官方默认)
+三角偏移 = compensate ? +0.5px : 0     // Lucide 允许 slightly off center(数值为演示取值)
+```
+
+数值出处:
+
+- **圆 Ø20 / 方 18×18**:Material system-icons 键程官方值(07 §2),圆比方案 +11.1%(20/18,07 §3.1);
+- **opsz 轴 20–48、默认 24**:Material Symbols README/Google Fonts 指南双证(07 §1.5);仅 20px 与 24px 版本做到完美像素对齐;
+- **不对称允许偏心**:Lucide design-principles 原文 "may be moved slightly off center so they look visually centered"(07 §3.2);**0.5px 为演示取值,官方未给数**;
+- **模糊法验收**:Lucide 原版技法——与 circle/square 并排整体模糊,灰度不应明显失衡(07 §3.2);demo 的「模糊法验收」按钮即此;
+- **反向应用**:深底浅色图标用 GRAD −25~−50 降眩光,是光学缩放在负空间方向的应用(07 §3.1-4)。
+
+## 动效与交互
+
+光学缩放是静态纪律,demo 交互只两处:
+
+- **compensate 切换**:圆的半径与三角偏移直切,并排对照「等尺寸(几何)」vs「+11.1%(光学)」;
+- **模糊法验收按钮**:对三枚图形加 `filter: blur(1.5px)`,肉眼比对灰度重量(动画只有按钮态切换,无运动);
+- baseSize 拖动时 SVG 按 `width=baseSize` 缩放,恒定 2px 线宽下直观看到「放大线相对变细」;
+- 无运动类动效,`prefers-reduced-motion` 无需降级。
+
+## 真实产品案例
+
+- **Material Symbols opsz 轴**:20–48 量程、默认 24,随尺寸自动调笔画粗细(Google Fonts 指南原文),把「缩放补偿」做成了可插值参数(07 §1.5/§3.1);
+- **Lucide 贡献规范**:把「几何居中≠看着居中」与「模糊法」写进验收清单——不对称图标小幅偏心是规范内正操作(07 §3.2);
+- **Material GRAD 轴**:黑底白图标 GRAD −25~−50 降眩光、强调态 +200,光学补偿在「负空间方向」的官方旋钮(07 §1.5/§3.1)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `baseSize` | 48px 渲染时恒定 2px 线相对变细(opsz 方向),圆 +2dp 的光学优势按比例放大到 3.3px | 16px 处 2px 线相对变粗、易粘连;圆方补偿差缩到 1.3px,补偿量接近渲染误差 |
+| `compensate` | on 圆 Ø20 按官方值光学放大,与方并排模糊后灰度一致 | off 圆退回 Ø18 与方等尺寸——几何正确、视觉显轻,行内重量失衡 |
+
+锚点:补偿量 = 圆 +2dp / 偏心 ≤0.5px / 模糊法终审;超过这些量级就不再是「光学修正」,而是绘制错误。

@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+分类色板只解决「哪个系列用哪个颜色」:它是一张**按官方顺序排列的 hex 表**,应用到图表时,系列索引 i 直接取第 i 个色值,顺序不可打乱。
+
+```html
+<svg viewBox="0 0 640 340">
+  <!-- 系列 i 的柱:fill = palette[i],i 从 0 起按官方顺序递增 -->
+  <rect class="bar" fill="#E69F00" />  <!-- 系列 1:橙 -->
+  <rect class="bar" fill="#56B4E9" />  <!-- 系列 2:天蓝 -->
+  <rect class="bar" fill="#009E73" />  <!-- 系列 3:蓝绿 -->
+  <!-- 图例 swatch 与系列一一对应,描边 1px 兜底黑色/暗色主题 -->
+</svg>
+```
+
+关键点:
+
+- **顺序即对比**:Carbon 官方明确 14 色板「严格按序使用以最大化相邻对比」,跳色取用会削弱第 1、2 类之间的区分度;
+- Okabe-Ito demo 排序把亮色放前三(橙→天蓝→蓝绿),官方黑 `#000000` 殿后——暗色主题下黑柱靠 1px 描边可辨,swatch 同理;
+- 与 ECharts/D3 的取舍:ECharts/D3 内置 `category10`/`tableau10` 等方案并自动分配系列色,省事但「按官方顺序取用」需自己保证;手绘 SVG 的价值在于色值逐字节可控、可与组件库主题 token 直接对账——原型期用图表库,品牌期把色板沉淀为 token 再决定是否回迁。
+
+## 样式与参数
+
+三套调研内色板,数值全部有出处:
+
+```css
+/* demo 只用 fill + 1px 描边,不引图表库 */
+.bar { stroke: var(--border-strong); stroke-width: 1; }
+```
+
+| 色板 | 数值出处 | 许可现状 |
+| --- | --- | --- |
+| Okabe-Ito(CUD) | 官方页只发色样图与 PPT、**不含文字 hex**;demo 用 R grDevices 内置固化值(源码核验):`#E69F00 #56B4E9 #009E73 #F0E442 #0072B2 #D55E00 #CC79A7 #000000` | 无正式许可,官方请求署名 Okabe & Ito;hex 作为「官方发布值」而言**未证实** |
+| Carbon 分类 14 色 | 官网数据可视化色板页完整 hex(demo 取前 8):`#6929c4 #1192e8 #005d5d #9f1853 #fa4d56 #570408 #198038 #002d9c …` | **Apache-2.0 © IBM Corp.(LICENSE 已核)**,三套中唯一可商用直用 |
+| Tableau 10 | hex 经 R grDevices 源码注释佐证:`#4E79A7 #F28E2B #E15759 #76B7B2 #59A14F #EDC948 #B07AA1 #FF9DA7 #9C755F #BAB0AC`;官方博客原文 403 未核实 | **官方许可声明未证实**(商业产品),商用再分发需自行评估 |
+
+参数:`palette`(枚举,三选一)、`series`(2-8,默认 4)、`layout`(分组/堆叠)——全部 JS 型,demo 订阅 store 后重绘 SVG。
+
+## 动效与交互
+
+色板是静态资产,图表动效只做辅助:
+
+- 参数面板切换 `palette`/`series`/`layout` 时整图重绘,无过渡动画(数据映射类动效应避免颜色渐变伪装成数据变化);
+- hover 单柱显示原生 `<title>` 提示(系列·季度·值),遵循 WCAG 1.4.13 的「可悬停、可关闭」底线;完整 tooltip 规范见 dataviz-tooltip-legend;
+- demo 无入场动画,尊重 `prefers-reduced-motion`;若加柱体生长动画,只动 `height/transform`,并在 reduce 下取消。
+
+## 真实产品案例
+
+- **IBM Carbon Charts**:官方数据可视化色板页给出 14 色分类板并要求严格按序取用;同页红线:图表不支持渐变——"Multiple gradients are often inaccessible and are discouraged"(官网原文已核)。
+- **R 语言 grDevices**:Okabe-Ito 并非 R 默认调色板(R ≥ 4.0 默认是 HCL 系 "R4"),而是 `palette.colors(palette="Okabe-Ito")` 的具名内置方案,hex 常量在 `grDevices/R/colorstuff.R` 源码中固化(源码核验)。
+- **Power BI 报告主题**:官方文档确认主题 JSON 的 `dataColors` 数组顺序即系列取色顺序,把色板沉淀为主题文件即可全报告复用(官方 docs 已核)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `palette` | 换 Carbon(Tableau)会引入更暗/更灰的低位色,相邻对比依赖官方排序,跳色风险更高 | Okabe-Ito 是三套中色盲实验最充分的一套,默认它 |
+| `series` | 逼近 8(Okabe-Ito 上限)时后段色(黄、黑)在暗背景上开始吃力;超限必须并「其他」 | 2-4 系列时任意官方顺序都易区分,是最安全的区间 |
+| `layout` | stacked 让各段只靠色相区分,色盲场景退化最明显,建议配合冗余编码 | grouped 每柱独立贴底,亮度差兜底最多,可读性最好 |
+
+经验区间:系列数 2-6 为舒适区,7-8 需核查模拟;拿不准时先过一遍 dataviz-colorblind-safe 的三种模拟。

@@ -1,0 +1,60 @@
+## Structure & DOM
+
+A categorical palette only answers "which series gets which color": it is a **hex table ordered by the official sequence**, and a chart assigns series *i* the *i*-th value — the order must never be shuffled.
+
+```html
+<svg viewBox="0 0 640 340">
+  <!-- Bar of series i: fill = palette[i], i increments in official order from 0 -->
+  <rect class="bar" fill="#E69F00" />  <!-- series 1: orange -->
+  <rect class="bar" fill="#56B4E9" />  <!-- series 2: sky blue -->
+  <rect class="bar" fill="#009E73" />  <!-- series 3: bluish green -->
+  <!-- Legend swatches map one-to-one to series; 1px outline covers black / dark themes -->
+</svg>
+```
+
+Key points:
+
+- **Order is contrast**: Carbon's official guidance is to use the 14-color categorical palette "strictly in order to maximize adjacent contrast" — skipping colors weakens the separation between classes 1 and 2;
+- The demo puts light colors first (orange → sky blue → bluish green) with the official black `#000000` last — on dark themes the black bar stays legible via a 1px outline, same for swatches;
+- Trade-off vs ECharts/D3: ECharts/D3 ship built-in schemes (`category10`, `tableau10`, …) and assign series colors automatically, but keeping "official order only" is on you; hand-drawn SVG buys byte-exact color control and direct reconciliation with design tokens — prototype with a chart library, then promote the palette into tokens and decide whether to migrate back.
+
+## Styling & Parameters
+
+Three research-verified palettes; every value has a documented source:
+
+```css
+/* the demo uses only fill + 1px outline, no chart library */
+.bar { stroke: var(--border-strong); stroke-width: 1; }
+```
+
+| Palette | Where the numbers come from | License status |
+| --- | --- | --- |
+| Okabe-Ito (CUD) | The official page ships swatch figures and a PPT only — **no textual hex**; the demo uses R grDevices' built-in constants (source-verified): `#E69F00 #56B4E9 #009E73 #F0E442 #0072B2 #D55E00 #CC79A7 #000000` | No formal license; the authors ask for attribution of Okabe & Ito. As "officially published values" the hex are **unverified** |
+| Carbon categorical | Full hex from the official Carbon dataviz page (demo takes the first 8): `#6929c4 #1192e8 #005d5d #9f1853 #fa4d56 #570408 #198038 #002d9c …` | **Apache-2.0 © IBM Corp. (LICENSE verified)** — the only one of the three safe for direct commercial use |
+| Tableau 10 | Hex corroborated by R grDevices source comments: `#4E79A7 #F28E2B #E15759 #76B7B2 #59A14F #EDC948 #B07AA1 #FF9DA7 #9C755F #BAB0AC`; the official blog post returned 403 and was not verifiable | **Official license statement unverified** (commercial product) — assess redistribution yourself |
+
+Parameters: `palette` (enum, three options), `series` (2–8, default 4), `layout` (grouped/stacked) — all JS-type; the demo subscribes to the store and redraws the SVG.
+
+## Motion & Interaction
+
+A palette is a static asset; chart motion stays auxiliary:
+
+- Switching `palette` / `series` / `layout` from the panel redraws the chart with no transition (data-mapping changes should not disguise themselves as color cross-fades);
+- Hovering a bar shows a native `<title>` tooltip (series · quarter · value), honoring the WCAG 1.4.13 baseline of hoverable and dismissible; full tooltip rules live in dataviz-tooltip-legend;
+- The demo has no entrance animation and respects `prefers-reduced-motion`; if you add growing-bar animation, animate only `height/transform` and drop it under reduce.
+
+## Real-world examples
+
+- **IBM Carbon Charts**: the official dataviz color-palettes page publishes the 14-color categorical palette and requires strict in-order usage; the same page draws a red line — no gradients in charts: "Multiple gradients are often inaccessible and are discouraged" (official text verified).
+- **R grDevices**: Okabe-Ito is *not* R's default palette (R ≥ 4.0 defaults to the HCL-based "R4") — it is the named built-in of `palette.colors(palette = "Okabe-Ito")`, with hex constants fixed in `grDevices/R/colorstuff.R` (source-verified).
+- **Power BI report themes**: official docs confirm the `dataColors` array order in a theme JSON *is* the series color order — persist the palette as a theme file and every visual inherits it (official docs verified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `palette` | switching to Carbon (Tableau) introduces darker/grayer low slots whose adjacent contrast leans on the official order — skipping gets riskier | Okabe-Ito is the most CVD-experimented of the three; keep it as default |
+| `series` | approaching 8 (the Okabe-Ito ceiling), late slots (yellow, black) strain on dark backdrops; past the cap, merge into 'Other' | at 2–4 series any official order separates easily — the safest range |
+| `layout` | stacked strips each segment down to hue alone, the sharpest degradation under CVD; pair with redundant encoding | grouped bars all sit on the baseline where lightness differences backstop best |
+
+Working range: 2–6 series is comfortable; 7–8 warrants a simulation pass — run dataviz-colorblind-safe's three modes when unsure.

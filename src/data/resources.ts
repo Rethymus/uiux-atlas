@@ -445,6 +445,28 @@ const CATEGORY_TOOLS: Record<CategoryId, DeepLink[]> = {
       url: "https://www.radix-ui.com/primitives/docs",
     },
   ],
+  /* icons / dataviz:第八/第九分类(条目未接线);URL 为既有调研逐字出现的一手地址
+     (icons → out/design-study/07-icons.md §1.1/§2;dataviz → 08-dataviz.md §1.3/§2.1) */
+  icons: [
+    {
+      label: { zh: "Lucide 官方文档", en: "Lucide documentation" },
+      url: "https://lucide.dev",
+    },
+    {
+      label: { zh: "Material 图标规范(M3)", en: "Material icons (M3)" },
+      url: "https://m3.material.io/styles/icons/overview",
+    },
+  ],
+  dataviz: [
+    {
+      label: { zh: "ColorBrewer 色板", en: "ColorBrewer palettes" },
+      url: "https://colorbrewer2.org/",
+    },
+    {
+      label: { zh: "Carbon 数据可视化色板", en: "Carbon dataviz palettes" },
+      url: "https://carbondesignsystem.com/data-visualization/color-palettes/",
+    },
+  ],
 };
 
 /**

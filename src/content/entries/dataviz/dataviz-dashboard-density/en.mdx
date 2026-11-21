@@ -1,0 +1,68 @@
+## Structure & DOM
+
+Dashboard density is a two-tier DOM: the "**grid container + panels**". The container owns the three constants (columns / row height / gap); panels only declare spans and never care about the grid.
+
+```html
+<div class="dash">  <!-- grid: 24 cols × N rows -->
+  <div class="panel kpi" style="grid-column: span 6; grid-row: span 3">
+    <span class="label">Revenue</span>
+    <span class="callout">¥1.28M</span>   <!-- 45px -->
+  </div>
+  <div class="panel chart" style="grid-column: span 12; grid-row: span 3">…</div>
+  <div class="panel table" style="grid-column: span 24; grid-row: span 3">…</div>
+</div>
+```
+
+```css
+.dash {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr)); /* Grafana GRID_COLUMN_COUNT=24 */
+  grid-auto-rows: var(--dvz-row);                    /* 30px = GRID_CELL_HEIGHT */
+  gap: var(--dvz-gap);                               /* 8px = GRID_CELL_VMARGIN */
+}
+/* Minimum panel = 3 rows = 90px (Grafana MIN_PANEL_HEIGHT=90) */
+```
+
+Key points:
+
+- The three constants belong to the **grid**, not the panels: panels declare spans, the container manages spacing — only then do drag layouts hold together;
+- Trade-off vs ECharts/D3: a chart library draws "one panel's content"; grid density belongs to the dashboard framework (Grafana/Power BI). The hand-drawn mock exists to demonstrate that split: the library ignores gaps, the framework tokens ignore in-chart font sizes — each aligns to its own research values.
+
+## Styling & Parameters
+
+Three parameters in two injection styles:
+
+| Parameter | Type | Default | Source |
+| --- | --- | --- | --- |
+| `gap` (panel gap) | CSS var `--dvz-gap` | **8px** | Grafana source `GRID_CELL_VMARGIN = 8` (verified verbatim) |
+| `rowHeight` (row unit) | CSS var `--dvz-row` | **30px** | Grafana source `GRID_CELL_HEIGHT = 30` (verified verbatim) |
+| `density` (preset) | JS-type (data-density) | comfortable | see coupling below |
+
+Font ladder (**Power BI official theme-docs example values, not enforced defaults**): callout **45** / title **12** / header **12** (Segoe UI Semibold) / label **10** (Segoe UI); the third structural-color tier `thirdLevelElements/backgroundLight` is the axis-gridline color (example #F3F2F1).
+
+comfortable = the research values as-is; **compact is a demo-proposed preset**: gaps ÷2, rows ×0.8, callout 45→32, label 10→9, title 12→11 — no official compact conventions exist (Grafana docs name Standard/Narrow/Wide presets but publish no pixels; Power BI has no density presets; **Tableau's conventions were not found**), so compact values are demo-proposed and unverified.
+
+## Motion & Interaction
+
+Density switching is the kind of layout motion to keep on a short leash:
+
+- Switching `density`: the whole board's gaps and font sizes jump instantly (no transition in the demo) — a density preset is a view mode, not animation material; if your product insists, ease `gap/padding/font-size` over ≤150ms and respect `prefers-reduced-motion` (instant swap under reduce);
+- Dragging the `gap` / `rowHeight` sliders: CSS variables apply instantly with zero JS reflow — exactly the point of CSS-var params (the panel never re-renders);
+- The demo's dashboard container is `overflow: auto`: oversized row heights scroll instead of breaking the stage;
+- Panel hover highlights are optional; skip them on high-frequency ops screens.
+
+## Real-world examples
+
+- **Grafana**: 24 columns × 30px rows × 8px gaps × 3-row minimum panels are all source constants (`public/app/core/constants.ts`, verified verbatim); the official docs name only Standard/Narrow/Wide and Short/Tall presets with custom px, never publishing pixel values (verified this session).
+- **Power BI**: the official theme docs' textClasses give the example ladder callout 45 / title 12 / header 12 / label 10, and `dataColors` order plus `good/neutral/bad` semantic colors complete the theme JSON (official docs verified).
+- **Tableau**: official numeric conventions for default canvas, card gaps and font ladders are **unpublished** (help pages 404'd, blog 403'd) — no invented values; benchmarking Tableau means measuring its exported files.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `density` | compact fits roughly 40–60% more panels per screen but pushes type to the readability floor — for ops walls, not boardroom projectors | comfortable is the default; 45px callouts and 10px labels breathe for demos and print |
+| `gap` | past 12px the grid texture outshouts the content; on 24 columns the gaps eat usable width | under 6px panel edges start to fuse — drag handles and hover boundaries get hard to tell apart |
+| `rowHeight` | past 36px the 3-row minimum panel grows (90px → 108px) and rows per screen drop | under 24px mini-charts flatten vertically and line slopes start lying |
+
+Working range: start from gap 8px / row 30px as-is (a decade-hardened value); adopt the Power BI example ladder then tune to viewing distance — projector decks can take callout to 60px.

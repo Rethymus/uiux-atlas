@@ -1,0 +1,103 @@
+{
+  "name": "Chart Axes & Grid",
+  "nameZh": "坐标轴与网格",
+  "aliases": ["Axis Lines", "Gridlines", "splitLine"],
+  "category": "dataviz",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "图表的「表格线」纪律:网格线要浅(Grafana 用主文字色 9% 透明度)、轴线可去(ECharts/ggplot2 两条路线)、刻度数克制(ECharts splitNumber 默认 5)——三参数决定一张折线图的专业度。",
+    "en": "The chart's 'table lines' discipline: grids stay faint (Grafana inverts the theme text color at 9% alpha), axis lines are optional (ECharts vs ggplot2 take opposite defaults), tick counts stay restrained (ECharts splitNumber defaults to 5) — three params decide a line chart's professionalism."
+  },
+  "origin": {
+    "zh": "三条源码级出处:ECharts v5.5.1 axisDefault.ts(轴线 #6E7079 宽 1、刻度长 5、标签 margin 8 / fontSize 12、splitLine #E0E6F1、splitNumber 5、类目轴不画横网格、笛卡尔系值轴默认不画轴线);Grafana UPlotAxisBuilder.ts(网格色 = 暗色 rgba(240,250,255,.09) / 亮色 rgba(0,10,23,.09),轴线默认隐藏);ggplot2 theme-defaults.R(默认 element_blank() 删轴线、灰底白网格)。",
+    "en": "Three source-level provenances: ECharts v5.5.1 axisDefault.ts (axis line #6E7079 at width 1, tick length 5, label margin 8 / fontSize 12, splitLine #E0E6F1, splitNumber 5, no gridlines on category axes, value-axis lines auto-off in cartesian); Grafana UPlotAxisBuilder.ts (grid color = rgba(240,250,255,.09) dark / rgba(0,10,23,.09) light, axis borders hidden by default); ggplot2 theme-defaults.R (axis lines element_blank() by default, grey panel with white gridlines)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "gridOpacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.09,
+      "cssVar": "--dvz-grid-op",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入)。网格线不透明度,默认 0.09 逐字对应 Grafana getGridColor() 的 9% 透明度公式(暗色 rgba(240,250,255,.09) / 亮色 rgba(0,10,23,.09),随主题翻转向主文字色);ECharts 的等价落地是实色 #E0E6F1(白底下 ≈0.12 视觉等效)。0=无网格,1=网格线与文字同色同重。",
+        "en": "CSS-var param (injected by DemoStage). Gridline opacity; the 0.09 default matches Grafana's getGridColor() formula verbatim — 9% alpha of the theme-inverted text color (dark rgba(240,250,255,.09) / light rgba(0,10,23,.09)); ECharts' equivalent is the solid #E0E6F1 (≈0.12 visual equivalent on white). 0 = no grid, 1 = gridlines as heavy as text."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "axisLine",
+      "options": [
+        { "value": "on", "label": { "zh": "显示轴线", "en": "Show axis lines" } },
+        { "value": "off", "label": { "zh": "隐藏轴线", "en": "Hide axis lines" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘)。on=轴线 #6E7079 宽 1(ECharts axisDefault 默认值,逐字核验);off=ggplot2/Grafana 路线——ggplot2 默认 element_blank() 删轴线,灰底白网格表达坐标系;Grafana 轴线(border)默认不显示。两条官方路线都成立,关键是「网格保留且极浅」。",
+        "en": "JS-type param (the demo subscribes and redraws). on = axis lines #6E7079 at width 1 (ECharts axisDefault defaults, verified verbatim); off = the ggplot2/Grafana route — ggplot2 removes axis lines via element_blank() by default, expressing the coordinate system as grey panel + white grid; Grafana hides axis borders by default. Both official routes are legitimate; the constant is 'keep the grid, keep it faint'."
+      }
+    },
+    {
+      "type": "number",
+      "name": "tickCount",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后按 nice-ticks 重算)。刻度档数,默认 5 逐字对应 ECharts splitNumber: 5(time 轴为 6);demo 用经典 nice-ticks 算法取整档距(1/2/2.5/5×10ⁿ),实际档数可能因取整而少 1-2 档——这与真实图表库行为一致。",
+        "en": "JS-type param (the demo recomputes nice ticks on change). Tick count; the default of 5 matches ECharts splitNumber: 5 verbatim (6 for time axes); the demo rounds step size via the classic nice-ticks algorithm (1/2/2.5/5 × 10ⁿ), so the realized tick count may land 1–2 short — same as real chart libraries."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为手绘 SVG + CSS 变量,无新特性依赖,全浏览器可用;网格线透明度走 SVG 属性上的 CSS opacity,axe 线/刻度/标签为普通 SVG 元素。",
+      "en": "The demo is hand-drawn SVG + CSS variables with no cutting-edge dependencies; grid opacity rides on CSS opacity over SVG elements, axis lines/ticks/labels are plain SVG."
+    }
+  },
+  "fallback": {
+    "zh": "无兼容问题;真正的回退是「零基线纪律」:网格与轴线可以删,基线纪律不能破——柱状/面积图必须从 0 起(FT Visual Vocabulary:Column \"Must always start at 0 on the axis\"),折线图可不从零但需在轴上留截断暗示;删掉网格后若读者无法对值,应补直接标注而不是恢复网格。",
+    "en": "No compat issue; the real fallback is the zero-baseline discipline: grids and axis lines may go, but the baseline rule may not break — bar/area charts must start at 0 (FT Visual Vocabulary: Column \"Must always start at 0 on the axis\"), line charts may not start at zero but should hint truncation on the axis; if readers can't read values once the grid is gone, add direct labels instead of restoring the grid."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "折线/面积/柱状图的网格密度调节——网格是值的「标尺」,浅到可忽略但不缺席", "en": "Grid tuning for line/area/bar charts — the grid is the value ruler: faint enough to ignore, present enough to read" },
+      { "zh": "暗色主题仪表盘——网格色随主题翻转向文字色再取 9%(Grafana 公式),不要照搬亮色主题的灰色", "en": "Dark-theme dashboards — invert the grid color toward the theme's text color at 9% (Grafana's formula); don't copy the light theme's grey" },
+      { "zh": "极简风格图表(去轴线)——ggplot2 灰底白网格或 Grafana 隐藏轴线的路线", "en": "Minimal-style charts (no axis lines) — ggplot2's grey-panel-white-grid or Grafana's hidden borders" },
+      { "zh": "打印/导出场景——提高 gridOpacity 或加粗轴线,屏幕上的 9% 在纸上会消失", "en": "Print/export contexts — raise gridOpacity or thicken axis lines; the screen's 9% vanishes on paper" }
+    ],
+    "avoid": [
+      { "zh": "网格线重到与数据线抢注意力(gridOpacity > 0.3)——读者先看到表格后看到数据", "en": "Grids heavier than the data (gridOpacity > 0.3) — readers see the table before the data" },
+      { "zh": "刻度数超过 8-10——ECharts 默认 5 档是有意克制,挤满刻度等于放弃取整档距", "en": "More than 8–10 ticks — ECharts' default of 5 is deliberate restraint; cramming ticks forfeits nice step rounding" },
+      { "zh": "柱状图纵轴不从 0 起——FT 与 ONS 的零基线权威原则,截断柱高=放大差异", "en": "Bar charts not starting at 0 — the FT/ONS zero-baseline principle; truncated bars amplify differences" },
+      { "zh": "类目轴画横网格——ECharts 源码强制类目轴 splitLine 关闭;横网格属于值轴", "en": "Horizontal gridlines on category axes — ECharts source forces category-axis splitLine off; horizontal grids belong to the value axis" }
+    ]
+  },
+  "a11y": {
+    "zh": "轴文字(fontSize 12,margin 8)对背景至少 4.5:1(ECharts 用 #6E7079 中灰,亮底达标;暗底请换主题文字色);网格线作为纯参考线不承载信息,不要求 3:1 非文本对比,但承载刻度语义的轴线与刻度线需要对相邻色 ≥3:1(WCAG 2.1 SC 1.4.11);gridOpacity=0 时数据点必须自带值标签或 tooltip 补值,否则读屏与低视力用户丢失取值通道。",
+    "en": "Axis text (fontSize 12, margin 8) needs ≥4.5:1 against the backdrop (ECharts' #6E7079 mid-grey passes on light; on dark themes switch to the theme text color); grids carry no information so 3:1 non-text contrast is not required of them, but axis and tick lines that do carry scale semantics need ≥3:1 against adjacent colors (WCAG 2.1 SC 1.4.11); at gridOpacity 0, data points must carry value labels or tooltips or low-vision and screen-reader users lose the value channel."
+  },
+  "sources": [
+    "https://raw.githubusercontent.com/apache/echarts/5.5.1/src/coord/axisDefault.ts",
+    "https://raw.githubusercontent.com/grafana/grafana/main/packages/grafana-ui/src/components/uPlot/config/UPlotAxisBuilder.ts",
+    "https://github.com/tidyverse/ggplot2/blob/main/R/theme-defaults.R",
+    "https://github.com/ft-interactive/chart-doctor"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 实现一张双系列折线图:值轴按 nice-ticks 取 5 档刻度,横向网格线透明度走 --dvz-grid-op(默认 0.09),轴线可开关(#6E7079 宽 1),刻度线长 5、标签 fontSize 12 / margin 8。",
+      "en": "Implement a two-series line chart in hand-drawn SVG: a value axis with 5 nice-tick classes, horizontal gridlines driven by --dvz-grid-op (default 0.09), toggleable axis lines (#6E7079, width 1), tick length 5, label fontSize 12 / margin 8."
+    },
+    "acceptance": [
+      { "zh": "刻度档数默认 5(ECharts splitNumber),用 1/2/2.5/5×10ⁿ 取整档距,不硬凑等分数", "en": "Default 5 tick classes (ECharts splitNumber), step rounded via 1/2/2.5/5×10ⁿ — no forced equal division" },
+      { "zh": "网格线透明度默认 0.09(Grafana 公式),随主题翻转向文字色", "en": "Gridline opacity defaults to 0.09 (Grafana's formula), inverting toward the theme text color" },
+      { "zh": "类目轴不画横网格(ECharts 源码强制),横网格只属于值轴", "en": "No horizontal gridlines on the category axis (ECharts source enforces it) — horizontal grids belong to the value axis" },
+      { "zh": "折线图纵轴从 0 起或明确标注截断;柱状图必须零基线", "en": "The line chart's value axis starts at 0 or is explicitly truncated; bar charts must keep the zero baseline" },
+      { "zh": "MDX 写明三套官方默认值出处(ECharts/Grafana/ggplot2 源码)与许可(ECharts/Grafana=Apache,ggplot2=MIT)", "en": "MDX cites the three official default provenances (ECharts/Grafana/ggplot2 sources) and licenses (ECharts/Grafana = Apache, ggplot2 = MIT)" }
+    ]
+  }
+}

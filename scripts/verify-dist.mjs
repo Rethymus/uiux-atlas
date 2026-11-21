@@ -25,10 +25,21 @@ const EXPECTED = {
     "nav-menu", "tabs", "breadcrumb", "dropdown",
     "empty", "watermark",
   ],
+  // 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,6 slug)——
+  // 14 条已落地,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 同一清单;
+  // 条目页检查并入常规逐条全检(与 components 批产收口同动作)。
+  icons: [
+    "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
+    "icon-sprite-symbols", "icon-lucide-set", "icon-color-states", "icon-motion",
+  ],
+  dataviz: [
+    "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
+    "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
+  ],
 };
 
-// components 分类页标记(zh 页标题文案,en 页为分类名大写首词)
-const CATEGORY_ZH_MARKERS = { components: "前端部件" };
+// 分类页 zh 标记(components zh 页标题文案;icons/dataviz zh = 分类名逐字;en 页均为分类 id)
+const CATEGORY_ZH_MARKERS = { components: "前端部件", icons: "图标体系", dataviz: "数据可视化" };
 
 const missing = [];
 const contentFails = [];
@@ -46,6 +57,10 @@ function checkPage(rel, mustContain, label) {
     if (!html.includes(marker)) contentFails.push(`${label} [${rel}] missing marker: "${marker}"`);
   }
 }
+
+// 名称类标记(zh = nameZh/name,en = name)经 Astro 文本渲染会做最小 HTML 转义
+// (如 "Stroke & Fill Icons" 落盘为 "Stroke &amp; Fill Icons"),按同样规则转义后再匹配。
+const asRenderedText = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 if (!existsSync(dist)) {
   console.error(`dist missing: ${dist} — run "pnpm -C uiux-atlas run build" first`);
@@ -68,14 +83,14 @@ checkPage(
   "en resources",
 );
 
-// 分类列表页 ×2 ×7(components 批产前无条目,仅检分类页存在与标题标记)
+// 分类列表页 ×2 ×9(zh 标记见 CATEGORY_ZH_MARKERS,缺省回退分类 id,与既有分类同法)
 for (const cat of Object.keys(EXPECTED)) {
   const zhMarker = CATEGORY_ZH_MARKERS[cat] ?? cat;
   checkPage(join(cat, "index.html"), [zhMarker], `zh category ${cat}`);
   checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
 }
 
-// 条目页 ×2 ×43:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
+// 条目页 ×2 ×81:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
 for (const [cat, slugs] of Object.entries(EXPECTED)) {
   for (const slug of slugs) {
     const schemaPath = join(root, "src", "content", "entries", cat, slug, "schema.json");
@@ -88,8 +103,8 @@ for (const [cat, slugs] of Object.entries(EXPECTED)) {
     } catch {
       contentFails.push(`cannot read schema name for ${cat}/${slug}`);
     }
-    checkPage(join(cat, slug, "index.html"), [zhName, "复制复刻 Prompt", "继续深入"], `zh entry ${cat}/${slug}`);
-    checkPage(join("en", cat, slug, "index.html"), [enName, "Copy replication prompt", "Go deeper"], `en entry ${cat}/${slug}`);
+    checkPage(join(cat, slug, "index.html"), [asRenderedText(zhName), "复制复刻 Prompt", "继续深入"], `zh entry ${cat}/${slug}`);
+    checkPage(join("en", cat, slug, "index.html"), [asRenderedText(enName), "Copy replication prompt", "Go deeper"], `en entry ${cat}/${slug}`);
   }
 }
 

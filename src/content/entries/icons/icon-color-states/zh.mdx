@@ -1,0 +1,77 @@
+## 结构与 DOM
+
+图标状态色的结构目标是「**一处染色,全链生效**」:图标 path 裸写,颜色全部继承自宿主的 `color`,状态切换只改宿主一处:
+
+```html
+<!-- 宿主:唯一的颜色声明,状态由 data 属性承载 -->
+<div class="toolbar" data-state="default">
+  <button aria-label="收藏">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <polygon points="…" />
+    </svg>
+  </button>
+  <span>收藏</span>
+</div>
+```
+
+```css
+/* 状态 = 宿主一处 color;图标 + 文字同步(CSS Color 4 §6.4) */
+.toolbar { color: #1192e8; }                 /* default */
+.toolbar[data-state="hover"]   { color: #002d9c; }
+.toolbar[data-state="danger"]  { color: #da1e28; }
+/* 透明度弱化走 icon 整体,不动语义 */
+.toolbar svg { opacity: 1; }
+.toolbar[aria-disabled="true"] svg { opacity: 0.2; }  /* Phosphor duotone 官方弱化量级 */
+```
+
+要点:
+
+- `currentColor` 是「同元素 color 属性值」(CSS Color 4 §6.4 原文),五套图标集源文件均以此预配置(Heroicons outline 走 stroke、solid 走 fill,Phosphor 全系 fill=currentColor,07 §1.3/§1.4/§5.2);
+- 状态含义不能只靠颜色——色盲通道要有文字/形状冗余;
+- 装饰图标 `aria-hidden`,换色不改语义。
+
+## 样式与参数
+
+两个参数:state(JS 型,驱动宿主 color)与 opacity(CSS 变量 `--cs-opacity`,svg 整体透明度);demo 内置对比度核算面板:
+
+```text
+WCAG 1.4.11 核算(官方相对亮度公式):
+  混合色 = 状态色 × alpha + 白 × (1 − alpha)
+  ratio  = (L亮 + 0.05) / (L暗 + 0.05)      ≥ 3:1 才算通过
+
+状态色(IBM Carbon 数据可视化色板,官网核验 + LICENSE Apache-2.0,08 §1.3):
+  default #1192e8(Cyan 50)  → 对白底 3.33:1,擦线通过
+  hover   #002d9c(Blue 80)   → 11.3:1(Carbon 未定义 hover 色,取同板已核实深档作演示,已标注)
+  danger  #da1e28(告警 danger)→ 5.0:1
+```
+
+实测锚点(demo 拖杆即得):
+
+- #1192e8 满透明度 3.33:1——**擦线色**;透明度 80% 时混合色已跌破 3:1;
+- #da1e28 满透明度 5.0:1,80% 时约 3.9:1 仍过,60% 失守;
+- #002d9c 余量最大,50% 附近才跌破;
+- 20% = Phosphor Duotone 背景层官方值——那是「装饰性弱化」的量级,不是「可交互图标」的量级(07 §1.4)。
+
+## 动效与交互
+
+状态切换的动效纪律:
+
+- **换色过渡**:`color` 以 0.15–0.2s 过渡,M3 官方钦定区间 150–200ms + standard 缓动(07 §6.2);
+- **透明度过渡**只作弱化反馈,不作状态通知(信息冗余原则);
+- `prefers-reduced-motion`:`transition: none` 直切终态——状态反馈保留、运动取消(07 §6.3);
+- hover 变色配非色彩通道(阴影/下划线),不该是 hover 反馈的全部。
+
+## 真实产品案例
+
+- **Tailwind 类名方案**:Heroicons README 的 `text-gray-500` 染色即 currentColor 机制——宿主一个类名同时染图标与文字(07 §5.2);
+- **Material 双主题状态**:浅色图标上黑底用 GRAD −25~−50 降眩光、强调态 +200,状态色不适配主题时由轴补偿(07 §1.5/§3.1);
+- **Carbon 告警色家族**:danger #da1e28 / serious warning #ff832b / warning #f1c21b / success #198038,官网数据可视化色板页逐值核验、Apache-2.0 LICENSE 核实,是三个主流色板中唯一带明确开源许可的(08 §1.3)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `state` | hover 深档对比余量最大(11.3:1),适合底色不稳的场景;danger 语义最重,滥用会稀释警告效力 | default 是擦线色(3.33:1)——底色稍扰即失败,只能配纯白底使用 |
+| `opacity` | 100% 全强度,3:1 核算通过;透明度是弱化通道,不是状态通道 | 80% 起 #1192e8 已跌破 3:1(demo 实时标红);20% 是 Phosphor duotone 装饰层的官方量级,交互图标不可用 |
+
+锚点:宿主一处 color;擦线色配纯白底;弱化用 0.2(Phosphor 官方)而非自造数值;任何状态保住 3:1——2.999:1 算失败。

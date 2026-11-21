@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+仪表盘密度的 DOM 是「**网格容器 + 面板**」两级:网格容器持有列数/行高/间距三个常量,面板只按列跨度与行跨度摆放,自身不再关心网格。
+
+```html
+<div class="dash">  <!-- grid: 24 列 × N 行 -->
+  <div class="panel kpi" style="grid-column: span 6; grid-row: span 3">
+    <span class="label">营收 Revenue</span>
+    <span class="callout">¥1.28M</span>   <!-- 45px -->
+  </div>
+  <div class="panel chart" style="grid-column: span 12; grid-row: span 3">…</div>
+  <div class="panel table" style="grid-column: span 24; grid-row: span 3">…</div>
+</div>
+```
+
+```css
+.dash {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr)); /* Grafana GRID_COLUMN_COUNT=24 */
+  grid-auto-rows: var(--dvz-row);                    /* 30px = GRID_CELL_HEIGHT */
+  gap: var(--dvz-gap);                               /* 8px = GRID_CELL_VMARGIN */
+}
+/* 最小面板 = 3 行 = 90px(Grafana MIN_PANEL_HEIGHT=90) */
+```
+
+关键点:
+
+- 三个常量是**网格的**,不是面板的:面板只声明跨度,间距由容器统一管理,拖拽布局才不会散;
+- 与 ECharts/D3 的取舍:图表库只画「一个面板的内容」,网格密度是 dashboard 框架(Grafana/Power BI)的领地——手绘 mock 的价值是把这两层拆开演示:图表库不管间距,框架 token 不管图内字号,各自对齐各自的调研值。
+
+## 样式与参数
+
+三个参数,分两类注入方式:
+
+| 参数 | 类型 | 默认值 | 出处 |
+| --- | --- | --- | --- |
+| `gap`(面板间距) | CSS 变量 `--dvz-gap` | **8px** | Grafana 源码 `GRID_CELL_VMARGIN = 8`(逐字核验) |
+| `rowHeight`(行高单元) | CSS 变量 `--dvz-row` | **30px** | Grafana 源码 `GRID_CELL_HEIGHT = 30`(逐字核验) |
+| `density`(档位) | JS 型(data-density) | comfortable | 档位联动见下 |
+
+字号阶梯(**Power BI 官方主题文档示例值,非强制默认**):callout **45** / title **12** / header **12**(Segoe UI Semibold)/ label **10**(Segoe UI);第三层结构色 `thirdLevelElements/backgroundLight` 即轴网格线色(示例 #F3F2F1)。
+
+comfortable = 上述调研值原样;**compact 为 demo 演示档**:间距 ÷2、行高 ×0.8、callout 45→32、label 10→9、title 12→11——官方未发布 compact 数值惯例(Grafana 文档只给 Standard/Narrow/Wide 档位名不给像素;Power BI 无密度档;**Tableau 数值惯例未找到**),compact 值属演示自定,未证实。
+
+## 动效与交互
+
+密度切换是布局动效里最该克制的一类:
+
+- 切 `density`:整盘间距/字号即时跳变(demo 不做过渡)——密度档是「视图模式」,不是动画素材;若产品坚持过渡,只对 `gap/padding/font-size` 做 ≤150ms 的 ease-out,并尊重 `prefers-reduced-motion`(reduce 下直接切换);
+- 拖 `gap`/`rowHeight` 滑杆:CSS 变量即时生效,无 JS 重排——这正是 CSS 变量型参数的价值(面板零订阅、零重绘);
+- demo 面板容器 `overflow: auto`:行高调大导致溢出时滚动,而不是撑破舞台;
+- 面板 hover 提亮属于可选项,高频值守屏建议省略。
+
+## 真实产品案例
+
+- **Grafana**:24 列 × 30px 行高 × 8px 面板间距 × 最小面板 3 格(90px)全部是源码常量(`public/app/core/constants.ts`,逐字核验);官方文档只给 Standard/Narrow/Wide、Short/Tall 档位名与自定义 px,不公开像素值(本会话核验)。
+- **Power BI**:官方主题文档 textClasses 给出 callout 45 / title 12 / header 12 / label 10 的示例字号阶梯,并以 `dataColors` 顺序、`good/neutral/bad` 语义色构成完整主题 JSON(官方 docs 已核)。
+- **Tableau**:官方默认画布、卡片间距、字号阶梯等数值惯例**官方渠道未公开**(help 页多次 404、博客 403)——不编造,如需对标 Tableau 只能实测其导出文件。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `density` | compact 让一屏多容纳约 40-60% 面板,但字号贴可读下限,适合值守大屏不适合汇报投屏 | comfortable 是默认档,45px callout + 10px label 的呼吸感适合演示与打印 |
+| `gap` | >12px 后网格感取代内容感,24 列的实际可用宽度被间距吃掉 | &lt;6px 后面板边界开始粘连,拖拽手柄与 hover 边界难分辨 |
+| `rowHeight` | >36px 时 3 行最小面板变高,一屏行数减少(90px→108px) | &lt;24px 时迷你图纵向被压扁,折线斜率失真 |
+
+经验区间:gap 8px、row 30px 原样起步(十年验证值);字号阶梯照搬 Power BI 示例后按实际屏距微调,投影场景 callout 可到 60px。

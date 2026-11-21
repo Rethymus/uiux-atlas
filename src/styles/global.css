@@ -53,10 +53,14 @@
   --warn: #ffb86b; /* 警告/删除 hover(11.34:1) */
   --danger: #ff6165; /* 错误(Apple 官方暗色高对比 Red) */
 
-  /* ── 七分类 accent(styles/materials/motion/color/type/layout/components;
+  /* ── 九分类 accent(styles/materials/motion/color/type/layout/components/icons/dataviz;
         Apple 暗色色板一手值,对三层背景 ≥4.76:1,装饰与文本可同值。
         components = 暗色色板 systemYellow(黄 hue 为前六分类未占用),
         对 bg/bg-elev/surface min 12.24:1(2026-11-21 实算)。
+        icons = systemMint(青绿 hue 为既有七分类未占用;systemBlue 对 surface 仅 4.74:1
+        不达 4.76 线,且与交互 --accent 蓝 hue 冲突,弃用),
+        min 9.78:1;dataviz = systemBrown(暖中性 hue 未占用;Tableau 10 分类板含 brown,
+        08-dataviz §1.2),min 5.62:1(均 2026-11-21 实算)。
         用法纪律:只出现在 ① bento 标识条与数字 ② 条目页头部渐变带
         ③ 面包屑/列表页头当前分类;不进链接/按钮/正文字段(spec §2.1) ── */
   --cat-styles: #db34f2;
@@ -66,6 +70,8 @@
   --cat-type: #6d7cff;
   --cat-layout: #30d158;
   --cat-components: #ffd60a;
+  --cat-icons: #66d4cf;
+  --cat-dataviz: #ac8e68;
   /* 当前分类语义色的运行时指向(容器上按分类覆写) */
   --cat: var(--accent);
 
@@ -196,7 +202,7 @@
   --warn: #995a00; /* 警告/删除 hover(5.04:1) */
   --danger: #c93040; /* 错误(4.83:1;TDesign error-6 #d54941=4.32:1,加深) */
 
-  /* ── 七分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
+  /* ── 九分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
         (装饰条/文本两用纪律与深色一致,spec §2.1 用法纪律) ── */
   --cat-styles: #a426cc; /* min 4.83:1 */
   --cat-materials: #0b7491; /* min 4.60:1 */
@@ -205,6 +211,8 @@
   --cat-type: #4353e6; /* min 4.98:1 */
   --cat-layout: #0a753c; /* min 4.97:1 */
   --cat-components: #7d6200; /* 黄 hue 加深,min 4.98:1(2026-11-21 实算) */
+  --cat-icons: #0d7370; /* mint hue 加深,min 4.87:1(2026-11-21 实算) */
+  --cat-dataviz: #755a2e; /* brown hue 加深,min 5.53:1(2026-11-21 实算) */
 
   /* ── 阴影:浅色减弱(02 §4.1 TDesign 亮色三层投影 5–12% 黑 同比例档;
         深色为 35/45/55%) ── */
@@ -482,7 +490,7 @@ html {
   color: var(--accent);
   margin-right: var(--space-2);
 }
-/* 桌面:六分类横排;active 态由 aria-current 驱动 */
+/* 桌面:九分类横排;active 态由 aria-current 驱动 */
 .site-nav {
   display: flex;
   gap: var(--space-1);
@@ -652,7 +660,7 @@ html {
 }
 
 /* ────────────────────────────────────────────────────────────
-   5. 首页(spec §4.1:hero ≤55vh + 六分类 bento + 精选行)
+   5. 首页(spec §4.1:hero ≤55vh + 九分类 bento + 精选行)
    ──────────────────────────────────────────────────────────── */
 /* hero:--step-5 大字 + 副标 + 统计行 + live 迷你演示;
    渐变预算不铺 hero(spec §6b:全屏 aurora 不跟),氛围只给条目头带 */
@@ -842,10 +850,11 @@ html {
   margin-top: var(--space-3);
 }
 
-/* ── 七分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
+/* ── 九分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
      4 列 × 140px 行 × gap 16 × radius-xl;显式 areas 不用 dense,
      DOM 顺序 = 阅读顺序 = 焦点顺序(WCAG 2.4.3)。
-     components 与 materials/motion 同为 1×2 tall,info 变行尾 3 宽收束条 ── */
+     components 与 materials/motion 同为 1×2 tall;icons/dataviz(第八/九分类,
+     条目未接线)与 color/type/layout 同为 1×1,info 收束条随新增两格收窄为 1 宽 ── */
 .bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -855,7 +864,7 @@ html {
     "styles styles materials motion"
     "styles styles materials motion"
     "color type layout components"
-    "info info info components";
+    "icons dataviz info components";
 }
 @media (max-width: 899px) {
   .bento {
@@ -865,6 +874,7 @@ html {
       "materials motion"
       "color type"
       "layout components"
+      "icons dataviz"
       "info info";
   }
 }
@@ -882,6 +892,8 @@ html {
       "type"
       "layout"
       "components"
+      "icons"
+      "dataviz"
       "info";
   }
 }
@@ -918,6 +930,12 @@ html {
 }
 .bento-cell.area-components {
   grid-area: components;
+}
+.bento-cell.area-icons {
+  grid-area: icons;
+}
+.bento-cell.area-dataviz {
+  grid-area: dataviz;
 }
 .bento-cell.area-info {
   grid-area: info;
@@ -1081,6 +1099,58 @@ html {
   height: 6px;
   border-radius: 3px;
   background: currentColor;
+}
+/* icons:图标栅格一帧(24 点阵底纹 + 描边圆/圆角方两枚线框,纯 CSS 零 JS,两主题通用) */
+.bp-icons {
+  color: var(--cat-icons);
+  background: var(--bg-elev);
+}
+.bp-icons::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  background-image:
+    radial-gradient(circle at 76% 50%, transparent 0 8px, currentColor 8px 10px, transparent 10px),
+    radial-gradient(color-mix(in srgb, currentColor 40%, transparent) 1px, transparent 1.5px);
+  background-size:
+    100% 100%,
+    12px 12px;
+}
+.bp-icons::after {
+  content: "";
+  position: absolute;
+  left: 14%;
+  top: 32%;
+  width: 24%;
+  height: 36%;
+  border: 2px solid currentColor;
+  border-radius: var(--radius-s);
+}
+/* dataviz:分类色板柱图一帧(Okabe-Ito 四色柱,色盲安全板一帧直出,
+   hex 经 R grDevices 固化值,out/design-study/08-dataviz.md §1.1;纯 CSS 零 JS,两主题通用) */
+.bp-dataviz {
+  background: var(--bg-elev);
+}
+.bp-dataviz::before {
+  content: "";
+  position: absolute;
+  inset: 18% 8% 12%;
+  background-image:
+    linear-gradient(#e69f00, #e69f00),
+    linear-gradient(#56b4e9, #56b4e9),
+    linear-gradient(#009e73, #009e73),
+    linear-gradient(#d55e00, #d55e00);
+  background-size:
+    12% 55%,
+    12% 80%,
+    12% 100%,
+    12% 65%;
+  background-position:
+    0% 100%,
+    34% 100%,
+    67% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
 }
 /* 非点击统计格(info-card 变体):不可点击卡无 hover 态(spec §3 Card) */
 .bento-cell.is-info {
@@ -1705,6 +1775,167 @@ html {
 }
 .hero-live .stage-plate {
   display: none;
+}
+
+/* 示范条目 styles/glassmorphism:参数 CSS 变量的 @property 类型约束
+   (CSS Properties and Values L1;语法/初值按条目 schema 参数类型 ——
+   blur/radius = dimension → <length>,fill/border = color → <color>)。
+   inherits: true 不可省:DemoStage 把变量注入 .demo-stage 容器,
+   .gm-card 等后代经 var() 消费,注册后继承链不能断;
+   initial-value 即条目官方默认值(生成器配方),支持注册的浏览器获得
+   「变量未设也有类型化回退」的示范;不支持的浏览器整条 @property 自然
+   忽略,行为同注册前(渐进增强,MDX/demo 零改动)。 */
+@property --glass-blur {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 20px;
+}
+@property --glass-fill {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(1 0 0 / 0.15);
+}
+@property --glass-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(1 0 0 / 0.3);
+}
+@property --glass-radius {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 20px;
+}
+
+/* 对比度校验附加面板(ContrastChecker.tsx,仅 color 分类 oklch-workflow /
+   wcag-contrast 两条目的舞台内渲染):右下角可收起 → 展开为悬浮面板。
+   展示层零 transition/animation —— RM 由构造保证「无动效」,状态瞬时切换。 */
+.cc-root {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: calc(var(--z-stage) + 1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+.cc-toggle {
+  appearance: none;
+  position: relative;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: var(--step--1);
+  font-weight: 500;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.cc-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px; /* 视觉小钮热区扩至 ≥44px(spec §7 处方) */
+}
+.cc-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--fill-1);
+}
+.cc-panel {
+  width: min(400px, calc(100vw - var(--space-16)));
+  max-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-2); /* 悬浮层档(spec §2.5) */
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.cc-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.cc-field-label {
+  flex: none;
+  width: 84px;
+  font-size: var(--step--1);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+.cc-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: var(--space-1) var(--space-2);
+}
+.cc-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.cc-swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+}
+.cc-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+.cc-ratio {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums; /* mono 元数据纪律(spec §2.2) */
+  color: var(--text);
+}
+.cc-gates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+.cc-gate {
+  font-size: var(--step--1);
+  font-weight: 500;
+  padding: 2px var(--space-2); /* chip 规格 padding(spec §3) */
+  border-radius: var(--radius-pill);
+}
+.cc-gate.is-pass {
+  color: var(--ok);
+  border: 1px solid color-mix(in srgb, var(--ok) 55%, transparent);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+}
+.cc-gate.is-fail {
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 55%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.cc-invalid {
+  font-size: var(--step--1);
+  color: var(--danger);
+}
+.cc-note {
+  margin: 0;
+  font-size: var(--step--1);
+  line-height: 1.45;
+  color: var(--text-faint);
+}
+.cc-alpha-warn {
+  color: var(--warn);
 }
 
 /* 阅读进度发丝线(spec §6-19):2px、transform: scaleX + scroll(root),

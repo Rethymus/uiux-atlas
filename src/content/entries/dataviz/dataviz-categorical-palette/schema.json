@@ -1,0 +1,104 @@
+{
+  "name": "Categorical Palette",
+  "nameZh": "分类色板",
+  "aliases": ["Qualitative Palette", "Categorical Color Scheme", "定性色标"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "互不等序的定性色标:各色「明显不同且相互等价」,按官方顺序取用、8 类封顶,靠亮度差与官方排序保住相邻对比。",
+    "en": "A qualitative scheme whose colors are distinctly different yet mutually equivalent: take colors in the official order, cap at 8 classes, and let lightness differences secure adjacent contrast."
+  },
+  "origin": {
+    "zh": "方法学源头是 Okabe & Ito 的 CUD 配色(2002,jfly 官方页只发色样图与 PPT、不含文字 hex;hex 以 R grDevices 内置固化值为准);生态参照 ColorBrewer Qualitative 类、IBM Carbon 14 色板(Apache-2.0,官网已核)与 Tableau 10(R 源码注释佐证,官方博客原文未核实)。",
+    "en": "Methodology originates from Okabe & Ito's CUD palette (2002; the official jfly page ships swatch figures and a PPT only, no textual hex — the hex canon comes from R grDevices' built-in constants); ecosystem references include ColorBrewer's qualitative class, IBM Carbon's 14-color categorical palette (Apache-2.0, verified on the official site) and Tableau 10 (corroborated via R source comments; the official blog post was not verifiable)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "palette",
+      "options": [
+        { "value": "okabe-ito", "label": { "zh": "Okabe-Ito(CUD)", "en": "Okabe-Ito (CUD)" } },
+        { "value": "carbon", "label": { "zh": "Carbon 分类 14 色", "en": "Carbon categorical" } },
+        { "value": "tableau10", "label": { "zh": "Tableau 10", "en": "Tableau 10" } }
+      ],
+      "default": "okabe-ito",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘 SVG)。okabe-ito:8 色经 R grDevices 内置固化(源码核验),demo 按 CUD 建议把亮色排前三(橙→天蓝→蓝绿),官方黑 #000000 殿后并加描边兜底暗色主题;carbon:IBM 官方 14 色分类板,严格按官方顺序取用、禁止跳色(官网已核,Apache-2.0);tableau10:10 色 hex 经 R 源码注释佐证(Maureen Stone & Cristy Miller),官方博客原文 403 未核实、官方许可未证实。",
+        "en": "JS-type param (demo subscribes and redraws the SVG). okabe-ito: 8 colors fixed by R grDevices (source-verified); the demo puts light colors first per CUD advice (orange → sky blue → bluish green), with official black #000000 last and outlined for dark themes. carbon: IBM's official 14-color categorical palette, to be taken strictly in the official order with no skips (verified on the official site, Apache-2.0). tableau10: hex corroborated by R source comments (Maureen Stone & Cristy Miller); the official blog post returned 403 and the official license is unverified."
+      }
+    },
+    {
+      "type": "number",
+      "name": "series",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "effect": {
+        "zh": "系列数量(即类别数)。Okabe-Ito 8 色即定性色板的上限——第 9 类一律并入「其他」;Carbon 14 色虽支持至 14 类,也必须按官方顺序取用以最大化相邻对比。默认 4 是多系列条形图的可读基线。",
+        "en": "Number of series (= classes). Okabe-Ito's 8 colors are the practical ceiling of a qualitative palette — merge class 9 into 'Other'; Carbon's 14 colors support up to 14 classes but must still be taken in the official order to maximize adjacent contrast. The default of 4 is a readable baseline for a multi-series bar chart."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "layout",
+      "options": [
+        { "value": "grouped", "label": { "zh": "分组柱", "en": "Grouped bars" } },
+        { "value": "stacked", "label": { "zh": "堆叠柱", "en": "Stacked bars" } }
+      ],
+      "default": "grouped",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘)。grouped=组内并列,便于跨系列比较单项;stacked=组内堆叠,便于看构成总量——但堆叠段之间只靠色相区分,是色盲场景的薄弱位(demo 内可配合 dataviz-colorblind-safe 条目核查)。",
+        "en": "JS-type param (demo subscribes and redraws). grouped = bars side by side within each group, best for comparing a single series across groups; stacked = segments piled within each group, best for part-to-whole totals — but stacked segments are distinguished by hue alone, the weak spot under color-vision deficiency (check with the dataviz-colorblind-safe entry)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为手绘 SVG + React,不依赖新 CSS 特性;所有现代浏览器可用。Carbon 数据可视化规范同时要求图表元素对相邻颜色保持 3:1 非文本对比(WCAG 2.1 SC 1.4.11)。",
+      "en": "The demo is hand-drawn SVG + React with no reliance on new CSS features; available in all modern browsers. Carbon's dataviz guidance additionally requires chart elements to hold 3:1 non-text contrast against adjacent colors (WCAG 2.1 SC 1.4.11)."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容问题;真正的回退是「类别数超限」:超过色板上限(Okabe-Ito 8 色)时,多出的系列应并入「其他」类或改用形状/纹理冗余编码,而不是发明第 9 个颜色。Tableau 10 的再分发许可未证实,商用产品照搬前需自行评估。",
+    "en": "No browser-compat issue; the real fallback is over-capacity: beyond the palette ceiling (8 for Okabe-Ito), extra series should merge into an 'Other' class or gain shape/texture redundancy instead of inventing a ninth color. Tableau 10's redistribution license is unverified — assess it yourself before shipping it in commercial products."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "多系列柱状/折线图的系列取色——前三色固定橙→天蓝→蓝绿,把红绿混淆对留给低频类别", "en": "Series colors for multi-series bar/line charts — fix orange → sky blue → bluish green as the first three, reserving the red/green confusable pair for rare classes" },
+      { "zh": "需要开源许可的商用产品取色——IBM Carbon 14 色板(Apache-2.0)是三套参照里唯一带明确开源许可的", "en": "Commercial products needing a clean license — IBM Carbon's 14-color palette (Apache-2.0) is the only one of the three references with an explicit open-source license" },
+      { "zh": "R 语言/学术出图的 palette.colors(palette=\"Okabe-Ito\")", "en": "palette.colors(palette = \"Okabe-Ito\") in R graphics and academic figures" },
+      { "zh": "Power BI 主题 dataColors 数组——官方文档确认其顺序即系列取色顺序", "en": "Power BI theme dataColors arrays — official docs confirm the array order is the series color order" }
+    ],
+    "avoid": [
+      { "zh": "有序数据(强度、等级)——定性色板不暗示次序,有序数据应改用序数色阶(见 dataviz-ordinal-scale)", "en": "Ordered data (intensity, grades) — a qualitative palette implies no order; switch to an ordinal scale (see dataviz-ordinal-scale)" },
+      { "zh": "超过 8-14 类仍硬塞颜色——第 9 类起并「其他」,否则读者无法回指色块", "en": "Cramming more than 8–14 classes — merge class 9+ into 'Other'; readers cannot match the swatches back" },
+      { "zh": "给分类色板加渐变——Carbon 官方红线:图表不支持渐变,\"Multiple gradients are often inaccessible and are discouraged\"", "en": "Gradients on categorical fills — Carbon's official red line: no gradients in charts, \"Multiple gradients are often inaccessible and are discouraged\"" },
+      { "zh": "在色板上再叠透明度/明度变体制造「第 9 色」——破坏各色等价性,也破坏色盲区分度", "en": "Manufacturing a 'ninth color' via alpha or lightness variants of existing swatches — breaks both equivalence and CVD separability" }
+    ]
+  },
+  "a11y": {
+    "zh": "定性色板本身不保证色盲安全:Okabe-Ito 是「对各类色觉人群反复实验筛选」的结果,但堆叠段/相邻色块仍需过模拟核查(见 dataviz-colorblind-safe);jfly CUD 原则 2 要求颜色之外叠加形状/线型/纹理冗余编码;Carbon 要求图表元素对相邻颜色 ≥3:1 非文本对比(WCAG 2.1 SC 1.4.11);系列多于读者能在图例间回指的量时,jfly 原文建议图上直标而非远处对色。",
+    "en": "A qualitative palette is not automatically colorblind-safe: Okabe-Ito was 'repeatedly experimentally screened across color-vision types', yet stacked segments and adjacent fills still need simulation checks (see dataviz-colorblind-safe); jfly's CUD principle 2 requires redundant encoding via shape/line-style/texture beyond color; Carbon requires ≥3:1 non-text contrast between chart elements and adjacent colors (WCAG 2.1 SC 1.4.11); when series exceed what readers can match back in a legend, jfly recommends direct labeling on the graph."
+  },
+  "sources": [
+    "https://jfly.uni-koeln.de/color/",
+    "https://carbondesignsystem.com/data-visualization/color-palettes/",
+    "https://raw.githubusercontent.com/wch/r-source/trunk/src/library/grDevices/R/colorstuff.R",
+    "https://clauswilke.com/dataviz/color-basics.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 实现一张多系列分组条形图:系列色严格取自指定分类色板的前 N 色(按官方顺序),图例与系列一一对应,8 类封顶。",
+      "en": "Implement a multi-series grouped bar chart in hand-drawn SVG: series colors taken strictly from the first N colors of the given categorical palette in official order, legend one-to-one with series, capped at 8 classes."
+    },
+    "acceptance": [
+      { "zh": "色值逐字节使用色板官方 hex,不要自行调亮/调暗或补插第 N+1 色", "en": "Use the palette's official hex values byte-for-byte; do not lighten/darken or invent an N+1th color" },
+      { "zh": "Okabe-Ito 若用官方黑 #000000,暗色主题下补 1px 描边兜底", "en": "When using Okabe-Ito's official black #000000, add a 1px outline for dark themes" },
+      { "zh": "系列数超过色板上限时并入「其他」类,不得发明新色", "en": "Series beyond the palette ceiling merge into 'Other'; never invent new colors" },
+      { "zh": "相邻色块与背景保持 3:1 非文本对比(WCAG SC 1.4.11)", "en": "Adjacent fills hold 3:1 non-text contrast against the background (WCAG SC 1.4.11)" },
+      { "zh": "MDX 写明色板来源与许可现状(Carbon=Apache-2.0 已核;Tableau 10 官方许可未证实;Okabe-Ito 官方页不含 hex)", "en": "MDX states each palette's provenance and license status (Carbon = Apache-2.0 verified; Tableau 10 official license unverified; Okabe-Ito official page ships no hex)" }
+    ]
+  }
+}

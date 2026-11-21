@@ -1,0 +1,98 @@
+{
+  "name": "Open Source Icon Sets",
+  "nameZh": "开源图标集",
+  "aliases": ["图标集对比", "Lucide", "Feather", "Heroicons", "Phosphor", "Material Symbols"],
+  "category": "icons",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "六套开源图标同一枚图形对照:Lucide/Feather 2px、Heroicons 实测 1.5px、Phosphor 256 网格填充、Material 双世代——选集先看网格、线宽哲学与许可三件事。",
+    "en": "One glyph across six open-source sets: Lucide/Feather at 2px, Heroicons measured at 1.5px, Phosphor filled on a 256 grid, the two Material generations — pick a set by grid, stroke philosophy and license."
+  },
+  "origin": {
+    "zh": "六套全部经官方仓库 README 与真实 SVG 源文件核验(out/design-study/07-icons.md §1):Lucide(ISC,defaultAttributes 源码定值 24/2px/round/currentColor)、Feather(MIT,24×24 网格 2px,系出同门)、Heroicons(MIT,24/20/16 三档,24/outline 实测 stroke-width=1.5)、Phosphor(MIT,六权重 256×256 viewBox 实测、fill 路径交付)、Material Symbols(Apache-2.0,opsz 默认 24、wght 100–700 变轴)、经典 Material Icons(同仓库 Apache-2.0,五样式 2022 年起停止更新)。Heroicons README 示例仍写 stroke-width=2 系 v1 旧文案,以文件为准(07 §1.3);Phosphor 权重线宽像素值官方未发布(未证实,07 §7)。",
+    "en": "All six sets were verified against official repo READMEs and real SVG source files (out/design-study/07-icons.md §1): Lucide (ISC; defaultAttributes source-defines 24/2px/round/currentColor), Feather (MIT; 24×24 grid at 2px, of the same lineage), Heroicons (MIT; 24/20/16 tiers, 24/outline measuring stroke-width=1.5), Phosphor (MIT; six weights on a measured 256×256 viewBox delivered as filled paths), Material Symbols (Apache-2.0; opsz default 24, wght 100–700 variable axis), and classic Material Icons (same repo, Apache-2.0; five styles frozen since 2022). Heroicons' README quick-start still says stroke-width=2 — stale v1 copy; the file wins (07 §1.3); Phosphor's per-weight stroke pixel values are unpublished (unverified, 07 §7)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "set",
+      "options": [
+        { "value": "lucide", "label": { "zh": "Lucide", "en": "Lucide" } },
+        { "value": "feather", "label": { "zh": "Feather", "en": "Feather" } },
+        { "value": "heroicons", "label": { "zh": "Heroicons", "en": "Heroicons" } },
+        { "value": "phosphor", "label": { "zh": "Phosphor", "en": "Phosphor" } },
+        { "value": "material-symbols", "label": { "zh": "Material Symbols", "en": "Material Symbols" } },
+        { "value": "material-icons", "label": { "zh": "Material Icons(经典)", "en": "Material Icons (classic)" } }
+      ],
+      "default": "lucide",
+      "effect": {
+        "zh": "对照的图标集。lucide/feather = 24 网格 2px 描边(源码定值,系出同门);heroicons = 24/outline 描边实测 1.5px;phosphor = 256×256 viewBox 填充路径(描边烘焙进轮廓);material-symbols = 24 设计基准 + wght 变轴;material-icons(经典)= 24 填充,五样式已停更。各集许可:Lucide ISC、Feather/Heroicons/Phosphor MIT、Material 两代 Apache-2.0(07 §0/§1)。",
+        "en": "The set under comparison. lucide/feather = 24 grid at 2px stroke (source-defined, same lineage); heroicons = 24/outline stroke measured at 1.5px; phosphor = 256×256 viewBox filled paths (stroke baked into outlines); material-symbols = 24 design base + wght variable axis; material-icons (classic) = 24 filled, five styles frozen. Licenses: Lucide ISC; Feather/Heroicons/Phosphor MIT; both Material generations Apache-2.0 (07 §0/§1)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "glyph",
+      "options": [
+        { "value": "bell", "label": { "zh": "铃铛 bell", "en": "bell" } },
+        { "value": "home", "label": { "zh": "主页 home", "en": "home" } },
+        { "value": "heart", "label": { "zh": "心形 heart", "en": "heart" } },
+        { "value": "star", "label": { "zh": "星形 star", "en": "star" } }
+      ],
+      "default": "bell",
+      "effect": {
+        "zh": "对照的图形。同一语义跨六套重绘——demo 图形为自绘示意(非官方库文件拷贝),风格差异落在:线宽哲学(2px 锚定 vs 1.5px 例外 vs 填充烘焙 vs wght 变轴)与交付形态(SVG 文件 vs 变量字体),这是 07 调研的核心叙事(§0)。",
+        "en": "The glyph under comparison. One semantic redrawn across six sets — the demo glyphs are self-drawn illustrations (no copies of official files), with the style differences living in stroke philosophy (2px anchor vs the 1.5px exception vs baked fills vs the wght axis) and delivery form (SVG files vs a variable font), the core narrative of research 07 (§0)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "六套的 SVG 交付形态(内联/组件包/雪碧图)全主流浏览器可用;Material Symbols 走变量字体路线,依赖 font-variation-settings 支持(现代浏览器均可用),且官方要求 &display=block 防 FOUC、子集化(icon_names 1.7KB)控制体积(07 §1.5)。npm 包生态:lucide 全家桶 9 框架、@heroicons/react|vue、phosphor 全平台(07 §1)。",
+      "en": "SVG delivery forms (inline/component/sprite) work in all mainstream browsers; Material Symbols rides a variable font, needing font-variation-settings support (fine in modern browsers), with the official &display=block anti-FOUC requirement and subsetting (icon_names ≈1.7KB) for weight control (07 §1.5). npm ecosystem: Lucide's nine framework packages, @heroicons/react|vue, Phosphor across platforms (07 §1)."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "选集回退按交付形态分层:SVG 组件包无回退需求;变量字体路线(仅 Material Symbols)加载失败时退回静态 wght 400 实例;雪碧图跨域被拒时内联。选型层面:社区停止维护的集(经典 Material Icons 自 2022 停更、Feather 久未发版)应评估迁移而非新项目采用(07 §1.2/§1.5)。",
+    "en": "Fallback layers by delivery form: SVG component packages need none; the variable-font route (Material Symbols only) falls back to a static wght 400 instance on load failure; rejected cross-origin sprites go inline. At selection level, sets with stalled maintenance (classic Material Icons frozen since 2022; Feather long unreleased) warrant migration analysis rather than new adoption (07 §1.2/§1.5)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "新项目选型:24 网格 + 2px 描边 + currentColor 的三重默认(Lucide/Feather)是最低成本起跑线(07 §1.1/§1.2)", "en": "New-project selection: the triple default of a 24 grid + 2px stroke + currentColor (Lucide/Feather) is the cheapest starting line (07 §1.1/§1.2)" },
+      { "zh": "需要填充/双层权重的场景选 Phosphor(Fill/Duotone 唯二玩家)或 Material Symbols FILL 轴(07 §1.4/§1.5)", "en": "For filled/layered weights choose Phosphor (Fill/Duotone, one of two players) or Material Symbols' FILL axis (07 §1.4/§1.5)" },
+      { "zh": "Tailwind 生态/React-Vue 一等公民选 Heroicons(按路径摇树导入,07 §1.3)", "en": "In the Tailwind ecosystem or React/Vue-first codebases, choose Heroicons (tree-shakable path imports, 07 §1.3)" }
+    ],
+    "avoid": [
+      { "zh": "同页混用多集图标——网格同源但线宽哲学不同(2px vs 1.5px vs 烘焙填充),重量失衡肉眼可见(07 §0)", "en": "Mixing sets on one page — grids align but stroke philosophies differ (2px vs 1.5px vs baked fills), visibly unbalanced weight (07 §0)" },
+      { "zh": "新项目采用已停更的集(经典 Material Icons 五样式 2022 停更;Feather 久未发版)而不评估迁移(07 §1.2/§1.5)", "en": "Adopting frozen sets for new work (classic Material Icons stopped in 2022; Feather long unreleased) without a migration assessment (07 §1.2/§1.5)" },
+      { "zh": "直接照抄 README 示例值(Heroicons 示例 stroke-width=2 已过期,实测 1.5)——数值以仓库文件为准(07 §1.3)", "en": "Trusting README sample values (Heroicons' sample says stroke-width=2, stale; measured 1.5) — repo files win (07 §1.3)" }
+    ]
+  },
+  "a11y": {
+    "zh": "选集不改无障碍义务:线宽受 WCAG 1.4.11 提醒约束(过细线条渲染更淡,07 §3.3);Lucide 官网 Guide 设 Accessibility 章节;Material 侧图标状态交给 FILL 轴与色彩系统(07 §4.3)。任何集的装饰实例都该 aria-hidden、语义实例靠可访问名(见 icon-aria-accessible)。",
+    "en": "Set choice changes no accessibility obligations: stroke width stays bound by the WCAG 1.4.11 note (thin lines render fainter, 07 §3.3); Lucide's site keeps an Accessibility guide section; Material hands icon states to the FILL axis and its color system (07 §4.3). Every set's decorative instances deserve aria-hidden and semantic instances accessible names (see icon-aria-accessible)."
+  },
+  "sources": [
+    "https://github.com/lucide-icons/lucide",
+    "https://github.com/feathericons/feather",
+    "https://github.com/tailwindlabs/heroicons",
+    "https://github.com/phosphor-icons/core",
+    "https://github.com/google/material-design-icons",
+    "https://lucide.dev/guide/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "把同一枚图形(如铃铛)按六套开源图标集的风格哲学分别绘制并注明出处:Lucide/Feather 24 网格 2px round、Heroicons 24/outline 1.5px、Phosphor 256 网格填充、Material Symbols wght 轴、经典 Material 填充;每套标注许可。",
+      "en": "Draw one glyph (say a bell) under all six open-source sets' style philosophies with provenance: Lucide/Feather 24-grid 2px round, Heroicons 24/outline 1.5px, Phosphor 256-grid fills, Material Symbols' wght axis, classic Material fills; annotate each license."
+    },
+    "acceptance": [
+      { "zh": "六套风格差异落在可核查数值上:线宽(2/1.5/烘焙)、网格(24/256)、交付(SVG/变量字体)", "en": "Set differences land on checkable numbers: stroke (2/1.5/baked), grid (24/256), delivery (SVG/variable font)" },
+      { "zh": "每套标注官方许可:Lucide ISC、Feather/Heroicons/Phosphor MIT、Material 两代 Apache-2.0", "en": "Annotate official licenses: Lucide ISC; Feather/Heroicons/Phosphor MIT; both Material generations Apache-2.0" },
+      { "zh": "标注数值置信度:Heroicons 1.5 为文件实测(README 示例过期);Phosphor 权重像素值未证实", "en": "Mark number confidence: Heroicons' 1.5 is file-measured (README sample stale); Phosphor's per-weight pixels unverified" },
+      { "zh": "不逐字拷贝官方库 SVG——自绘示意并明确声明", "en": "Never copy official library SVGs verbatim — self-drawn illustrations, declared as such" },
+      { "zh": "全部图形 currentColor 染色、装饰实例 aria-hidden", "en": "All glyphs tint via currentColor; decorative instances aria-hidden" }
+    ]
+  }
+}

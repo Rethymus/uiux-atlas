@@ -1,0 +1,64 @@
+## Structure & DOM
+
+The DOM shape of a CVD audit is "**content layer + filter layer**": the chart itself never changes; the simulation is an SVG `<filter>` applied to the chart container via CSS `filter: url(#id)`, while redundant encoding is a second visual channel written directly into the chart.
+
+```html
+<!-- Filter definition (hidden SVG; coefficients under "Styling & Parameters") -->
+<svg width="0" height="0" aria-hidden="true">
+  <defs>
+    <filter id="cvd-filter-deuteranopia" colorInterpolationFilters="sRGB">
+      <feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0 …" />
+    </filter>
+    <!-- Bar textures ×3: hatch / cross / dots -->
+  </defs>
+</svg>
+
+<!-- The same charts; switching is just the container's filter -->
+<figure style="filter: url(#cvd-filter-deuteranopia)">
+  <svg>…bars / lines…</svg>
+</figure>
+```
+
+Key points:
+
+- The filter sits on the **container** (figure); the chart SVG is unaware of simulation, so normal and simulated views share one DOM;
+- Redundancy is not a filter: `<pattern>` textures on bars, `stroke-dasharray` + marker shapes on lines, legend in sync — they stay on even with the filter removed;
+- Trade-off vs ECharts/D3: ECharts encodes a second channel via `aria.decal` decals (the demo's equivalent is the pattern) and has no built-in CVD simulation; the D3 ecosystem picks safe ramps via d3-scale-chromatic and wires simulation up externally with daltonlens-class tools. The hand-drawn demo's value is turning "the audit" into an interactive in-product experience — production charts use the library, acceptance uses the simulation.
+
+## Styling & Parameters
+
+Two parameters: `simulation` (normal / deutan / protan / tritan) and `redundancy` (texture + dash + markers, on/off) — both JS-type.
+
+An honest statement about the simulation matrices (the most-misquoted part of this entry):
+
+- **The research records no coefficient originals**: the dataviz study verified the *mechanisms* of three model generations — Brettel 1997 (two half-planes in LMS; invariant wavelengths 475/575 nm for protan/deutan, 485/660 nm for tritan), Viénot 1999 (single-plane simplification for protan/deutan: gamma decode → one 3×3 matrix → gamma encode), Machado 2009 (physiological model, severity interpolated via cone peak-wavelength shift, 0–1 linear);
+- The demo's feColorMatrix coefficients are the **widely circulated Machado 2009 severity=1 matrices (community-common values, unverified)**; the paper itself was not checked in the research;
+- **Known bias**: feColorMatrix operates on sRGB-encoded values directly — exactly the popular open-source bug the research flags: results skew dark and produce false positives; a rigorous pipeline gamma-decodes to linear RGB before applying the matrix, and tritan simulation must use Brettel (the demo's matrix approximation is for demonstration only, never an authoritative verdict);
+- Prevalence (authoritative, verified): US NEI "about 1 in 12 men"; jfly breakdown: 8% of white men, 5% of Asian men, 4% of African men; tritanopia ≈ 0.001%.
+
+The demo palette takes three Okabe-Ito colors: `#D55E00` (vermillion) / `#009E73` (bluish green) / `#0072B2` (blue) — a **deliberately included red/green confusable pair** so the collapse under deutan/protan is visible (hex are R grDevices constants; the official page ships no textual hex, so as officially published values they are unverified).
+
+## Motion & Interaction
+
+The audit flow *is* the interaction design:
+
+- Switching simulation mode flips the container's `filter` instantly, with no transition (a simulated view is an inspection lens and should not cross-fade); the panel and the demo toolbar stay in two-way sync (one store);
+- The redundancy toggle: textures appear on bars, lines switch dash style and sprout markers, the legend follows — within 0.25s, an instant swap under reduce;
+- The demo has no entrance animation and respects `prefers-reduced-motion`;
+- The correct audit order: first "redundancy off + deutan" to see the failure, then redundancy on to confirm the rescue — also the recommended design-review flow.
+
+## Real-world examples
+
+- **Power BI**: the official report-theme docs ship a "Color-blind friendly theme" — `ColorblindSafe-Longer.json`, one click away via a go.microsoft.com/fwlink link (official docs verified).
+- **Chrome DevTools**: the Rendering panel ships vision-deficiency emulation (with protanopia/deuteranopia/tritanopia entries); existence corroborated by test code in the devtools-frontend repo — the official doc page repeatedly 404'd and was never located (not found).
+- **ECharts**: the accessibility module defaults `aria.label.enabled` to true (auto-generated summaries for screen readers) while `aria.decal.show` — the decal texture, the second CVD encoding — defaults to **false** and must be enabled explicitly (v5.5.1 source verified).
+- **GitHub Primer**: the official theme list includes `light-colorblind / dark-colorblind / light-tritanopia / dark-tritanopia` — four vision-deficiency semantic themes, the industrial proof that "swap the semantic-layer mapping and you get a colorblind mode" (repo README verified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `simulation` | moving from normal to the three simulated types progressively reveals the red/green collapse; tritan affects the fewest people (≈0.001%) yet carries the largest matrix-approximation error | back to normal only proves sighted readers can read it — it is not evidence of CVD safety |
+| `redundancy` | on, the chart keeps texture/dash/marker channels under every vision type, at the cost of higher visual density | off, everything rides on hue — the highest-prevalence scenarios (deutan/protan) fail outright |
+
+Rule of thumb: pass all three simulation types × severity 1 *and* ship redundancy on by default — that is "colorblind-safe". Swapping in a safe palette without redundancy is half a solution.

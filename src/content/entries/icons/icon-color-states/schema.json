@@ -1,0 +1,91 @@
+{
+  "name": "Icon Color & States",
+  "nameZh": "图标色彩与状态",
+  "aliases": ["图标状态色", "currentColor 染色", "图标对比度", "Icon States", "State Colors"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "currentColor 一处染色全链生效,状态色(default/hover/danger)取 IBM Carbon 已核实色板,透明度滑杆实时核算 WCAG 1.4.11 的 3:1——2.999:1 也算失败。",
+    "en": "One currentColor declaration re-inks the whole chain; state colors (default/hover/danger) come from IBM Carbon's verified palette; the opacity slider recomputes WCAG 1.4.11's 3:1 live — 2.999:1 still fails."
+  },
+  "origin": {
+    "zh": "染色机制出自 CSS Color 4 §6.4(currentcolor 即同元素 color 属性值,out/design-study/07-icons.md §5.2),五套图标集均有源文件实证(Lucide stroke=currentColor、Phosphor fill=currentColor 等,07 §5.2);对比度阈值出自 WCAG 2.2 SC 1.4.11 非文本对比 ≥3:1,且 \"2.999:1 would not meet\"(07 §4.3);hover/选中态换色无新增对比要求,但任何状态不得失去与邻接色的 3:1(07 §4.3)。状态演示色取 IBM Carbon 数据可视化色板(08-dataviz.md §1.3,官网全文抓取核验,Apache-2.0 许可经 LICENSE 文件核实):Cyan 50 #1192e8、Blue 80 #002d9c、告警 danger #da1e28。",
+    "en": "The paint mechanism is CSS Color 4 §6.4 (currentcolor is the element's own color value; out/design-study/07-icons.md §5.2), proven by source files across all five sets (Lucide stroke=currentColor, Phosphor fill=currentColor, etc., 07 §5.2); the threshold is WCAG 2.2 SC 1.4.11 non-text contrast ≥3:1 with \"2.999:1 would not meet\" (07 §4.3); hover/selection recoloring has no added contrast requirement, but no state may lose 3:1 against adjacent colors (07 §4.3). The demo state colors come from IBM Carbon's dataviz palette (08-dataviz.md §1.3; official page fetched in full, Apache-2.0 license verified via the LICENSE file): Cyan 50 #1192e8, Blue 80 #002d9c, alert danger #da1e28."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "state",
+      "options": [
+        { "value": "default", "label": { "zh": "默认 #1192e8", "en": "Default #1192e8" } },
+        { "value": "hover", "label": { "zh": "悬停 #002d9c", "en": "Hover #002d9c" } },
+        { "value": "danger", "label": { "zh": "危险 #da1e28", "en": "Danger #da1e28" } }
+      ],
+      "default": "default",
+      "effect": {
+        "zh": "状态演示色(JS 型,驱动宿主 color)。default = Carbon 分类色板 Cyan 50 #1192e8(08 §1.3 板位 #2),对白底实测 3.33:1,擦线过 3:1;hover = 同板深档 Blue 80 #002d9c(板位 #8)——Carbon 官方未定义 hover 状态色,此处取已核实深档作演示语义(已在 MDX 标注);danger = Carbon 告警色 danger #da1e28(08 §1.3),对白底 5.0:1。三值同出 Apache-2.0 许可的 Carbon 色板(LICENSE 已核,08 §1.3)。",
+        "en": "State demo colors (JS-type, driving the host color). default = Carbon categorical Cyan 50 #1192e8 (08 §1.3 slot #2), measuring 3.33:1 on white — just above the 3:1 line; hover = the same palette's deep Blue 80 #002d9c (slot #8) — Carbon defines no official hover color, so a verified deep slot stands in for the demo (noted in MDX); danger = Carbon alert danger #da1e28 (08 §1.3), 5.0:1 on white. All three come from Carbon's Apache-2.0-licensed palette (LICENSE verified, 08 §1.3)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "opacity",
+      "unit": "%",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "default": 100,
+      "cssVar": "--cs-opacity",
+      "effect": {
+        "zh": "图标整体不透明度(%),CSS 变量注入。100% 是默认;20% 对应 Phosphor Duotone 背景层官方实测值 opacity=0.2(07 §1.4)——作为「弱化存在感」的官方锚点;中间档为演示区间。透明度直接改写实际对比度:demo 按 WCAG 公式把 (状态色 × alpha) 与白底混合后实时核算 3:1,跌破即标红(07 §4.3:#1192e8 满透明度 3.33:1,80% 时已跌破)。",
+        "en": "Whole-icon opacity (%), injected as a CSS variable. 100% is the default; 20% corresponds to Phosphor Duotone's officially measured background layer opacity=0.2 (07 §1.4) — the sanctioned anchor for de-emphasis; the middle range is demo space. Opacity directly rewrites effective contrast: the demo blends (state color × alpha) over white per the WCAG formula and recomputes 3:1 live, flagging failures in red (07 §4.3: #1192e8 holds 3.33:1 at full opacity and already fails at 80%)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "currentColor 与 opacity 是 CSS 基础能力,全主流浏览器可用;icon 在任何状态下都不得失去与邻接色的 3:1(WCAG 1.4.11),与浏览器支持无关——demo 的对比度核算公式为 WCAG 官方相对亮度定义,跨端一致。",
+      "en": "currentColor and opacity are baseline CSS, fine in all mainstream browsers; icons may never lose 3:1 against adjacent colors in any state (WCAG 1.4.11) regardless of browser support — the demo's ratio math is the WCAG official relative-luminance definition, consistent cross-platform."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "无需回退;但注意三点工程事实:① opacity 弱化不能成为唯一的信息通道(禁用态需配文字或形变冗余);② 深浅双主题下同一状态色要分别核对 3:1(Material 以 GRAD 轴适配深底降眩光,07 §1.5/§3.1);③ 图标 hover 变色不该是 hover 反馈的全部,配合阴影/位移等非色彩通道。",
+    "en": "No fallback needed; three engineering facts to respect: (1) opacity de-emphasis must not be the sole information channel (disabled states need textual or shape redundancy); (2) the same state color needs its 3:1 checked per theme — Material adapts dark backgrounds via the GRAD axis for glare (07 §1.5/§3.1); (3) hover recoloring should not be the entire hover feedback — add non-color channels like shadow or displacement."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "工具栏图标随文字变色:宿主一处 color,图标+文字同步(Tailwind text-gray-500 类名方案即此机制,07 §5.2)", "en": "Toolbars where icons follow text: one host color tints icon+text together (the Tailwind text-gray-500 pattern is exactly this mechanism, 07 §5.2)" },
+      { "zh": "危险操作(删除/退出)用 danger 状态色,且配 aria 可访问名(见 icon-aria-accessible)", "en": "Destructive actions (delete/sign-out) wear the danger state color, paired with accessible names (see icon-aria-accessible)" },
+      { "zh": "禁用态用透明度弱化(如 Phosphor duotone 0.2 的官方弱化量级)但保留非色彩冗余", "en": "Disabled states de-emphasize via opacity (at Phosphor duotone's official 0.2 magnitude) while keeping non-color redundancy" }
+    ],
+    "avoid": [
+      { "zh": "状态色擦线设计:#1192e8 对白底 3.33:1,叠一层 20% 不透明背景即跌破 3:1——擦线色没有抗扰度", "en": "Designing on the edge: #1192e8 holds 3.33:1 on white but a 20% tinted backdrop beneath it breaks 3:1 — edge-of-threshold colors have no interference margin" },
+      { "zh": "只用换色表达状态(hover/danger 全靠色彩)——色盲用户丢失信息,必须配非色彩通道(WCAG 1.4.1 精神,07 §4.3 上下文)", "en": "Expressing state by color alone (hover/danger only via hue) — color-blind users lose the message; pair non-color channels (in the spirit of WCAG 1.4.1, 07 §4.3 context)" },
+      { "zh": "深底直接复用浅底状态色——浅色图标在黑底会眩光,Material 的答案是 GRAD −25~−50(07 §3.1)", "en": "Reusing light-theme state colors on dark backgrounds — light icons glare on black; Material's answer is GRAD −25 to −50 (07 §3.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目的核心义务:图形对象(图标)与相邻底色对比 ≥3:1(WCAG 2.2 SC 1.4.11),任何状态不得例外;2.999:1 即不达标;焦点指示器同样受 3:1 约束;抗锯齿会让细线实际更淡,擦线更危险(07 §3.3/§4.3)。换色不改变语义:状态含义需有文字或形状冗余,aria 层面装饰图标始终摘树。",
+    "en": "This entry's core duty: graphical objects (icons) keep ≥3:1 against adjacent colors (WCAG 2.2 SC 1.4.11) in every state; 2.999:1 fails; focus indicators share the 3:1 bound; antialiasing renders thin strokes fainter, making edge-riding riskier (07 §3.3/§4.3). Recoloring changes no semantics: state meanings need textual or shape redundancy, and decorative icons always leave the aria tree."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+    "https://www.w3.org/TR/css-color-4/",
+    "https://carbondesignsystem.com/data-visualization/color-palettes/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一组随状态换色的图标按钮:宿主一处 color 经 currentColor 染色,default/hover/danger 三档状态色,透明度可调并实时核算 WCAG 1.4.11 的 3:1,跌破即视觉告警。",
+      "en": "Build a set of state-colored icon buttons: one host color through currentColor, default/hover/danger tiers, adjustable opacity with live WCAG 1.4.11 3:1 computation and a visual alarm on failure."
+    },
+    "acceptance": [
+      { "zh": "图标 path 不写死颜色,全部经 currentColor 继承;宿主组件只设一处 color", "en": "No hardcoded colors on paths — everything inherits currentColor; the host sets exactly one color" },
+      { "zh": "状态色为快照值(Carbon 已核实色板),不得自行调整", "en": "State colors use the snapshot values (Carbon's verified palette); do not adjust them" },
+      { "zh": "透明度弱化后按 WCAG 相对亮度公式混白核算,≥3:1 才允许交付;2.999:1 算失败", "en": "After opacity de-emphasis, blend over white per the WCAG relative-luminance formula; ship only at ≥3:1 — 2.999:1 fails" },
+      { "zh": "状态含义有非色彩冗余(文字标签/形状变化),不只靠换色", "en": "State meanings carry non-color redundancy (text labels or shape changes), never color alone" },
+      { "zh": "装饰图标 aria-hidden=\"true\";深浅双主题分别核对 3:1", "en": "Decorative icons aria-hidden=\"true\"; 3:1 checked per light/dark theme" }
+    ]
+  }
+}
