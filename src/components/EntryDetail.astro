@@ -2,6 +2,8 @@
 import Base from "@/layouts/Base.astro";
 import WorkbenchPanel from "@/components/WorkbenchPanel";
 import DemoHost from "@/components/DemoHost";
+import BreakdownTabs from "@/components/BreakdownTabs";
+import MetaAccordion from "@/components/MetaAccordion.astro";
 import { getCollection, render } from "astro:content";
 import { CATEGORIES, SYSTEMS } from "@/lib/types";
 import type { EntrySchema, Locale } from "@/lib/types";
@@ -21,6 +23,8 @@ const cat = CATEGORIES.find((c) => c.id === category)!;
 const sys = SYSTEMS.find((s) => s.id === schema.system);
 const catName = locale === "en" ? cat.en : cat.zh;
 const systemLabel = sys ? (locale === "en" ? sys.en : sys.zh) : schema.system;
+// 星级 Chip:形状 + aria 文字双编码,颜色/形状不唯一承载(spec §3 Chip;与 EntryCard 同文案)
+const starLabel = locale === "en" ? `Parameterization ${schema.star}/3` : `参数化 ${schema.star}/3`;
 
 // 对应语言的 MDX 正文(entryBody id 形如 "styles/glassmorphism/zh")
 const bodies = await getCollection("entryBody", (b) => b.id === `${entryId}/${locale}`);
@@ -39,91 +43,79 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
   altUrl={altUrl}
   activeCategory={category}
 >
-  <nav class="crumbs" aria-label="breadcrumb">
-    <a href={homeUrl(locale)}>{dict.nav.home}</a>
-    <span aria-hidden="true"> / </span>
-    <a href={categoryUrl(locale, category)}>{catName}</a>
-    <span aria-hidden="true"> / </span>
-    <span>{schema.name}</span>
-  </nav>
+  {/* 页面根挂 --cat:渐变带 / 面包屑当前分类 / Tabs 指示条 / 铭牌点统一消费 */}
+  <div class="entry-page" style={`--cat: var(--cat-${category});`}>
+    {/* ── 1. 紧凑头(spec §4.3-1:面包屑 → h1 → aliases 一行 → tagline 一行截断 →
+         chips 行;origin 行移出头部,并入 MetaAccordion 的「来源」item) ── */}
+    <header class="entry-head">
+      <div class="entry-band" aria-hidden="true"></div>
+      <nav class="crumbs" aria-label="breadcrumb">
+        <a href={homeUrl(locale)}>{dict.nav.home}</a>
+        <span aria-hidden="true"> / </span>
+        <a class="crumbs-cat" href={categoryUrl(locale, category)}>{catName}</a>
+        <span aria-hidden="true"> / </span>
+        <span>{schema.name}</span>
+      </nav>
+      {/* §6-9 共享元素过渡(条目侧):与来源列表卡同名 —— EntryCard 动态赋名
+          card-<slug>(「/」不是合法 custom-ident,替换为 -,防重名),
+          跨文档 morph 由 global.css 的 @view-transition 承接(--dur-4 档)。
+          Firefox 等不支持 MPA 视图过渡的浏览器:该属性与 @view-transition
+          规则均为惰性,退回普通跳转(结构性优雅降级,无 JS 探测)。 */}
+      <h1
+        class="entry-title"
+        style={`view-transition-name: card-${entryId.replaceAll("/", "-")};`}
+      >
+        {schema.name}
+      </h1>
+      {
+        schema.aliases.length > 0 && (
+          <p class="entry-aliases">{schema.aliases.join(" · ")}</p>
+        )
+      }
+      <p class="entry-tagline">{schema.tagline[locale]}</p>
+      <div class="entry-meta-row">
+        <span class="chip">{systemLabel}</span>
+        <span class="chip chip-star" aria-label={starLabel}>
+          <span class="stars" aria-hidden="true">{"★".repeat(schema.star)}</span>
+        </span>
+      </div>
+    </header>
 
-  <header class="entry-head">
-    <h1>{schema.name}</h1>
+    {/* ── 3. Workbench(首屏主角,spec §4.3-3 / §5-1 首屏双要素:
+         左 demo-panel(头部行 + 演示台)+ 右仪表台化面板(sticky,面板底部接 Prompt 导出) ── */}
+    <div class="workbench">
+      <div class="demo-panel">
+        <div class="demo-panel-head">
+          <span>{dict.entry.demo}</span>
+          <span>{dict.entry.officialDefault}</span>
+        </div>
+        <div class="demo-stage-wrap">
+          <DemoHost client:load entryId={entryId} schema={schema} />
+        </div>
+      </div>
+      <WorkbenchPanel client:visible entryId={entryId} schema={schema} locale={locale} />
+    </div>
+
+    {/* ── 6. 阅读进度发丝线(spec §6-19):sticky 挂点在 Tabs 区块前,
+         只在 Tabs 以下区域出现;RM 隐藏 ── */}
+    <div class="read-progress" aria-hidden="true"></div>
+
+    {/* ── 4. MDX 四节 → Tabs(spec §4.3-4 / §3 Tabs):BreakdownTabs 渐进增强,
+         客户端把 .prose 按 h2 分组为 tablist + tabpanel;无 JS 时 prose 原样纵排。
+         用 client:load 而非 client:visible:SSR 占位是零高度空 div,
+         visible 的 IntersectionObserver 在跳滚/锚点场景会错过交叉窗口,永远不水合 ── */}
+    <h2 class="section-title">{dict.entry.breakdown}</h2>
+    <BreakdownTabs client:load sourceId="entry-prose" label={dict.entry.breakdown} />
     {
-      schema.aliases.length > 0 && (
-        <p class="entry-sub">
-          {dict.entry.aliases}: {schema.aliases.join(" · ")}
-        </p>
+      Content && (
+        <div class="prose" id="entry-prose">
+          <Content />
+        </div>
       )
     }
-    <p class="entry-sub">{schema.tagline[locale]}</p>
-    <div class="entry-meta-row">
-      <span class="chip">{systemLabel}</span>
-      <span class="chip"><span class="stars">{"★".repeat(schema.star)}</span></span>
-    </div>
-    <p class="entry-sub">
-      {dict.entry.origin}: {schema.origin[locale]}
-    </p>
-  </header>
 
-  <div class="workbench">
-    <div class="demo-panel">
-      <div class="demo-panel-head">
-        <span>{dict.entry.demo}</span>
-        <span>{dict.entry.officialDefault}</span>
-      </div>
-      <div class="demo-stage-wrap">
-        <DemoHost client:load entryId={entryId} schema={schema} />
-      </div>
-    </div>
-    <WorkbenchPanel client:visible entryId={entryId} schema={schema} locale={locale} />
-  </div>
-
-  {
-    Content && (
-      <div class="prose">
-        <Content />
-      </div>
-    )
-  }
-
-  <div class="entry-sections">
-    <section class="info-card">
-      <h2>{dict.entry.scenarios}</h2>
-      <ul>{schema.scenarios.use.map((s) => <li>{s[locale]}</li>)}</ul>
-    </section>
-    <section class="info-card">
-      <h2>{dict.entry.avoid}</h2>
-      <ul>{schema.scenarios.avoid.map((s) => <li>{s[locale]}</li>)}</ul>
-    </section>
-    <section class="info-card">
-      <h2>{dict.entry.a11y}</h2>
-      <p>{schema.a11y[locale]}</p>
-    </section>
-    <section class="info-card">
-      <h2>{dict.entry.support}</h2>
-      <p>
-        {schema.browserSupport.note[locale]}
-        {schema.browserSupport.baseline && <span> · {schema.browserSupport.baseline}</span>}
-      </p>
-    </section>
-    <section class="info-card">
-      <h2>{dict.entry.fallback}</h2>
-      <p>{schema.fallback[locale]}</p>
-    </section>
-    <section class="info-card">
-      <h2>{dict.entry.sources}</h2>
-      <ul>
-        {
-          schema.sources.map((u) => (
-            <li>
-              <a href={u} rel="noopener noreferrer">
-                {u}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
+    {/* ── 5. 信息 Accordion(spec §4.3-5 / §3 Accordion):
+         场景/避免/a11y/支持/回退/来源 六项收纳,默认全收;来源含 origin ── */}
+    <MetaAccordion schema={schema} locale={locale} />
   </div>
 </Base>

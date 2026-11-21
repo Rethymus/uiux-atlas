@@ -87,6 +87,15 @@ const css = `
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
+/* 窄屏(≤480px)钉到场景左下角:徽标在左上、卡片居中,左下是唯一空闲区 */
+@media (max-width: 480px) {
+  .gm-toolbar {
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+    right: auto;
+  }
+}
 .gm-toolbar button {
   border: 0;
   border-radius: 999px;
