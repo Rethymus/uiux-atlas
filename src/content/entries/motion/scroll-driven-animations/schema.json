@@ -1,5 +1,6 @@
 {
   "name": "Scroll-driven Animations",
+  "nameZh": "滚动驱动动画",
   "aliases": ["滚动驱动动画", "animation-timeline", "scroll()/view()"],
   "category": "motion",
   "system": "web-std",

@@ -1,5 +1,6 @@
 {
   "name": "Bento Grid",
+  "nameZh": "便当盒布局",
   "aliases": ["便当盒布局", "Bento Box Layout", "便当格"],
   "category": "styles",
   "system": "community",

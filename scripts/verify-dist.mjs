@@ -39,9 +39,21 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-// 首页 ×2
-checkPage("index.html", ["UI/UX 设计全解图集"], "zh home");
-checkPage(join("en", "index.html"), ["UI/UX Design Atlas"], "en home");
+// 首页 ×2(含「授人以渔」资源入口行的稳定文案)
+checkPage("index.html", ["UI/UX 设计全解图集", "授人以渔"], "zh home");
+checkPage(join("en", "index.html"), ["UI/UX Design Atlas", "Go beyond"], "en home");
+
+// 资源页 ×2:标记 = 页面标题 + 五个组名(稳定文案)
+checkPage(
+  join("resources", "index.html"),
+  ["深入学习的资源地图", "官方设计规范", "组件库", "交互与动效工具", "灵感画廊", "深学文档"],
+  "zh resources",
+);
+checkPage(
+  join("en", "resources", "index.html"),
+  ["A map for going deeper", "Official design specs", "Component libraries", "Interaction and motion tools", "Inspiration galleries", "Deep-dive docs"],
+  "en resources",
+);
 
 // 分类列表页 ×2 ×6
 for (const cat of Object.keys(EXPECTED)) {
@@ -49,18 +61,21 @@ for (const cat of Object.keys(EXPECTED)) {
   checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
 }
 
-// 条目页 ×2 ×43
+// 条目页 ×2 ×43:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
 for (const [cat, slugs] of Object.entries(EXPECTED)) {
   for (const slug of slugs) {
     const schemaPath = join(root, "src", "content", "entries", cat, slug, "schema.json");
-    let name = slug;
+    let zhName = slug;
+    let enName = slug;
     try {
-      name = JSON.parse(readFileSync(schemaPath, "utf8")).name ?? slug;
+      const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
+      zhName = schema.nameZh ?? schema.name ?? slug;
+      enName = schema.name ?? slug;
     } catch {
       contentFails.push(`cannot read schema name for ${cat}/${slug}`);
     }
-    checkPage(join(cat, slug, "index.html"), [name, "复制复刻 Prompt"], `zh entry ${cat}/${slug}`);
-    checkPage(join("en", cat, slug, "index.html"), [name, "Copy replication prompt"], `en entry ${cat}/${slug}`);
+    checkPage(join(cat, slug, "index.html"), [zhName, "复制复刻 Prompt", "继续深入"], `zh entry ${cat}/${slug}`);
+    checkPage(join("en", cat, slug, "index.html"), [enName, "Copy replication prompt", "Go deeper"], `en entry ${cat}/${slug}`);
   }
 }
 

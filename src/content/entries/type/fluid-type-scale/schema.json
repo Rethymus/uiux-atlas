@@ -1,5 +1,6 @@
 {
   "name": "Fluid Type Scale",
+  "nameZh": "流式字阶",
   "aliases": ["流式字阶", "Utopia 字阶", "clamp() 字阶"],
   "category": "type",
   "system": "web-std",

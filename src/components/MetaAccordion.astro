@@ -1,0 +1,167 @@
+---
+import type { EntrySchema, Locale } from "@/lib/types";
+import { t } from "@/i18n/ui";
+
+interface Props {
+  schema: EntrySchema;
+  locale: Locale;
+}
+
+const { schema, locale } = Astro.props;
+const dict = t(locale);
+
+// 摘要计数(mono tabular-nums,§6-15 标签计数工艺;仅列表型 item 显示)
+const useCount = schema.scenarios.use.length;
+const avoidCount = schema.scenarios.avoid.length;
+const sourceCount = schema.sources.length;
+---
+
+<!-- 信息 Accordion(spec §3 / §4.3-5):六块信息收纳为单个 Accordion。
+     原生 <details> 基座:零 JS 也有键盘支持(§8),整行可点
+     (TDesign expandOnRowClick: true,原生天然满足);
+     六项默认全收,来源 item 默认收起(origin 行按 §4.3-1 移入此处)。 -->
+<section class="meta-acc">
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.scenarios}</span>
+      <span class="acc-hint">{useCount}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <ul>{schema.scenarios.use.map((s) => <li>{s[locale]}</li>)}</ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.avoid}</span>
+      <span class="acc-hint">{avoidCount}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <ul>{schema.scenarios.avoid.map((s) => <li>{s[locale]}</li>)}</ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.a11y}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <p>{schema.a11y[locale]}</p>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.support}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <p>
+          {schema.browserSupport.note[locale]}
+          {schema.browserSupport.baseline && <span> · {schema.browserSupport.baseline}</span>}
+        </p>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.fallback}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <p>{schema.fallback[locale]}</p>
+      </div>
+    </div>
+  </details>
+
+  {/* 来源 item:默认收起;origin 行并入(spec §4.3-1);
+      每条来源一行截断 + 外链图标(spec §3 Accordion 用法) */}
+  <details class="acc">
+    <summary>
+      <svg class="acc-chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="acc-title">{dict.entry.sources}</span>
+      <span class="acc-hint">{sourceCount}</span>
+    </summary>
+    <div class="acc-body">
+      <div class="acc-inner">
+        <p class="acc-origin">
+          <span class="acc-origin-label">{dict.entry.origin}</span>{schema.origin[locale]}
+        </p>
+        <ul class="acc-sources">
+          {
+            schema.sources.map((u) => (
+              <li>
+                <a href={u} rel="noopener noreferrer">
+                  <span class="acc-src-text">{u}</span>
+                  <span class="acc-src-ico" aria-hidden="true">
+                    ↗
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </details>
+</section>

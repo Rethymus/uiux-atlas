@@ -1,5 +1,6 @@
 {
   "name": "light-dark()",
+  "nameZh": "明暗自适应",
   "aliases": ["light-dark 双值取色", "双值颜色函数", "CSS dual-value color"],
   "category": "color",
   "system": "web-std",

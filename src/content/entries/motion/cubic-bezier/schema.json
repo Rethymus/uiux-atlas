@@ -1,5 +1,6 @@
 {
   "name": "Cubic Bézier Easing",
+  "nameZh": "贝塞尔缓动",
   "aliases": ["贝塞尔缓动", "cubic-bezier()", "自定义缓动曲线"],
   "category": "motion",
   "system": "web-std",

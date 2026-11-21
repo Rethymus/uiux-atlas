@@ -112,6 +112,10 @@ for (const [cat, slugs] of Object.entries(EXPECTED)) {
     }
 
     if (typeof schema.name !== "string" || !schema.name) problems.push(`${id}: schema.name missing`);
+    // nameZh:43 条必须全有(scripts/add-name-zh.mjs 映射保证);存在时必须是非空字符串
+    if (typeof schema.nameZh !== "string" || !schema.nameZh.trim()) {
+      problems.push(`${id}: schema.nameZh missing/empty`);
+    }
     if (schema.category !== cat) problems.push(`${id}: schema.category "${schema.category}" != directory "${cat}"`);
     if (!SYSTEMS.has(schema.system)) problems.push(`${id}: schema.system "${schema.system}" invalid`);
     if (!Number.isInteger(schema.star) || schema.star < 1 || schema.star > 3) problems.push(`${id}: schema.star invalid`);

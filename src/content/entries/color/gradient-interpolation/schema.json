@@ -1,5 +1,6 @@
 {
   "name": "Gradient Interpolation Space",
+  "nameZh": "渐变插值",
   "aliases": ["渐变插值空间", "in oklab", "hue 插值策略", "color interpolation"],
   "category": "color",
   "system": "web-std",

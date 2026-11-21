@@ -46,6 +46,7 @@ export const paramSchema = z.discriminatedUnion("type", [
 
 export const entrySchemaZod = z.object({
   name: z.string().min(1),
+  nameZh: z.string().min(1).optional(),
   aliases: z.array(z.string()).default([]),
   category: categoryIdSchema,
   system: systemIdSchema,

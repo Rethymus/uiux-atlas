@@ -1,5 +1,6 @@
 {
   "name": "OKLCH Color Space",
+  "nameZh": "OKLCH 色彩空间",
   "aliases": ["oklch 色彩空间", "感知均匀色彩空间", "Perceptually uniform color space"],
   "category": "color",
   "system": "web-std",

@@ -1,5 +1,6 @@
 {
   "name": "SwiftUI Spring",
+  "nameZh": "SwiftUI 弹簧",
   "aliases": ["Apple 弹簧", "response/dampingFraction", ".spring()"],
   "category": "motion",
   "system": "apple",

@@ -1,5 +1,6 @@
 {
   "name": "Radix Color Scale",
+  "nameZh": "Radix 色阶",
   "aliases": ["Radix 12 步色阶", "语义色阶", "Radix Colors"],
   "category": "color",
   "system": "component-lib",

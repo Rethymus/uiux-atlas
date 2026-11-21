@@ -1,5 +1,6 @@
 {
   "name": "Variable Fonts",
+  "nameZh": "可变字体",
   "aliases": ["可变字体", "OpenType 变体", "font-variation-settings"],
   "category": "type",
   "system": "web-std",

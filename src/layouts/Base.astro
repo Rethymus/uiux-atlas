@@ -6,6 +6,7 @@ import "@fontsource/noto-sans-sc/chinese-simplified-700.css";
 import "@/styles/global.css";
 import { t } from "@/i18n/ui";
 import { CATEGORIES, type Locale } from "@/lib/types";
+import { resourcesUrl } from "@/lib/urls";
 
 interface Props {
   locale: Locale;
@@ -14,9 +15,11 @@ interface Props {
   /** 对应另一语言的 URL,用于语言切换 */
   altUrl: string;
   activeCategory?: string;
+  /** 资源页等非分类页面:导航「资源」项的当前态(activeCategory 不匹配它) */
+  activeNav?: "resources";
 }
 
-const { locale, title, description, altUrl, activeCategory } = Astro.props;
+const { locale, title, description, altUrl, activeCategory, activeNav } = Astro.props;
 const dict = t(locale);
 const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
 ---
@@ -26,16 +29,37 @@ const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* 防闪烁 BeforePaint(v2.1 §7):首帧前定主题——localStorage("atlas-theme")
+        优先,无记录跟 prefers-color-scheme(无偏好 = 深色),立刻设 dataset.theme。
+        is:inline 免打包同步执行;无 JS 时 :root 默认即深色,内容不受影响 */}
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    {/* 浏览器 UI 双外观同步(v2.1 §7):theme-color 双值 media 配置;
+        用户显式切换后由脚本把两条 content 同步改写为当前主题值 */}
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8" />
     <title>{title} · {dict.siteName}</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E" />
   </head>
   <body>
+    <a class="skip-link" href="#main">{dict.nav.skip}</a>
     <header class="site-header">
       <div class="site-header-inner">
         <a class="brand" href={locale === "en" ? "/en/" : "/"}>
-          <span class="brand-mark">◍</span>{dict.siteName}
+          <span class="brand-mark" aria-hidden="true">◍</span>{dict.siteName}
         </a>
         <nav class="site-nav" aria-label={dict.nav.atlas}>
           {
@@ -45,19 +69,402 @@ const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
               </a>
             ))
           }
+          {/* 「资源」排在六分类之后;仅资源页标记当前(activeCategory 不覆盖它) */}
+          <a href={resourcesUrl(locale)} aria-current={activeNav === "resources" ? "true" : undefined}>
+            {dict.nav.resources}
+          </a>
         </nav>
-        <a class="lang-switch" href={altUrl} hreflang={locale === "zh" ? "en" : "zh-CN"}>
+        <a class="lang-switch" href={altUrl} hreflang={locale === "zh" ? "en" : "zh-CN"} rel="alternate">
           {dict.langSwitch}
         </a>
+        {/* 主题切换钮(v2.1 §7):aria-pressed = 当前是否浅色(SSR 先渲染 false,
+            由主脚本按 BeforePaint 结果校正);图标 = 目标主题,样式层按 dataset.theme 换显 */}
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label={locale === "zh" ? "切换深浅主题" : "Switch color theme"}
+          aria-pressed="false"
+        >
+          <svg
+            class="icon-sun"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+            />
+          </svg>
+          <svg
+            class="icon-moon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
       </div>
     </header>
 
-    <main class="shell">
+    <main class="shell" id="main">
       <slot />
     </main>
 
     <footer class="site-footer">
       <div class="site-footer-inner">{dict.footer.note}</div>
     </footer>
+
+    <script>
+      // 主题层脚本(全部渐进增强;无 JS 时内容直出终态)。
+      // §6-4 滚动驱动入场 / §6-8 bento count-up / §4.1-4 hero live 演示滚过淡出。
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const root = document.documentElement;
+
+      /* ── 主题切换(v2.1 §7):dataset.theme 已由 <head> BeforePaint 定值,此处只接交互。
+           持久化 localStorage("atlas-theme");aria-pressed = 当前是否浅色;
+           theme-color 双值 meta 的 content 同步改写为当前主题,浏览器 UI 跟随显式选择。
+           CSS 不在 body 背景/前景挂 transition(spec §7):切换瞬时完成,不闪动画。 ── */
+      const THEME_COLOR: Record<"dark" | "light", string> = { dark: "#0b0e13", light: "#f3f5f8" };
+      const themeBtn = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+      const themeMetas = Array.from(
+        document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'),
+      );
+      const syncThemeUi = () => {
+        const t: "dark" | "light" = root.dataset.theme === "light" ? "light" : "dark";
+        if (themeBtn) themeBtn.setAttribute("aria-pressed", t === "light" ? "true" : "false");
+        for (const m of themeMetas) m.setAttribute("content", THEME_COLOR[t]);
+      };
+      syncThemeUi();
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          const next: "dark" | "light" = root.dataset.theme === "light" ? "dark" : "light";
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem("atlas-theme", next);
+          } catch {
+            /* 存储不可用(file://、隐私模式):仅本次会话生效 */
+          }
+          syncThemeUi();
+        });
+      }
+
+      /* ── §6-4:优先 CSS view() 时间线;不支持时 IntersectionObserver 回退 ── */
+      const reveals = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+      const directReveal = () => {
+        for (const el of reveals) el.classList.add("is-in");
+      };
+      if (reduce.matches) {
+        directReveal();
+      } else if (CSS.supports("animation-timeline: view()")) {
+        root.classList.add("css-scroll-timeline");
+      } else if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-in");
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: "0px 0px -8% 0px" },
+        );
+        for (const el of reveals) {
+          el.classList.add("js-reveal");
+          io.observe(el);
+        }
+      }
+      // §8:JS 参与的动效必须监听 RM 变化实时停起
+      reduce.addEventListener?.("change", () => {
+        if (reduce.matches) directReveal();
+      });
+
+      /* ── §6-8:count-up(@property + counter;aria 终值由 sr-only 直出) ── */
+      const counters = Array.from(document.querySelectorAll<HTMLElement>("[data-count]"));
+      const supportsAtProperty = typeof CSSPropertyRule !== "undefined";
+      if (!reduce.matches && supportsAtProperty && "IntersectionObserver" in window) {
+        const cio = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              const el = e.target as HTMLElement;
+              const final = Number(el.dataset.count ?? "0");
+              el.style.setProperty("--num-final", String(final));
+              el.textContent = "";
+              el.classList.add("count-up");
+              cio.unobserve(el);
+            }
+          },
+          { threshold: 0.4 },
+        );
+        for (const el of counters) cio.observe(el);
+      }
+
+      /* ── §4.1-4:hero 滚过即淡出 live 演示交互(inert 防双滑杆焦点混乱) ── */
+      const live = document.querySelector<HTMLElement>(".hero-live");
+      if (live && "IntersectionObserver" in window) {
+        const lio = new IntersectionObserver((entries) => {
+          const off = !entries[0].isIntersecting;
+          live.classList.toggle("is-off", off);
+          if (off) live.setAttribute("inert", "");
+          else live.removeAttribute("inert");
+        });
+        lio.observe(live);
+      }
+
+      /* ── 光标感知类(spec §6b 克制授权:聚光只给 demo 舞台 §6-1、
+           磁吸只给复制主 CTA §6-2;04 §4.4 数据密集区禁用)。
+           设备门禁:仅 (hover: hover) and (pointer: fine) 桌面环境启用,
+           触屏设备两个单例都不挂行为。均按 05 §5 移植规则「抄思想、按公式重写」,
+           未复制任何组件源码;来源 URL 与许可见各段头注释。 ── */
+      const cursorFine = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+      /* ── §6-1 演示台光标聚光 ─────────────────────────────────────────
+         思想移植:react-bits SpotlightCard(MIT + Commons Clause;
+         https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/content/Components/SpotlightCard/SpotlightCard.jsx ,
+         05 §1.1 2026-11-21 实抓)。rAF 指数平滑
+         follow = 1 − exp(−dt/(0.015 + smoothing×0.22));presence 出现 τ≈0.1s、
+         消失 τ≈0.32s;位移与 presence 双 settle(<0.1px / <0.002)即停帧。
+         输出只写 CSS 变量 --mx/--my/--spot-o(消费在 global.css .demo-stage
+         第一层 radial),不逐帧改 layout 属性。
+         委托式单监听:demo 舞台由 DemoHost 岛屿晚挂载,window pointermove
+         委托天然覆盖;指针只能落在视口内可见舞台上,故 05 §1.1 的 IO 门控
+         在此架构下冗余,以委托替代(如实标注)。
+         RM:follow=1 即指即现(react-bits 内建降级语义,pump 内实时读
+         reduce.matches);且 global.css reduce 静态变体连渐变层都不渲染,双保险。 ── */
+      interface SpotState {
+        stage: HTMLElement;
+        cx: number;
+        cy: number;
+        o: number;
+        tx: number;
+        ty: number;
+        to: number;
+        raf: number;
+        last: number;
+      }
+      const spots = new WeakMap<HTMLElement, SpotState>();
+      let activeSpot: SpotState | null = null;
+
+      const spotPump = (s: SpotState) => {
+        if (s.raf) return; // 已在帧循环中:下一帧自然取到新目标
+        s.last = performance.now();
+        const step = (now: number) => {
+          const dt = Math.min((now - s.last) / 1000, 0.1);
+          s.last = now;
+          const f = reduce.matches ? 1 : 1 - Math.exp(-dt / (0.015 + 0.5 * 0.22));
+          const fIn = reduce.matches ? 1 : 1 - Math.exp(-dt / 0.1);
+          const fOut = reduce.matches ? 1 : 1 - Math.exp(-dt / 0.32);
+          s.cx += (s.tx - s.cx) * f;
+          s.cy += (s.ty - s.cy) * f;
+          s.o += (s.to - s.o) * (s.to >= s.o ? fIn : fOut);
+          s.stage.style.setProperty("--mx", `${s.cx.toFixed(2)}px`);
+          s.stage.style.setProperty("--my", `${s.cy.toFixed(2)}px`);
+          s.stage.style.setProperty("--spot-o", s.o.toFixed(3));
+          const settled =
+            Math.abs(s.tx - s.cx) < 0.1 &&
+            Math.abs(s.ty - s.cy) < 0.1 &&
+            Math.abs(s.to - s.o) < 0.002;
+          if (settled) {
+            s.raf = 0; // settle 即停帧(05 §1.1 工程红线)
+            if (s.to === 0) {
+              s.stage.style.setProperty("--mx", "-999px");
+              s.stage.style.setProperty("--my", "-999px");
+              s.stage.style.setProperty("--spot-o", "0");
+            }
+            return;
+          }
+          s.raf = requestAnimationFrame(step);
+        };
+        s.raf = requestAnimationFrame(step);
+      };
+      const spotRelease = (s: SpotState) => {
+        s.to = 0;
+        spotPump(s);
+      };
+      window.addEventListener(
+        "pointermove",
+        (e: PointerEvent) => {
+          if (!cursorFine.matches || e.pointerType === "touch") return;
+          const stage = (e.target as Element | null)?.closest?.(".demo-stage") as HTMLElement | null;
+          if (stage) {
+            let s = spots.get(stage);
+            if (!s) {
+              s = { stage, cx: 0, cy: 0, o: 0, tx: 0, ty: 0, to: 0, raf: 0, last: 0 };
+              spots.set(stage, s);
+            }
+            const rect = stage.getBoundingClientRect();
+            s.tx = e.clientX - rect.left;
+            s.ty = e.clientY - rect.top;
+            if (s.to !== 1) {
+              /* 首次出现:光斑直接落在指针处(presence 只做淡入,不从角落飞入) */
+              s.cx = s.tx;
+              s.cy = s.ty;
+            }
+            s.to = 1;
+            if (activeSpot && activeSpot !== s) spotRelease(activeSpot);
+            activeSpot = s;
+            spotPump(s);
+          } else if (activeSpot) {
+            spotRelease(activeSpot);
+            activeSpot = null;
+          }
+        },
+        { passive: true },
+      );
+      // 指针离窗/失焦:聚光退场(不再依赖后续 pointermove)
+      document.documentElement.addEventListener("pointerleave", () => {
+        if (activeSpot) {
+          spotRelease(activeSpot);
+          activeSpot = null;
+        }
+        magnetPt = null;
+        if (magnetActive) magnetPump(magnetActive);
+      });
+      window.addEventListener("blur", () => {
+        if (activeSpot) {
+          spotRelease(activeSpot);
+          activeSpot = null;
+        }
+        magnetPt = null;
+        if (magnetActive) magnetPump(magnetActive);
+      });
+
+      /* ── §6-2 磁吸复制钮 ─────────────────────────────────────────────
+         思想移植:react-bits Magnet(MIT + Commons Clause;
+         https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/content/Animations/Magnet/Magnet.jsx ,
+         05 §1.2 2026-11-21 实抓)。规格按 spec §6-2:吸力是距离场
+         pull = 1 − smoothstep(padding×0.5, padding, outside)(半程全吸、
+         边缘归零,元素「被牵引」而非「被吸附」);位移 = 到中心向量 ÷
+         magnetStrength(2)× pull,再 6px 限幅(spec ≤6px);弹簧
+         stiffness 170 / damping 16 / mass 1,子步积分 ceil(dt×120) 步
+         (高刷屏稳定),静止 ε=0.05 即停帧并归还 transform 给样式表;
+         输出只有一条 translate3d(纯合成器路径);多实例互斥仲裁
+         (pull 最大者得主;本站 data-magnet 元素每页 ≤1 个)。
+         触屏:设备门禁 + pointerType 双保险跳过;RM:measure 恒零
+         (不吸不动,hover 变色保留,react-bits 内建降级语义)。 ── */
+      const MAGNET_PADDING = 24; /* 影响半径 px(= --space-6) */
+      const MAGNET_MAX = 6; /* spec §6-2 点名限幅 */
+      const MAGNET_REST = 0.05; /* react-bits 静止阈值 */
+      const smoothstep = (a: number, b: number, x: number): number => {
+        const t = Math.min(Math.max((x - a) / (b - a), 0), 1);
+        return t * t * (3 - 2 * t);
+      };
+      interface MagnetState {
+        el: HTMLElement;
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        raf: number;
+        last: number;
+      }
+      const magnetStates = new WeakMap<HTMLElement, MagnetState>();
+      let magnetActive: MagnetState | null = null;
+      let magnetPt: { x: number; y: number } | null = null;
+
+      const magnetMeasure = (el: HTMLElement): { pull: number; tx: number; ty: number } => {
+        if (!magnetPt || !cursorFine.matches || reduce.matches) {
+          return { pull: 0, tx: 0, ty: 0 }; /* RM:measure 恒零(不吸不动) */
+        }
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        const ox = Math.max(r.left - magnetPt.x, 0, magnetPt.x - r.right);
+        const oy = Math.max(r.top - magnetPt.y, 0, magnetPt.y - r.bottom);
+        const pull = 1 - smoothstep(MAGNET_PADDING * 0.5, MAGNET_PADDING, Math.hypot(ox, oy));
+        if (pull <= 0) return { pull: 0, tx: 0, ty: 0 };
+        let tx = ((magnetPt.x - cx) / 2) * pull; /* strength 2 → 吸一半距离 */
+        let ty = ((magnetPt.y - cy) / 2) * pull;
+        const len = Math.hypot(tx, ty);
+        if (len > MAGNET_MAX) {
+          tx = (tx / len) * MAGNET_MAX;
+          ty = (ty / len) * MAGNET_MAX;
+        }
+        return { pull, tx, ty };
+      };
+      const magnetStop = (s: MagnetState) => {
+        s.raf = 0;
+        s.x = 0;
+        s.y = 0;
+        s.vx = 0;
+        s.vy = 0;
+        s.el.style.transform = ""; /* 归还 transform 给样式表(:active 等照常生效) */
+      };
+      const magnetPump = (s: MagnetState) => {
+        if (s.raf) return;
+        s.last = performance.now();
+        const step = (now: number) => {
+          const dt = Math.min((now - s.last) / 1000, 0.1);
+          s.last = now;
+          const { tx, ty } = magnetMeasure(s.el);
+          const substeps = Math.max(1, Math.ceil(dt / (1 / 120)));
+          const h = dt / substeps;
+          for (let i = 0; i < substeps; i++) {
+            s.vx += (-170 * (s.x - tx) - 16 * s.vx) * h;
+            s.vy += (-170 * (s.y - ty) - 16 * s.vy) * h;
+            s.x += s.vx * h;
+            s.y += s.vy * h;
+          }
+          const rest =
+            Math.abs(s.x - tx) < MAGNET_REST &&
+            Math.abs(s.y - ty) < MAGNET_REST &&
+            Math.abs(s.vx) < MAGNET_REST &&
+            Math.abs(s.vy) < MAGNET_REST;
+          if (rest) {
+            s.raf = 0; /* 静止即停帧 */
+            if (tx === 0 && ty === 0) {
+              magnetStop(s);
+            } else {
+              s.x = tx;
+              s.y = ty; /* 吸附在目标点,等待下一次指针输入唤醒 */
+            }
+            return;
+          }
+          s.el.style.transform = `translate3d(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px, 0)`;
+          s.raf = requestAnimationFrame(step);
+        };
+        s.raf = requestAnimationFrame(step);
+      };
+      window.addEventListener(
+        "pointermove",
+        (e: PointerEvent) => {
+          if (!cursorFine.matches || e.pointerType === "touch") return;
+          magnetPt = { x: e.clientX, y: e.clientY };
+          /* 互斥仲裁:影响圈内 pull 最大者得主(spec §6-2;≤1 实例,逐个测距成本低) */
+          let best: HTMLElement | null = null;
+          let bestPull = 0;
+          document.querySelectorAll<HTMLElement>("[data-magnet]").forEach((el) => {
+            const m = magnetMeasure(el);
+            if (m.pull > bestPull) {
+              bestPull = m.pull;
+              best = el;
+            }
+          });
+          if (best) {
+            if (!magnetActive || magnetActive.el !== best) {
+              if (magnetActive) magnetPump(magnetActive); /* 旧主目标归零,自行回位 */
+              magnetActive =
+                magnetStates.get(best) ??
+                { el: best, x: 0, y: 0, vx: 0, vy: 0, raf: 0, last: 0 };
+              magnetStates.set(best, magnetActive);
+            }
+            magnetPump(magnetActive);
+          } else if (magnetActive) {
+            magnetPump(magnetActive); /* 出影响圈:目标 0,弹簧回位后停 */
+          }
+        },
+        { passive: true },
+      );
+    </script>
   </body>
 </html>

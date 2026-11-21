@@ -1,5 +1,6 @@
 {
   "name": "Fluid Spacing",
+  "nameZh": "流式间距",
   "aliases": ["流式间距", "Utopia 间距", "间距标尺"],
   "category": "type",
   "system": "web-std",

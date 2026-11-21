@@ -1,5 +1,6 @@
 {
   "name": "Count-Up Number",
+  "nameZh": "数字滚动",
   "aliases": ["数字滚动", "数字计数动画", "Number counter"],
   "category": "motion",
   "system": "web-std",

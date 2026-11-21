@@ -1,5 +1,6 @@
 {
   "name": "Skeleton Loading",
+  "nameZh": "骨架屏",
   "aliases": ["骨架屏", "加载骨架", "Skeleton screen"],
   "category": "motion",
   "system": "community",

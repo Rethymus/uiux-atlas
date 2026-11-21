@@ -5,7 +5,7 @@ export const ui = {
   zh: {
     siteName: "UI/UX 设计全解图集",
     siteTagline: "可交互实例 · 代码拆解 · 参数实时调节 · 一键复刻 Prompt",
-    nav: { home: "首页", atlas: "图集" },
+    nav: { home: "首页", atlas: "图集", resources: "资源", skip: "跳到主内容" },
     home: {
       heroTitle: "现代前端 UI/UX 设计全解",
       heroSub:
@@ -13,6 +13,8 @@ export const ui = {
       browse: "按分类浏览",
       featured: "精选条目",
       entriesCount: "条",
+      stats: { entries: "条目", categories: "分类", tunable: "全参数化" },
+      openEntry: "进入条目 →",
     },
     list: {
       filterSystem: "来源体系",
@@ -47,12 +49,29 @@ export const ui = {
     footer: {
       note: "demo 代码 MIT · 正文 CC BY-NC 4.0 · 数值均注明一手来源",
     },
+    resources: {
+      title: "深入学习的资源地图",
+      intro:
+        "扫盲只是开始——把本站条目学透之后,这里是下一站:官方规范、组件库、交互工具、灵感画廊与深学文档,每条写明「什么时候该用它」。全部外链在新窗口打开。",
+      countLabel: "条资源",
+      groups: {
+        spec: { name: "官方设计规范" },
+        lib: { name: "组件库" },
+        tool: { name: "交互与动效工具" },
+        gallery: { name: "灵感画廊" },
+        docs: { name: "深学文档" },
+      },
+      goDeeper: "继续深入",
+      goDeeperHint: "该体系的官方入口与上手工具",
+      more: "全部资源 →",
+      homeEntry: "授人以渔:规范 · 组件库 · 工具 · 画廊 →",
+    },
     langSwitch: "English",
   },
   en: {
     siteName: "UI/UX Design Atlas",
     siteTagline: "Interactive examples · Code breakdown · Live parameter tuning · One-click replication prompt",
-    nav: { home: "Home", atlas: "Atlas" },
+    nav: { home: "Home", atlas: "Atlas", resources: "Resources", skip: "Skip to content" },
     home: {
       heroTitle: "Modern Frontend UI/UX, Fully Explained",
       heroSub:
@@ -60,6 +79,8 @@ export const ui = {
       browse: "Browse by category",
       featured: "Featured entries",
       entriesCount: "entries",
+      stats: { entries: "Entries", categories: "Categories", tunable: "Fully tunable" },
+      openEntry: "Open entry →",
     },
     list: {
       filterSystem: "Source system",
@@ -93,6 +114,23 @@ export const ui = {
     },
     footer: {
       note: "Demo code MIT · Text CC BY-NC 4.0 · Every value cites a first-party source",
+    },
+    resources: {
+      title: "A map for going deeper",
+      intro:
+        "The primer is only the start — once you have finished an entry, these are the next stops: official specs, component libraries, interaction tools, inspiration galleries and deep-dive docs, each saying when to use it. All links open in a new window.",
+      countLabel: "resources",
+      groups: {
+        spec: { name: "Official design specs" },
+        lib: { name: "Component libraries" },
+        tool: { name: "Interaction and motion tools" },
+        gallery: { name: "Inspiration galleries" },
+        docs: { name: "Deep-dive docs" },
+      },
+      goDeeper: "Go deeper",
+      goDeeperHint: "Official entry points and hands-on tools for this system",
+      more: "All resources →",
+      homeEntry: "Go beyond: specs · libraries · tools · galleries →",
     },
     langSwitch: "中文",
   },

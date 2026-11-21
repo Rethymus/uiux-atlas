@@ -1,5 +1,6 @@
 {
   "name": "M3 Dynamic Color",
+  "nameZh": "动态取色",
   "aliases": ["Material You 动态取色", "Dynamic Color", "动态取色流程"],
   "category": "color",
   "system": "m3",

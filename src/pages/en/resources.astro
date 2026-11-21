@@ -1,0 +1,69 @@
+---
+import Base from "@/layouts/Base.astro";
+import { RESOURCES, RESOURCE_GROUPS } from "@/data/resources";
+import { t } from "@/i18n/ui";
+import { resourcesUrl } from "@/lib/urls";
+
+// Resources page (en): five groups × resource cards; data sourced from prior research (src/data/resources.ts)
+const dict = t("en");
+const res = dict.resources;
+---
+
+<Base
+  locale="en"
+  title={res.title}
+  description={res.intro}
+  altUrl={resourcesUrl("zh")}
+  activeNav="resources"
+>
+  <div class="resources-page">
+    {/* Page head: same skeleton as list pages (.list-head, --step-4 title + mono count) */}
+    <header class="list-head">
+      <h1 class="list-title">{res.title}</h1>
+      <p class="list-count">
+        <span class="list-count-num">{RESOURCES.length}</span> {res.countLabel}
+      </p>
+    </header>
+    <p class="res-intro">{res.intro}</p>
+
+    {
+      RESOURCE_GROUPS.map((gid) => {
+        const items = RESOURCES.filter((r) => r.group === gid);
+        if (items.length === 0) return null;
+        return (
+          <section class="res-group">
+            <h2 class="section-title">{res.groups[gid].name}</h2>
+            {/* Grid reuses the spec .entry-grid; card base class .entry-card (hover micro-interaction = §3 Card tokens) */}
+            <div class="entry-grid">
+              {items.map((r, i) => (
+                <a
+                  class="entry-card res-card reveal"
+                  style={`--i: ${i};`}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span class="res-name">
+                    {r.name}
+                    <span class="res-ext" aria-hidden="true">
+                      ↗
+                    </span>
+                  </span>
+                  <span class="res-url">{r.url}</span>
+                  <span class="res-desc">{r.desc.en}</span>
+                  {r.tags && r.tags.length > 0 && (
+                    <span class="entry-meta">
+                      {r.tags.map((tag) => (
+                        <span class="chip">{tag}</span>
+                      ))}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+</Base>

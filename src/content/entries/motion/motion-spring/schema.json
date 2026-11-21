@@ -1,5 +1,6 @@
 {
   "name": "Physics Spring (Motion)",
+  "nameZh": "物理弹簧",
   "aliases": ["弹簧动效", "Spring animation", "type: spring"],
   "category": "motion",
   "system": "community",

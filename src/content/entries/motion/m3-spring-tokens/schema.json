@@ -1,5 +1,6 @@
 {
   "name": "M3 Spring Tokens",
+  "nameZh": "M3 弹簧令牌",
   "aliases": ["Material 3 弹簧 token", "MotionScheme", "spring composite tokens"],
   "category": "motion",
   "system": "m3",

@@ -1,5 +1,6 @@
 {
   "name": "Container Queries",
+  "nameZh": "容器查询",
   "aliases": ["容器查询", "@container", "组件级响应式"],
   "category": "layout",
   "system": "web-std",

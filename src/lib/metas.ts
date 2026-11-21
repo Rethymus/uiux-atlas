@@ -10,6 +10,7 @@ export async function listEntryMetas(): Promise<EntryMeta[]> {
   return entries.map((e) => ({
     slug: e.id,
     name: e.data.name,
+    nameZh: e.data.nameZh,
     system: e.data.system as EntryMeta["system"],
     star: e.data.star,
     tagline: e.data.tagline,

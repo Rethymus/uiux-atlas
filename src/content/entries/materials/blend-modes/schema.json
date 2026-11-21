@@ -1,5 +1,6 @@
 {
   "name": "Blend Modes",
+  "nameZh": "混合模式",
   "aliases": ["混合模式", "mix-blend-mode", "background-blend-mode"],
   "category": "materials",
   "system": "web-std",

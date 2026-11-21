@@ -1,5 +1,6 @@
 {
   "name": "Filter Functions",
+  "nameZh": "滤镜函数族",
   "aliases": ["CSS 滤镜", "filter 函数族", "图像滤镜"],
   "category": "materials",
   "system": "web-std",

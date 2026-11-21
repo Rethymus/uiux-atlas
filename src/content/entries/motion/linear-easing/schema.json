@@ -1,5 +1,6 @@
 {
   "name": "linear() Spring Sampling",
+  "nameZh": "linear() 缓动",
   "aliases": ["linear 缓动采样", "弹簧转 CSS", "linear() easing generator"],
   "category": "motion",
   "system": "web-std",

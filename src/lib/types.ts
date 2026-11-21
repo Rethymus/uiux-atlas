@@ -110,6 +110,8 @@ export interface SnapshotItem {
 /** 条目 schema(schema.json 的形状) */
 export interface EntrySchema {
   name: string;
+  /** 中文名(zh 站展示名;缺省回退 name。由 scripts/add-name-zh.mjs 批量写入) */
+  nameZh?: string;
   aliases: string[];
   category: CategoryId;
   system: SystemId;
@@ -130,6 +132,8 @@ export interface EntrySchema {
 export interface EntryMeta {
   slug: string;
   name: string;
+  /** 中文名(zh 站展示名;缺省回退 name,与 EntrySchema.nameZh 同步透传) */
+  nameZh?: string;
   system: SystemId;
   star: number;
   tagline: LocalizedText;

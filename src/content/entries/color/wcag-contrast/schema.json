@@ -1,5 +1,6 @@
 {
   "name": "WCAG Contrast",
+  "nameZh": "WCAG 对比度",
   "aliases": ["WCAG 对比度", "对比度比值", "Contrast ratio"],
   "category": "color",
   "system": "web-std",

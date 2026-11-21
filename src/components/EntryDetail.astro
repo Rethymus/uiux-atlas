@@ -6,9 +6,11 @@ import BreakdownTabs from "@/components/BreakdownTabs";
 import MetaAccordion from "@/components/MetaAccordion.astro";
 import { getCollection, render } from "astro:content";
 import { CATEGORIES, SYSTEMS } from "@/lib/types";
-import type { EntrySchema, Locale } from "@/lib/types";
+import type { CategoryId, EntrySchema, Locale } from "@/lib/types";
 import { t } from "@/i18n/ui";
-import { categoryUrl, entryUrl, homeUrl } from "@/lib/urls";
+import { categoryUrl, entryUrl, homeUrl, resourcesUrl } from "@/lib/urls";
+import { goDeeperLinks } from "@/data/resources";
+import { displayName, secondaryName } from "@/lib/displayName";
 
 interface Props {
   entryId: string;
@@ -18,13 +20,17 @@ interface Props {
 
 const { entryId, schema, locale } = Astro.props;
 const dict = t(locale);
-const [category] = entryId.split("/");
+// entryId 首段必为六分类 id(getStaticPaths 只从 CATEGORIES 生成),这里收窄给 goDeeperLinks
+const [category] = entryId.split("/") as CategoryId[];
 const cat = CATEGORIES.find((c) => c.id === category)!;
 const sys = SYSTEMS.find((s) => s.id === schema.system);
 const catName = locale === "en" ? cat.en : cat.zh;
 const systemLabel = sys ? (locale === "en" ? sys.en : sys.zh) : schema.system;
 // 星级 Chip:形状 + aria 文字双编码,颜色/形状不唯一承载(spec §3 Chip;与 EntryCard 同文案)
 const starLabel = locale === "en" ? `Parameterization ${schema.star}/3` : `参数化 ${schema.star}/3`;
+// 展示名:zh 优先 nameZh(无译名回退 name),en 恒 name;zh 且中英不同名时小字并列英文(可检索性)
+const entryName = displayName(schema, locale);
+const entryNameEn = secondaryName(schema, locale);
 
 // 对应语言的 MDX 正文(entryBody id 形如 "styles/glassmorphism/zh")
 const bodies = await getCollection("entryBody", (b) => b.id === `${entryId}/${locale}`);
@@ -38,7 +44,7 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
 
 <Base
   locale={locale}
-  title={schema.name}
+  title={entryName}
   description={schema.tagline[locale]}
   altUrl={altUrl}
   activeCategory={category}
@@ -54,7 +60,7 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
         <span aria-hidden="true"> / </span>
         <a class="crumbs-cat" href={categoryUrl(locale, category)}>{catName}</a>
         <span aria-hidden="true"> / </span>
-        <span>{schema.name}</span>
+        <span>{entryName}</span>
       </nav>
       {/* §6-9 共享元素过渡(条目侧):与来源列表卡同名 —— EntryCard 动态赋名
           card-<slug>(「/」不是合法 custom-ident,替换为 -,防重名),
@@ -65,7 +71,14 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
         class="entry-title"
         style={`view-transition-name: card-${entryId.replaceAll("/", "-")};`}
       >
-        {schema.name}
+        {entryName}
+        {
+          entryNameEn && (
+            <span class="entry-title-en" lang="en">
+              {entryNameEn}
+            </span>
+          )
+        }
       </h1>
       {
         schema.aliases.length > 0 && (
@@ -117,5 +130,30 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
     {/* ── 5. 信息 Accordion(spec §4.3-5 / §3 Accordion):
          场景/避免/a11y/支持/回退/来源 六项收纳,默认全收;来源含 origin ── */}
     <MetaAccordion schema={schema} locale={locale} />
+
+    {/* ── 「继续深入」卡(授人以渔):按体系 + 分类的静态映射(src/data/resources.ts,
+         无新 collection),2–3 条最相关资源;web-std 额外呈现 schema.sources 官方 URL。
+         卡本身不可点击 → 无 hover 态(spec §3「不可点击卡无 hover 态」),内部链接才可交互 ── */}
+    <aside class="go-deeper">
+      <h2 class="go-deeper-title">{dict.resources.goDeeper}</h2>
+      <p class="go-deeper-hint">{dict.resources.goDeeperHint}</p>
+      <ul class="go-deeper-links">
+        {
+          goDeeperLinks(schema.system, category, schema.sources).map((l) => (
+            <li>
+              <a href={l.url} target="_blank" rel="noopener noreferrer">
+                <span class="go-deeper-text">{l.label[locale]}</span>
+                <span class="acc-src-ico" aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="go-deeper-more" href={resourcesUrl(locale)}>
+        {dict.resources.more}
+      </a>
+    </aside>
   </div>
 </Base>

@@ -1,5 +1,6 @@
 {
   "name": "Inertia Gesture (Motion)",
+  "nameZh": "惯性手势",
   "aliases": ["惯性滚动", "拖拽释放惯性", "Momentum scroll"],
   "category": "motion",
   "system": "community",

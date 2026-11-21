@@ -1,5 +1,6 @@
 {
   "name": "Backdrop Filter",
+  "nameZh": "背景滤镜",
   "aliases": ["背景滤镜", "背景模糊", "backdrop-filter"],
   "category": "materials",
   "system": "web-std",

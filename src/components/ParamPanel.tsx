@@ -1,5 +1,9 @@
 import { Fragment, useEffect, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from "react";
+import type {
+  CSSProperties,
+  PointerEvent as ReactPointerEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { getEntryStore, serializeParamValue } from "@/lib/store";
 import type { ParamStore } from "@/lib/store";
 import type {
@@ -18,15 +22,57 @@ import { t } from "@/i18n/ui";
 
 const clamp = (n: number, min: number, max: number): number => Math.min(max, Math.max(min, n));
 
+/**
+ * 滑杆填充断点(spec §3「滑杆解剖」):--fill-percent = (值−min)/(max−min) × 100%,
+ * 以内联 style 注入到 input[type=range],由 global.css 的 linear-gradient
+ * 双色硬断点(accent → fill-2)消费。走 React 内联样式而非全局 input 事件监听:
+ * 每次渲染与 store 值严格同步(Reset 等程序化改值也即时刷新,不会残留旧断点)。
+ */
+const fillPercent = (v: number, min: number, max: number): string =>
+  `${((max > min ? (v - min) / (max - min) : 0) * 100).toFixed(2)}%`;
+
 interface ParamPanelProps {
   entryId: string;
   schema: EntrySchema;
   locale: Locale;
 }
 
+/* ── 仪表台分组(spec §3:分组标题 几何/色彩/动效/阴影,--step--1 大写小标) ── */
+type ParamKind = "geometry" | "color" | "motion" | "shadow";
+
+const GROUP_TITLES: Record<ParamKind, { zh: string; en: string }> = {
+  geometry: { zh: "几何", en: "Geometry" },
+  color: { zh: "色彩", en: "Color" },
+  motion: { zh: "动效", en: "Motion" },
+  shadow: { zh: "阴影", en: "Shadow" },
+};
+
+/* 按参数类型确定性归组:dimension/number → 几何;color → 色彩;
+   cubicBezier/enum → 动效;shadow → 阴影 */
+const kindOf = (p: Param): ParamKind => {
+  switch (p.type) {
+    case "dimension":
+    case "number":
+      return "geometry";
+    case "color":
+      return "color";
+    case "cubicBezier":
+    case "enum":
+      return "motion";
+    case "shadow":
+      return "shadow";
+  }
+};
+
+/* dirty = 当前值偏离 schema 默认(JSON 序列化比较;值仅经 store set 流转,形状稳定) */
+const isDirty = (p: Param, value: unknown): boolean =>
+  JSON.stringify(value) !== JSON.stringify(p.default);
+
 /**
- * 右栏参数面板:由 schema.params 自动生成控件。
+ * 右栏参数面板(仪表台,spec §3):由 schema.params 自动生成控件。
  * 所有改动统一经 store.set 写入 → CSS 变量即时生效 / demo 订阅消费。
+ * 仪表台化:分组标题 + 参数行[名称行 600 mono / 实时值 accent tabular-nums /
+ * 迷你刻度条(纯 CSS 渐变)] + effect 说明;拖拽态(dirty/dragging)见样式层。
  */
 export default function ParamPanel({ entryId, schema, locale }: ParamPanelProps) {
   const dict = t(locale);
@@ -40,25 +86,119 @@ export default function ParamPanel({ entryId, schema, locale }: ParamPanelProps)
     };
   }, [store]);
 
+  const items = schema.params.map((p) => ({ p, kind: kindOf(p) }));
+  const anyDirty = schema.params.some((p) => isDirty(p, store.get(p.name)));
+
   return (
     <section className="param-panel" aria-label={dict.entry.params}>
       <div className="param-panel-head">
         <span className="param-panel-title">{dict.entry.params}</span>
-        <button type="button" className="param-reset" onClick={() => store.reset()}>
+        <button
+          type="button"
+          className={anyDirty ? "param-reset is-dirty" : "param-reset"}
+          onClick={() => store.reset()}
+        >
           {dict.entry.resetAll}
         </button>
       </div>
-      {schema.params.map((p) => (
-        <div className="param-row" key={p.name}>
-          <div className="param-label-row">
-            <span className="param-name">{p.name}</span>
-            <span className="param-value">{serializeParamValue(p, store.get(p.name))}</span>
-          </div>
-          <ParamControl param={p} store={store} locale={locale} />
-          <p className="param-effect">{p.effect[locale]}</p>
-        </div>
-      ))}
+      {items.map(({ p, kind }, i) => {
+        const showGroup = i === 0 || items[i - 1].kind !== kind;
+        const value = store.get(p.name);
+        const dirty = isDirty(p, value);
+        // 迷你刻度条:当前值在 min–max 间的位置(仅数值型参数,spec §3 仪表台细节)
+        const meter =
+          p.type === "dimension" || p.type === "number"
+            ? clamp(
+                p.max > p.min ? ((value as number) - p.min) / (p.max - p.min) : 0,
+                0,
+                1,
+              )
+            : null;
+        return (
+          <Fragment key={p.name}>
+            {showGroup && (
+              <h3 className="param-group-title">{GROUP_TITLES[kind][locale]}</h3>
+            )}
+            <div className="param-row">
+              <div className="param-label-row">
+                {p.type === "dimension" || p.type === "number" ? (
+                  <ScrubName param={p} store={store} />
+                ) : (
+                  <span className="param-name">{p.name}</span>
+                )}
+                <span className={dirty ? "param-value is-dirty" : "param-value"}>
+                  {serializeParamValue(p, value)}
+                </span>
+              </div>
+              {meter !== null && (
+                <div
+                  className="param-meter"
+                  aria-hidden="true"
+                  style={{ "--p": `${(meter * 100).toFixed(2)}%` } as CSSProperties}
+                />
+              )}
+              <ParamControl param={p} store={store} locale={locale} />
+              <p className="param-effect">{p.effect[locale]}</p>
+            </div>
+          </Fragment>
+        );
+      })}
     </section>
+  );
+}
+
+/* ---------- §6-7 参数值刮擦(scrub):拖参数名 = 改值(Figma inspector 手势) ---------- */
+
+/**
+ * 数值型参数(dimension/number)的参数名标签:横向拖动 = 刮擦改值,
+ * Shift = 细步进(spec §6-7)。指针捕获 setPointerCapture(拖出标签仍跟踪);
+ * 2px 死区防「点击误改」;值一律经 store.set 流转,与滑杆/数值输入框
+ * 等价路径同入口(键盘等价 = NumberBox 方向键,已实现)。
+ * 功能性手势而非装饰动效:RM 不降级(spec §6-7 如实标注);触屏可用
+ * (touch-action none 只限 13px 小标签,global.css)。
+ */
+function ScrubName({ param, store }: { param: DimensionParam | NumberParam; store: ParamStore }) {
+  const dragRef = useRef<{ id: number; startX: number; startVal: number; moved: boolean } | null>(
+    null,
+  );
+
+  const endDrag = (el: HTMLSpanElement, pointerId: number) => {
+    dragRef.current = null;
+    if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
+    el.closest<HTMLElement>(".param-row")?.classList.remove("is-scrubbing");
+  };
+
+  return (
+    <span
+      className="param-name is-scrub"
+      onPointerDown={(e) => {
+        e.preventDefault(); // 防文本选中/焦点劫持
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragRef.current = {
+          id: e.pointerId,
+          startX: e.clientX,
+          startVal: store.get(param.name) as number,
+          moved: false,
+        };
+        e.currentTarget.closest<HTMLElement>(".param-row")?.classList.add("is-scrubbing");
+      }}
+      onPointerMove={(e) => {
+        const d = dragRef.current;
+        if (!d || d.id !== e.pointerId) return;
+        const dx = e.clientX - d.startX;
+        if (!d.moved && Math.abs(dx) < 2) return; // 死区:点击不误改值
+        d.moved = true;
+        const fine = e.shiftKey ? 0.1 : 1; // Shift = 细步进(spec §6-7)
+        const range = param.max - param.min;
+        const raw = d.startVal + (dx / 200) * range * fine; // 200px ≈ 刮完全程
+        const snapped = param.min + Math.round((raw - param.min) / param.step) * param.step;
+        store.set(param.name, clamp(Number(snapped.toFixed(4)), param.min, param.max));
+      }}
+      onPointerUp={(e) => endDrag(e.currentTarget, e.pointerId)}
+      onPointerCancel={(e) => endDrag(e.currentTarget, e.pointerId)}
+    >
+      {param.name}
+    </span>
   );
 }
 
@@ -102,6 +242,11 @@ function RangeControl({ param, store }: { param: DimensionParam | NumberParam; s
         step={param.step}
         value={value}
         aria-label={param.name}
+        style={
+          {
+            "--fill-percent": fillPercent(value, param.min, param.max), // spec §3 滑杆解剖:轨道填充断点
+          } as CSSProperties
+        }
         onChange={(e) => commit(Number(e.target.value))}
       />
       <NumberBox
@@ -236,6 +381,11 @@ function OklchControl({ param, store }: { param: ColorParam; store: ParamStore }
             step={ax.step}
             value={parts[ax.key]}
             aria-label={`${param.name} ${ax.key}`}
+            style={
+              {
+                "--fill-percent": fillPercent(parts[ax.key], ax.min, ax.max), // oklch 四轴同样生效
+              } as CSSProperties
+            }
             onChange={(e) => setPart(ax.key, Number(e.target.value))}
           />
           <span className="color-axis-val">{parts[ax.key].toFixed(ax.digits)}</span>
@@ -285,6 +435,9 @@ function BezierControl({ param, store }: { param: BezierParam; store: ParamStore
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<0 | 1 | null>(null);
   const value = store.get(param.name) as BezierTuple;
+  /* §6-17 幽灵预览:hover/聚焦预设按钮时叠一条虚线 ghost 曲线预览该预设,
+     点击才提交;RM 直显/直隐(状态切换,无过渡动画)。 */
+  const [ghost, setGhost] = useState<BezierTuple | null>(null);
 
   const setPoint = (idx: 0 | 1, x: number, y: number) => {
     const cur = store.get(param.name) as BezierTuple;
@@ -365,6 +518,18 @@ function BezierControl({ param, store }: { param: BezierParam; store: ParamStore
       <svg ref={svgRef} className="bezier-svg" viewBox="0 0 100 100" role="img" aria-label={param.name}>
         <line x1={0} y1={100} x2={px(x1)} y2={py(y1)} strokeWidth={1} style={{ stroke: "var(--border-strong)" }} />
         <line x1={100} y1={0} x2={px(x2)} y2={py(y2)} strokeWidth={1} style={{ stroke: "var(--border-strong)" }} />
+        {/* §6-17:ghost 预览垫在当前实线下方,虚线弱化(text-faint 6.43:1 仅作非文本装饰,
+            提交语义仍由 aria-pressed + onClick 承担) */}
+        {ghost && (
+          <path
+            d={`M 0 100 C ${px(ghost[0])} ${py(ghost[1])}, ${px(ghost[2])} ${py(ghost[3])}, 100 0`}
+            fill="none"
+            strokeWidth={1.5}
+            strokeDasharray="4 3"
+            style={{ stroke: "var(--text-faint)" }}
+            aria-hidden="true"
+          />
+        )}
         <path
           d={`M 0 100 C ${px(x1)} ${py(y1)}, ${px(x2)} ${py(y2)}, 100 0`}
           fill="none"
@@ -380,7 +545,14 @@ function BezierControl({ param, store }: { param: BezierParam; store: ParamStore
             key={preset.label}
             type="button"
             aria-pressed={value.every((n, i) => n === preset.value[i])}
-            onClick={() => store.set(param.name, [...preset.value])}
+            onPointerEnter={() => setGhost(preset.value)}
+            onPointerLeave={() => setGhost(null)}
+            onFocus={() => setGhost(preset.value)} /* 键盘等价:Tab 聚焦同权预览(§8) */
+            onBlur={() => setGhost(null)}
+            onClick={() => {
+              setGhost(null);
+              store.set(param.name, [...preset.value]);
+            }}
           >
             {preset.label}
           </button>
@@ -463,6 +635,11 @@ function ShadowControl({ param, store }: { param: ShadowParam; store: ParamStore
                 step={SHADOW_RANGES[key].step}
                 value={layer[key]}
                 aria-label={`${param.name} #${i + 1} ${key}`}
+                style={
+                  {
+                    "--fill-percent": fillPercent(layer[key], SHADOW_RANGES[key].min, SHADOW_RANGES[key].max), // shadow 层编辑器滑杆同样生效
+                  } as CSSProperties
+                }
                 onChange={(e) => setNumeric(i, key, Number(e.target.value))}
               />
               <span className="color-axis-val">{layer[key]}</span>

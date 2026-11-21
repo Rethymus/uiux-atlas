@@ -1,5 +1,6 @@
 {
   "name": "View Transitions",
+  "nameZh": "视图过渡",
   "aliases": ["视图过渡", "startViewTransition", "共享元素过渡"],
   "category": "motion",
   "system": "web-std",

@@ -12,3 +12,7 @@ export const categoryUrl = (locale: Locale, category: string): string =>
 /** entryId 形如 "styles/glassmorphism" */
 export const entryUrl = (locale: Locale, entryId: string): string =>
   locale === "en" ? `/en/${entryId}/` : `/${entryId}/`;
+
+/** 「授人以渔」资源页 */
+export const resourcesUrl = (locale: Locale): string =>
+  locale === "en" ? "/en/resources/" : "/resources/";

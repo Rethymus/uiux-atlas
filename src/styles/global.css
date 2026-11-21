@@ -1,25 +1,34 @@
 /* ============================================================
-   UI/UX 设计全解图集 — 深色工作台主题(主题层 + 站点骨架)
-   唯一事实来源:docs/design-spec.md(v2.0);与它冲突处以规范为准。
-   ① 全站唯一主题、永久深色:被演示的玻璃/光/影是主角,UI 退后;
-      底色禁纯黑(--bg 带蓝 hue,spec §2.1 / 04 §2.2-1)。
-   ② 文本对比度对 --bg/--surface 全部按规范 §2.1/§8 实算值执行(WCAG AA);
+   UI/UX 设计全解图集 — 双主题工作台(主题层 + 站点骨架)
+   唯一事实来源:docs/design-spec.md(v2.1);与它冲突处以规范为准。
+   ① 双主题舞台(v2.1 §1-1,废止「永久深色」):默认深色,浅色一等公民;
+      语义层不变、值分主题——:root = 深色(默认),
+      :root[data-theme="light"] = 浅色全套(§2.1 浅色表,WCAG AA 实算)。
+      两套底色均禁死黑/死白(--bg 带蓝 hue,spec §2.1 / 04 §2.2-1)。
+   ② 文本对比度对 --bg/--surface 两主题各自按规范 §2.1/§8 实算值执行(WCAG AA);
       --border/--border-strong 不可作控件边界唯一识别依据(§8)。
    ③ 全站 prefers-reduced-motion 降级见文末全局规则(spec §8);
       新增装饰动效必须先在 spec §6 清单登记 RM 降级方案。
    ④ 玻璃材质只允许两条 sticky 带:站点 header + 列表页过滤栏(spec §2.1)。
+   ⑤ 主题切换 = dataset.theme + localStorage("atlas-theme"),规范见 spec §7
+      (切换钮/持久化/防闪烁 BeforePaint/theme-color 双值)。
    ============================================================ */
 
 /* ────────────────────────────────────────────────────────────
-   1. Token 体系(spec §2,全部具体值)
+   1. Token 体系(spec §2,全部具体值;语义层不变、值分主题 v2.1)
    ──────────────────────────────────────────────────────────── */
 :root {
+  color-scheme: dark; /* 浅色覆写见下方 [data-theme="light"](spec §7) */
+
   /* ── 背景 4 级:页面底 → 演示台 → 卡片 → 卡内嵌块 ──
      分层逻辑 = Apple base/elevated(暗色深度靠提亮)+ Radix「卡片比页底高 2 步」 */
   --bg: #0b0e13; /* level-0 页面底(base);带蓝 hue,禁纯黑 */
   --bg-elev: #10141b; /* level-0.5 演示台/代码块底(TDesign「深一档」双底色分层) */
   --surface: #161b23; /* level-1 卡片/面板(elevated) */
   --surface-2: #1d232d; /* level-2 组内嵌块(表格头、seg 容器、hover 面) */
+  /* 选中浮起面(v2.1):seg/bd-tabs 选中块、导航当前项——深色「浮起 = 提亮一档」
+     (surface-2 比 bg-elev 亮);浅色方向反转 = 白,见 §1b */
+  --seg-thumb: var(--surface-2);
 
   /* ── 边框 2 级(仅装饰;凡仅靠边框识别的控件必须另配状态色,spec §8) ── */
   --border: #2b323d; /* 非交互细边(= Radix step6 语义;1.50:1) */
@@ -98,10 +107,15 @@
   --radius-xl: 20px; /* bento 格、demo 舞台 */
   --radius-pill: 999px; /* chip、badge、reset 按钮 */
 
-  /* ── 阴影阶梯(纯黑低透明度;暗色深度优先提亮,阴影只做悬浮暗示) ── */
+  /* ── 阴影阶梯(纯黑低透明度;暗色深度优先提亮,阴影只做悬浮暗示;
+        浅色减弱见 [data-theme="light"])= 02 §4.1 TDesign 两主题阴影比例 ── */
   --shadow-1: 0 2px 8px rgb(0 0 0 / 0.35); /* hover 抬升的卡片 */
   --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45); /* 下拉、popover、sticky 过滤栏激活后 */
   --shadow-3: 0 16px 48px rgb(0 0 0 / 0.55); /* 模态(保留位) */
+
+  /* ── 演示台顶缘 1px 内发光(v2.1 token 化,原硬编码 rgb(255 255 255 / .02);
+        浅色为白高光浮雕 = 02 §4.2 亮色内描边思路) ── */
+  --stage-glint: rgb(255 255 255 / 0.02);
 
   /* ── 动效 token:时长 × 缓动配对(M3 官方档位;出入不对称,进入比退出长) ── */
   --dur-1: 150ms; /* 按压/枚举切换/焦点(× --ease-standard) */
@@ -132,14 +146,80 @@
 }
 
 /* ────────────────────────────────────────────────────────────
+   1b. 浅色主题(v2.1 §2.1 浅色表;:root[data-theme="light"],
+       由 <head> BeforePaint 脚本或切换钮写入,spec §7)
+   语义层(名字/语义/用法纪律)与深色完全一致,只换值:
+   参考体系 = Arco 亮色 bg/text 阶梯 + TDesign _light.less 同构取号
+   + Apple HIG 双外观语义色(同一 token 两套值);全部文本用值经
+   WCAG 实算(.scratch-design-study/check_tokens_light.py,AA ≥4.5:1)。
+   阶梯方向反转:深色「卡比页底亮」,浅色「卡(白)比页底灰」。
+   ──────────────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* ── 背景 4 级(取号对照:TDesign 亮色 page=gray-2/容器=#fff;
+        Arco bg-2=#fff、gray-1 #F7F8FA;本站全部带蓝 hue,禁死白页底) ── */
+  --bg: #f3f5f8; /* level-0 页面底(Arco gray-1/2 之间) */
+  --bg-elev: #eaeef3; /* level-0.5 演示台/代码块(浅色「深一档」= 更暗一档) */
+  --surface: #ffffff; /* level-1 卡片/面板(TDesign 容器 = #fff) */
+  --surface-2: #eef1f5; /* level-2 组内嵌块(表格头、seg 容器、hover 面) */
+  --seg-thumb: var(--surface); /* 选中浮起面:浅色「浮起 = 最亮一档」(白) */
+
+  /* ── 边框 2 级(对照 Arco --color-border = gray-3 #E5E6EB 同档;
+        深色纪律照旧:不作控件边界唯一识别依据,spec §8) ── */
+  --border: #dde2ea; /* 非交互细边(1.19/1.30:1,仅装饰) */
+  --border-strong: #bcc4d1; /* 交互边界(1.61/1.76:1) */
+
+  /* ── 文本 4 级(黑墨系带蓝 hue;对 --bg:14.29 / 7.00 / 4.94 / 3.17:1;
+        对 --surface:15.61 / 7.64 / 5.39 / 3.46。
+        对照 Arco text-1/2 = #1D2129/#4E5969;其 text-3 #86909C 亮色实测
+        3.37:1 不达 AA,本站 faint 加深一档,TDesign 黑 60% 同理) ── */
+  --text: #1d242f; /* primary(14.29:1) */
+  --text-dim: #47546b; /* secondary:正文(7.00:1,7:1 追加目标达成) */
+  --text-faint: #5e6b81; /* tertiary:label/meta/图注(4.94:1,AA 通过) */
+  --text-ghost: #7e8b9e; /* quaternary:禁用/占位(3.17:1;禁用态 AA 豁免) */
+
+  /* ── 状态填充 3 级(墨水系;对照 Arco 亮色 fill-1/2/3 = gray-1/2/3 同语义) ── */
+  --fill-1: rgba(29, 36, 47, 0.05); /* hover state layer */
+  --fill-2: rgba(29, 36, 47, 0.09); /* pressed / 选中底 */
+  --fill-3: rgba(29, 36, 47, 0.14); /* 拖拽中 / 强调嵌块 */
+
+  /* ── 全站交互强调色(= TDesign 亮色品牌方向;AA 校准) ── */
+  --accent: #1a69d2; /* 4.81:1 vs bg(Arco arcoblue-6 #165DFF 附近、同 hue) */
+  --accent-strong: #124ea6; /* hover 加深(TDesign 亮色 hover=6 加深邻位;
+        语义名不变、方向随主题翻转:深色=提亮,浅色=加深) */
+  --accent-dim: rgba(26, 105, 210, 0.1); /* 选中底(accent 对复合底 4.57:1) */
+  --ok: #0c7b45; /* 成功(4.89:1;TDesign 亮色 success #2ba471 仅 3.16:1,加深) */
+  --warn: #995a00; /* 警告/删除 hover(5.04:1) */
+  --danger: #c93040; /* 错误(4.83:1;TDesign error-6 #d54941=4.32:1,加深) */
+
+  /* ── 六分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
+        (装饰条/文本两用纪律与深色一致,spec §2.1 用法纪律) ── */
+  --cat-styles: #a426cc; /* min 4.83:1 */
+  --cat-materials: #0b7491; /* min 4.60:1 */
+  --cat-motion: #a05200; /* min 4.87:1 */
+  --cat-color: #cf1d52; /* min 4.56:1 */
+  --cat-type: #4353e6; /* min 4.98:1 */
+  --cat-layout: #0a753c; /* min 4.97:1 */
+
+  /* ── 阴影:浅色减弱(02 §4.1 TDesign 亮色三层投影 5–12% 黑 同比例档;
+        深色为 35/45/55%) ── */
+  --shadow-1: 0 2px 8px rgb(28 39 58 / 0.08);
+  --shadow-2: 0 8px 24px rgb(28 39 58 / 0.12);
+  --shadow-3: 0 16px 48px rgb(28 39 58 / 0.16);
+
+  /* ── 演示台顶缘微光:浅色白高光浮雕(02 §4.2 亮色内描边思路) ── */
+  --stage-glint: rgb(255 255 255 / 0.65);
+
+  /* 玻璃/字族/字阶/间距/圆角/动效/z-index/骨架几何不随主题变
+     (--glass-bg 引用 --bg 的 color-mix,自动随主题换值) */
+}
+
+/* ────────────────────────────────────────────────────────────
    2. 基底
    ──────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
-}
-
-html {
-  color-scheme: dark;
 }
 
 body {
@@ -170,7 +250,36 @@ a:hover {
 }
 
 ::selection {
-  background: rgba(109, 178, 255, 0.28);
+  /* v2.1:原硬编码 rgba(109,178,255,.28) → accent 派生,随主题换值 */
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* 细滚动条(标准属性 + webkit 双写;spec §3 控件现代化统一项):
+   scrollbar-width/color 为继承属性,挂在根元素即全站生效;
+   webkit 伪元素不继承,按全局选择器覆盖。thumb 色 = --border-strong(装饰档,
+   两主题均随 token 换值),hover 提到 --text-ghost;轨道透明不与分层底色打架。
+   站内已有 scrollbar-width:none 的横滑容器(.site-nav/.filter-chips/.bd-tabs)
+   特异性更高,横滑条依旧隐藏,不受影响。 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-ghost);
 }
 
 /* Focus ring 全局强制(spec §8):组件内不得覆盖或移除 */
@@ -398,7 +507,7 @@ a:hover {
 }
 .site-nav a[aria-current="true"] {
   color: var(--text);
-  background: var(--surface-2);
+  background: var(--seg-thumb); /* v2.1:选中浮起面 token(浅色=白) */
 }
 /* <640:导航变横向滑动 chips(spec §7;容器内滑动不产生页面级横向滚动) */
 @media (max-width: 639px) {
@@ -440,6 +549,53 @@ a:hover {
   border-color: var(--border-strong);
   text-decoration: none;
   background: var(--fill-1);
+}
+
+/* 主题切换钮(v2.1 §7):语言切换钮旁的图标胶囊钮;aria-pressed = 当前是否浅色。
+   交互五态同 §3 统一状态集;触控热区 ≥44px(::after inset -6px,spec §7 处方) */
+.theme-toggle {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; /* 视觉 36px,热区由 ::after 扩至 ≥44px */
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--fill-1);
+}
+.theme-toggle:active {
+  background: var(--fill-2);
+}
+.theme-toggle svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+/* 图标语义 = 目标主题(v2.1 §7):深色显太阳(切往浅色),浅色显月亮 */
+.theme-toggle .icon-moon {
+  display: none;
+}
+:root[data-theme="light"] .theme-toggle .icon-sun {
+  display: none;
+}
+:root[data-theme="light"] .theme-toggle .icon-moon {
+  display: block;
 }
 
 /* ≤899px:导航放不下横排,改为行内横向滚动,避免与语言切换钮重叠(spec §7 响应式矩阵) */
@@ -1062,7 +1218,8 @@ a:hover {
   letter-spacing: 0.08em;
 }
 
-/* 可点 Chip(过滤器项):hover fill-1;选中 accent-dim/accent/text(spec §3 Chip) */
+/* 可点 Chip(过滤器项):hover fill-1 + border-strong;选中 accent-dim/accent/text
+   (spec §3 Chip;hover 只动 color/background/border-color,过渡 --dur-1) */
 .fchip {
   appearance: none;
   position: relative;
@@ -1079,10 +1236,15 @@ a:hover {
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard);
 }
 .fchip:hover {
   background: var(--fill-1);
   color: var(--text);
+  border-color: var(--border-strong);
 }
 .fchip:active {
   background: var(--fill-2);
@@ -1163,7 +1325,9 @@ a:hover {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border-color: var(--border);
-  box-shadow: var(--shadow-1);
+  /* sticky 过滤栏激活后 = --shadow-2(spec §2.5 阴影阶梯用途列的点名分配;
+     修正:此前误用 --shadow-1(卡片 hover 档),与规范冲突处一律以规范为准) */
+  box-shadow: var(--shadow-2);
 }
 .filter-group {
   display: flex;
@@ -1242,16 +1406,23 @@ a:hover {
   border-radius: var(--radius-s);
   cursor: pointer;
   position: relative;
+  /* 状态过渡统一 --dur-1(spec §3:hover 只动 color/background/transform) */
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .seg button:hover {
   color: var(--text);
   background: var(--fill-1);
 }
+/* 按压态:fill-2 底 + 轻收缩(iOS segmented 按压语义;幅度克制 0.97) */
 .seg button:active {
   background: var(--fill-2);
+  transform: scale(0.97);
 }
 .seg button[aria-pressed="true"] {
-  background: var(--surface-2);
+  background: var(--seg-thumb); /* v2.1:选中浮起面 token(浅色=白) */
   color: var(--text);
 }
 
@@ -1299,6 +1470,16 @@ a:hover {
   line-height: 1.2;
   letter-spacing: -0.02em;
   margin: 0 0 var(--space-1);
+}
+/* zh 条目页 h1 旁的英文原名小字:中文名主标题 + 英文名并列(术语对应/可检索性);
+   caption 档 --step--1 + meta 色 --text-faint(6.43:1,≥12px label 允许档,spec §2.1/§2.2) */
+.entry-title-en {
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-faint);
+  margin-left: var(--space-2);
+  white-space: nowrap;
 }
 /* 一行 aliases(--step--1 / --text-faint,中点分隔)与 tagline 一行截断 */
 .entry-aliases {
@@ -1417,7 +1598,7 @@ a:hover {
     linear-gradient(90deg, color-mix(in srgb, var(--border) 30%, transparent) 1px, transparent 1px),
     var(--bg-elev);
   background-size: auto, 120px 120px, 120px 120px, 24px 24px, 24px 24px, auto;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.02);
+  box-shadow: inset 0 1px 0 var(--stage-glint); /* v2.1 token 化(§1b) */
   overflow: hidden;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1535,7 +1716,7 @@ a:hover {
   left: 0;
   width: 0;
   border-radius: var(--radius-s);
-  background: var(--surface-2);
+  background: var(--seg-thumb); /* v2.1:选中浮起面 token(浅色=白) */
   transition:
     transform var(--dur-2) var(--ease-standard),
     width var(--dur-2) var(--ease-standard);
@@ -1568,6 +1749,11 @@ a:hover {
   position: relative;
   z-index: 1;
   white-space: nowrap;
+  /* 状态过渡统一 --dur-1(spec §3 同 .seg) */
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .bd-tab:hover {
   color: var(--text);
@@ -1575,6 +1761,7 @@ a:hover {
 }
 .bd-tab:active {
   background: var(--fill-2);
+  transform: scale(0.98); /* 按压态(同 .seg,spec §3;幅度更小适配 44px 行) */
 }
 .bd-tab[aria-selected="true"] {
   color: var(--text);
@@ -1891,8 +2078,12 @@ a:hover {
   flex: 1;
   min-width: 0;
 }
+/* 数值输入框(spec §3 滑杆解剖:与滑杆同组对齐——高 32px
+   (= 02 §3.2 TDesign 默认控件高)、--radius-s 共享圆角、mono 12px 右对齐;
+   去原生上下箭头:appearance none + webkit spin 按钮移除(ask 点名,保留键盘输入) */
 .param-num {
   width: 64px;
+  height: 32px;
   flex: none;
   background: var(--bg-elev);
   border: 1px solid var(--border);
@@ -1900,8 +2091,18 @@ a:hover {
   font-family: var(--font-mono);
   font-size: var(--step--1);
   border-radius: var(--radius-s);
-  padding: var(--space-1) var(--space-2);
+  padding: 0 var(--space-2);
   text-align: right;
+  appearance: none; /* 去原生控件外观(含 number 上下箭头) */
+  -moz-appearance: textfield; /* Firefox number 去箭头的显式档 */
+  transition:
+    border-color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard);
+}
+.param-num::-webkit-outer-spin-button,
+.param-num::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
 }
 .param-num:hover {
   border-color: var(--border-strong);
@@ -1913,40 +2114,103 @@ a:hover {
   width: 24px;
 }
 
-/* 滑杆:4px 轨道 + 16px thumb,输入框整体 28px 命中区(spec §7) */
+/* ── 滑杆(spec §3「滑杆解剖」v2.2 全自绘体系)──
+   参考来源:02 §3.2 默认控件高 32(同组对齐基准)/ §3.4 圆角 medium 6px(--radius-s)
+   / §5.1 桌面 200ms 时长档(= --dur-2;状态微反馈取更短的 --dur-1)/ §5.2 standard 曲线;
+   03 §1.4 Arco fill 4/8/12% 状态层语义(未填充段用 --fill-2)/ §1.5 时长 0.2s 档;
+   05 §5 性能红线:过渡只动 transform/box-shadow/border-color(合成器路径)。
+   轨道:8px 圆角轨道;已填充段 = linear-gradient 双色硬断点(accent → fill-2),
+   断点位置 = --fill-percent,由组件按 (值−min)/(max−min) 内联注入
+   (ParamPanel / HeroGlassDemo;未注入的调用方回退 0% = 纯未填充轨道)。
+   拇指:18px 圆形 = 5px accent 边环 + 8px 白芯;白芯 #fff 为 TDesign/Arco 暗色
+   滑杆惯例的两主题恒定值(类比 --stage-glint 的白色常量用法),其余全走语义 token。
+   热区:input 为替换元素,::before/::after 不渲染(ask 点名的 ::before 扩热区
+   在引擎层不成立)——等效实现 = 元素高 44px(整盒命中区)+ 负 margin ±6px,
+   命中区是真实的 44px 元素盒(spec §7「增加元素高度至 44」处方),布局占位 32px
+   与数值输入框同组对齐。 */
 input[type="range"] {
   appearance: none;
-  height: 28px;
+  height: 44px; /* 整元素命中区 ≥44px(spec §7 触控目标) */
+  margin: -6px 0; /* 上下各扩 6px 热区;布局占位 44-12=32px,与 .param-num 同组对齐 */
   background: transparent;
   outline-offset: 2px;
   cursor: pointer;
-  margin: 0;
 }
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 8px;
   border-radius: var(--radius-pill);
-  background: var(--border-strong);
+  /* 双色断点填充:accent 已填充段 / --fill-2 未填充段(03 §1.4 fill 语义) */
+  background: linear-gradient(
+    90deg,
+    var(--accent) var(--fill-percent, 0%),
+    var(--fill-2) var(--fill-percent, 0%)
+  );
 }
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
-  margin-top: -6px;
+  width: 18px;
+  height: 18px;
+  margin-top: -5px; /* (8-18)/2:轨道垂直居中 */
   border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--bg);
+  background: #fff; /* 白芯:两主题恒定(见块注) */
+  border: 5px solid var(--accent); /* accent 边环 */
+  transition:
+    transform var(--dur-1) var(--ease-standard),
+    box-shadow var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard);
 }
+/* hover:放大 110% + accent-dim 光晕(spec §3 滑杆解剖) */
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+/* active:收缩 95%(值标签 --fill-3 底由 .param-row:has(input:active) 联动) */
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(0.95);
+}
+/* focus-visible:拇指双层焦点环(内圈 bg 2px + 外圈 accent 2px,spec §8 双层 ring;
+   元素级 outline 由全局 :focus-visible 规则承担,不覆盖不移除) */
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+}
+/* Firefox:同一解剖(轨道渐变同式;thumb 无需 margin 校正,自动居中) */
 input[type="range"]::-moz-range-track {
-  height: 4px;
+  height: 8px;
   border-radius: var(--radius-pill);
-  background: var(--border-strong);
+  background: linear-gradient(
+    90deg,
+    var(--accent) var(--fill-percent, 0%),
+    var(--fill-2) var(--fill-percent, 0%)
+  );
 }
 input[type="range"]::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--bg);
+  background: #fff;
+  border: 5px solid var(--accent);
+  transition:
+    transform var(--dur-1) var(--ease-standard),
+    box-shadow var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard);
+}
+input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.1);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(0.95);
+}
+input[type="range"]:focus-visible::-moz-range-thumb {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
 }
 input[type="range"]:focus-visible {
   outline: 2px solid var(--accent);
@@ -1968,6 +2232,12 @@ input[type="range"]:focus-visible {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   cursor: pointer;
+  /* 状态过渡统一 --dur-1(spec §3 同 .seg) */
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .enum-seg button:hover {
   color: var(--text);
@@ -1975,6 +2245,7 @@ input[type="range"]:focus-visible {
 }
 .enum-seg button:active {
   background: var(--fill-2);
+  transform: scale(0.97); /* 按压态(同 .seg,spec §3) */
 }
 .enum-seg button[aria-pressed="true"] {
   background: var(--accent-dim);
@@ -2294,6 +2565,153 @@ input[type="color"]:hover {
 }
 
 /* ────────────────────────────────────────────────────────────
+   8b. 资源页 / 条目「继续深入」卡(授人以渔)
+       卡片规范沿用 §3 Card(.entry-card 基类 + token 微交互);
+       玻璃/渐变预算不动(§2.1 纪律),hover 只动 border/transform/阴影。
+   ──────────────────────────────────────────────────────────── */
+.res-intro {
+  color: var(--text-dim);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  max-width: 72ch;
+  margin: 0 0 var(--space-8);
+}
+.res-group + .res-group {
+  margin-top: var(--space-8);
+}
+/* 资源卡:.entry-card 基类(surface+border+radius-l)之上补资源专属行 */
+.res-card .res-name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--step-1);
+  font-weight: 600;
+  line-height: 1.5;
+  min-width: 0;
+}
+.res-card .res-ext {
+  flex: none;
+  color: var(--text-faint);
+  font-size: var(--step--1);
+}
+.res-card .res-url {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--text-faint);
+  /* mono 元数据纪律(spec §2.2)+ hover 才点亮的 accent(面积纪律 <5%,§2.1) */
+  transition: color var(--dur-1) var(--ease-standard);
+}
+.res-card:hover .res-url {
+  color: var(--accent);
+}
+.res-card .res-desc {
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  line-height: 1.45;
+}
+
+/* 条目页「继续深入」卡:紧凑信息卡;卡不可点击 → 无 hover 态(spec §3 Card) */
+.go-deeper {
+  margin-top: var(--space-8);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  max-width: 720px;
+}
+.go-deeper-title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+}
+.go-deeper-hint {
+  margin: var(--space-1) 0 0;
+  font-size: var(--step--1);
+  color: var(--text-faint);
+}
+.go-deeper-links {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+.go-deeper-links li + li {
+  margin-top: var(--space-1);
+}
+.go-deeper-links a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  padding: var(--space-1) var(--space-2);
+  margin: 0 calc(var(--space-2) * -1);
+  border-radius: var(--radius-s);
+  color: var(--text-dim);
+  font-size: var(--step--1);
+  transition:
+    background var(--dur-1) var(--ease-standard),
+    color var(--dur-1) var(--ease-standard);
+}
+/* 触控热区 ≥44px 高(spec §7,同 .acc-sources a::after 处方) */
+.go-deeper-links a::after {
+  content: "";
+  position: absolute;
+  inset: -8px 0;
+}
+.go-deeper-links a:hover {
+  background: var(--fill-1);
+  color: var(--text);
+  text-decoration: none;
+}
+.go-deeper-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.go-deeper-more {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: var(--step--1);
+  color: var(--accent);
+  transition: color var(--dur-1) var(--ease-standard);
+}
+.go-deeper-more::after {
+  content: "";
+  position: absolute;
+  inset: -6px; /* 触控热区扩边(spec §7 chip 系处方) */
+}
+.go-deeper-more:hover {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+/* 首页底部「授人以渔」入口行:一行导流,克制不加卡 */
+.home-res-link {
+  margin: var(--space-8) 0 var(--space-12);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+.home-res-link a {
+  font-size: var(--step-1);
+  font-weight: 500;
+  color: var(--text-dim);
+  transition: color var(--dur-1) var(--ease-standard);
+}
+.home-res-link a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* ────────────────────────────────────────────────────────────
    9. prefers-reduced-motion 全局降级(spec §8;Semi「默认 0ms」的等价物)
    ──────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -2310,6 +2728,16 @@ input[type="color"]:hover {
   .bento-cell:hover,
   .bento-cell:active,
   .btn-primary:active {
+    transform: none;
+  }
+  /* 控件按压/悬停缩放与滑杆拇指缩放(spec §3 滑杆解剖的 RM 降级):
+     RM 下 transform 直达终态(不缩放),色彩状态反馈保留 */
+  .seg button:active,
+  .enum-seg button:active,
+  .bd-tab:active,
+  .fchip:active,
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
     transform: none;
   }
   /* §6-4:入场直出终态 */

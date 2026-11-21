@@ -28,26 +28,35 @@ const altUrl = locale === "en" ? categoryUrl("zh", categoryId) : categoryUrl("en
   altUrl={altUrl}
   activeCategory={categoryId}
 >
-  <header class="entry-head">
-    <h1>{catName}</h1>
-    <p class="entry-sub">{metas.length} {locale === "en" && metas.length === 1 ? "entry" : dict.home.entriesCount}</p>
-  </header>
+  {/* 分类 accent 编码:本页语义色指向该分类(spec §2.1,分类语义处使用) */}
+  <div class="list-scope" style={`--cat: var(--cat-${categoryId});`}>
+    {/* 页头(spec §4.2:分类名 --step-4 + 计数) */}
+    <header class="list-head">
+      <h1 class="list-title">{catName}</h1>
+      <p class="list-count">
+        {/* 可数元数据 mono + tabular-nums(spec §2.2 / §6-16) */}
+        <span class="list-count-num">{metas.length}</span>
+        {locale === "en" && metas.length === 1 ? "entry" : dict.home.entriesCount}
+      </p>
+    </header>
 
-  <div data-filter-scope>
-    <FilterBar client:visible entries={metas} locale={locale} />
-    <div class="entry-grid">
-      {
-        metas.map((m) => (
-          <EntryCard
-            entry={m}
-            locale={locale}
-            href={entryUrl(locale, m.slug)}
-            data-slug={m.slug}
-            data-system={m.system}
-            data-star={m.star}
-          />
-        ))
-      }
+    <div data-filter-scope>
+      <FilterBar client:visible entries={metas} locale={locale} />
+      <div class="entry-grid">
+        {
+          metas.map((m, i) => (
+            <EntryCard
+              entry={m}
+              locale={locale}
+              href={entryUrl(locale, m.slug)}
+              style={`--i: ${i};`}
+              data-slug={m.slug}
+              data-system={m.system}
+              data-star={m.star}
+            />
+          ))
+        }
+      </div>
     </div>
   </div>
 </Base>

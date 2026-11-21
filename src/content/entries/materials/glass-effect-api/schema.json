@@ -1,5 +1,6 @@
 {
   "name": "Glass Effect API (Liquid Glass)",
+  "nameZh": "玻璃效果 API",
   "aliases": ["液态玻璃 API", "glassEffect", "GlassEffectContainer"],
   "category": "materials",
   "system": "apple",

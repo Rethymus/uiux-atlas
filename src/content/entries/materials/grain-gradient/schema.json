@@ -1,5 +1,6 @@
 {
   "name": "Grain Gradient",
+  "nameZh": "颗粒噪点渐变",
   "aliases": ["噪点渐变", "Grainy gradients", "feTurbulence noise"],
   "category": "materials",
   "system": "community",

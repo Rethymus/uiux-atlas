@@ -1,5 +1,6 @@
 {
   "name": "Stagger Orchestration (Motion)",
+  "nameZh": "编排交错",
   "aliases": ["交错入场", "逐项编排", "staggerChildren"],
   "category": "motion",
   "system": "community",

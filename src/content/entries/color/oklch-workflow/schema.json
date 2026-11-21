@@ -1,5 +1,6 @@
 {
   "name": "OKLCH Color Workflow",
+  "nameZh": "OKLCH 选色工作流",
   "aliases": ["oklch 选色工作流", "感知均匀选色", "Perceptual color picking"],
   "category": "color",
   "system": "web-std",
