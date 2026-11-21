@@ -16,3 +16,7 @@ export const entryUrl = (locale: Locale, entryId: string): string =>
 /** 「授人以渔」资源页 */
 export const resourcesUrl = (locale: Locale): string =>
   locale === "en" ? "/en/resources/" : "/resources/";
+
+/** 「趋势追踪」页(时点快照;不入导航,从首页与资源页入口进入) */
+export const trendsUrl = (locale: Locale): string =>
+  locale === "en" ? "/en/trends/" : "/trends/";

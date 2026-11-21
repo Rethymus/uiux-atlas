@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import { RESOURCES, RESOURCE_GROUPS } from "@/data/resources";
 import { t } from "@/i18n/ui";
-import { resourcesUrl } from "@/lib/urls";
+import { resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // 「授人以渔」资源页(zh):五组 × 资源卡;数据全部来自已有调研(src/data/resources.ts)
 const dict = t("zh");
@@ -65,5 +65,10 @@ const res = dict.resources;
         );
       })
     }
+
+    {/* 页尾互链:趋势追踪页(时点快照,与本页「下一站」定位互补) */}
+    <p class="home-res-link">
+      <a href={trendsUrl("zh")}>{dict.trends.resourcesEntry}</a>
+    </p>
   </div>
 </Base>

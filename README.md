@@ -55,22 +55,25 @@ uiux-atlas 把现代前端的 UI/UX 设计知识点拆成 **81 个条目 × 9 �
 
 | 功能 | 状态 | 说明 |
 |---|---|---|
-| 81 条目双语站点 | ✅ | 81 条目 × 中英双语 = 162 篇 MDX 正文;双语三层路由(zh 无前缀,en 在 `/en/`)+ 资源页,`astro build` 产出 184 页(本次实测) |
+| 81 条目双语站点 | ✅ | 81 条目 × 中英双语 = 162 篇 MDX 正文;双语三层路由(zh 无前缀,en 在 `/en/`)+ 资源页、趋势页,`astro build` 产出 186 页(本次实测) |
 | 参数面板 | ✅ | 由条目 `schema.json` 的 params 契约自动生成控件:滑杆 / OKLCH 四轴 / 贝塞尔曲线编辑器 / 分段按钮 / 阴影逐层;附「复位官方默认」 |
 | 一键复刻 Prompt | ✅ | `store.exportSnapshot()` + `buildPrompt` 把参数快照浓缩为结构化 prompt;「复制复刻 Prompt」按钮一键复制。实弹测试:复刻代理仅凭 prompt 产出的 HTML 命中 **7/7** 关键参数(阈值 ≥5/7,`scripts/verify-prompt-test.mjs`;本次重跑 7/7) |
 | AI agent 通道(llms.txt + 条目 .md) | ✅ | `src/pages/llms.txt.ts` 静态端点:站点定位 + 九分类 + 全部条目清单(name / nameZh / URL / en 页 / md 链接);每条目另有 `/{分类}/{slug}/index.md` 纯文本版(`src/pages/[category]/[slug]/index.md.ts`)。本次实测 `dist/llms.txt` 落盘(114 行)、`dist/styles/glassmorphism/index.md` 存在 |
+| MCP server | ✅ | `mcp/server.mjs`:零依赖 stdio JSON-RPC(协议依据 MCP spec 2025-03-26:initialize 握手含版本协商、tools/list / tools/call、JSON-RPC batch),只读各条目 `schema.json`;四工具 `search_entries` / `get_entry` / `build_prompt` / `list_categories`(build_prompt 的参数序列化与站内「复制复刻 Prompt」同源),Claude/Cursor 等 coding agent 以 `node mcp/server.mjs` 接入。门禁 `test:mcp`:initialize → tools/list → tools/call 四断言,本次实测 4/4 通过 |
+| shadcn registry(24 件) | ✅ | 24 条「前端部件」demo 内联发布为 shadcn registry item + index(`public/registry/`,`pnpm run build` 后随 `dist/registry/` 静态发布,shadcn CLI/兼容客户端直接拉取);门禁 `verify:registry`,本次实测 `{"expected":24,"items":24,"problems":0}`;用法见「部署 → Registry 用法(Agent 消费)」 |
+| Open in v0 | ✅ | 条目页「在 v0 打开」次级按钮(`src/components/PromptExport.tsx`):把当前复刻 Prompt `encodeURIComponent` 进 `https://v0.dev/chat?q=…` 新窗口打开并自动预填。URL 方案来源:官方 URL 参数文档已下线(现行 v0.app/docs 与 vercel.com/docs/v0 均无 URL 参数文档),方案按 2026-11-21 curl 行为实测核验(307 跳转链 `v0.dev/chat → v0.app` 一路保留 `q`,终页 RSC payload 含预填 prompt),属**官方未背书、行为验证**方案,失效时回退「复制 Prompt + 打开 v0 首页」(证据链见该文件头注) |
 | 参数快照分享链接 | ✅ | `src/lib/shareLink.ts` 把当前参数快照序列化为 `#s=name=value&…` 追加到当前地址;「分享参数链接」按钮一键复制完整链接(`src/components/PromptExport.tsx`);打开链接时 `DemoStage` 挂载解析恢复——仅恢复 schema 中存在的参数,非法值过滤、数值按 min/max 收敛 |
 | 内嵌对比度校验 | ✅ | `src/components/ContrastChecker.tsx` 附加面板渲染于 color 分类两条目(`color/oklch-workflow` / `color/wcag-contrast`)的演示舞台内(`src/components/DemoStage.tsx`):前景/背景实时实算 WCAG 对比度比值(`src/lib/color.ts` `contrastRatio`,与 wcag-contrast 条目同一实现) |
 | @property 类型约束 | ✅ | `src/styles/global.css` 为示范条目 styles/glassmorphism 的参数变量声明 `@property` 类型(`--glass-blur` / `--glass-fill` / `--glass-border` / `--glass-radius`),变量未设也有类型化回退、不支持的浏览器整条自然跳过;count-up 条目的 `--num` 同法 |
 | 明暗双主题 | ✅ | 默认深色、浅色一等公民(语义层不变、值分主题);`localStorage("atlas-theme")` 持久化 + head 防闪烁脚本 + `theme-color` 双 meta;两套 token 对比度门禁 12/12 实算达标 |
 | 资源导航 | ✅ | `/resources/` 与 `/en/resources/`:30 条资源 × 五组(官方规范 / 组件库 / 交互与动效工具 / 灵感画廊 / 深学文档),全部真实 URL、整卡外链 |
+| 趋势追踪页 | ✅ | `/trends/` 与 `/en/trends/`(`src/pages/trends.astro` + `src/data/trends.ts`):2023–2026 设计趋势「兴起/退潮」时点快照,逐条提炼自 `out/research/03-visual-style-trends.md` §二并注明出处与口径(份额类数据标注「单一 AI 设计工具请求份额,非市场采用率」);`relatedEntries` 站内互链有构建期守卫,写死死链直接构建失败;本次实测 build 产出两页(`dist/trends/`、`dist/en/trends/`) |
 | 平台专有材质 | ⚠️ | Web 近似复现:`liquid-glass`(折射用 SVG `feDisplacementMap`)、`fluent-acrylic`(模糊半径未公布,blur 24px 为社区常见近似)、`swiftui-materials`(六档透明度/模糊为社区近似表,官方未公布数值)——条目内逐处标注 |
 | SwiftUI API 面 | ⚠️ | `swiftui-spring`、`swiftui-materials` 等条目为**对照演示**:Web 端呈现参数语义与趋势,换真机仍以系统渲染为准 |
 | 代码拆解 | ⚠️ | MVP 形态 = 高亮代码块 + 逐段注释(双语 MDX 四段 h2);教学叙事完整版(拆解↔内容联动的四段教学叙事)在 V1 规划(见路线图) |
 | Prompt 校验 | ⚠️ | **本机代理指标**:7 项正则检查 + 阈值 ≥5/7,作为内部回归基线;非跨 agent 公开基准(prompt 质量无外部标准,蓝图已如实标注为工程推断) |
 | 后端 / 账户 / 云同步 | ❌ 刻意不做 | 纯静态,无任何服务端 |
-| MCP server | ❌ 刻意不做 | V2 规划(见路线图) |
-| 实盘设计趋势抓取 | ❌ 刻意不做 | 内容为 2026-11-20/21 调研快照,不做实时趋势抓取(蓝图中的趋势季度自动化属 V2) |
+| 实盘设计趋势抓取 | ❌ 刻意不做 | 内容为 2026-11-20/21 调研快照,不做实时趋势抓取;趋势追踪页已落地为时点快照(见上方 ✅ 行),**脚本化刷新待做**(做法:重跑 `out/research/03` 的联网检索流程后替换 `src/data/trends.ts` 数值,统计口径与来源原文以 03 号调研为准) |
 
 ### 非法输入行为契约
 
@@ -99,12 +102,14 @@ pnpm install                        # 安装依赖
 | 命令 | 作用 | 门禁(不达标 `exit 1`) |
 |---|---|---|
 | `pnpm -C uiux-atlas dev` | 开发服务器(`http://localhost:4321`) | — |
-| `pnpm -C uiux-atlas run build` | 全站静态构建到 `dist/` | 内容集合 zod 校验,不合规条目构建失败;本次实测 184 页 |
-| `pnpm -C uiux-atlas exec astro check` | 类型检查 | 0 errors / 0 warnings 才过;本次实测 125 files,0/0 + 1 hint(`document.execCommand` 弃用提示,剪贴板降级方案兜底,属已知可接受项) |
+| `pnpm -C uiux-atlas run build` | 全站静态构建到 `dist/` | 内容集合 zod 校验,不合规条目构建失败;本次实测 186 页 |
+| `pnpm -C uiux-atlas exec astro check` | 类型检查 | 0 errors / 0 warnings 才过;本次实测 132 files,0/0 + 1 hint(`document.execCommand` 弃用提示,剪贴板降级方案兜底,属已知可接受项) |
 | `pnpm -C uiux-atlas run check:contrast` | 双主题 WCAG 对比度门禁(`scripts/check-theme-contrast.mjs`) | 文本 ≥4.5:1、UI 组件 ≥3:1,共 12 组配对,任一不达标 `exit 1`;本次实测 12/12 达标 |
 | `node uiux-atlas/scripts/verify-entries.mjs` | 条目完整性机器校验 | 81 条期望清单 + 结构/双语/来源 URL/参数 shape/`nameZh`,任一 problem `exit 1`;本次实测 `{"expected":81,"found":81,"problems":0}` |
-| `node uiux-atlas/scripts/verify-dist.mjs` | 构建产物核验(先 build) | 双语三层路由(9 分类 ×2 + 81 条目 ×2)+ 首页/资源页共 184 页全产出、且含关键内容标记(含「复制复刻 Prompt」逐字文案),missing/contentFails > 0 即 `exit 1`;本次实测 `{"checked":184,"missing":0,"contentFails":0}` |
+| `node uiux-atlas/scripts/verify-dist.mjs` | 构建产物核验(先 build) | 双语三层路由(9 分类 ×2 + 81 条目 ×2)+ 首页/资源页/趋势页共 186 页全产出、且含关键内容标记(含「复制复刻 Prompt」逐字文案),missing/contentFails > 0 即 `exit 1`;本次实测 `{"checked":186,"missing":0,"contentFails":0}` |
 | `node uiux-atlas/scripts/verify-prompt-test.mjs` | Prompt 复刻实弹测试 | 检查 `out/prompt-test/glassmorphism.html`(复刻代理仅凭导出 prompt 产出的页面)是否命中 7 项关键参数,阈值 ≥5/7,不足 `exit 1`;本次实测 7/7 |
+| `pnpm -C uiux-atlas run generate:registry`(生成)→ `pnpm -C uiux-atlas run verify:registry`(门禁) | shadcn registry 发布件:24 条「前端部件」demo 内联为 registry item JSON + index(JSON 数组),输出到 `public/registry/`(build 随 dist 发布;用法见「部署 → Registry 用法(Agent 消费)」) | 24 个 item JSON 可解析、`name`/`type`/`files[].path`/`content` 非空、无残留 `@/` import、index 与 item 数一致,任一不达标 `exit 1`;本次实测 `{"expected":24,"items":24,"problems":0}` |
+| `node uiux-atlas/scripts/test-mcp-server.mjs`(或 `pnpm -C uiux-atlas run test:mcp`) | MCP server(stdio JSON-RPC)冒烟测试:spawn `mcp/server.mjs`,驱动 initialize → tools/list → tools/call 序列,供 Claude/Cursor 等 coding agent 检索图集 | 四断言:initialize 响应含 capabilities、tools/list 含四工具(search_entries / get_entry / build_prompt / list_categories)、get_entry(glassmorphism) 含「毛玻璃」、build_prompt(参数覆盖 blur=30) 含 blur 30px;任一失败打印明细并 `exit 1`;本次实测 4/4 通过 |
 
 另有一次性脚本 `scripts/add-name-zh.mjs`(首批 43 条 schema 注入中文 `nameZh`,幂等可重跑,映射键与磁盘条目双向核对,任一不匹配 `exit 1`;后落地 38 条的 `nameZh` 随条目直接编写,81 条全覆盖由 verify-entries 把关)——日常开发无需运行,列入仅为完整性。
 
@@ -127,10 +132,21 @@ pnpm install                        # 安装依赖
 纯静态产物,`dist/` 即全部;无适配器、无服务端需求,Cloudflare Pages 或任意静态托管均可。一条命令:
 
 ```bash
-pnpm -C uiux-atlas run build        # 产出 uiux-atlas/dist/(本次实测 184 页)
+pnpm -C uiux-atlas run build        # 产出 uiux-atlas/dist/(本次实测 186 页)
 ```
 
 Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作区根)或 `pnpm run build`(设根目录为 `uiux-atlas/`),输出目录 `uiux-atlas/dist`。
+
+### Registry 用法(Agent 消费)
+
+24 条「前端部件」的 demo 另发布为 shadcn registry 格式,`pnpm run build` 后随 `dist/registry/` 静态发布,shadcn CLI/兼容客户端可直接拉取:
+
+- **索引**:`public/registry/index.json` —— JSON 数组,轻量条目(`name`/`type`/`title`/`description`/`files`/`meta`,不含 content);build 后位于 `dist/registry/index.json`。
+- **单件**:`public/registry/{slug}.json`(如 `button.json`,24 个,`type=registry:component`)——`files[].path` 保留源站路径 `src/content/entries/components/{slug}/demo/Demo.tsx` 作溯源,Demo.tsx 全文内联于 `files[].content`,`meta` 透传 `nameZh`/`star`/`subgroup`,`dependencies` 留空(react 由消费端按自身版本声明)。
+- **拉取**:`npx shadcn@latest add https://<host>/registry/button.json`,或自行 GET 该 URL 后解析 `files[].content`。
+- **诚实标注**:每件均为**教学演示件,非生产组件**——demo 原依赖的三个本站内部模块(`@/lib/store` 参数 store、`@/lib/types` 类型、`@/components/DemoStage` 演示舞台)在消费端不可用,生成器已把这三处 `@/` import 原位改写为「[registry 改写]」注释并注明替代方式(本地受控 state + 自有舞台容器);文件体内对应引用需按注释替换后才能编译运行。
+
+再生成与门禁:`pnpm -C uiux-atlas run generate:registry` → `pnpm -C uiux-atlas run verify:registry`(见上方命令表)。
 
 ## 📊 内容来源与口径
 
@@ -168,9 +184,10 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 
 **V2**
 
-- [ ] MCP server
-- [ ] shadcn registry 发布
-- [ ] "Open in v0"
+- [x] MCP server——已落地:`mcp/server.mjs` 零依赖 stdio JSON-RPC(协议依据 MCP spec 2025-03-26),四工具 `search_entries` / `get_entry` / `build_prompt` / `list_categories`,门禁 `test:mcp` 本次实测 4/4(接入方式见「快速开始」命令表)
+- [x] shadcn registry 发布——已落地:`public/registry/`(index.json + 24 item,`generate:registry` 生成 / `verify:registry` 门禁,build 随 dist 发布;用法见「部署 → Registry 用法(Agent 消费)」)
+- [x] "Open in v0"——已落地:条目页「在 v0 打开」,复刻 Prompt 经 `?q=` 新窗口预填;URL 方案无官方文档背书,按 2026-11-21 curl 行为实测核验(证据链见 `src/components/PromptExport.tsx` 头注)
+- [x] 趋势追踪页——已落地:`/trends/` 双语页(2023–2026 兴起/退潮时点快照,数据提炼自 `out/research/03-visual-style-trends.md` §二,文件 `src/data/trends.ts`);脚本化刷新待做(做法见功能表 ❌ 行)
 
 **新内容域**
 
@@ -182,7 +199,7 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 ```
 uiux-atlas/
 ├── astro.config.mjs            # Astro 5 + React + MDX;i18n:zh 无前缀,en 在 /en/
-├── package.json                # scripts:dev / build / preview / check / check:contrast
+├── package.json                # scripts:dev / build / preview / check / check:contrast / generate:registry / verify:registry / test:mcp
 ├── tsconfig.json               # astro/tsconfigs/strict + react-jsx + @/* 路径别名
 ├── docs/
 │   ├── design-spec.md          # 设计语言规范 v2.3(单一事实来源)
@@ -190,10 +207,16 @@ uiux-atlas/
 ├── scripts/                    # 校验脚本(用法见「快速开始」表格)
 │   ├── check-theme-contrast.mjs  # 双主题 WCAG 对比度门禁(支持 hex/rgb/oklch)
 │   ├── verify-entries.mjs        # 81 条期望清单 + 结构/双语/来源/参数 shape 校验
-│   ├── verify-dist.mjs           # 184 页产物核验 + 关键内容标记(含按钮逐字文案)
+│   ├── verify-dist.mjs           # 186 页产物核验 + 关键内容标记(含按钮逐字文案)
 │   ├── verify-prompt-test.mjs    # prompt 复刻实弹(7 项正则,阈值 ≥5/7)
+│   ├── generate-registry.mjs     # 24 条部件 demo → shadcn registry item + index(public/registry/)
+│   ├── verify-registry.mjs       # registry 发布件门禁(可解析/必填字段/index 数一致)
+│   ├── test-mcp-server.mjs       # MCP server 冒烟测试(initialize → tools/list → tools/call 四断言)
 │   └── add-name-zh.mjs           # 一次性:首批 43 条 schema 注入 nameZh(幂等)
+├── mcp/
+│   └── server.mjs               # MCP server(零依赖 stdio JSON-RPC;四工具,见「快速开始」test:mcp 行)
 ├── public/photos/              # 条目照片素材(Unsplash,见致谢)
+├── public/registry/            # shadcn registry 发布件(index.json + 24 item;build 随 dist)
 └── src/
     ├── content.config.ts       # entries / entryBody 内容集合(zod 校验)
     ├── content/entries/{category}/{slug}/
@@ -212,13 +235,14 @@ uiux-atlas/
     │   ├── DemoHost.tsx / HomeView.astro / CategoryView.astro /
     │   │   EntryDetail.astro / EntryCard.astro / MetaAccordion.astro
     ├── data/resources.ts       # 30 条资源 × 五组(逐条真实 URL,来源注于文件头)
+    ├── data/trends.ts          # 趋势追踪页数据(2023–2026 时点快照,提炼自 out/research/03 §二)
     ├── i18n/ui.ts              # 双语 UI 文案字典
     ├── layouts/Base.astro      # 站点骨架(导航 / 主题切换 / head 防闪烁脚本)
     ├── lib/                    # store.ts(参数 store)/ prompt.ts(buildPrompt)/
     │   │                       #   schema.ts(zod 契约)/ shareLink.ts(#s= 分享链接)/
     │   │                       #   color.ts(WCAG 对比度实算)/ types.ts / metas.ts /
     │   │                       #   urls.ts / displayName.ts(中文显示名)
-    ├── pages/                  # zh(/)与 en(/en/):index / [category] / [slug] / resources
+    ├── pages/                  # zh(/)与 en(/en/):index / [category] / [slug] / resources / trends
     │   │                       #   + llms.txt.ts 与 [slug]/index.md.ts(agent 纯文本端点)
     └── styles/global.css       # 全部主题 token 与类名(深浅两套,单文件)
 ```

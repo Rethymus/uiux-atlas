@@ -1,0 +1,112 @@
+---
+import Base from "@/layouts/Base.astro";
+import { TRENDS, type Trend } from "@/data/trends";
+import { listEntryMetas } from "@/lib/metas";
+import { t } from "@/i18n/ui";
+import { entryUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
+
+// Trends page (en): 2023–2026 rising/cooling point-in-time snapshots, sourced from
+// out/research/03-visual-style-trends.md §2 (src/data/trends.ts, with per-trend basis and source)
+const dict = t("en");
+const trends = dict.trends;
+
+const metas = await listEntryMetas();
+
+/**
+ * Build-time guard (resident version of the interlink spot-check): every relatedEntries
+ * slug must really exist, otherwise the build fails — keeps dead interlinks out of the data file.
+ */
+for (const tr of TRENDS) {
+  for (const slug of tr.relatedEntries) {
+    if (!metas.some((m) => m.slug === slug)) {
+      throw new Error(`trends.ts: relatedEntry "${slug}" of trend ${tr.id} does not exist in src/content/entries`);
+    }
+  }
+}
+
+const rising = TRENDS.filter((tr) => tr.direction === "rising");
+const cooling = TRENDS.filter((tr) => tr.direction === "cooling");
+
+const labelOf = (m: { name: string; nameZh?: string }) => m.nameZh ?? m.name;
+---
+
+<Base locale="en" title={trends.title} description={trends.intro} altUrl={trendsUrl("zh")}>
+  <div class="resources-page">
+    {/* Page head: same skeleton as the resources page (.list-head, --step-4 title + mono count;
+        no category context here, the 3px bar takes the :root default --cat = --accent, spec §4.4-1) */}
+    <header class="list-head">
+      <h1 class="list-title">{trends.title}</h1>
+      <p class="list-count">
+        <span class="list-count-num">{TRENDS.length}</span> {trends.countLabel}
+      </p>
+    </header>
+
+    {/* Page-head standing notice: trends are point-in-time snapshots; refresh recipe and definitions live in the data file */}
+    <p class="res-intro">{trends.intro}</p>
+    <p class="trends-note">{trends.snapshotNote}</p>
+
+    {
+      [
+        { key: "rising" as const, list: rising, arrow: "↑" },
+        { key: "cooling" as const, list: cooling, arrow: "↓" },
+      ].map((sec) => (
+        <section class={`trend-section is-${sec.key}`} aria-labelledby={`trend-sec-${sec.key}`}>
+          <h2 class="section-title" id={`trend-sec-${sec.key}`}>
+            {sec.key === "rising" ? trends.rising : trends.cooling}
+            <span class="trend-sec-arrow" aria-hidden="true">
+              {sec.arrow}
+            </span>
+            <span class="trend-sec-count">{sec.list.length}</span>
+          </h2>
+          {/* Grid reuses the spec .entry-grid; trend cards are not clickable → no hover state (spec §3 Card discipline) */}
+          <div class="entry-grid">
+            {sec.list.map((tr: Trend, i) => (
+              <article class={`trend-card reveal is-${tr.direction}`} style={`--i: ${i};`}>
+                <p class="trend-dir">
+                  <span class={`trend-badge trend-badge-${tr.direction}`}>
+                    <span aria-hidden="true">{sec.arrow}</span>
+                    {sec.key === "rising" ? trends.badgeRising : trends.badgeCooling}
+                  </span>
+                </p>
+                <h3 class="trend-title">{tr.title.en}</h3>
+                <p class="trend-summary">{tr.summary.en}</p>
+                <p class="trend-note">
+                  <span class="trend-note-label">{trends.noteLabel}</span>
+                  {tr.note.en}
+                </p>
+                <p class="trend-source">
+                  <span class="trend-note-label">{trends.sourceLabel}</span>
+                  <span class="trend-source-path">{tr.source}</span>
+                </p>
+                <footer class="trend-related">
+                  <span class="trend-related-label">{trends.relatedLabel}</span>
+                  <ul class="trend-links">
+                    {tr.relatedEntries.map((slug) => {
+                      const m = metas.find((x) => x.slug === slug);
+                      if (!m) return null;
+                      return (
+                        <li>
+                          <a href={entryUrl("en", slug)}>
+                            <span class="trend-link-text">{labelOf(m)}</span>
+                            <span class="trend-link-arrow" aria-hidden="true">
+                              →
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </footer>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {/* Footer cross-link: back to the resources page */}
+    <p class="home-res-link">
+      <a href={resourcesUrl("en")}>{dict.resources.homeEntry}</a>
+    </p>
+  </div>
+</Base>

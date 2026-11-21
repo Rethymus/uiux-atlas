@@ -1,0 +1,482 @@
+[
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "alert",
+    "type": "registry:component",
+    "title": "警告提示 Alert",
+    "description": "文档流内的四色警示块:不夺键盘焦点、默认不自动消失,经 role=alert 播报——与 toast(浮层自动消失)和 Dialog(阻断)三分反馈职责。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "警告提示",
+      "star": 2,
+      "subgroup": "feedback"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/alert/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "avatar",
+    "type": "registry:component",
+    "title": "头像 Avatar",
+    "description": "以小尺寸图像或字符代表人:圆/方两形,组内以负 margin 重叠、溢出折叠为 +N——尺寸与重叠宽度都是 token 化的,不是随手写死的。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "头像",
+      "star": 2,
+      "subgroup": "data"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/avatar/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "badge",
+    "type": "registry:component",
+    "title": "徽标数 Badge",
+    "description": "附着在其他控件角上的状态计数:数字封顶 99+、归零隐藏、可降级为小红点——徽标的一切默认值都在替用户收敛信息密度。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "徽标数",
+      "star": 3,
+      "subgroup": "data"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/badge/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "breadcrumb",
+    "type": "registry:component",
+    "title": "面包屑 Breadcrumb",
+    "description": "按层级排列的父页面链接列表,显示当前页在站点层级中的位置:放主内容之前的水平位置,上层任意节点可点、逐级回退。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "面包屑",
+      "star": 2,
+      "subgroup": "navigation"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/breadcrumb/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "button",
+    "type": "registry:component",
+    "title": "按钮 Button",
+    "description": "触发即时动作的按钮件:四档变体(primary/secondary/text/dashed,antd 风格)对应四级强调,loading 转圈阻断交互,disabled 置灰不可点;每屏只留一个 primary。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "按钮",
+      "star": 3,
+      "subgroup": "basic"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/button/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "card",
+    "type": "registry:component",
+    "title": "卡片 Card",
+    "description": "共同区域的具象化:一条边框或一层底色把相关内容圈成一块,头部标题 + 正文 + 操作区 + 可选封面,是信息分区最基本的容器。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "卡片",
+      "star": 2,
+      "subgroup": "data"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/card/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "checkbox",
+    "type": "registry:component",
+    "title": "多选框 Checkbox",
+    "description": "多选控件:一组里可同时选中任意多项;配一个全选框时,「部分选中」用 indeterminate 半选态表达。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "多选框",
+      "star": 2,
+      "subgroup": "form"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/checkbox/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "date-picker",
+    "type": "registry:component",
+    "title": "日期选择器 Date Picker",
+    "description": "从月历网格里点选日期:触发器收起为输入框,展开后是「星期表头 + 7 列日网格 + 月份切换」的浮层面板。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "日期选择器",
+      "star": 3,
+      "subgroup": "form"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/date-picker/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "drawer",
+    "type": "registry:component",
+    "title": "抽屉 Drawer",
+    "description": "从屏幕边缘 transform 滑入的面板:不离开当前页即可承载子任务/表单/详情,Esc 关闭、可带遮罩,reduced-motion 直达。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "抽屉",
+      "star": 2,
+      "subgroup": "feedback"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/drawer/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "dropdown",
+    "type": "registry:component",
+    "title": "下拉菜单 Dropdown",
+    "description": "按钮触发的临时操作菜单:点击/悬停展开一组可执行的动作列表,浮层定位在触发钮四周;与 tooltip 的区别是它承载可点击的操作,不是只读提示。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "下拉菜单",
+      "star": 2,
+      "subgroup": "navigation"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/dropdown/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "empty",
+    "type": "registry:component",
+    "title": "空状态 Empty",
+    "description": "数据为空时的友好占位:插画 + 简短标题 + 下一步说明 + 可选操作按钮,把『死胡同』变成引导。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "空状态",
+      "star": 2,
+      "subgroup": "other"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/empty/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "icon",
+    "type": "registry:component",
+    "title": "图标 Icon",
+    "description": "线性 SVG 图标件:stroke=currentColor 单色渲染,尺寸 12–48px、线宽 1–3 实时可调;图标随文字颜色走,语义靠可访问名补齐。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "图标",
+      "star": 2,
+      "subgroup": "basic"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/icon/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "input",
+    "type": "registry:component",
+    "title": "输入框 Input",
+    "description": "单行文本输入:label + 原生 textbox,状态色边框、可清空后缀与计数提示是表单里最高频的三件套。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "输入框",
+      "star": 3,
+      "subgroup": "form"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/input/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "modal",
+    "type": "registry:component",
+    "title": "对话框 Modal",
+    "description": "压在页面之上的模态层:遮罩隔离外部内容、焦点困在框内、Esc/关钮退出,承载需要用户必须处理的信息或不可逆操作确认。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "对话框",
+      "star": 3,
+      "subgroup": "feedback"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/modal/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "nav-menu",
+    "type": "registry:component",
+    "title": "导航菜单 Nav Menu",
+    "description": "将网站的信息架构分组归类并以导航的形式展示给用户,方便用户查找要获取的信息:顶部横向或侧栏纵向,二级导航聚合在下拉菜单中。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "导航菜单",
+      "star": 3,
+      "subgroup": "navigation"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/nav-menu/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "select",
+    "type": "registry:component",
+    "title": "选择器 Select",
+    "description": "从一组互斥选项里选一个:收起时是带箭头的触发器,展开后是可键盘导航的 listbox 浮层。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "选择器",
+      "star": 2,
+      "subgroup": "form"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/select/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "switch",
+    "type": "registry:component",
+    "title": "开关 Switch",
+    "description": "二态即时开关:拨杆在轨道左右滑动表达 on/off,状态即改即生效,不需要「提交」按钮。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "开关",
+      "star": 3,
+      "subgroup": "form"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/switch/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "table",
+    "type": "registry:component",
+    "title": "表格 Table",
+    "description": "用行列矩阵组织结构化数据:表头承载列语义,行承载记录;排序、斑马纹与行 hover 都是为扫读服务的辅助层,不是装饰。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "表格",
+      "star": 3,
+      "subgroup": "data"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/table/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "tabs",
+    "type": "registry:component",
+    "title": "标签页 Tabs",
+    "description": "在同一视图内平铺切换多份平级内容:一条标签轴 + 一块内容面板,点选或方向键切换,不打断所在页面的上下文。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "标签页",
+      "star": 3,
+      "subgroup": "navigation"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/tabs/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "tag",
+    "type": "registry:component",
+    "title": "标签 Tag",
+    "description": "标记与分类的小型标签件:五色枚举(红橙蓝绿灰,antd 预设色系),可关闭(closable)与描边(bordered)开关;删除后焦点移交下一个标签。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "标签",
+      "star": 2,
+      "subgroup": "basic"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/tag/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "toast",
+    "type": "registry:component",
+    "title": "全局提示 Toast",
+    "description": "不打断操作的轻量反馈条:固定定位浮于页面之上、按时长自动消失、经 role=alert 播报,只承载非关键信息。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "全局提示",
+      "star": 3,
+      "subgroup": "feedback"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/toast/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "tooltip",
+    "type": "registry:component",
+    "title": "文字提示 Tooltip",
+    "description": "悬停/聚焦时出现的小气泡:纯鼠标放大器,hover 与 focus 双触发、Esc 隐藏、纯文本短句——不能承载必须阅读的信息。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "文字提示",
+      "star": 2,
+      "subgroup": "feedback"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/tooltip/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "typography",
+    "type": "registry:component",
+    "title": "文字排印 Typography",
+    "description": "文字层级件:六档 level(h1–h4/body/caption,antd 自然指数字阶)× 三档 type(默认/次级/危险)+ 单行省略开关;同屏阶梯展示各级字号与行高。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "文字排印",
+      "star": 2,
+      "subgroup": "basic"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/typography/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  },
+  {
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "watermark",
+    "type": "registry:component",
+    "title": "水印 Watermark",
+    "description": "叠在内容之上的半透明平铺文字层:低透明度、轻微负角度、按 gap 重复铺满,用于防泄露威慑与归属溯源,而不妨碍阅读。",
+    "dependencies": [],
+    "registryDependencies": [],
+    "meta": {
+      "nameZh": "水印",
+      "star": 3,
+      "subgroup": "other"
+    },
+    "files": [
+      {
+        "path": "src/content/entries/components/watermark/demo/Demo.tsx",
+        "type": "registry:component"
+      }
+    ]
+  }
+]

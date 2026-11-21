@@ -67,20 +67,33 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-// 首页 ×2(含「授人以渔」资源入口行的稳定文案)
-checkPage("index.html", ["UI/UX 设计全解图集", "授人以渔"], "zh home");
-checkPage(join("en", "index.html"), ["UI/UX Design Atlas", "Go beyond"], "en home");
+// 首页 ×2(含「授人以渔」资源入口行 + 「趋势追踪」入口行的稳定文案)
+checkPage("index.html", ["UI/UX 设计全解图集", "授人以渔", "趋势追踪 →"], "zh home");
+checkPage(join("en", "index.html"), ["UI/UX Design Atlas", "Go beyond", "Design trends →"], "en home");
 
-// 资源页 ×2:标记 = 页面标题 + 五个组名(稳定文案)
+// 资源页 ×2:标记 = 页面标题 + 五个组名 + 页尾「趋势追踪」互链(稳定文案)
 checkPage(
   join("resources", "index.html"),
-  ["深入学习的资源地图", "官方设计规范", "组件库", "交互与动效工具", "灵感画廊", "深学文档"],
+  ["深入学习的资源地图", "官方设计规范", "组件库", "交互与动效工具", "灵感画廊", "深学文档", "趋势追踪:兴起与退潮"],
   "zh resources",
 );
 checkPage(
   join("en", "resources", "index.html"),
-  ["A map for going deeper", "Official design specs", "Component libraries", "Interaction and motion tools", "Inspiration galleries", "Deep-dive docs"],
+  ["A map for going deeper", "Official design specs", "Component libraries", "Interaction and motion tools", "Inspiration galleries", "Deep-dive docs", "Trend tracker: rising &amp; cooling"],
   "en resources",
+);
+
+// 趋势页 ×2(zh 标记 =「趋势」,en = Trend tracker;另加两个方向段标题、
+// 时点快照声明与一条互链 href,验证卡片网格与站内互链已渲染)
+checkPage(
+  join("trends", "index.html"),
+  ["趋势", "正在兴起", "正在退潮", "时点快照", 'href="/styles/glassmorphism/"'],
+  "zh trends",
+);
+checkPage(
+  join("en", "trends", "index.html"),
+  ["Design trend tracker", "Rising", "Cooling", "point-in-time snapshots", 'href="/en/styles/glassmorphism/"'],
+  "en trends",
 );
 
 // 分类列表页 ×2 ×9(zh 标记见 CATEGORY_ZH_MARKERS,缺省回退分类 id,与既有分类同法)

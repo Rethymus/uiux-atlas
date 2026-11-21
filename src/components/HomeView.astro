@@ -6,7 +6,7 @@ import { getEntry } from "astro:content";
 import { CATEGORIES } from "@/lib/types";
 import type { CategoryId, EntryMeta, EntrySchema, Locale } from "@/lib/types";
 import { t } from "@/i18n/ui";
-import { categoryUrl, entryUrl, homeUrl, resourcesUrl } from "@/lib/urls";
+import { categoryUrl, entryUrl, homeUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
 
 interface Props {
   locale: Locale;
@@ -139,8 +139,10 @@ const glassEntryUrl = entryUrl(locale, "styles/glassmorphism");
     }
   </div>
 
-  {/* ── 授人以渔入口:一行导流到资源页(规范/组件库/工具/画廊) ── */}
+  {/* ── 授人以渔入口:一行导流到资源页(规范/组件库/工具/画廊);
+       旁列「趋势追踪」入口(不入导航,spec 克制:两个静态入口行) ── */}
   <p class="home-res-link">
     <a href={resourcesUrl(locale)}>{dict.resources.homeEntry}</a>
+    <a href={trendsUrl(locale)}>{dict.trends.homeEntry}</a>
   </p>
 </Base>

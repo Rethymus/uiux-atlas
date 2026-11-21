@@ -23,6 +23,17 @@ interface PromptExportProps {
  * 向读屏播报;按钮默认文案「复制复刻 Prompt」/「Copy replication prompt」
  * 为产物校验标记,逐字保留(verify-dist.mjs 依赖)。
  * 「查看 Prompt」展开时代码区经 20px 渐变过渡层从面板渐显长出(§6-13,02 §7.2)。
+ * 「Open in v0」= 导航外链 <a class="btn-ghost">:把当前复刻 Prompt encodeURIComponent
+ * 进 https://v0.dev/chat?q=<encoded prompt> 新窗口打开并自动预填。
+ * 方案核验(2026-11-21,curl 实测):GET https://v0.dev/chat?q=hello%20world
+ * → 307 https://v0.app/chat?q=hello%20world → 307 https://v0.app/?q=hello+world,
+ * 终页 RSC payload 含 \"query\":\"hello world\" 与 {\"prompt\":\"hello world\",\"attachments\":[]},
+ * 即 q 参数一路保留并被服务端预填为新聊天 prompt;老官方 FAQ 页
+ * v0.dev/faq/v0-url-parameters 已下线(现仅剩客户端渲染空壳,HTTP 200 但内容不可达,
+ * 渲染实测跳 Vercel 登录),现行 v0.app/docs 与 vercel.com/docs/v0 全量(llms.txt)
+ * 均无 URL 参数文档,故本按钮按「行为验证仍有效」处理,属官方未背书方案,
+ * 失效时应回退为复制 Prompt + 打开 v0.dev 首页。
+ * 外链规则 target="_blank" rel="noopener noreferrer"(spec §4.4,与 §3 继续深入卡同源)。
  */
 export default function PromptExport({ entryId, schema, locale }: PromptExportProps) {
   const dict = t(locale);
@@ -44,6 +55,8 @@ export default function PromptExport({ entryId, schema, locale }: PromptExportPr
   }, [store]);
 
   const prompt = buildPrompt(schema, store.exportSnapshot(), locale);
+  /** v0 新聊天预填入口:q= 完整 prompt,2026-11-21 实测有效(见文件头注释) */
+  const v0Url = `https://v0.dev/chat?q=${encodeURIComponent(prompt)}`;
 
   /** 剪贴板统一入口(主按钮/分享链接共用);非安全上下文走 execCommand 兜底 */
   const writeClipboard = async (text: string): Promise<boolean> => {
@@ -102,6 +115,22 @@ export default function PromptExport({ entryId, schema, locale }: PromptExportPr
         <button type="button" className="btn-ghost" onClick={share}>
           {linkCopied ? dict.entry.copied : dict.entry.shareLink}
         </button>
+        {/* 次级:一键送到 v0(导航动作走 <a> 而非 button;↗ 箭头 aria-hidden,
+            与文案双编码不承载唯一语义,spec §3 继续深入卡同规;a11y 名与 tooltip
+            为双语一句,见 i18n entry.openV0Hint) */}
+        <a
+          className="btn-ghost"
+          href={v0Url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={dict.entry.openV0Hint}
+          aria-label={dict.entry.openV0Hint}
+        >
+          {dict.entry.openV0}
+          <span className="acc-src-ico" aria-hidden="true">
+            ↗
+          </span>
+        </a>
         <button type="button" className="btn-ghost" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           {dict.entry.viewPrompt}
         </button>

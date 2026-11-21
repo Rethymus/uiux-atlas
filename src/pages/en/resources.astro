@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import { RESOURCES, RESOURCE_GROUPS } from "@/data/resources";
 import { t } from "@/i18n/ui";
-import { resourcesUrl } from "@/lib/urls";
+import { resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // Resources page (en): five groups × resource cards; data sourced from prior research (src/data/resources.ts)
 const dict = t("en");
@@ -65,5 +65,10 @@ const res = dict.resources;
         );
       })
     }
+
+    {/* Footer cross-link: trend tracker page (point-in-time snapshots, a companion to this page's "next stop" role) */}
+    <p class="home-res-link">
+      <a href={trendsUrl("en")}>{dict.trends.resourcesEntry}</a>
+    </p>
   </div>
 </Base>

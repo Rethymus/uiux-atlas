@@ -1,0 +1,112 @@
+---
+import Base from "@/layouts/Base.astro";
+import { TRENDS, type Trend } from "@/data/trends";
+import { listEntryMetas } from "@/lib/metas";
+import { t } from "@/i18n/ui";
+import { entryUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
+
+// 「趋势追踪」页(zh):2023–2026 兴起/退潮时点快照,数据全部来自
+// out/research/03-visual-style-trends.md §二(src/data/trends.ts,逐条注口径与出处)
+const dict = t("zh");
+const trends = dict.trends;
+
+const metas = await listEntryMetas();
+
+/**
+ * 构建期守卫(亮点互链抽查的常驻版):relatedEntries 的 slug 必须真实存在,
+ * 否则构建直接失败 —— 防止数据文件里写死失效互链。
+ */
+for (const tr of TRENDS) {
+  for (const slug of tr.relatedEntries) {
+    if (!metas.some((m) => m.slug === slug)) {
+      throw new Error(`trends.ts: 趋势 ${tr.id} 的 relatedEntry "${slug}" 不存在于 src/content/entries`);
+    }
+  }
+}
+
+const rising = TRENDS.filter((tr) => tr.direction === "rising");
+const cooling = TRENDS.filter((tr) => tr.direction === "cooling");
+
+const labelOf = (m: { name: string; nameZh?: string }) => m.nameZh ?? m.name;
+---
+
+<Base locale="zh" title={trends.title} description={trends.intro} altUrl={trendsUrl("en")}>
+  <div class="resources-page">
+    {/* 页头:与资源页同一骨架(.list-head,--step-4 标题 + mono 计数;本页无分类语境,
+        ::after 3px 短条取 :root 默认 --cat = --accent,spec §4.4-1 同法) */}
+    <header class="list-head">
+      <h1 class="list-title">{trends.title}</h1>
+      <p class="list-count">
+        <span class="list-count-num">{TRENDS.length}</span> {trends.countLabel}
+      </p>
+    </header>
+
+    {/* 页头固定声明:趋势 = 时点快照,刷新脚本与口径见数据文件 */}
+    <p class="res-intro">{trends.intro}</p>
+    <p class="trends-note">{trends.snapshotNote}</p>
+
+    {
+      [
+        { key: "rising" as const, list: rising, arrow: "↑" },
+        { key: "cooling" as const, list: cooling, arrow: "↓" },
+      ].map((sec) => (
+        <section class={`trend-section is-${sec.key}`} aria-labelledby={`trend-sec-${sec.key}`}>
+          <h2 class="section-title" id={`trend-sec-${sec.key}`}>
+            {sec.key === "rising" ? trends.rising : trends.cooling}
+            <span class="trend-sec-arrow" aria-hidden="true">
+              {sec.arrow}
+            </span>
+            <span class="trend-sec-count">{sec.list.length}</span>
+          </h2>
+          {/* 卡片网格沿用规范 .entry-grid;趋势卡不可点击 → 无 hover 态(spec §3 Card 纪律) */}
+          <div class="entry-grid">
+            {sec.list.map((tr: Trend, i) => (
+              <article class={`trend-card reveal is-${tr.direction}`} style={`--i: ${i};`}>
+                <p class="trend-dir">
+                  <span class={`trend-badge trend-badge-${tr.direction}`}>
+                    <span aria-hidden="true">{sec.arrow}</span>
+                    {sec.key === "rising" ? trends.badgeRising : trends.badgeCooling}
+                  </span>
+                </p>
+                <h3 class="trend-title">{tr.title.zh}</h3>
+                <p class="trend-summary">{tr.summary.zh}</p>
+                <p class="trend-note">
+                  <span class="trend-note-label">{trends.noteLabel}</span>
+                  {tr.note.zh}
+                </p>
+                <p class="trend-source">
+                  <span class="trend-note-label">{trends.sourceLabel}</span>
+                  <span class="trend-source-path">{tr.source}</span>
+                </p>
+                <footer class="trend-related">
+                  <span class="trend-related-label">{trends.relatedLabel}</span>
+                  <ul class="trend-links">
+                    {tr.relatedEntries.map((slug) => {
+                      const m = metas.find((x) => x.slug === slug);
+                      if (!m) return null;
+                      return (
+                        <li>
+                          <a href={entryUrl("zh", slug)}>
+                            <span class="trend-link-text">{labelOf(m)}</span>
+                            <span class="trend-link-arrow" aria-hidden="true">
+                              →
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </footer>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {/* 页尾互链:回流「授人以渔」资源页 */}
+    <p class="home-res-link">
+      <a href={resourcesUrl("zh")}>{dict.resources.homeEntry}</a>
+    </p>
+  </div>
+</Base>
