@@ -227,9 +227,9 @@
         参考 Linear/Stripe/Notion 灯色模式;α 全部 ≤5.5%,对 AA 校准的
         文本/token 对比度无实质影响;深色不定义 → body 回退纯 --bg) ── */
   --bg-wash:
-    radial-gradient(1100px 520px at 12% -8%, rgb(26 105 210 / 0.055), transparent 62%),
-    radial-gradient(900px 460px at 88% -6%, rgb(122 90 248 / 0.05), transparent 64%),
-    radial-gradient(1000px 540px at 55% 114%, rgb(13 115 112 / 0.04), transparent 65%);
+    radial-gradient(1100px 520px at 12% -8%, rgb(26 105 210 / 0.075), transparent 62%),
+    radial-gradient(900px 460px at 88% -6%, rgb(122 90 248 / 0.065), transparent 64%),
+    radial-gradient(1000px 540px at 55% 114%, rgb(13 115 112 / 0.055), transparent 65%);
   /* 卡片顶缘内描边:白卡浮在调性底上的「受光面」(配 §2.5 阴影) */
   --card-lift: inset 0 1px 0 rgb(255 255 255 / 0.9);
 
@@ -247,8 +247,8 @@
 }
 :root[data-theme="light"] .hero {
   background:
-    radial-gradient(720px 320px at 18% 0%, rgb(26 105 210 / 0.07), transparent 66%),
-    radial-gradient(640px 300px at 82% 10%, rgb(122 90 248 / 0.055), transparent 62%);
+    radial-gradient(720px 320px at 18% 0%, rgb(26 105 210 / 0.095), transparent 66%),
+    radial-gradient(640px 300px at 82% 10%, rgb(122 90 248 / 0.075), transparent 62%);
   border-radius: var(--radius-l);
 }
 :root[data-theme="light"] .site-header {
@@ -265,22 +265,15 @@
 body {
   margin: 0;
   background-color: var(--bg);
+  /* 环境光晕:浅色由 --bg-wash(v2.5)铺于文档顶部,随滚动自然离场
+     (刻意不用 fixed 层/attachment:fixed——滚动重绘与捕获都会劣化),深色未定义 → 无 */
+  background-image: var(--bg-wash, none);
+  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: var(--step-0);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-}
-
-/* 环境光晕:浅色由 --bg-wash(v2.5)提供三盏低饱和色温灯(fixed 伪元素层,
-   避免 background-attachment: fixed 的滚动重绘与捕获卡顿),深色未定义 → 无层 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: var(--bg-wash, none);
 }
 
 /* 层次三轴只动 size/weight/color(spec §1-2);全站字重只用 400/500/600 */
