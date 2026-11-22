@@ -7,7 +7,7 @@
 **For AI-coding users · Modern UI/UX design explained · Astro+React parameterized playground · Structured replication prompts**
 
 [![astro](https://img.shields.io/badge/astro-%5E5.7-ff5d01?logo=astro&logoColor=white)](#-tech-stack)
-[![entries 81 · categories 9](https://img.shields.io/badge/entries-81%20%C2%B7%20categories%209-3CD3FE)](#-what-is-this)
+[![entries 97 · categories 9](https://img.shields.io/badge/entries-97%20%C2%B7%20categories%209-3CD3FE)](#-what-is-this)
 [![license](https://img.shields.io/badge/license-MIT%20%C2%B7%20CC%20BY--NC%204.0-6db2ff)](#-license)
 
 > The design language and inspiration come from five lines of design research (Apple HIG / TDesign / ByteDance Arco+Semi / gallery trends / reusable code); the full decision record lives in [docs/design-spec.md](docs/design-spec.md).
@@ -28,7 +28,7 @@
 
 ## 📖 What is this
 
-uiux-atlas breaks modern frontend UI/UX knowledge into **81 entries × 9 categories** (styles 7 / materials 12 / motion 11 / color 9 / type 3 / layout 1 / components 24 / icons 8 / dataviz 6; parameterization star distribution 3★ 47 / 2★ 33 / 1★ 1). Every entry is built from four elements: **① live example** (a React-island demo that updates as you tweak), **② code breakdown** (bilingual four-part walkthrough: DOM structure / styles & params / motion & interaction / parameter sensitivity), **③ real-time parameter panel** (controls auto-generated from the entry's `schema.json`), and **④ one-click replication prompt** (the current parameter snapshot condensed into a structured prompt — the "Copy replication prompt" button hands it to any AI agent).
+uiux-atlas breaks modern frontend UI/UX knowledge into **97 entries × 9 categories** (styles 15 / materials 12 / motion 19 / color 9 / type 3 / layout 1 / components 24 / icons 8 / dataviz 6; parameterization star distribution 3★ 60 / 2★ 36 / 1★ 1). Every entry is built from four elements: **① live example** (a React-island demo that updates as you tweak), **② code breakdown** (bilingual four-part walkthrough: DOM structure / styles & params / motion & interaction / parameter sensitivity), **③ real-time parameter panel** (controls auto-generated from the entry's `schema.json`), and **④ one-click replication prompt** (the current parameter snapshot condensed into a structured prompt — the "Copy replication prompt" button hands it to any AI agent).
 
 The entry data model is a three-file trio under `src/content/entries/{category}/{slug}/`:
 
@@ -58,10 +58,12 @@ The entry data model is a three-file trio under `src/content/entries/{category}/
 
 | Feature | Status | Notes |
 |---|---|---|
-| 81 bilingual entries across nine categories | ✅ | 81 entries × zh/en = 162 MDX bodies; bilingual three-layer routing (zh unprefixed, en under `/en/`) plus the resources and trends pages — `astro build` emits 186 pages (measured this session). **Entry/MDX scale: this row + the `verify-entries` gate measurement is the authoritative figure** (measured this repair run: `{"expected":81,"found":81,"problems":0}`); the "43 entries × 86 MDX" in `docs/design-spec.md`'s header and appendix is an MVP-era leftover never backfilled by later version bumps and is not the scale figure (see the Design-system section note) |
+| 97 bilingual entries across nine categories | ✅ | 97 entries × zh/en = 194 MDX bodies; bilingual three-layer routing (zh unprefixed, en under `/en/`) plus the resources and trends pages — `astro build` emits 218 pages (measured this session). **Entry/MDX scale: this row + the `verify-entries` gate measurement is the authoritative figure** (measured this session: `{"expected":97,"found":97,"problems":0}`); the "43 entries × 86 MDX" in `docs/design-spec.md`'s header and appendix is an MVP-era leftover never backfilled by later version bumps and is not the scale figure (see the Design-system section note) |
+| Apple material layer (parameterized: unified params for neutral gray scale / sampled blur / tint / inner highlight / hairline border / focus ring) | ✅ | spec v2.6 §2.8: three-tier material tokens (`--mat-thin/regular/thick-*`: blur 12/20/28px × tint α × inner highlight × hairline border × shadow, both themes) + the Apple neutral gray scale `--ios-*` (six systemGray tiers etc., official values traced to `out/design-study/09-apple-materials.md` §2) + the `.material` utility with five-surface semantic integration (site header / filter bar / param panel / demo panel / prompt export box) + the press pair `--press-scale: 0.96` + the unified focus ring `--focus-ring-*` (2px accent + offset 1px, verbatim apple.com production-CSS spec); lands in `src/styles/global.css` with `@supports`-gated fallbacks; unpublished magnitudes labeled honestly; `check:contrast` re-ran this session, 12/12 |
+| Micro-interaction domain (press feedback pair / slot spring / overlay entrance / exponential-decay shake / toast spring / damping craft / smoothness craft / scroll overflow) | ✅ | motion category 11 → 19: eight new craft/behavior entries — `press-feedback` (press feedback pair) / `slot-spring` (slot spring) / `overlay-entrance` (overlay entrance) / `shake-decay` (error shake, exponential decay) / `toast-spring` (toast spring entrance) / `damping-craft` (damping) / `smooth-craft` (smoothness) / `scroll-overflow` (scroll overflow) — each with a param contract and a `prefers-reduced-motion` fallback; the same batch grows styles 7 → 15 (eight style-history entries) and upgrades two existing entries (toast spring params, liquid-glass refraction/morph params — see roadmap V3); verify-entries re-ran this session 97/97, build measured this session at 218 pages |
 | Parameter panel | ✅ | Controls auto-generated from the entry's `schema.json` params contract: sliders / OKLCH 4-axis / bézier curve editor / segmented buttons / per-layer shadow; with "reset to official defaults" |
 | One-click replication prompt | ✅ | `store.exportSnapshot()` + `buildPrompt` condense the snapshot into a structured prompt; the "Copy replication prompt" button copies it to any AI agent. Live-fire test: HTML produced by a replication agent from the prompt alone hits **7/7** key parameters (threshold ≥5/7, `scripts/verify-prompt-test.mjs`; re-ran this session, 7/7) |
-| AI-agent channel (llms.txt + per-entry .md) | ✅ | `src/pages/llms.txt.ts` static endpoint: site positioning + nine categories + the full entry list (name / nameZh / URL / en page / md link); every entry also ships a plain-text `/{category}/{slug}/index.md` (`src/pages/[category]/[slug]/index.md.ts`). Measured this session: `dist/llms.txt` emitted (114 lines), `dist/styles/glassmorphism/index.md` present |
+| AI-agent channel (llms.txt + per-entry .md) | ✅ | `src/pages/llms.txt.ts` static endpoint: site positioning + nine categories + the full entry list (name / nameZh / URL / en page / md link); every entry also ships a plain-text `/{category}/{slug}/index.md` (`src/pages/[category]/[slug]/index.md.ts`). Measured this session: `dist/llms.txt` emitted (130 lines), `dist/styles/glassmorphism/index.md` present |
 | MCP server (four tools) | ✅ | `mcp/server.mjs`: a zero-dependency stdio JSON-RPC server (per MCP spec 2025-03-26: initialize handshake with version negotiation, tools/list / tools/call, JSON-RPC batching), read-only over each entry's `schema.json`; four tools — `search_entries` / `get_entry` / `build_prompt` / `list_categories` (build_prompt serializes params with the same code as the site's "Copy replication prompt"); coding agents (Claude/Cursor etc.) connect via `node mcp/server.mjs`. Gate `test:mcp`: four assertions over initialize → tools/list → tools/call; measured this session: 4/4 pass (negotiated protocol 2025-03-26) |
 | shadcn registry (24 items) | ✅ | the 24 frontend-component demos published inline as shadcn registry items + an index (`public/registry/`, 24 items + index.json = 25 files; shipped as static `dist/registry/` after `pnpm run build`, directly pullable by the shadcn CLI / compatible clients); gate `verify:registry`, measured this session `{"expected":24,"items":24,"problems":0}`; usage under "Deployment → Registry usage (agent consumption)" |
 | Open in v0 | ✅ | the entry-page "Open in v0" secondary button (`src/components/PromptExport.tsx`): `encodeURIComponent`s the current replication prompt into `https://v0.dev/chat?q=…` and opens it in a new tab, prefilled. URL-scheme provenance: the official URL-parameter docs are gone (nothing in today's v0.app/docs or vercel.com/docs/v0), so the scheme was verified behaviorally on 2026-11-21 via curl (the 307 redirect chain `v0.dev/chat → v0.app` preserves `q` end to end; the final page's RSC payload contains the prefilled prompt) — an **officially unendorsed, behavior-verified** scheme; if it breaks, fall back to "copy the prompt + open the v0 home page" (evidence chain in that file's header comment) |
@@ -83,7 +85,7 @@ The entry data model is a three-file trio under `src/content/entries/{category}/
 
 ### Invalid-input contract
 
-Entry data is not lenient input: every `schema.json` passes the zod contract in `src/lib/schema.ts` (wired into Astro content collections via `src/content.config.ts`) — **any non-conforming field fails `astro build`; nothing is silently ignored**. On top of that, `scripts/verify-entries.mjs` runs an independent machine re-check (81-entry expected inventory, non-empty bilingual fields, `sources` must be http(s) URLs, per-type params shape, `nameZh` coverage); any problem → `exit 1`.
+Entry data is not lenient input: every `schema.json` passes the zod contract in `src/lib/schema.ts` (wired into Astro content collections via `src/content.config.ts`) — **any non-conforming field fails `astro build`; nothing is silently ignored**. On top of that, `scripts/verify-entries.mjs` runs an independent machine re-check (97-entry expected inventory, non-empty bilingual fields, `sources` must be http(s) URLs, per-type params shape, `nameZh` coverage); any problem → `exit 1`.
 
 ## 🧰 Tech stack
 
@@ -109,16 +111,16 @@ pnpm install                        # install dependencies
 | Command | Purpose | Gate (`exit 1` on failure) |
 |---|---|---|
 | `pnpm -C uiux-atlas dev` | Dev server (`http://localhost:4321`) | — |
-| `pnpm -C uiux-atlas run build` | Static build of the whole site into `dist/` | Content-collection zod validation; non-conforming entries fail the build; measured this session: 186 pages (19.10s) |
-| `pnpm -C uiux-atlas exec astro check` | Type check | Passes only with 0 errors / 0 warnings; measured this session: 132 files, 0/0 + 1 hint (`document.execCommand` deprecation, covered by the clipboard fallback — known acceptable) |
+| `pnpm -C uiux-atlas run build` | Static build of the whole site into `dist/` | Content-collection zod validation; non-conforming entries fail the build; measured this session: 218 pages (17.11s) |
+| `pnpm -C uiux-atlas exec astro check` | Type check | Passes only with 0 errors / 0 warnings; measured this session: 148 files, 0/0 + 1 hint (`document.execCommand` deprecation, covered by the clipboard fallback — known acceptable) |
 | `pnpm -C uiux-atlas run check:contrast` | WCAG contrast gate for both themes (`scripts/check-theme-contrast.mjs`) | Text ≥4.5:1, UI components ≥3:1, 12 pairs total; any miss → `exit 1`; measured 12/12 pass |
-| `node uiux-atlas/scripts/verify-entries.mjs` | Machine check of entry integrity | 81-entry expected inventory + structure/bilingual/source URLs/params shape/`nameZh`; any problem → `exit 1`; measured `{"expected":81,"found":81,"problems":0}` |
-| `node uiux-atlas/scripts/verify-dist.mjs` | Build-output check (run build first) | All 186 pages of the bilingual three-layer routing (9 categories ×2 + 81 entries ×2) plus home/resources/trends emitted and carrying key content markers (incl. the verbatim "Copy replication prompt" button copy); missing/contentFails > 0 → `exit 1`; measured `{"checked":186,"missing":0,"contentFails":0}` |
+| `node uiux-atlas/scripts/verify-entries.mjs` | Machine check of entry integrity | 97-entry expected inventory + structure/bilingual/source URLs/params shape/`nameZh`; any problem → `exit 1`; measured `{"expected":97,"found":97,"problems":0}` |
+| `node uiux-atlas/scripts/verify-dist.mjs` | Build-output check (run build first) | All 218 pages of the bilingual three-layer routing (9 categories ×2 + 97 entries ×2) plus home/resources/trends emitted and carrying key content markers (incl. the verbatim "Copy replication prompt" button copy); missing/contentFails > 0 → `exit 1`; measured `{"checked":218,"missing":0,"contentFails":0}` |
 | `node uiux-atlas/scripts/verify-prompt-test.mjs` | Prompt replication live-fire test | Checks whether `out/prompt-test/glassmorphism.html` (a page produced by a replication agent from the exported prompt alone) hits 7 key parameters; threshold ≥5/7, below → `exit 1`; measured 7/7 |
 | `pnpm -C uiux-atlas run generate:registry` (generate) → `pnpm -C uiux-atlas run verify:registry` (gate) | shadcn registry artifacts: the 24 frontend-component demos inlined as registry item JSON + index (JSON array) into `public/registry/` (published with dist at build time; usage under "Deployment → Registry usage (agent consumption)") | The 24 item JSONs parse, `name`/`type`/`files[].path`/`content` non-empty, no leftover `@/` imports, index count matches item count; any miss → `exit 1`; measured this session: `{"expected":24,"items":24,"problems":0}` |
 | `node uiux-atlas/scripts/test-mcp-server.mjs` (or `pnpm -C uiux-atlas run test:mcp`) | MCP server (stdio JSON-RPC) smoke test: spawns `mcp/server.mjs` and drives an initialize → tools/list → tools/call sequence | Four assertions: initialize response carries capabilities, tools/list lists all four tools (search_entries / get_entry / build_prompt / list_categories), get_entry(glassmorphism) contains 「毛玻璃」, build_prompt (params override blur=30) contains blur 30px; any failure prints details and `exit 1`; measured this session: 4/4 pass |
 
-There is also the one-off script `scripts/add-name-zh.mjs` (injects Chinese `nameZh` into the first-batch 43 schemas; idempotent; cross-checks mapping keys against disk entries, any mismatch → `exit 1`; the 38 later entries carry `nameZh` written with the entry itself, with the 81/81 coverage enforced by verify-entries) — not needed in day-to-day development, listed for completeness only.
+There is also the one-off script `scripts/add-name-zh.mjs` (injects Chinese `nameZh` into the first-batch 43 schemas; idempotent; cross-checks mapping keys against disk entries, any mismatch → `exit 1`; later entries carry `nameZh` written with the entry itself, with 97/97 coverage enforced by verify-entries) — not needed in day-to-day development, listed for completeness only.
 
 ## 🎨 Design system
 
@@ -132,14 +134,14 @@ The site dogfoods itself: the home hero reuses the `styles/glassmorphism` entry'
 
 Contrast is computed, not guessed: dark four-level text vs bg = 16.45 / 8.90 / 6.43 / 4.18:1, light = 14.29 / 7.00 / 4.94 / 3.17:1 (the fourth tier is the disabled/placeholder tier, AA-exempt); guarded continuously by the `check:contrast` gate (12/12).
 
-**Full text: [docs/design-spec.md](docs/design-spec.md) (v2.5)** — the single source of truth, **scoped to design decisions**: full token tables (color / type scale / spacing / radius / shadow / motion), **five page blueprints** (§4: home / list page / entry page / resources navigator / trend-tracking page — the fifth backfilled in v2.4), component specs, the 19-embellishment list, trend adopt/reject rulings and the porting ledger, responsive matrix, and accessibility red lines. **Entry scale is outside that SSOT scope**; the authoritative figure is this README's **81 entries × 162 MDX bodies** (enforced by the `verify-entries` gate). The "43 entries × 86 MDX" in design-spec's header and appendix verification record, plus §4.1's "six-category bento", are MVP-era (v1.0–v2.2) leftovers never backfilled by later version bumps (the round5 report asked for a version bump to fix this) — for entry scale, this README prevails.
+**Full text: [docs/design-spec.md](docs/design-spec.md) (v2.6)** — the single source of truth, **scoped to design decisions**: full token tables (color / type scale / spacing / radius / shadow / motion) plus the unified material-layer parameter table (§2.8, new in v2.6: three material tiers × both themes + neutral gray scale + focus ring), **five page blueprints** (§4: home / list page / entry page / resources navigator / trend-tracking page — the fifth backfilled in v2.4), component specs, the 19-embellishment list, trend adopt/reject rulings and the porting ledger, responsive matrix, and accessibility red lines. **Entry scale is outside that SSOT scope**; the authoritative figure is this README's **97 entries × 194 MDX bodies** (enforced by the `verify-entries` gate). The "43 entries × 86 MDX" in design-spec's header and appendix verification record, plus §4.1's "six-category bento", are MVP-era (v1.0–v2.2) leftovers never backfilled by later version bumps (the round5 report asked for a version bump to fix this) — for entry scale, this README prevails.
 
 ## 📦 Deployment
 
 Pure static output — `dist/` is everything; no adapter, no server requirements. Cloudflare Pages or any static host works. One command:
 
 ```bash
-pnpm -C uiux-atlas run build        # emits uiux-atlas/dist/ (measured this session: 186 pages)
+pnpm -C uiux-atlas run build        # emits uiux-atlas/dist/ (measured this session: 218 pages)
 ```
 
 Cloudflare Pages reference: build command `pnpm -C uiux-atlas run build` (from the workspace root) or `pnpm run build` (with root directory set to `uiux-atlas/`), output directory `uiux-atlas/dist`.
@@ -184,12 +186,12 @@ Stated as-is, consistent with all six rounds of dev/review reports: the upstream
 
 ## 🗺 Roadmap
 
-Per the blueprint (`out/blueprint-v1.md`, four-element evolution table and milestones). Finished items are checked one by one and map onto the commit chain: `11a5d2b` (MVP, 43 entries) → `f18fce6` (mobile filter-bar fix) → `85e4c45`/`83ece35` (V1: the icons + dataviz domains) → `fa10bf9` (V2: agent-consumption channel + trends page) → `3842635` (spec v2.4, closing the round6 SSOT gap) → `7bc672e`/`a170451` (spec v2.5 + light-theme modernization; the latter also committed the 6 updated and 3 new screenshots); unfinished items stay unchecked:
+Per the blueprint (`out/blueprint-v1.md`, four-element evolution table and milestones). Finished items are checked one by one and map onto the commit chain: `11a5d2b` (MVP, 43 entries) → `f18fce6` (mobile filter-bar fix) → `85e4c45`/`83ece35` (V1: the icons + dataviz domains) → `fa10bf9` (V2: agent-consumption channel + trends page) → `3842635` (spec v2.4, closing the round6 SSOT gap) → `7bc672e`/`a170451` (spec v2.5 + light-theme modernization; the latter also committed the 6 updated and 3 new screenshots) → current working tree (V3: Apple material layer per spec v2.6 + styles grown to 15 + motion grown to 19 + upgrades of two existing entries, toast / liquid-glass; not yet committed, hence no commit hash); unfinished items stay unchecked:
 
 **V1**
 
 - [ ] Upgrade the code breakdown to the full four-part teaching narrative (today: "highlighted code + per-section commentary" MVP form; `BreakdownTabs.tsx` groups content by h2 into tabs)
-- [x] Site-wide `llms.txt` index (structured spec for AI agents) — shipped, plus a per-entry `.md` plain-text endpoint (`dist/llms.txt` verified on disk, 114 lines)
+- [x] Site-wide `llms.txt` index (structured spec for AI agents) — shipped, plus a per-entry `.md` plain-text endpoint (`dist/llms.txt` verified on disk this session, 130 lines)
 - [x] Parameter snapshot sharing (URL hash / share links) — shipped: the `#s=` share link, one-click copy via "Share parameter link", restored on open
 
 **V2**
@@ -201,11 +203,18 @@ Per the blueprint (`out/blueprint-v1.md`, four-element evolution table and miles
 - [ ] Registration walkthrough in a real MCP client — only the `test:mcp` stdio smoke assertions exist so far; registration and end-to-end tool calls in a real client (Claude/Cursor etc.) not yet walked through
 - [ ] Lighthouse / axe performance and accessibility acceptance on a real device — currently a browser-side gap (see "Known limitations")
 
+**V3**
+
+- [x] Apple material layer — shipped: spec v2.6 §2.8 unified material-layer parameter table (three tiers mat-thin/regular/thick × both themes: sampled blur / tint / inner highlight / hairline border / shadow) + `--ios-*` neutral gray scale + `.material` five-surface integration + the press pair + the unified focus ring, all values traced to `out/design-study/09-apple-materials.md`; `check:contrast` re-ran this session, 12/12
+- [x] Micro-interaction domain, 8 entries (motion 11 → 19) — shipped: `press-feedback` / `slot-spring` / `overlay-entrance` / `shake-decay` / `toast-spring` / `damping-craft` / `smooth-craft` / `scroll-overflow`; verify-entries re-ran this session 97/97
+- [x] Styles grown to 15 (7 → 15) — shipped: eight style-history entries `flat-design` / `skeuomorphism` / `memphis-design` / `swiss-international` / `editorial-magazine` / `frutiger-aero` / `y2k-retro-futurism` / `holographic-chrome`
+- [x] Two existing entries upgraded — shipped: `components/toast` gains the stiffness/damping spring param pair (Motion source defaults verified verbatim), `materials/liquid-glass` gains the refraction-displacement and morph (pod / expanded panel) params; toast is one of the 24 registry artifacts, so `generate:registry` + `verify:registry` were re-run (measured this session: 24/24)
+
 **New content domains**
 
 - [x] Icon systems (8 entries shipped in the `icons` category; dedicated study in `out/design-study/07-icons.md`)
 - [x] Data-viz color (6 entries shipped in the `dataviz` category; dedicated study in `out/design-study/08-dataviz.md`)
-- [ ] Grow to the full 170 entries (currently 81/170; later domains scheduled per the blueprint's four-element evolution table)
+- [ ] Grow to the full 170 entries (currently 97/170; later domains scheduled per the blueprint's four-element evolution table)
 - [ ] Quarterly trend-refresh automation — currently a point-in-time snapshot; the manual recipe sits under the features-table ❌ row (re-run the `out/research/03` flow and replace `src/data/trends.ts`)
 
 ## 🧱 Project structure
@@ -216,13 +225,13 @@ uiux-atlas/
 ├── package.json                # scripts: dev / build / preview / check / check:contrast / generate:registry / verify:registry / test:mcp
 ├── tsconfig.json               # astro/tsconfigs/strict + react-jsx + @/* path alias
 ├── docs/
-│   ├── design-spec.md          # design-language spec v2.5 (single source of truth; five page blueprints)
+│   ├── design-spec.md          # design-language spec v2.6 (single source of truth; five page blueprints + §2.8 material layer)
 │   └── screenshots/            # nine real running captures (2026-11-21/22, production build)
 ├── out/                        # review reports round4–6 (committed; round2/3 plus build/redesign reports live in the upstream workspace out/)
 ├── scripts/                    # verification scripts (usage: see the Quick-start table)
 │   ├── check-theme-contrast.mjs  # WCAG contrast gate for both themes (hex/rgb/oklch aware)
-│   ├── verify-entries.mjs        # 81-entry expected inventory + structure/bilingual/sources/params shape
-│   ├── verify-dist.mjs           # 186-page output check + key content markers (incl. verbatim button copy)
+│   ├── verify-entries.mjs        # 97-entry expected inventory + structure/bilingual/sources/params shape
+│   ├── verify-dist.mjs           # 218-page output check + key content markers (incl. verbatim button copy)
 │   ├── verify-prompt-test.mjs    # prompt replication live-fire (7 regex checks, threshold ≥5/7)
 │   ├── generate-registry.mjs     # 24 component demos → shadcn registry items + index (public/registry/)
 │   ├── verify-registry.mjs       # registry artifact gate (parseable / required fields / index count)

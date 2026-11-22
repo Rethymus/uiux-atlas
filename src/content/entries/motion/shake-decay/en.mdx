@@ -1,0 +1,68 @@
+## Structure & DOM
+
+The shake demo is "one error source + two implementation lanes": a password field (the source) plus a horizontal-shake field lane (CSS keyframes version) and a field lane (spring velocity-injection version). Identical structures, different engines:
+
+```html
+<label class="sd-lane-label">CSS keyframes (decaying)</label>
+<div class="sd-field" data-error="true" data-shake="true">horizontal shake</div>
+
+<label class="sd-lane-label">Spring velocity injection (Motion velocity)</label>
+<div class="sd-field" data-error="true">
+  <motion.div style="x"><!-- driven by a motion value --></motion.div>
+</div>
+```
+
+Key points:
+
+- The error must also have **non-motion carriers**: a red border + text (`role="status"`) — the shake reinforces, never sole signal;
+- The CSS lane's `@keyframes` is **sampled from A/λ by JS** (event-level stylesheet regeneration, not per-frame CSS variable writes — per-frame variable changes invalidate the whole subtree, research 10 §7.4);
+- The spring lane hands velocity to an underdamped spring; Motion's `velocity` param defaults to "the current value's velocity", and passing it explicitly injects an initial velocity (research 10 §4.2).
+
+## Styling & Parameters
+
+Two parameters (JS-type, driving both lanes):
+
+```ts
+// Top lane: decaying keyframes sampling (derived; same shape as the research 10 §4.3 example)
+// x(t) = A·e^(−λt)·sin(ω_d t); ω_d set to a 0.1s half-period per beat → envelope ×e^(−λ·0.1) each beat
+const beats = Math.ceil(Math.log(20) / (lambda * 0.1)); // beats until the envelope hits 5%
+// λ=6, A=10 → 5 beats / 500ms; amplitude series 10→7.4→4.1→2.2→1.2→0.7 (×0.74 per beat)
+
+// Bottom lane: spring velocity injection (tier from research 10 §4.2)
+animate(x, 0, { type: "spring", stiffness: 500, damping: 24, velocity: -amp * ω_d });
+// ζ = 24/(2√500) ≈ 0.536 → overshoot≈13.5%; ω_d = √500·√(1−ζ²) ≈ 18.9 rad/s
+// Initial velocity v₀ = A·ω_d (the t=0 derivative of x(t)=A·e^(−λt)sin(ω_d t)) → first-peak ≈ A
+// That lane's λ = ζω₀ ≈ 12 (fixed by the tier)
+```
+
+Where the numbers come from:
+
+- **animate.css shakeX is the constant-amplitude special case**: `±10px` every beat, default 1s — "right for notices, less like a physical failure" (research 10 §4.1);
+- **Decay math and ζ**: the equation of motion `m·x''+c·x'+k·x=0`, `ζ=c/(2√(mk))`, `λ=ζω₀`, `ω_d=ω₀√(1−ζ²)`, envelope half-life `ln2/λ` — from Wikipedia's Damping ratio article, matching Motion's `spring.ts` (`exponentialDecay`/`calcAngularFreq`) line for line (research 10 §4.3);
+- **The 500/24 spring tier**: ζ≈0.536, overshoot≈13.5%, λ≈12, envelope→5%≈250ms (research 10 §4.2);
+- **The macOS login shake**: widely recognized behavior, but **Apple has published no parameters — unverified**; community replications converge on 4–6 horizontal beats, ~10px per beat, ~0.5s total — folk experience for feel-matching only (research 10 §4.4); the demo's 0.1s-per-beat follows that scale.
+
+## Motion & Interaction
+
+- **Trigger**: signing in with a password under 4 chars (button or Enter) shakes both lanes, reddens the border and posts a `role="status"` message; an accepted password never shakes;
+- **Two-lane contrast**: the top lane replays the same sampled curve every trigger; the bottom lane injects velocity into an underdamped spring and lets physics decay it — **rapid re-triggers and interrupts stay naturally continuous** (Motion physics springs continue from the current value's velocity, research 10 §7.3);
+- **Why velocity injection wins** (research 10 craft #4): the keyframes lane restarts at full amplitude A every trigger, so rapid presses "reset-jump"; the injection lane hands off from the current state — physically continuous;
+- **Reduced motion**: neither lane moves; the red border and message carry the error alone — the error must never depend on the shake;
+- Performance: both lanes animate only `transform: translateX` (compositor-friendly).
+
+## Real-world examples
+
+- **The macOS login screen**: the horizontal shake on a wrong password is the Apple ecosystem's most famous error shake; parameters unpublished, community feel-matched at ~0.5s/±10px (research 10 §4.4);
+- **animate.css shakeX**: the de-facto constant-amplitude standard (±10px/1s), lifted wholesale by many form libraries as an error cue — the origin of the "constant-amplitude special case" (research 10 §4.1);
+- **Motion-ecosystem form validation**: velocity-injection shakes (Motion docs: `velocity` "defaults to the current value's velocity") are a common custom pattern around React Hook Form's ecosystem (research 10 §4.2).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `amp` (A) | a larger first beat, stronger error; >16px collides with neighboring UI on narrow inputs | a gentle hint; ≤4px is barely perceptible and the shake loses its point |
+| `lambda` (λ) | faster envelope decay — fewer beats, shorter total (λ=20 → 2 beats/200ms, a "bump") | slower decay, more beats (λ=3 → 10 beats/1s, approaching animate.css's constant-amplitude look) |
+| Spring tier (fixed) | the bottom lane is pinned at 500/24, ζ≈0.537: overshoot≈13.5%, envelope 250ms — decays faster than the top lane's default λ=6 | a slower decay needs damping AND stiffness lowered together (ζ↓, ω₀↓) — see the damping-craft entry |
+| First-beat direction | leftward first (matching velocity:−2000 in research 10 §4.2); direction carries no semantics — consistency of the start does | — |
+
+Working ranges: A 8–12px, λ 5–8 (3–5 beats, 0.3–0.5s); past 0.6s total the shake turns from "hint" to "punishment", under 0.2s it stops reading as "failure".

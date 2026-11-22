@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+「竹简槽」= 固定容器(rail)内 N 个等宽槽位 + **一只常驻滑签(pill)**。事实范式是 Sam Selikoff 的 AnimatedTabs:只渲染一个气泡,槽位只是它的「家」,切换槽位 = 同一元素的物理位移(调研 10§2.1、签名巧思 2):
+
+```html
+<div class="sl-rail" role="radiogroup" aria-label="分段控件">
+  <div class="sl-pill"><!-- 常驻滑签,唯一动元素 --></div>
+  <button role="radio" aria-checked="true">日</button>
+  <button role="radio" aria-checked="false">周</button>
+  <button role="radio" aria-checked="false">月</button>
+  <button role="radio" aria-checked="false">年</button>
+</div>
+```
+
+关键点:
+
+- 滑签绝对定位、只动 `transform: translateX`(demo 经 Motion 的 motion value 写入),槽位按钮是普通文档流;
+- 实现两条路:**Motion `layoutId`**(同一 `layoutId` 跨槽位,FLIP 布局动画自动接力,BuildUI 原版配方)或**手写 transform 插槽弹簧**(半隐式欧拉积分 `a=(−k(x−to)−cv)/m`、速度存 `dataset` 供中断接力,restDelta 与 Motion 源码对齐)(调研 10§2.1/§2.2);demo 取后者思路的 Motion 物理弹簧版;
+- ARIA 用 radiogroup/radio + aria-checked(单选器语义),方向键移动、点击选中。
+
+## 样式与参数
+
+三个参数全部为 JS 型,由 demo 组装 Motion 弹簧与槽位:
+
+```tsx
+// 滑签弹簧:stiffness 300 / damping 25(mass 1)= 调研 10§2.3「中·微弹」档
+animate(x, slotIndex * slotWidth, { type: "spring", stiffness: 300, damping: 25, mass: 1 });
+
+// 阅读数值(本地实算,mass=1):ω₀=√k,ζ=c/(2√k)
+const w0 = Math.sqrt(stiffness);            // 300 → 17.3 rad/s
+const zeta = damping / (2 * w0);            // 25 → 0.722
+const overshoot = zeta < 1
+  ? Math.exp(-Math.PI * zeta / Math.sqrt(1 - zeta * zeta)) * 100  // 3.8%
+  : 0;
+const envelope5 = Math.log(20) / (zeta * w0) * 1000;             // 240ms
+```
+
+数值出处(调研 10§2.1/§2.3/§2.4):
+
+- **BuildUI AnimatedTabs 官方配方**:`bounce 0.2 / duration 0.6`(duration-based 弹簧),换算 ζ≈0.8、过冲≈1.5%——「弹得克制不闹腾」;
+- **推荐档位(本地 Python 实算,调研 10§2.3)**:快·稳 700/40(ζ0.756、过冲 2.7%、t_peak 181ms)、中·微弹 300/25(ζ0.722、3.8%、262ms)、慢·弹 200/15(ζ0.530、14.0%、262ms)、Motion 物理默认 100/10(ζ0.500、16.3%、362ms);
+- **反例**:`stiffness:500, damping:50` 是过阻尼(ζ≈1.118)——零过冲,比微弹档更钝;**抄参数前先算 ζ**;
+- iOS 系统分段控件指示器滑动为弹簧动画,但 **Apple 未公开其 stiffness/damping,未证实**;工程上以「中·微弹」档作等感替代。
+
+## 动效与交互
+
+- **slot-to-slot 弹簧**:点槽位 → 滑签以 `type:"spring"` 奔向该槽位中心;连续点击不同槽位,Motion 物理弹簧**从当前位置+当前速度续接**(文档原文语义),永不归零重启(调研 10§7.3);
+- **参数即改即看**:拖动 stiffness/damping 滑杆立即以新参数重跑当前槽位;阅读条实时换算 ζ/过冲/包络→5%/t_peak,建立「数值↔手感」直觉;
+- **对照 iOS 分段控件**:段等宽、单一选择器(不混动作触发)、iPhone ≤5 段——demo 封顶 5 段(HIG 官方定性,调研 10§2.4);
+- **键盘**:radiogroup 上方向键/上下键移动选中段,aria-checked 同步;
+- **reduced-motion**:跳过弹簧,滑签直落目标槽位;选中态仍由 aria-checked + 文字对比承载;
+- 性能:只动 `transform`(滑签位移),合成器友好(调研 10§7.1)。
+
+## 真实产品案例
+
+- **BuildUI AnimatedTabs**:上述范式的出处,`layoutId` + `bounce 0.2/duration 0.6`,圆角内联以获得 Motion 的 scale 校正(调研 10§2.1);
+- **iOS 系统分段控件(日历/闹钟等)**:选中指示器弹簧滑动是公认系统行为,段等宽、iPhone ≤5 段符合 HIG;**Apple 未公开动画参数,未证实**(调研 10§2.4);
+- **shadcn/ui Tabs**:指示器思路同族——社区生态大量以「单滑块 + transform」实现激活指示器;shadcn 官方按钮/弹层源码中无按压缩放,浮层参数见 overlay-entrance 条目(调研 10§1.1/§3.1)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stiffness` | ω₀↑:启动更猛、到达更快,同 ζ 下波次更密、过冲比例不变 | 更迟缓黏滞;低于 100 时跨大槽位像「漂」过去 |
+| `damping` | ζ↑ 趋近临界:过冲指数式消失,手感「稳」;≥ 过阻尼阈值(ζ≥1)后起步快收尾慢 | ζ↓ 回弹增多;≤0.5 明显振荡,0.3 以下像弹跳球 |
+| `segments` | 段多槽位窄,单格位移短、弹簧行程小,节奏更碎 | 段少位移大,弹簧行程长、手感更「整」;5 段是 iPhone 上限(HIG) |
+| 阅读值(只读) | 过冲%/包络时间让你在拖滑杆时看到手感变化的数值对应 | 同反向;对照表:ζ0.7→4.6%(弹而不闹)、ζ0.8→1.5%(克制)、ζ1→0(临界) |
+
+经验区间:分段控件默认推荐 300/25(ζ≈0.72,过冲&lt;5%);要「快·稳」升到 700/40;要「竹简手感」降 200/15;**任何组合先算 ζ,守住 0.7±0.1 是多数交互的甜点**(调研 10§2.3/巧思 3)。

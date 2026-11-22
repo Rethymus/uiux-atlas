@@ -1,0 +1,90 @@
+{
+  "name": "Shake · Exponential Decay",
+  "nameZh": "错误抖动·指数衰减",
+  "aliases": ["shake", "错误抖动", "velocity injection", "damped oscillation"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "错误反馈抖动优先做成 x(t)=A·e^(−λt)·sin(ωt) 的指数衰减正弦:CSS 衰减 keyframes 与『给初速度、让弹簧自己衰减』两种实现对照,连按与中断物理连续。",
+    "en": "Error shakes are best built as the decaying sinusoid x(t)=A·e^(−λt)·sin(ωt): two implementations side by side — CSS decay keyframes vs injecting initial velocity and letting the spring decay itself — continuous under rapid re-triggers."
+  },
+  "origin": {
+    "zh": "运动方程 m·x''+c·x'+k·x=0 的欠阻尼解即衰减正弦(维基 Damping ratio:ζ=c/(2√(mk))、λ=ζω₀、ω_d=ω₀√(1−ζ²)),且与 Motion 源码 spring.ts 的 exponentialDecay/calcAngularFreq 逐字对应(调研 10§4.3);animate.css shakeX 是 ±10px 等幅特例(§4.1);速度注入档 stiffness 500/damping 24、velocity −2000 出自 motion.dev Transitions(§4.2);macOS 登录框抖动为公认系统行为但 Apple 未公开参数,社区复刻 ~0.5s/±10px 为社区经验,未证实(§4.4)。",
+    "en": "The underdamped solution of m·x''+c·x'+k·x=0 is the decaying sinusoid (Wikipedia Damping ratio: ζ=c/(2√(mk)), λ=ζω₀, ω_d=ω₀√(1−ζ²)), matching Motion's spring.ts (exponentialDecay/calcAngularFreq) line for line (research 10 §4.3); animate.css shakeX is the ±10px constant-amplitude special case (§4.1); the velocity-injection tier stiffness 500/damping 24, velocity −2000 comes from motion.dev Transitions (§4.2); the macOS login shake is recognized behavior but Apple publishes no parameters — the community's ~0.5s/±10px replication is folk experience, unverified (§4.4)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "amp",
+      "min": 2,
+      "max": 30,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "首拍振幅 A(px)。默认 10px = animate.css shakeX 的 ±10px 与 macOS 登录框社区复刻的同量级(调研 10§4.1/§4.4)。调大错误感更强,>16px 在窄输入框会撞相邻 UI;调小 ≤4px 几乎不可察觉。",
+        "en": "First-beat amplitude A (px). Default 10px matches animate.css shakeX's ±10px and the macOS login folk replication scale (research 10 §4.1/§4.4). Higher = stronger error; >16px collides with neighboring UI on narrow inputs; ≤4px is barely perceptible."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lambda",
+      "unit": "s⁻¹",
+      "min": 3,
+      "max": 20,
+      "step": 0.5,
+      "default": 6,
+      "effect": {
+        "zh": "衰减率 λ=e^衰减指数的系数(s⁻¹),λ=ζω₀。默认 6 = 调研 10§4.3 采样示例(A₀=10px、λ=6s⁻¹ → 5 拍/0.5s,包络每拍 ×0.74)。拍数 = ceil(ln20/(λ·0.1s));调大拍数变少(λ=20→2 拍/200ms),调小趋近等幅观感(λ=3→10 拍/1s)。",
+        "en": "Decay rate λ, the coefficient of the exponential (s⁻¹), λ=ζω₀. Default 6 = the sampling example in research 10 §4.3 (A₀=10px, λ=6s⁻¹ → 5 beats/0.5s, envelope ×0.74 per beat). Beats = ceil(ln20/(λ·0.1s)); higher trims beats (λ=20 → 2 beats/200ms), lower approaches the constant-amplitude look (λ=3 → 10 beats/1s)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS 轨只依赖 @keyframes + transform;弹簧轨依赖 JS(Motion);velocity 注入是 Motion 弹簧参数(motion.dev Transitions)。两轨均为可独立降级:禁用 JS 时 CSS 轨仍工作。",
+      "en": "The CSS lane needs only @keyframes + transform; the spring lane needs JS (Motion); velocity injection is a Motion spring param (motion.dev Transitions). Both degrade independently: without JS the CSS lane still works."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时两条轨都不动——错误信息由描边变红 + role=status 文案承载,绝不依赖抖动传达;抖动不是错误状态的唯一信号是硬性要求(WCAG:动效不可作唯一传达渠道)。",
+    "en": "Under prefers-reduced-motion neither lane moves — the error rides the red border + role=status message, never the shake; the shake is never the sole error signal (WCAG: motion is never the sole channel)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单校验失败(登录框、验证码):水平 3~5 拍、总时长 0.3~0.5s + 描边变红 + 文案", "en": "Form validation failures (login, OTP): 3–5 horizontal beats, 0.3–0.5s total, plus a red border + message" },
+      { "zh": "连按/重复提交场景优先速度注入:从当前值速度续接,连按不重置跳变(调研 10 巧思 4)", "en": "Rapid resubmission contexts prefer velocity injection: continues from the current value's velocity — no reset-jump on rapid presses (research 10 craft #4)" },
+      { "zh": "零依赖场景用衰减 keyframes:按 A/λ 采样一次生成,静态可复用,事件级重生成样式表", "en": "Zero-dependency contexts use decay keyframes: sampled once from A/λ, reusable, regenerated at event level" },
+      { "zh": "错误提示与触觉/读屏联动:视觉抖动 + 红描边 + role=status 文案三通道并行", "en": "Pair the shake with haptics/screen-reader channels: visual shake + red border + role=status text in parallel" }
+    ],
+    "avoid": [
+      { "zh": "animate.css 等幅抖动当『物理失败』用——等幅每拍 ±10px 是通知语法,不像物理衰减(调研 10§4.1)", "en": "Using animate.css' constant-amplitude shake as a 'physical failure' cue — equal ±10px beats read as a notice, not physics (research 10 §4.1)" },
+      { "zh": "总时长超过 0.6s 或拍数超过 6——从『提示』滑向『惩罚』;低于 0.2s 又读不出失败", "en": "Totals past 0.6s or more than 6 beats — 'hint' slides into 'punishment'; under 0.2s stops reading as failure" },
+      { "zh": "把抖动作为错误唯一信号——prefers-reduced-motion 与读屏用户将完全丢失错误信息", "en": "Making the shake the sole error signal — reduced-motion and screen-reader users lose the error entirely" },
+      { "zh": "抄 macOS 抖动参数并标注为 Apple 官方——Apple 未公开参数,数值是社区复刻经验(调研 10§4.4)", "en": "Citing macOS shake numbers as Apple-official — Apple published none; the numbers are folk replications (research 10 §4.4)" }
+    ]
+  },
+  "a11y": {
+    "zh": "错误必须有三重非动效承载:描边/颜色变化(≥3:1 非文本对比,WCAG 2.1 SC 1.4.11)+ 文本提示 + role=status 播报;prefers-reduced-motion 时抖动取消而错误信息完整;水平抖动幅度控制在 ≤16px 避免大幅位移(MDN:大幅位移动画是前庭障碍触发源);输入框保持可用——抖动期间不清空、不锁输入。",
+    "en": "Errors need triple non-motion carriers: a border/color change (≥3:1 non-text contrast, WCAG 2.1 SC 1.4.11) + text + a role=status announcement; under prefers-reduced-motion the shake drops while the error survives fully; keep horizontal travel ≤16px (MDN: large-travel animation is a vestibular trigger); the input stays usable — no clearing or locking during the shake."
+  },
+  "sources": [
+    "https://github.com/animate-css/animate.css/blob/main/source/attention_seekers/shakeX.css",
+    "https://motion.dev/docs/react-transitions",
+    "https://en.wikipedia.org/wiki/Damping_ratio",
+    "https://github.com/motiondivision/motion/blob/main/packages/motion-dom/src/animation/generators/spring.ts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个错误抖动演示:密码过短提交时,字段水平抖动——上轨按 x(t)=A·e^(−λt)·sin(ω_d t) 采样衰减 keyframes,下轨给欠阻尼弹簧(500/24)注入初速度让其物理衰减;两轨同 A/λ 参数源,错误另有红描边与 role=status 文案。",
+      "en": "Replicate an error-shake demo: on a too-short password submit, the field shakes horizontally — the top lane samples decaying keyframes from x(t)=A·e^(−λt)·sin(ω_d t), the bottom lane injects velocity into an underdamped spring (500/24) and lets physics decay; both lanes share the A/λ source, and the error also carries a red border + role=status text."
+    },
+    "acceptance": [
+      { "zh": "默认 A=10px、λ=6s⁻¹:5 拍/0.5s,包络每拍 ×e^(−0.3)≈0.74(调研 10§4.3 示例)", "en": "Defaults A=10px, λ=6s⁻¹: 5 beats/0.5s, envelope ×e^(−0.3)≈0.74 per beat (research 10 §4.3 example)" },
+      { "zh": "弹簧轨严格 stiffness 500 / damping 24 / velocity=−A·ω_d(ζ≈0.536、λ≈12),标注为调研档位", "en": "The spring lane strictly stiffness 500 / damping 24 / velocity=−A·ω_d (ζ≈0.536, λ≈12), flagged as the research tier" },
+      { "zh": "animate.css ±10px 被明确称为等幅特例,不得说成物理衰减", "en": "animate.css' ±10px is explicitly named the constant-amplitude special case, never sold as physical decay" },
+      { "zh": "错误状态有三重非动效承载(描边/文案/role=status),reduced-motion 时抖动取消而错误完整", "en": "The error carries triple non-motion channels (border/text/role=status); under reduced-motion the shake drops while the error survives" },
+      { "zh": "macOS 登录框参数标注为社区复刻经验、未证实", "en": "macOS login-shake numbers are flagged as community replication, unverified" }
+    ]
+  }
+}

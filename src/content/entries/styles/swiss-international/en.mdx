@@ -1,0 +1,74 @@
+## Structure & DOM
+
+Swiss International Style is "a sheet of paper landing on a mathematical grid": the poster container itself is `display: grid` + `repeat(N, 1fr)`, and every element (headline, bar, photo, body, footer) declares its column span explicitly — **the grid is not a backdrop; it is the grammar of the layout**.
+
+```html
+<div class="poster" style="grid-template-columns: repeat(6, 1fr)">
+  <div class="meta">Gestaltung · 1959</div>      <!-- full width -->
+  <h1 class="title">Die neue Gestaltung</h1>      <!-- full width, flush left -->
+  <div class="accentbar"></div>                   <!-- cols 1–2: the only red -->
+  <figure class="photo">…</figure>                <!-- left half: objective photo -->
+  <div class="body">…</div>                       <!-- right half -->
+  <footer class="foot">…</footer>                 <!-- full width -->
+</div>
+```
+
+Key points:
+
+- The grid overlay (`.overlay`) mirrors the layout grid, `aria-hidden` decoration — switch it on and every element's landing can be checked column by column;
+- The type scale has exactly one generative rule: headline = base × ratio⁴, kicker = base × ratio¹, body = base — **the whole hierarchy derives from one ratio; no hand-tuned font sizes**;
+- The image block is an "objective photography" placeholder (solid gradient block + caption), never illustrated decoration.
+
+## Styling & Parameters
+
+Four parameters: two CSS variables, two JS-type params:
+
+```css
+.demo-stage {
+  --sw-ratio: 1.414;   /* modularscale.com ratio: augmented fourth 1:√2 */
+  --sw-accent: #e30613; /* community-convention baseline, not an official record */
+}
+.poster {
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* cols param, JS-recomputed */
+  gap: 12px;
+}
+.title {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; /* system stack approximating Helvetica */
+  font-size: calc(var(--sw-base) * var(--sw-ratio) * var(--sw-ratio) * var(--sw-ratio) * var(--sw-ratio));
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+.accentbar, .kicker, .foot strong { background|color: var(--sw-accent); } /* the single accent */
+```
+
+Where the numbers come from:
+
+- The four scale ratios (1.25 / 1.333 / 1.414 / 1.5) = **ratios documented on modularscale.com** (major third 4:5, perfect fourth 3:4, augmented fourth 1:√2, perfect fifth 2:3; research 05 §17, verified first-hand);
+- "Modular grid columns/gutter/baseline" and "a single structural accent (classic Swiss red)" are verbatim variables from research 03 §15, neither with numbers — 6 columns and red #E30613 are baselines (#E30613 is the community convention, unverified);
+- "The mathematical grid as the most legible and harmonious device for information structure", "flush-left ragged-right" and "objective photography over illustration" are all verbatim traits from research 03 §15.
+
+## Motion & Interaction
+
+Swiss motion is close to "no motion" — paper doesn't perform:
+
+- **Entrance**: the poster fades in with a 10px rise, 0.45s, once; no bounce, no overshoot;
+- **Grid check**: the overlay toggles instantly (no transition) — a verification tool should not lag;
+- **Hover/press**: none added. Decorative motion conflicts with the "objective, institutional" stance — that is part of the style's discipline;
+- Under `prefers-reduced-motion: reduce` only the entrance fade is removed — there was nothing else to switch off.
+
+## Real-world examples
+
+- **Müller-Brockmann posters (1950s, Basel/Zurich)** — the founding carriers of the modular grid + Helvetica system, the canonical samples published in Neue Grafik (research 03 §15).
+- **NYC subway signage (1972, Vignelli)** — the landmark public wayfinding that brought Swiss principles (black type, color-coded lines, numbered system) to the mass public, and the largest-scale deployment of "one accent structuring information" (research 03 §15).
+- **MIT and 1960s US institutions/corporations** — the recorded wave of institutional adoption in America that fixed the modern equation of "objective institutional feel = grid + sans-serif"; grid, sans and structural hierarchy are now the web's default language (research 03 §15).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `cols` | a finer grid, freer element placement, a more "institutional report" feel; past 6 it reads fussy in poster context | coarser spans, stronger asymmetric tension; at 2 it's near a two-column flyer with few hierarchy choices |
+| `ratio` | steeper display gaps (1.5, perfect fifth) — poster impact rises but small screens overflow | flatter gaps (1.25, major third) — closer to a restrained book page, poster punch fades |
+| `accent` | — (swapping the hue swaps the brand context, but it must remain **one** hue; red is the historical choice) | — (red #E30613 on white ≈4.9:1; a lighter red falls below 4.5:1 and needs re-checking) |
+| `grid` | on exposes every column boundary — off-grid elements reveal themselves instantly; it's a self-check tool | off is the pure sheet look; the overlay never carries information (aria-hidden) |
+
+Working ranges: posters 4–6 columns, web 12 columns (community convention, unverified as a norm); ratio 1.333–1.414; the accent appears at three structural points — bar, kicker, footer figure. A fourth placement starts diluting the "single structural accent" discipline.

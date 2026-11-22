@@ -1,0 +1,71 @@
+## Structure & DOM
+
+Holographic chrome is "a dark stage + one reflective subject": the card is the protagonist (iridescent title, chrome button, diffraction edges), and a specular highlight follows the pointer across its face — **all reflectivity lives on decorative layers (::before or dedicated divs, aria-hidden); semantic content (title/buttons) stays plain text**.
+
+```html
+<div class="scene">
+  <div class="card">
+    <div class="orb" aria-hidden="true"></div>       <!-- iridescent ring -->
+    <h1 class="holo-title">HOLO</h1>                 <!-- background-clip: text -->
+    <button class="chrome-btn">Collect</button>
+    <div class="sheen" aria-hidden="true"></div>     <!-- pointer highlight -->
+    <div class="diffraction" aria-hidden="true"></div> <!-- diffraction stripes -->
+  </div>
+</div>
+```
+
+Key points:
+
+- The two families (holo/chrome) are **two gradient recipes on the same card**, switched by `data-mode` — mirroring the two-family structure recorded in daisyUI 2025 entries 014/015;
+- The sheen layer receives pointer coordinates via CSS variables `--mx/--my`, with `pointer-events: none`;
+- Diffraction stripes are a `repeating-linear-gradient` micro-rainbow masked to the card edges (`mask-image`) so they never cover text.
+
+## Styling & Parameters
+
+One CSS variable, three JS-type params:
+
+```css
+.demo-stage { --hc-sheen: 1; }
+/* holo: a conic spectrum sampled per hue span (JS builds backgroundImage) */
+background: conic-gradient(from 210deg, oklch(0.78 0.16 0), …, oklch(0.78 0.16 <span>));
+/* chrome: silver with a hard reflection — a dark "horizon" line at 50% */
+background: linear-gradient(180deg, #fafbfd 0%, #cfd6e0 42%, #8a93a3 49%,
+                            #454b57 50%, #98a1b0 55%, #e8ecf2 78%, #f6f8fb);
+/* pointer specular, strength scaled by the sheen multiplier */
+.sheen { background: radial-gradient(46% 60% at var(--mx) var(--my),
+  oklch(1 0 0 / calc(0.28 * var(--hc-sheen))), transparent 70%); }
+/* diffraction stripes: 1px-scale rainbow repeating gradient, opacity 0.16 + screen blend */
+```
+
+Where the numbers come from:
+
+- The three traits "spectral gradient, specular reflection, diffraction effect" are verbatim from research 03 §20's summary table; daisyUI 2026's verbatim scene: "Reflective materials remain useful for cinematic launches, fashion, music, and premium technology";
+- The 240° span, sheen multiplier 1 and stripe opacity 0.16 are **this entry's baselines** (the research records no values);
+- The official qualitative referent for the specular: WWDC25 session 219 names specular highlights/lensing a material-defining device (research 09 §1.4d/§8) — a 2025 Liquid Glass cousin of this style;
+- chrome's "dark horizon at 50%" is classic liquid-metal rendering (this demo's recipe, a baseline setting).
+
+## Motion & Interaction
+
+Reflective motion means "the light moves, the object doesn't":
+
+- **Pointer specular**: pointermove writes the cursor position into `--mx/--my` and the highlight follows instantly — user-driven light needs no duration;
+- **Spectral drift**: the holo title's `background-position` drifts slowly over 9s alternate, mimicking thin-film interference; chrome mode stands still (metal doesn't shimmer);
+- **Ring rotation**: the iridescent ring spins linearly over 14s (decoration); buttons rise 1px on hover and sink 1px on press;
+- Under `prefers-reduced-motion: reduce` the drift and rotation freeze; static gradients and the pointer highlight remain — half of the light's "life" is user input, and that half can stay.
+
+## Real-world examples
+
+- **Instagram's 2016 rebrand** — the landmark mass-market use of a cross-hue spectral gradient: a magenta→orange→yellow→cyan→blue cone replaced the skeuomorphic camera, still the most famous "spectrum as brand subject" case.
+- **Spotify's yearly Wrapped** — every year high-saturation spectral/duo-tone gradient covers and cards flood social feeds; the annual practice of the "music + reflective gradient" pairing (the fashion/music context of daisyUI's 2026 quote).
+- **Apple Card (2019, Apple × Goldman Sachs)** — the liquid-metal sheen of a physical titanium card: the real-world prototype of the silver hard-horizon reflection, matching daisyUI's "premium technology" scene.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hueSpan` | the ring nears closure — strongest "holographic wheel" read; at 360° the ends meet | a narrow spectrum band that reads as a two-color gradient; at 60° the holographic feel is nearly gone |
+| `sheen` | brighter highlight and spilling glow — stronger "mirror"; past 1.5 it smears into a white blotch | the reflection dies into a matte gradient; at 0 only the spectral base remains |
+| `mode` | chrome = liquid metal, composed and cold — logos and medals; holo = shimmering film, lively — campaign visuals | — (mixing both dilutes each; pick one per screen) |
+| `diffraction` | on adds micro-rainbow grain at the card edges — truer thin-film feel; alpha is capped at 0.16 | off is cleaner for layouts where text density sits beside the hero |
+
+Working ranges: spectral band 180–300°, sheen 0.6–1.2. One reflective subject per screen; chrome only for large bold display type (≥24px, the SC 1.4.3 large-text 3:1 rule) — never body text.

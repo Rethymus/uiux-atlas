@@ -1,0 +1,72 @@
+## 结构与 DOM
+
+演示是两条工艺对照轨 + 一块帧率表:
+
+- **轨 A(属性对照)**:一只盒子做 2s 正弦往返,逐帧直写 `transform: translateX` 或 `left`(参数切换);rAF 循环同时统计帧间隔均值与 >25ms 长帧数;
+- **轨 B(中断接力)**:同一只盒,「中途切换目标」按钮在 spring(速度接力)与 tween(从静止重启)两种模式下对比。
+
+```html
+<div class="sm-lane"><!-- 轨 A -->
+  <div class="sm-box"></div>  <!-- rAF 逐帧写 style.transform / style.left -->
+</div>
+<div class="sm-lane"><!-- 轨 B -->
+  <motion.div class="sm-interrupt" style="x"></motion.div>
+</div>
+```
+
+关键点:
+
+- 轨 A 是「逐帧直写 `el.style.transform`」的正确姿势示范——**不经 CSS 变量**(变量逐帧改会让整棵子树样式失效,调研 10§7.4);
+- 帧率表复用同一个 rAF 循环测量,不引入额外监听;
+- 轨 B 的 motion value 由 Motion 弹簧驱动,`animate()` 天然从当前值+速度续接。
+
+## 样式与参数
+
+三个 JS 型枚举参数:
+
+```ts
+// 轨 A:属性切换(逐帧写)
+if (prop === "left") box.style.left = `${x}px`;            // 触发布局/绘制
+else box.style.transform = `translateX(${x}px)`;           // 合成器路径
+// layerHint(提层提示,MDN 纪律:最后手段、动画前置、animationend 后移除)
+box.style.willChange = hint === "will-change" ? "transform" : "auto";
+// translateZ(0) 提层(旧浏览器廉价回退,web.dev)
+box.style.transform = `translateX(${x}px) translateZ(0)`;
+
+// 轨 B:两种中断语义
+animate(x, next, { type: "spring", stiffness: 300, damping: 25 }); // 物理弹簧:继承当前速度
+animate(x, next, { duration: 0.7, ease: "easeOut" });              // duration:从静止重启(忽略速度)
+```
+
+数值与结论出处(调研 10§7 全部为本次抓取的一手来源):
+
+- **只动 transform/opacity**:web.dev《高性能动画》——除 transform/opacity 外的属性触发布局/绘制;`top/left` 示例**丢帧 50%,transform 版仅 1%**(Chrome FPS 面板实测);模糊/阴影绘制更贵;
+- **will-change(MDN 逐条)**:「last resort——不要预防性使用」;过量 → 过量内存 + 更复杂渲染 → 更慢;会提前创建 stacking context;正确姿势是 **JS 动画前设置、`animationend` 后移除**;不支持时的廉价回退 `transform: translateZ(0)`;
+- **中断接力**:Motion 文档原文——物理弹簧「incorporate the velocity of any existing gestures or animations」;duration-based 弹簧「starts from rest and ignores velocity」(调研 10§7.3);
+- **linear() 烤弹簧**:Baseline 2023-12,`linear(0, 0.25 75%, 1)` 多点采样可逼近任意曲线(Jake Archibald 生成器内置 Spring 预设)(调研 10§7.5);
+- **60/120Hz**:rAF 回调频率匹配刷新率(60/75/120/144Hz 常见),**时长一律用 ms、不按帧数写**(调研 10§7.6)。
+
+## 动效与交互
+
+- **属性对照**:切到 `left` 后帧率表的长帧数/帧间隔立刻恶化(小舞台幅度有限,趋势方向与 web.dev 的 50%/1% 实测一致);
+- **中断接力**:先点「发射目标」让盒子动起来,再在运动中点「中途切换目标」——spring 模式丝滑转向(速度保留),tween 模式从静止重新加速(视觉上的「卡一下」);
+- **提层提示**:will-change 档/translateZ 档按 MDN 纪律演示——这是教学开关,生产上不要常驻;
+- **reduced-motion**:轨 A 静止直出(不再逐帧写样式),轨 B 直落目标位;帧率表仍工作;
+- 性能:两条轨动的都是 transform(Motion 的 motion value 直写样式,不经 CSS 变量)。
+
+## 真实产品案例
+
+- **react-hot-toast / sonner**:容器/关键层 `will-change: transform`(react-hot-toast 源码逐字)——「单容器常驻」这一合法场景的实际用法(调研 10§5.1/§7.1);
+- **web.dev《高性能 CSS 动画》**:top/left vs transform 的 50%/1% 丢帧对比是 Google 官方指南的基准实验,Chrome Performance 面板「Rendering」行 0 开销是验收标准(调研 10§7.1);
+- **Jake Archibald linear() easing generator**:MDN「See also」收录的官方推荐工具,把弹簧烤进 `linear()` 获得「数学弹簧的形状 + 合成器动画的宿管」(调研 10§7.5)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `animateProperty` | `left` 档每帧触发布局+绘制:帧间隔抖动、长帧增多——反面教学档 | `transform` 档走合成器:帧间隔稳定贴近 16.7ms(60Hz 预算) |
+| `layerHint` | `will-change` 档提示浏览器提前分层:动画更稳,但常驻会吃内存并创建 stacking context(MDN 警告) | `none` 档零提示零开销——静态或单次动画的默认正确答案;`translateZ` 是旧浏览器廉价回退 |
+| `interruptMode` | `tween` 档中途重定向时从静止重启——运动中目标切换会有可感知的顿挫 | `spring` 档速度接力:中途换目标丝滑转向,符合「打断即设计」(WWDC18 803) |
+| 帧率表(只读) | 长帧计数上升说明当前模式更贵——把它当评审证据而不是装饰 | — |
+
+工艺清单(写代码前过一遍):只动 transform/opacity;逐帧直写 transform、CSS 变量只做事件级开关;will-change 最后手段、用后即撤;需要接力用物理弹簧;时长一律 ms;弹簧要烤进 CSS 用 linear() 采样。

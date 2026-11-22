@@ -1,0 +1,115 @@
+{
+  "name": "Swiss International Style",
+  "nameZh": "瑞士国际主义",
+  "aliases": ["瑞士风格", "国际主义排版风格", "International Typographic Style"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "数学网格 + 中性无衬线 + 单一结构性强调色:齐左不齐右、以尺寸/字重/位置建立纯结构层级、客观摄影代替插画——今天的「网页默认语言」正是它的直系遗产。",
+    "en": "Mathematical grids + neutral sans-serifs + one structural accent color: flush-left ragged-right, hierarchy built purely from size/weight/position, objective photography over illustration — today's 'web default language' is its direct legacy."
+  },
+  "origin": {
+    "zh": "1930s–1950s 成形的系统性平面设计方法:1918 年 Ernst Keller 在苏黎世应用艺术学校开创课程(「设计方案应从内容中产生」);1950s 巴塞尔/苏黎世 Hofmann 与 Müller-Brockmann 以《Neue Grafik》发表网格 + Helvetica 体系;1959 年期刊 New Graphic Design 将运动推向国际;Univers 引出 Neue Haas Grotesk→Helvetica;1960s 起被 MIT 等美国机构拥抱;1972 年 Vignelli 纽约地铁导视把瑞士原则带给大众(调研 03§15)。",
+    "en": "A systematic graphic design method formed across the 1930s–1950s: Ernst Keller opened the course at the Zurich School of Applied Arts in 1918 ('the design solution should emerge from the content'); in the 1950s Hofmann and Müller-Brockmann published the grid + Helvetica system in Neue Grafik (Basel/Zurich); the 1959 journal New Graphic Design took the movement international; Univers led to Neue Haas Grotesk → Helvetica; US institutions like MIT embraced it from the 1960s; Vignelli's 1972 NYC subway signage brought Swiss principles to the public (research 03 §15)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "cols",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 6,
+      "effect": {
+        "zh": "模块网格列数。调研把「模块网格列数/栏距/基线」列为可调变量但未记载具体数字(design-styles.enlighten-media.net swiss 页);网页栅格社区常见 12 列(未证实为规范值),海报语境本条目取 6 列为基准设定。JS 型参数——demo 订阅后重算栅格跨列与叠层。",
+        "en": "Number of modular-grid columns. The research lists 'modular grid columns/gutter/baseline' as tunable variables without specific numbers (the enlighten Swiss page); 12 columns is the web-grid community convention (unverified as a norm), while this entry uses 6 as the poster-context baseline. JS-type param — the demo recomputes spans and the overlay on change."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ratio",
+      "options": [
+        { "value": "1.25", "label": { "zh": "大三度 1.25", "en": "Major third 1.25" } },
+        { "value": "1.333", "label": { "zh": "纯四度 1.333", "en": "Perfect fourth 1.333" } },
+        { "value": "1.414", "label": { "zh": "增四度 1.414", "en": "Aug. fourth 1.414" } },
+        { "value": "1.5", "label": { "zh": "纯五度 1.5", "en": "Perfect fifth 1.5" } }
+      ],
+      "default": "1.414",
+      "cssVar": "--sw-ratio",
+      "effect": {
+        "zh": "字阶比率(major scale)。四个选项全部来自 modularscale.com 计算器记载的比率:大三度 4:5=1.25、纯四度 3:4≈1.333、增四度 1:√2≈1.414、纯五度 2:3=1.5(调研 05§17,页面文案一手核对)。默认 1.414:瑞士海报的巨大 display 层差需要激进比率。标题字号 = 基准字号 × ratio⁴,经 CSS calc 链驱动。",
+        "en": "Type-scale ratio (modular scale). All four options come from the ratios documented on modularscale.com: major third 4:5=1.25, perfect fourth 3:4≈1.333, augmented fourth 1:√2≈1.414, perfect fifth 2:3=1.5 (research 05 §17, page copy verified first-hand). Default 1.414: Swiss posters' giant display gaps demand an aggressive ratio. Headline size = base × ratio⁴, driven through a CSS calc chain."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#E30613",
+      "cssVar": "--sw-accent",
+      "effect": {
+        "zh": "单一结构性强调色——经典瑞士红。调研 03§15 记载「单一结构性强调色(经典瑞士红)」但未记载色值;#E30613 为社区常见基准值(未证实为规范值),按 WCAG 相对亮度公式对白底计算对比度约 4.9:1,可通过 SC 1.4.3 正文阈值。",
+        "en": "The single structural accent — classic Swiss red. Research 03 §15 records 'a single structural accent (classic Swiss red)' without a value; #E30613 is the community-convention baseline (unverified as a norm), computing to ≈4.9:1 against white via the WCAG relative-luminance formula — passes the SC 1.4.3 body-text threshold."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "grid",
+      "options": [
+        { "value": "off", "label": { "zh": "隐藏", "en": "Hidden" } },
+        { "value": "on", "label": { "zh": "显示栅格", "en": "Show grid" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-grid)。on 时叠加 N 列栅格参考叠层,展示「数学网格是最具可读性与和谐性的信息结构手段」(调研 03§15 原文)——叠层为纯装饰,aria-hidden。",
+        "en": "JS-type param (demo subscribes and toggles data-grid). on overlays an N-column grid reference layer, showing 'the mathematical grid as the most legible and harmonious device for information structure' (verbatim from research 03 §15) — the overlay is aria-hidden decoration."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "布局依赖 CSS Grid 的 repeat() 与 CSS 变量代入 calc()——两者均为全现代浏览器基线(CSS Grid 基线 2017);栅格叠层用纯 background 渐变绘制,无前缀需求。字阶 calc 链只乘 unitless 变量,无兼容坑。",
+      "en": "Layout relies on CSS Grid repeat() and CSS variables inside calc() — both baseline across modern browsers (CSS Grid baseline 2017); the grid overlay is painted with plain background gradients, no prefixes needed. The type-scale calc chain multiplies only a unitless variable — no compatibility traps."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 CSS Grid 的极旧环境退化为单栏文档流:标题、图块、正文按序排列,层级靠字号与字重维持——瑞士的层级本来就是纯结构(尺寸/字重/位置),不依赖任何新特性,天然可降级。",
+    "en": "On very old engines without CSS Grid, layout degrades to single-column document flow — headline, image block, body in order, hierarchy kept by size and weight. Swiss hierarchy is pure structure (size/weight/position) and depends on no novel feature, so it degrades gracefully by design."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "导视系统、文档站、报告与年报——网格 + 中性无衬线 + 单强调色的信息秩序场景", "en": "Wayfinding, documentation, reports and annual reviews — information-order contexts of grid + neutral sans + one accent" },
+      { "zh": "字驱动的海报与展览物料:巨大 display 层差 + 齐左不齐右的非对称断行", "en": "Type-driven posters and exhibition collateral: giant display gaps + flush-left ragged-right asymmetry" },
+      { "zh": "需要「客观、机构感」的品牌页面——调研 03§15:1960s 起企业/机构拥抱,如今是网页默认语言", "en": "Brand pages that need to read 'objective, institutional' — research 03 §15: embraced by corporations/institutions since the 1960s, now the web default language" }
+    ],
+    "avoid": [
+      { "zh": "情绪化营销场景——刻意压制的表达会让 CTA 失去张力,需另配插画/摄影情绪层", "en": "Emotional marketing contexts — deliberately suppressed expression drains CTA tension; pair it with an illustrative/mood layer" },
+      { "zh": "把强调色用成多色系统——「单一结构性强调色」是纪律,第二个强调色出现即破格", "en": "Turning the accent into a multi-color system — 'a single structural accent' is the discipline; a second accent breaks the style" },
+      { "zh": "非 Helvetica/Univers 语感的花式展示字体——瑞士的「中性」要求几何无衬线,手写体/装饰体直接破坏风格", "en": "Fancy display faces outside the Helvetica/Univers voice — Swiss 'neutrality' demands geometric sans; script or decorative faces break the style outright" }
+    ]
+  },
+  "a11y": {
+    "zh": "瑞士风格天然亲和可访问性:齐左不齐右避免不均匀断行伤害阅读(SC 1.4.8 语义);层级只靠尺寸/字重/位置,不依赖颜色区分(SC 1.4.1 Use of Color);单一强调色红 #E30613 对白底约 4.9:1(WCAG 相对亮度公式计算),过 SC 1.4.3 正文阈值——但小号红字仍应慎用,红只作结构与强调;栅格叠层为 aria-hidden 装饰,永不承载信息。",
+    "en": "Swiss is naturally accessibility-friendly: flush-left ragged-right avoids uneven line breaks (SC 1.4.8 semantics); hierarchy relies only on size/weight/position, never color alone (SC 1.4.1 Use of Color); the single red accent #E30613 computes to ≈4.9:1 on white (WCAG relative-luminance formula), passing SC 1.4.3 for body text — yet small red type still warrants care; red is for structure and emphasis only. The grid overlay is aria-hidden decoration, never information."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/International_Typographic_Style",
+    "https://design-styles.enlighten-media.net/pages/swiss/",
+    "https://www.modularscale.com/",
+    "https://trends.daisyui.com/ui-design-trends-2025/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张瑞士国际主义海报:N 列数学栅格上的非对称版式,巨大齐左无衬线标题(字阶 = 基准 × 比率⁴)、单一红色强调(色条/关键信息)、客观摄影图块与图注、纯黑中性文字,展示栅格叠层时各元素严格落列。",
+      "en": "Replicate a Swiss International Style poster: asymmetric composition on an N-column mathematical grid, a giant flush-left sans headline (scale = base × ratio⁴), a single red accent (bar/key info), an objective-photo block with caption, neutral black type — and when the grid overlay is on, every element lands exactly on its columns."
+    },
+    "acceptance": [
+      { "zh": "栅格列数与字阶比率严格使用参数快照值,标题字号由 calc 链按比率⁴ 推导,不手调", "en": "Grid columns and scale ratio use the exact parameter snapshot; the headline size derives from the ratio⁴ calc chain — no hand-tuning" },
+      { "zh": "全版只有一个强调色(快照值),其余文字/线条均为黑/灰阶,不加渐变、不加阴影", "en": "Exactly one accent color (snapshot value); all other type/rules are black/grey — no gradients, no shadows" },
+      { "zh": "版式非对称、齐左不齐右;元素按栅格列对齐,叠层打开时可逐列核对", "en": "Asymmetric flush-left composition; elements align to grid columns, verifiable column-by-column with the overlay on" },
+      { "zh": "图块是「客观摄影」占位(实色块 + 图注),不做插画化装饰", "en": "The image block is an 'objective photography' placeholder (solid block + caption), not illustrated decoration" },
+      { "zh": "栅格叠层为 aria-hidden 纯装饰,演示字体用系统无衬线栈近似 Helvetica 并注明", "en": "The grid overlay is aria-hidden decoration; the demo approximates Helvetica with a system sans stack and says so" }
+    ]
+  }
+}

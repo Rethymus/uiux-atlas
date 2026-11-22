@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+Toast 系统四件:触发按钮、**堆叠容器**(role=status,aria-live=polite)、单条 toast(圆点 + 文案 + ✕)、计时器表。容器绝对定位在边缘(底部/顶部),toast 从同一边缘弹入、退场回同一边缘:
+
+```html
+<div class="ts-stack" role="status" aria-live="polite">
+  <div class="ts-toast">
+    <span class="ts-dot"></span> 已保存到云端 <button class="ts-close">✕</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- 堆叠容器固定在边缘、`pointer-events: none`,单条 toast 恢复 `auto`——不挡下层交互;
+- **AnimatePresence 编排退场**:移除数据后由 Motion 播完 0.4s 缓出再卸 DOM,避免闪跳(调研 10§3.3 同语义);
+- 堆叠上限 3 条,超限移除最旧;每条 toast 一个 `setTimeout` 计时器,手动关闭/卸载时清理;
+- ✕ 手动关闭 + role=status 播报,满足「可关闭的非关键信息」(与 components/toast 条目同口径)。
+
+## 样式与参数
+
+四个参数全部 JS 型,demo 组装 Motion transition:
+
+```tsx
+// 入场:真弹簧(stiffness/damping 可调)+ react-hot-toast 同构初态
+<motion.div
+  initial={{ y: `${dir * 160}%`, scale: 0.6, opacity: 0.5 }}   // 屏外滑入 + 缩小 + 半透明
+  animate={{ y: "0%", scale: 1, opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 25, mass: 1 } }}
+  exit={{ y: `${dir * 160}%`, scale: 0.6, opacity: 0,
+    transition: { duration: 0.4, ease: [0.06, 0.71, 0.55, 1] } }} // 退场纯缓出回边缘
+/>
+// lifetime 到点 setTimeout 后触发 exit(sonner TOAST_LIFETIME = 4000 同款)
+```
+
+数值出处(调研 10§5.1/§5.2 源码逐字):
+
+- **react-hot-toast 入场**:从屏幕外 200% 滑入 + `scale(.6)` + `opacity .5`,0.35s `cubic-bezier(.21,1.02,.73,1)`(y₂>1 → 轻微过冲);**退场** 0.4s `cubic-bezier(.06,.71,.55,1)` 纯缓出;reduced-motion 退化为纯 fade;容器 `will-change: transform`;
+- **sonner**:过渡 400ms、`TOAST_LIFETIME = 4000`(4s 自动消失)、后排下沉堆叠 `translateY(40%)`;
+- **真弹簧档位**:Motion 版 `bounce 0.25 + visualDuration 0.35`(调研 10§5.2);bounce 0.25 → ζ=0.75(bounceToDampingRatio 源码换算,调研 10§6.3);demo 默认 stiffness 300 / damping 25(ζ≈0.722、过冲≈3.8%)取同一『弹而不闹』区间(调研 10§2.3);
+- 生命周期下限的规范依据:WCAG 2.2.3(自动消失需可暂停/持久)与 WAI-APG Alert 告诫——详见 components/toast 条目。
+
+## 动效与交互
+
+- **进攻退守**(调研 10 签名巧思 6):入场带过冲(弹簧或 y₂>1 bezier),退场纯缓出收尾——「进攻」的动感与「退守」的安静分工明确;`.35/.40` 一进一出永不打架;
+- **边缘语义**:从哪条边来回哪条边去(bottom/top 可切);toast 永远不从屏幕中央出现(M3 enter-exit 同则,调研 04§3.3);
+- **参数即改即看**:拖 stiffness/damping 立即影响下一条 toast 的弹入手感;ζ≈0.72 过冲约 4%,与过冲 bezier 观感同级;
+- **手动关闭/批量**:✕ 立即移除;连点触发时堆叠到 3 条,最旧的先退场;
+- **reduced-motion**:入/出都退化为 0.2s 纯 fade(react-hot-toast 官方降级路径);
+- 性能:入场/退场只动 `transform/opacity`;容器 `will-change: transform` 与 react-hot-toast 同款(常驻单容器场景,调研 10§5.1/§7.2)。
+
+## 真实产品案例
+
+- **react-hot-toast**:200% 滑入 + scale 0.6 + 过冲 bezier 0.35s / 缓出 0.4s——本条目入场编排的直接源码出处(调研 10§5.1);
+- **sonner(Shadcn 生态默认 toast)**:400ms 过渡 + 4s 生命周期 + 后排下沉堆叠与滑出手势(vaul 同作者的 `EASE [0.32,0.72,0,1]`、`CLOSE_THRESHOLD 0.25`)(调研 10§5.1);
+- **Gmail「邮件已发送」**:底部弹出 toast 附「撤销」动作,自动消失后动作失效——toast 携带动作 + 生命周期的经典产品案例(与 components/toast 条目互链)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stiffness` | 弹入更猛更利落,屏外行程耗时缩短 | 飘入感强,toast 「悬浮时间」变长;≤100 时像纸片漂上来 |
+| `damping` | ζ↑ 回弹消失,入场收敛为一次到位(ζ→1) | 过冲变大;ζ&lt;0.5 明显弹跳,连续保存时像果冻 |
+| `edge` | bottom 贴拇指区、不打断阅读(MUI 默认) | top 更醒目但压内容(AntD message 默认顶居中);同站固定一边 |
+| `lifetime` | 停留更久、可读性更好;>8s 用户误以为需要手动关 | 读不完即消失;&lt;2s 违反 WCAG 2.2.3 的风险陡增;4s 是 sonner 源码档 |
+
+经验区间:stiffness 200~400 / damping 20~30(过冲 2%~8% 的「弹而不闹」带)、lifetime 3~5s、堆叠 ≤3;入场短于退场是铁律——进攻可以带弹,退守必须安静。

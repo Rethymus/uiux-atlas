@@ -1,0 +1,90 @@
+{
+  "name": "Damping Ratio Craft",
+  "nameZh": "阻尼感设计",
+  "aliases": ["阻尼比", "damping ratio", "ζ 手感", "critical damping"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "ζ(阻尼比)是手感的第一变量:0.3~0.7 是『弹』区、0.5~0.8 是多数 UI 的目标区、ζ=1 临界最快无过冲、>1 过阻尼粘滞——同一目标位下四种手感,由一个比值决定。",
+    "en": "The damping ratio ζ is the first variable of feel: 0.3–0.7 is the 'bouncy' band, 0.5–0.8 the target for most UI, ζ=1 critical is the fastest no-overshoot settle, and >1 is overdamped crawl — four hand-feels at one target, set by a single ratio."
+  },
+  "origin": {
+    "zh": "物理定义出自维基 Damping ratio:ζ=c/c_c=c/(2√(mk))、ω₀=√(k/m)、临界阻尼 c_c=2√(mk)、过冲=e^(−πζ/√(1−ζ²))、包络→5% = ln20/(ζω₀)(调研 10§6.1/§2.3);感知区间结合 Motion 源码默认(stiffness 100/damping 10 → ζ=0.5,过冲 16.3%)与 Apple `UISpringTimingParameters.init(dampingRatio:)` 官方表述——『更阻尼更少震荡取 1.0;要更多震荡取接近 0.15』(调研 10§6.2/§4.3)。Motion 源码 bounceToDampingRatio:bounce 0.2→ζ0.8、0.3→ζ0.7、0.7→ζ0.3(调研 10§6.3)。",
+    "en": "The physics comes from Wikipedia's Damping ratio: ζ=c/c_c=c/(2√(mk)), ω₀=√(k/m), critical damping c_c=2√(mk), overshoot=e^(−πζ/√(1−ζ²)), envelope→5% = ln20/(ζω₀) (research 10 §6.1/§2.3); the perceptual bands combine Motion's source default (stiffness 100/damping 10 → ζ=0.5, overshoot 16.3%) with Apple's `UISpringTimingParameters.init(dampingRatio:)` wording — 'more damping/less oscillation → 1.0; more oscillation → close to 0.15' (research 10 §6.2/§4.3). Motion's bounceToDampingRatio: bounce 0.2→ζ0.8, 0.3→ζ0.7, 0.7→ζ0.3 (research 10 §6.3)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "zeta",
+      "min": 0.2,
+      "max": 1.2,
+      "step": 0.02,
+      "default": 0.5,
+      "effect": {
+        "zh": "阻尼比 ζ=c/(2√(mk))(demo 的可调轨)。默认 0.5 = Motion 源码默认弹簧的阻尼比(100/10,mass 1),过冲≈16.3%(调研 10§6.3)。0.3~0.7 是『弹』区;0.7~0.85 适合高频交互;ζ=1 临界最快无过冲;>1 过阻尼粘滞(调研 10§6.2)。",
+        "en": "Damping ratio ζ=c/(2√(mk)) (the demo's adjustable lane). Default 0.5 = the damping ratio of Motion's source-default spring (100/10, mass 1), overshoot≈16.3% (research 10 §6.3). 0.3–0.7 is the bouncy band; 0.7–0.85 suits high-frequency interactions; ζ=1 critical settles fastest with no overshoot; >1 is overdamped crawl (research 10 §6.2)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 50,
+      "max": 800,
+      "step": 10,
+      "default": 200,
+      "effect": {
+        "zh": "刚度 k(mass=1,ω₀=√k),作用于全部五条轨。感知规律(推导+实算,调研 10§4.3):同一 ζ 下提高 ω₀ → 波次更密、单次过冲比例不变——『抖几下由 ζ 定,抖多快由 ω₀ 定』。调大整体更急促;调小整体更慢。",
+        "en": "Stiffness k (mass = 1, ω₀ = √k), applied to all five lanes. Perceptual rule (derived + computed, research 10 §4.3): raising ω₀ at the same ζ packs waves tighter with the overshoot ratio unchanged — 'ζ decides how many wobbles, ω₀ decides how fast'. Higher = everything snappier; lower = everything slower."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 用 Motion 物理弹簧驱动,依赖 JS,禁用 JS 时球停在初始位;ζ/过冲/包络读数为本地公式实算(与浏览器无关)。物理弹簧语义(set() 续接速度)由 Motion 实现。",
+      "en": "The demo rides Motion physics springs and needs JS; without it the balls rest at their start. ζ/overshoot/envelope readouts are computed locally from formulas (browser-independent). The continue-from-velocity semantics come from Motion."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时跳过动画,五球直落目标位,读数条仍显示各轨 ζ/过冲换算;阻尼手感不得作为传达状态的唯一手段——落点状态同时由颜色/位置承载。",
+    "en": "Under prefers-reduced-motion the animation is skipped and all five balls land on target directly, with readouts still showing each lane's ζ/overshoot; damping feel never carries state alone — arrival is also signaled by color/position."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "为控件选『手感档』:先定 ζ 区间(弹 0.3~0.7 / 稳 0.7~1 / 粘滞 >1),再用 ω₀ 调节奏", "en": "Picking a feel tier for a control: fix the ζ band first (bouncy 0.3–0.7 / steady 0.7–1 / sticky >1), then tempo with ω₀" },
+      { "zh": "校准弹簧预设:Motion bounce 与 ζ 的换算(bounce 0.2→ζ0.8、0.3→ζ0.7)用本条目读数核对", "en": "Calibrating spring presets: verify Motion bounce ↔ ζ conversions (0.2→ζ0.8, 0.3→ζ0.7) against this entry's readouts" },
+      { "zh": "大元素调 mass 前的基准实验:先在同 mass=1 下锁 ζ,再单独评估 mass 的『大物沉』效应(Motion mass:'auto' 同理,调研 10§6.3)", "en": "A baseline experiment before tuning mass: lock ζ at mass=1 first, then evaluate mass' 'heavier sinks slower' separately (same logic as Motion's mass:'auto', research 10 §6.3)" },
+      { "zh": "评审/教学:同一目标位下四档 ζ 并排跑,过冲与包络时间读数让『手感』变成可讨论的数值", "en": "Reviews/teaching: four ζ tiers racing to one target, with overshoot and envelope readouts turning 'feel' into discussable numbers" }
+    ],
+    "avoid": [
+      { "zh": "ζ<0.3 的弹跳球手感放进表单/列表等高频交互——过冲 >37% 是玩具感,不是活力(调研 10§6.2)", "en": "ζ<0.3 ball-bounce feel in forms/lists or other high-frequency interactions — >37% overshoot reads toyish, not lively (research 10 §6.2)" },
+      { "zh": "把 stiffness/damping 当独立手感旋钮乱调而从不计算 ζ——`500/50` 这类组合是过阻尼假弹簧(ζ≈1.118)(调研 10§2.3/巧思 3)", "en": "Treating stiffness/damping as independent feel knobs without ever computing ζ — combos like `500/50` are overdamped fake springs (ζ≈1.118) (research 10 §2.3, craft #3)" },
+      { "zh": "进度条/连续量用欠阻尼弹簧——连续量不该有过冲(参考 motion-spring 条目告诫)", "en": "Underdamped springs on progress bars/continuous values — continuous quantities take no overshoot (see the motion-spring entry caveat)" },
+      { "zh": "ζ>1.2 的重度过阻尼放在需要『到位感』的反馈上——粘滞感会被读成卡顿/失灵", "en": "Heavy overdamping past ζ>1.2 on feedback that needs arrival certainty — the sticky crawl reads as lag or breakage" }
+    ]
+  },
+  "a11y": {
+    "zh": "演示为纯视觉对照,不承载唯一信息(每轨有文字标签与读数);prefers-reduced-motion 时直落终态;大幅振荡动画是前庭障碍触发源(MDN),所以本演示默认过冲有上限、且提供 reduced-motion 直落;真实的 UI 弹簧同样要给用户『可关闭/可中断』的动效(HIG Motion)。",
+    "en": "The demo is pure visual contrast and carries no sole information (text labels + readouts per lane); under prefers-reduced-motion everything lands directly; heavy oscillation is a vestibular trigger (MDN), hence the demo caps overshoot bands and honors reduced-motion; production springs owe users the same cancellable/interruptible treatment (HIG Motion)."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Damping_ratio",
+    "https://github.com/motiondivision/motion/blob/main/packages/motion-dom/src/animation/generators/spring.ts",
+    "https://motion.dev/docs/react-transitions",
+    "https://developer.apple.com/documentation/uikit/uispringtimingparameters",
+    "https://developer.apple.com/documentation/swiftui/animation/spring(response:dampingfraction:blendduration:).md"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个阻尼比感知区间演示:同一目标位、同一刚度下五条弹簧轨并排跑(ζ=0.3/0.5/0.8/1.1 固定档 + 一条 ζ 连续可调轨),每轨实时显示过冲% 与包络→5% 时间。",
+      "en": "Replicate a damping-ratio perception-band demo: five spring lanes racing to one target at one stiffness (fixed ζ=0.3/0.5/0.8/1.1 + one continuously adjustable ζ lane), each with live overshoot% and envelope→5% readouts."
+    },
+    "acceptance": [
+      { "zh": "五轨同一目标位、同一 stiffness,damping 由 c=2ζ√k(mass 1)逐轨换算——ζ 是唯一变量", "en": "All five lanes share target and stiffness; damping derives per lane from c=2ζ√k (mass 1) — ζ is the only variable" },
+      { "zh": "过冲读数严格按 e^(−πζ/√(1−ζ²)) 实算;ζ≥1 显示 0 并标注过阻尼/临界", "en": "Overshoot readouts computed strictly as e^(−πζ/√(1−ζ²)); ζ≥1 shows 0 flagged critical/overdamped" },
+      { "zh": "ζ 默认 0.5(Motion 源码默认弹簧的阻尼比),范围 0.2~1.2 连续可调", "en": "ζ defaults to 0.5 (Motion's source-default spring ratio), continuously adjustable 0.2–1.2" },
+      { "zh": "参考档位与读数必须与调研表一致:ζ0.5→16.3%、ζ0.7→4.6%、ζ0.8→1.5%、ζ1→0", "en": "Reference tiers and readouts match the research table: ζ0.5→16.3%, ζ0.7→4.6%, ζ0.8→1.5%, ζ1→0" },
+      { "zh": "prefers-reduced-motion 时五球直落目标位,读数保留", "en": "Under prefers-reduced-motion all five balls land directly with readouts retained" }
+    ]
+  }
+}

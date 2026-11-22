@@ -9,9 +9,12 @@ const root = resolve(scriptDir, "..");
 const dist = join(root, "dist");
 
 const EXPECTED = {
-  styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid"],
+  // styles 第 8 批:8 个风格史条目已落地(与 scripts/verify-entries.mjs 的 styles 同一清单)。
+  styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid", "flat-design", "skeuomorphism", "memphis-design", "swiss-international", "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome"],
   materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api"],
-  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing"],
+  // motion 第 8 批:8 个工艺/行为条目已落地(与 scripts/verify-entries.mjs 的 motion 同一清单);
+  // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
+  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow"],
   color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation"],
   type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
   layout: ["container-queries"],
@@ -103,7 +106,7 @@ for (const cat of Object.keys(EXPECTED)) {
   checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
 }
 
-// 条目页 ×2 ×81:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
+// 条目页 ×2 ×97:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
 for (const [cat, slugs] of Object.entries(EXPECTED)) {
   for (const slug of slugs) {
     const schemaPath = join(root, "src", "content", "entries", cat, slug, "schema.json");

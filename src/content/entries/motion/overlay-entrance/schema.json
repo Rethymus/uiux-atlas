@@ -1,0 +1,136 @@
+{
+  "name": "Overlay Entrance",
+  "nameZh": "浮层入场",
+  "aliases": ["弹层入场", "zoom-in-95", "popover animation", "dialog entrance"],
+  "category": "motion",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "浮层从触发钮弹入的事实标准:初态 scale 0.95 + opacity 0(+ 方向性位移 8px),200ms 到位,transform-origin 交给锚点方向;关闭永远比打开快。",
+    "en": "The de-facto overlay entrance: initial scale 0.95 + opacity 0 (+ an 8px directional shift), settling in 200ms with transform-origin from the anchor side; closing is always quicker than opening."
+  },
+  "origin": {
+    "zh": "shadcn/radix 事实标准(new-york-v4 registry 源码逐字):Dialog content `fade-in-0 + zoom-in-95 … duration-200`(初态 scale(0.95)+opacity 0,200ms);Popover 同款并加方向性位移 `slide-in-from-bottom-2`(8px),transform-origin 由 Radix 写入 `--radix-popover-content-transform-origin`;Sheet 入 500ms/出 300ms——『进慢出快』(调研 10§3.1)。带过冲的 bezier 变体:react-hot-toast 入场 `cubic-bezier(.21,1.02,.73,1)`、Arco 过冲 token `cubic-bezier(0.3,1.3,0.3,1)`(调研 10§3.2)。",
+    "en": "The shadcn/radix de-facto standard (new-york-v4 registry, verbatim source): Dialog content `fade-in-0 + zoom-in-95 … duration-200` (initial scale(0.95)+opacity 0, 200ms); Popover adds the directional `slide-in-from-bottom-2` (8px) with Radix writing `--radix-popover-content-transform-origin`; Sheet enters over 500ms / exits over 300ms — 'slow in, quick out' (research 10 §3.1). Overshoot-bezier variants: react-hot-toast enters on `cubic-bezier(.21,1.02,.73,1)`, Arco ships the overshoot token `cubic-bezier(0.3,1.3,0.3,1)` (research 10 §3.2)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "initialScale",
+      "min": 0.8,
+      "max": 1.05,
+      "step": 0.01,
+      "default": 0.95,
+      "cssVar": "--overlay-scale",
+      "effect": {
+        "zh": "入场初态缩放。默认 0.95 = shadcn `zoom-in-95` 事实标准(调研 10§3.1)。调大趋近 1 则只剩淡入、空间感消失;调小(≤0.9)『从深处长出来』的戏剧感增强,但位移距离变大、更容易闪。超过 1(如 1.02)配合过冲曲线可做轻微 overshoot。",
+        "en": "Entrance initial scale. Default 0.95 = the shadcn `zoom-in-95` fact standard (research 10 §3.1). Raising toward 1 leaves a bare fade with no spatial feel; lowering (≤0.9) heightens the 'grows from depth' drama but enlarges the travel and flickers more easily. Above 1 (e.g. 1.02) with an overshoot curve yields a slight overshoot."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "shiftY",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--overlay-shift",
+      "effect": {
+        "zh": "方向性入场位移。默认 8px = shadcn Popover `slide-in-from-bottom-2`(Tailwind 2 格 = 8px)同构(调研 10§3.1)。0 = 纯 zoom+fade(radix Dialog 语义);调大则方向感更强,超过 12px 开始抢内容的注意力。",
+        "en": "Directional entrance shift. Default 8px mirrors shadcn Popover's `slide-in-from-bottom-2` (Tailwind 2 steps = 8px) (research 10 §3.1). 0 = pure zoom+fade (the radix Dialog semantics); higher strengthens directionality, past 12px it starts stealing attention from the content."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "inDuration",
+      "unit": "ms",
+      "min": 100,
+      "max": 600,
+      "step": 20,
+      "default": 200,
+      "cssVar": "--overlay-in-ms",
+      "effect": {
+        "zh": "入场时长。默认 200ms = shadcn Dialog `duration-200`;调到 500ms 即 Sheet 档(入 500ms,调研 10§3.1)。调大更隆重但等得久;调小到 100ms 以下接近瞬开,入场感消失。",
+        "en": "Entrance duration. Default 200ms = shadcn Dialog's `duration-200`; 500ms reaches the Sheet tier (in 500ms, research 10 §3.1). Higher is grander but slower; under 100ms it reads as an instant appear and the entrance vanishes."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "outDuration",
+      "unit": "ms",
+      "min": 80,
+      "max": 400,
+      "step": 20,
+      "default": 150,
+      "cssVar": "--overlay-out-ms",
+      "effect": {
+        "zh": "退场时长。默认 150ms = 调研 10§3.3 Motion 版出场(『出快入慢』);shadcn Sheet 官方不对称是入 500ms/出 300ms(调研 10§3.1)。退场必须短于入场——用户在等的是『离开』(调研 10 巧思 7)。",
+        "en": "Exit duration. Default 150ms per the Motion snippet in research 10 §3.3 ('quick out'); shadcn Sheet's official asymmetry is 500ms in / 300ms out (research 10 §3.1). Exit must be shorter than entrance — what the user waits for is 'gone' (research 10 craft #7)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "curve",
+      "options": [
+        { "value": "standard", "label": { "zh": "standard(0.4,0,0.2,1)", "en": "standard (0.4,0,0.2,1)" } },
+        { "value": "overshoot", "label": { "zh": "过冲 bezier(.21,1.02,.73,1)", "en": "overshoot bezier(.21,1.02,.73,1)" } },
+        { "value": "arco", "label": { "zh": "Arco 过冲(0.3,1.3,0.3,1)", "en": "Arco overshoot (0.3,1.3,0.3,1)" } }
+      ],
+      "default": "standard",
+      "effect": {
+        "zh": "入场缓动(CSS 变量 --overlay-ease)。standard=`cubic-bezier(0.4,0,0.2,1)`(调研 10§3.3 CSS 版);overshoot=`cubic-bezier(.21,1.02,.73,1)`,y₂>1 产生轻微过冲(react-hot-toast 同款);arco=`cubic-bezier(0.3,1.3,0.3,1)`(Arco 全局过冲 token)。过冲档与 initialScale>1 组合才明显。",
+        "en": "Entrance easing (CSS var --overlay-ease). standard = `cubic-bezier(0.4,0,0.2,1)` (CSS snippet, research 10 §3.3); overshoot = `cubic-bezier(.21,1.02,.73,1)`, whose y₂>1 yields a slight overshoot (react-hot-toast's curve); arco = `cubic-bezier(0.3,1.3,0.3,1)` (Arco's global overshoot token). Overshoot lanes read best paired with initialScale > 1."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只用 transition/transform/opacity、`data-open` 属性切换与 `transform-origin`,均为 Baseline;Radix 的 `--radix-*-transform-origin` 变量是库行为,标准替代是按锚点方向手写 origin(demo 即如此)。focus trap 用原生 focus 事件实现。",
+      "en": "Implementation uses only transition/transform/opacity, a `data-open` attribute and `transform-origin` — all Baseline; Radix's `--radix-*-transform-origin` variable is library behavior, the standard substitute is writing the origin per anchor side (what the demo does). Focus management uses native focus events."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时取消位移/缩放,浮层直接以纯 fade(或瞬时)出现;浮层的可发现性不得依赖入场动画——Esc 关闭、点击外部关闭、焦点进入/归还是必须保留的交互路径(WAI-APG Dialog 模式);不支持 transform-origin 的旧环境退化为中心缩放。",
+    "en": "Under prefers-reduced-motion drop the shift/scale and let the overlay appear with a bare fade (or instantly); discoverability of the overlay must never depend on its entrance — Esc, outside-click dismissal and focus entry/return are mandatory interaction paths (WAI-APG Dialog pattern); environments without transform-origin degrade to center scaling."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "tooltip/popover/menu:zoom-95 + fade 200ms + 锚点侧 8px 位移 + 锚点方向 origin——radix 事实标准全套(调研 10§3.1/巧思 5)", "en": "tooltip/popover/menu: zoom-95 + fade 200ms + an 8px anchor-side shift + anchor-direction origin — the full radix fact standard (research 10 §3.1, craft #5)" },
+      { "zh": "模态对话框:同款入场,配 overlay 遮罩 fade;关闭走更快的退场(150~300ms)", "en": "Modal dialogs: the same entrance with a fading scrim; close on a quicker exit (150–300ms)" },
+      { "zh": "需要『弹』的轻浮层(菜单气泡、toast 同族):入场换过冲 bezier(.21,1.02,.73,1) 或真弹簧(bounce 0.2)", "en": "Light overlays that should 'pop' (menu bubbles, toast kin): swap the entrance to the overshoot bezier(.21,1.02,.73,1) or a true spring (bounce 0.2)" },
+      { "zh": "sheet/抽屉:入 500ms、出 300ms 的官方不对称档(进慢出快,调研 10§3.1)", "en": "Sheets/drawers: the official 500ms-in / 300ms-out asymmetry (slow in, quick out, research 10 §3.1)" }
+    ],
+    "avoid": [
+      { "zh": "transform-origin 恒为屏幕中心——缩放会『从屏幕中心长大』,与触发钮脱钩;origin 必须交给锚点方向(调研 10 巧思 5)", "en": "Leaving transform-origin at screen center — the overlay 'grows from the middle of the screen', decoupled from its trigger; the origin must come from the anchor side (research 10 craft #5)" },
+      { "zh": "入场比退场还慢——关闭永远比打开果断,用户在等的是『离开』(shadcn Sheet 500/300 与 M3 enter>exit 双源一致)", "en": "A slower entrance than exit — closing must be decisive; what users wait for is 'gone' (shadcn Sheet 500/300 and M3 enter>exit agree)" },
+      { "zh": "大位移入场(>16px)或 initialScale ≤0.85——位移过冲视觉噪声,模态场景尤其闪", "en": "Large entrance travel (>16px) or initialScale ≤0.85 — travel noise dominates, modals flicker especially" },
+      { "zh": "只做入场不做退场编排——AnimatePresence/animationend 未处理时关闭会闪跳或残留 DOM", "en": "Entrance without exit orchestration — without AnimatePresence/animationend handling, closing flashes or leaves stale DOM" }
+    ]
+  },
+  "a11y": {
+    "zh": "浮层打开时焦点移入内容、关闭后归还触发钮(Esc 与点击外部均为标准关闭路径,WAI-APG Dialog/Popover 语义);入场动画只是方向提示——位置与归属关系必须同时由位置本身表达;prefers-reduced-motion 时纯 fade 出现;动画期间内容立即可交互,不得被入场动画锁住(动效可中断,HIG Motion)。",
+    "en": "On open, focus moves into the content and returns to the trigger on close (Esc and outside-click are standard dismissal paths per WAI-APG Dialog/Popover); the entrance is a directional hint only — placement and belonging must be expressed by the position itself; under prefers-reduced-motion appear with a bare fade; content is interactive immediately — the entrance must never lock it (interruptible motion, HIG Motion)."
+  },
+  "sources": [
+    "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/new-york-v4/ui/dialog.tsx",
+    "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/new-york-v4/ui/popover.tsx",
+    "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/new-york-v4/ui/sheet.tsx",
+    "https://github.com/timolins/react-hot-toast/blob/main/src/components/toast-bar.tsx",
+    "https://github.com/arco-design/arco-design/blob/main/components/style/theme/default.less",
+    "https://motion.dev/docs/react-animation"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个浮层从触发钮弹入:初态 scale 0.95 + 下方 8px + opacity 0,200ms 标准曲线到位,origin 取触发钮方向;点击外部/Esc 关闭,退场 150ms 更快,焦点打开时移入、关闭归还。",
+      "en": "Replicate an overlay springing from its trigger: initial scale 0.95 + 8px below + opacity 0, settling over 200ms on the standard curve with origin on the trigger side; outside-click/Esc to close, exit 150ms faster, with focus moving in on open and returning on close."
+    },
+    "acceptance": [
+      { "zh": "初态严格 scale(0.95)+opacity 0+translateY(8px),入场 200ms(参数快照值,勿自行调整)", "en": "Initial state strictly scale(0.95)+opacity 0+translateY(8px), entering over 200ms (snapshot values; do not adjust)" },
+      { "zh": "transform-origin 按锚点方向设置(仿 Radix 语义),不得恒为中心", "en": "transform-origin follows the anchor side (Radix semantics), never a constant center" },
+      { "zh": "点击外部与 Esc 都能关闭;打开时焦点进入浮层,关闭后归还触发钮", "en": "Both outside-click and Esc dismiss; focus enters the overlay on open and returns to the trigger on close" },
+      { "zh": "退场(150ms)必须比入场(200ms)快——『进慢出快』", "en": "The exit (150ms) must be quicker than the entrance (200ms) — 'slow in, quick out'" },
+      { "zh": "prefers-reduced-motion 时取消位移/缩放只留 fade;动画可被中途打断不锁交互", "en": "Under prefers-reduced-motion drop shift/scale leaving a bare fade; motion stays interruptible and never locks interaction" }
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+全息铬光是「深色舞台 + 一件反光主体」的结构:卡片是主角(虹彩标题、铬质按钮、衍射边缘),指针移动时镜面高光在卡面上跟随——**反光全部挂在装饰层(::before/独立 div + aria-hidden),语义内容(标题/按钮)永远是普通文本**。
+
+```html
+<div class="scene">
+  <div class="card">
+    <div class="orb" aria-hidden="true"></div>       <!-- 虹彩圆环 -->
+    <h1 class="holo-title">HOLO</h1>                 <!-- background-clip: text -->
+    <button class="chrome-btn">Collect</button>
+    <div class="sheen" aria-hidden="true"></div>     <!-- 指针高光 -->
+    <div class="diffraction" aria-hidden="true"></div> <!-- 衍射条纹 -->
+  </div>
+</div>
+```
+
+关键点:
+
+- 两族材质(虹彩/铬)是**同一张卡的两个渐变配方**,由 `data-mode` 切换——daisyUI 2025 词条 014/015 分立两族的记载结构;
+- 镜面高光层用 CSS 变量 `--mx/--my` 接收指针坐标,`pointer-events: none` 不拦截交互;
+- 衍射条纹用 `repeating-linear-gradient` 微彩虹 + `mask-image` 只留在卡缘,不压文字。
+
+## 样式与参数
+
+一条 CSS 变量、三条 JS 型参数:
+
+```css
+.demo-stage { --hc-sheen: 1; }
+/* holo:按色相跨度采样的锥形光谱(JS 生成 backgroundImage) */
+background: conic-gradient(from 210deg, oklch(0.78 0.16 0), …, oklch(0.78 0.16 <span>));
+/* chrome:银白硬反射线——50% 处一道深色「地平线」 */
+background: linear-gradient(180deg, #fafbfd 0%, #cfd6e0 42%, #8a93a3 49%,
+                            #454b57 50%, #98a1b0 55%, #e8ecf2 78%, #f6f8fb);
+/* 指针镜面高光,sheen 倍率控制强度 */
+.sheen { background: radial-gradient(46% 60% at var(--mx) var(--my),
+  oklch(1 0 0 / calc(0.28 * var(--hc-sheen))), transparent 70%); }
+/* 衍射微条纹:1px 级彩虹 repeating 渐变,opacity 0.16 + screen 混合 */
+```
+
+数值出处:
+
+- 「光谱渐变、镜面反射、衍射效果」三类特征为调研 03§20 汇总表原文;daisyUI 2026 原文场景:「Reflective materials remain useful for cinematic launches, fashion, music, and premium technology」;
+- 色相跨度 240°、sheen 倍率 1、条纹 opacity 0.16 均为**本条目基准设定**(调研未记载任何数值);
+- 镜面高光的官方定性参照:WWDC25 219 把 specular highlights/lensing 作为材质定义手段(调研 09§1.4d/§8)——2025 年 Liquid Glass 语境的风格亲缘;
+- chrome 的「50% 深色地平线」是液态金属渲染的经典语法(demo 配方,基准设定)。
+
+## 动效与交互
+
+反光材质的动效是「光在动,物不动」:
+
+- **指针高光**:pointermove 把指针位置写入 `--mx/--my`,高光即时跟随——用户驱动的光,不需要时长;
+- **光谱漂移**:holo 标题的 `background-position` 以 9s alternate 缓慢漂移,模拟薄膜干涉的游彩;chrome 模式静止(金属不游彩);
+- **圆环旋转**:虹彩圆环 14s 线性自转(装饰);按钮 hover 上浮 1px、按压下沉 1px;
+- `prefers-reduced-motion: reduce` 时漂移与旋转全部静止,保留静态渐变与指针高光——光效的「活」一半来自用户输入,可以只保留这一半。
+
+## 真实产品案例
+
+- **Instagram 2016 年新版标识** — 跨色相光谱渐变的标志性大规模商用:品红→橙→黄→青→蓝的锥形光谱替换了旧拟物相机,是「光谱渐变作品牌主体」的最著名案例。
+- **Spotify 年度 Wrapped** — 每年以高饱和光谱/双色渐变封面与卡片刷屏社交网络,「音乐 + 反光渐变」配对(daisyUI 2026 场景引文中的 fashion/music 语境)的年度性实践。
+- **Apple Card(2019,Apple × Goldman Sachs)** — 钛金属实体卡的液态金属质感反光:与 daisyUI「premium technology」场景引文对应的实物案例,银白硬反射线的现实原型。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hueSpan` | 色环趋近闭合,「全息色轮」感最强;360° 时首尾同色相接 | 一段窄光谱带,读作「双色渐变」;60° 时全息感近乎消失 |
+| `sheen` | 高光更亮、辉光外溢,「镜面」感更强;>1.5 后高光糊成白斑 | 反光熄灭,虹彩退化为哑光渐变;=0 时只剩光谱底色 |
+| `mode` | chrome=液态金属,庄重冷硬,适合 logo/奖牌;holo=游彩薄膜,活泼,适合活动视觉 | —(两族并置会互相稀释,一屏只选一种) |
+| `diffraction` | on 时卡缘出现微彩虹细纹,薄膜质感更真;alpha 已锁 0.16 以下 | off 更干净,适合标题以外还有信息密度的版面 |
+
+经验区间:光谱带 180–300°、sheen 0.6–1.2;反光主体一屏一件;铬模式只给大字标题(≥24px 粗体,SC 1.4.3 大文本 3:1),正文永不使用。

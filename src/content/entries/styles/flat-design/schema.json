@@ -1,0 +1,113 @@
+{
+  "name": "Flat Design",
+  "nameZh": "扁平化设计",
+  "aliases": ["扁平设计", "Flat UI", "扁平化"],
+  "category": "styles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "极简 UI 语言:简单元素、排版与平色——无渐变、无高光、无拟物阴影的纪律;Metro→Material→iOS 7 一整代系统语言的公共底座,NN/g 实测其可供性线索缺失平均让交互慢 22%。",
+    "en": "The minimalist UI language: simple elements, typography and flat color — a discipline of no gradients, no highlights, no skeuomorphic shadows; the shared substrate of a whole generation of system languages (Metro→Material→iOS 7), measured by NN/g to slow interactions 22% on average when affordance cues are stripped."
+  },
+  "origin": {
+    "zh": "微软 Metro(Windows Phone 7, 2010→Windows 8)、Google Holo(2011)→Material Design(2014)、Apple iOS 7(2013)、Fluent(2017,Acrylic 半透明)是记载的演进链;「到 2020 年代中期,扁平设计逐渐被 Glassmorphism 取代」(调研 03§17 关联条目,en.wikipedia.org/wiki/Flat_design)。",
+    "en": "The recorded lineage runs Microsoft Metro (Windows Phone 7, 2010 → Windows 8), Google Holo (2011) → Material Design (2014), Apple iOS 7 (2013), Fluent (2017, translucent Acrylic); 'by the mid-2020s, flat design was gradually being replaced by glassmorphism' (research 03 §17 related entry, en.wikipedia.org/wiki/Flat_design)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#007AFF",
+      "cssVar": "--fd-accent",
+      "effect": {
+        "zh": "单一强调色(平色板的核心:中性底 + 一个强调色)。#007AFF 为社区通传的 iOS 蓝引用值,未在本次调研核验为官方规范值;强调色只给主操作与选中态,不参与装饰。",
+        "en": "The single accent (the core of a flat palette: neutral field + one accent). #007AFF is the community-circulated iOS blue reference, not verified in this research as an official spec value; the accent goes only to primary actions and selected states, never decoration."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ornament",
+      "options": [
+        { "value": "none", "label": { "zh": "严格扁平", "en": "Strict flat" } },
+        { "value": "gradient", "label": { "zh": "微渐变", "en": "Subtle gradient" } },
+        { "value": "shadow", "label": { "zh": "柔和投影", "en": "Soft shadow" } }
+      ],
+      "default": "none",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-ornament)。none=「无拟物深度」纪律的严格执行(无渐变/无高光/无阴影,调研 03§17 原文特征);gradient=flat 2.0 的克制微渐变;shadow=Material 式柔和投影。默认 none 展示纪律本身。",
+        "en": "JS-type param (demo subscribes and toggles data-ornament). none = strict execution of the 'no skeuomorphic depth' discipline (no gradients/highlights/shadows, a verbatim trait in research 03 §17); gradient = restrained flat-2.0 tinting; shadow = Material-style soft elevation. The default none demonstrates the discipline itself."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "iconStyle",
+      "options": [
+        { "value": "outline", "label": { "zh": "线性字形", "en": "Outline glyph" } },
+        { "value": "filled", "label": { "zh": "面性字形", "en": "Filled glyph" } }
+      ],
+      "default": "outline",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换内联 SVG 图标的描边/填充模式)。「简洁字形图标」为调研 03§17 原文特征;扁平图标 = 简单几何 + 单色(currentColor),无立体与材质。",
+        "en": "JS-type param (demo subscribes and swaps the inline SVG icons' stroke/fill mode). 'Simple glyph icons' is a verbatim trait from research 03 §17; flat icons = simple geometry + one color (currentColor), no depth or material."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "default": 4,
+      "cssVar": "--fd-radius",
+      "effect": {
+        "zh": "圆角半径。0 = Metro 的直角纪律(记载起点:Windows Phone 7, 2010),8–12 = iOS 7/Material 的圆角矩形;默认 4px 为本条目基准设定(调研未记载统一数值)。",
+        "en": "Corner radius. 0 = Metro's sharp-corner discipline (the recorded starting point: Windows Phone 7, 2010); 8–12 = iOS 7/Material rounded rects; the 4px default is this entry's baseline (no unified value recorded in the research)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "严格扁平不需要任何新特性——纯色、描边、圆角全部是 CSS1–3 基线能力;图标为内联 SVG。这是它 2013 年能一夜铺开全平台的工程原因,也是它今天作为「降级终点」的价值。",
+      "en": "Strict flat needs no novel features — solid fills, strokes and radii are all CSS1–3 baseline; icons are inline SVG. That's the engineering reason it blanketed every platform overnight in 2013, and its value today as the universal fallback terminus."
+    }
+  },
+  "fallback": {
+    "zh": "扁平没有回退问题——它本身就是回退:关闭 CSS Grid/Flex、渐变、滤镜后,界面退化为纯色块与文字,层级靠字号与间距维持。装饰开关(ornament)调到 none 即是无条件安全的终态。",
+    "en": "Flat has no fallback problem — it *is* the fallback: switch off Grid/Flex, gradients and filters and the interface degrades to color blocks and text with hierarchy held by size and spacing. Set the ornament switch to none and you have the unconditionally safe terminus."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "系统级工具与生产力界面(设置、文件、邮件)——平色 + 字形图标的信息秩序,Mac/Win/移动三端系统语言的公共底座", "en": "System utilities and productivity surfaces (settings, files, mail) — flat color + glyph icons, the shared substrate of macOS/Windows/mobile system languages" },
+      { "zh": "低性能设备与降级通道——零滤镜零模糊的渲染成本下限,弱机型与打印样式的天然终点", "en": "Low-power devices and degradation channels — zero-filter/zero-blur rendering floor, the natural terminus for weak hardware and print styles" },
+      { "zh": "内容优先的编辑/文档界面——装饰归零后,层级完全由排版承担(与杂志编辑风天然互补)", "en": "Content-first editorial/docs interfaces — with decoration at zero, hierarchy rides entirely on typography (naturally complementary to editorial style)" }
+    ],
+    "avoid": [
+      { "zh": "可点击性依赖装饰线索的场景——NN/g 2017 研究:扁平界面平均慢 22%,链接/按钮失去「可点」线索后用户被迫悬停试探(调研 03§17)", "en": "Contexts relying on decorative affordance cues — NN/g's 2017 study: flat interfaces were 22% slower on average once links/buttons lost their clickable cues (research 03 §17)" },
+      { "zh": "强层级数据面板——无阴影无描边时,平色块的分组边界依赖间距,密集表格容易糊行", "en": "Strong-hierarchy data panels — with no shadows or borders, flat grouping leans on whitespace alone and dense tables blur" },
+      { "zh": "品牌差异化诉求强的营销页——各家系统语言的扁平底座高度同质,难以形成记忆点", "en": "Marketing pages needing brand differentiation — every system's flat substrate looks alike; memorability is hard to earn" }
+    ]
+  },
+  "a11y": {
+    "zh": "扁平的核心风险是「可供性剥离」:按钮失去立体线索后必须补足非视觉线索——色块对比 ≥3:1(SC 1.4.11)、hover/focus 态明确、链接保留下划线或至少加粗;NN/g 记载的 22% 减速正是线索缺失的实测代价(调研 03§17);强调色 #007AFF 对白底对比约 4:1,小号白字在其上不过 SC 1.4.3 正文阈值——按钮文字用粗体或调深底色;选中态不得只靠颜色(SC 1.4.1),配合图标/勾选标记。",
+    "en": "Flat's core risk is 'affordance stripping': once buttons lose depth cues, non-visual cues must backfill — color-block contrast ≥3:1 (SC 1.4.11), explicit hover/focus states, underlined (or at least bolded) links; NN/g's recorded 22% slowdown is the measured price of missing cues (research 03 §17); #007AFF computes to ≈4:1 on white, so small white text on it fails SC 1.4.3 — use bold type or a darker fill for button labels; selected states can't be color-only (SC 1.4.1) — pair them with icons/checkmarks."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Flat_design",
+    "https://trends.daisyui.com/ui-design-trends-2025/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块严格扁平的设置面板:中性底上的平色磁贴、简洁字形图标(线性/面性)、无阴影无渐变的按钮与开关,单一强调色只给选中态与主操作,圆角按参数。",
+      "en": "Replicate a strictly flat settings panel: flat-color tiles on a neutral field, simple glyph icons (outline/filled), buttons and switches with no shadows or gradients, a single accent reserved for selection and primary actions, radius per parameter."
+    },
+    "acceptance": [
+      { "zh": "ornament=none 时零渐变、零高光、零阴影——任何立体装饰都算违反纪律", "en": "With ornament=none: zero gradients, zero highlights, zero shadows — any depth decoration is a discipline violation" },
+      { "zh": "强调色严格使用参数快照值,只出现在主操作与选中态", "en": "The accent uses the exact snapshot value and appears only on primary actions and selected states" },
+      { "zh": "图标为内联 SVG 简洁字形(单色 currentColor),随 iconStyle 参数切换线性/面性", "en": "Icons are inline SVG simple glyphs (single-color currentColor), toggling outline/filled per the iconStyle param" },
+      { "zh": "按钮/磁贴色块对底色保持 ≥3:1 非文本对比(SC 1.4.11),hover/focus 态显式", "en": "Button/tile blocks keep ≥3:1 non-text contrast against the field (SC 1.4.11), with explicit hover/focus states" },
+      { "zh": "选中态用图标/勾选标记与颜色双重表达,不只靠色相(SC 1.4.1)", "en": "Selected states are expressed by icon/checkmark plus color, never hue alone (SC 1.4.1)" }
+    ]
+  }
+}

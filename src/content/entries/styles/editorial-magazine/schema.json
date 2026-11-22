@@ -1,0 +1,117 @@
+{
+  "name": "Editorial Magazine",
+  "nameZh": "杂志编辑风",
+  "aliases": ["杂志编辑排版", "编辑风", "Editorial Design"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "杂志级的排版学科:headline→standfirst→byline→body→caption 五级层级、慷慨留白(「编辑自信」)、2/3/12 列栏格与 pull quote、图片是叙事伙伴而非装饰——衬线展示字 × 无衬线正文的经典配对。",
+    "en": "Magazine-grade typographic discipline: the headline→standfirst→byline→body→caption hierarchy, generous whitespace ('editorial confidence'), 2/3/12-column grids with pull quotes, images as narrative partners — the classic serif-display × sans-body pairing."
+  },
+  "origin": {
+    "zh": "平面设计中最古老的学科之一,脱胎于数百年活字排版与杂志黄金年代;1950s Alexey Brodovitch(Harper's Bazaar)与 Art Paul(Playboy)确立「动态版式、留白为工具、图片与文字平等」的词汇表;1990s 数字报纸移植报头/栏结构;2012 年 Medium/Substack + 响应式设计解锁网络长文复兴;当下 newsletter 浪潮带来新一代(调研 03§16)。",
+    "en": "One of graphic design's oldest disciplines, rooted in centuries of movable type and the magazine golden age; in the 1950s Alexey Brodovitch (Harper's Bazaar) and Art Paul (Playboy) established the vocabulary of 'dynamic layout, whitespace as a tool, images equal to words'; 1990s digital newspapers transplanted mastheads and column structures; 2012 Medium/Substack plus responsive design unlocked the long-form web revival; the newsletter wave brings a new generation (research 03 §16)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "cols",
+      "options": [
+        { "value": "1", "label": { "zh": "单栏 measure", "en": "Single measure" } },
+        { "value": "2", "label": { "zh": "双栏", "en": "2 columns" } },
+        { "value": "3", "label": { "zh": "三栏", "en": "3 columns" } }
+      ],
+      "default": "2",
+      "effect": {
+        "zh": "正文栏数。调研 03§16 原文记载「2/3/12 列结构化栏格」(12 列指整页版心网格,正文栏通常取 2–3);默认 2 栏为杂志正文最常见的记载编排。JS 型参数——demo 订阅后切换 CSS columns。",
+        "en": "Body column count. Research 03 §16 records '2/3/12-column structured grids' verbatim (12 refers to the page-wide layout grid; body columns usually take 2–3); the 2-column default is the most commonly recorded magazine arrangement. JS-type param — the demo switches CSS columns on change."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "measure",
+      "unit": "ch",
+      "min": 40,
+      "max": 90,
+      "step": 5,
+      "default": 65,
+      "cssVar": "--em-measure",
+      "effect": {
+        "zh": "行长(measure)。Butterick《Practical Typography》建议平均行长 45–90 字符(含空格),约 2–3 个字母表长度(调研 05§19 原文一手核对);默认 65ch 同为调研 03§7 记载的 minimalism 示例值。下限 40 仅演示「过短」方向,低于 45 即脱离建议区间。",
+        "en": "Line length (measure). Butterick's Practical Typography recommends an average of 45–90 characters incl. spaces, about 2–3 alphabets long (research 05 §19, verified first-hand); the 65ch default is also the example value recorded for minimalism in research 03 §7. The 40 floor exists to demo the 'too short' direction — below 45 leaves the recommended range."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lead",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.05,
+      "default": 1.6,
+      "cssVar": "--em-lead",
+      "effect": {
+        "zh": "正文行高倍数。WCAG 2.2 SC 1.4.12 Text Spacing 官方阈值:行高 ≥ 字号 1.5 倍(调研 05§18 原文一手核对);默认 1.6 为长文阅读基准设定(高于 1.5 的无障碍下限,留出标题插入空间)。",
+        "en": "Body line-height multiplier. The official WCAG 2.2 SC 1.4.12 Text Spacing threshold: line height ≥ 1.5× font size (research 05 §18, verified first-hand); the 1.6 default is this entry's long-form reading baseline (above the 1.5 accessibility floor, leaving room for inserted headings)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "dropcap",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "首字下沉", "en": "Drop cap" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-dropcap)。首字下沉是调研 03§16 原文列出的可调样式(「首字下沉/引文样式」);实现用 ::first-letter 浮动首字母。",
+        "en": "JS-type param (demo subscribes and toggles data-dropcap). The drop cap is a tunable style listed verbatim in research 03 §16 ('drop caps / quote styles'); implemented with a ::first-letter float."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "多栏正文用 CSS Multi-column(column-count/column-gap/column-span: all)——基线支持良好,column-span: all 全现代浏览器可用;首字下沉用 ::first-letter 浮动,支持面等同 CSS2.1。无前缀需求。",
+      "en": "Multi-column body uses CSS Multi-column (column-count/column-gap/column-span: all) — well supported at baseline, column-span: all available in every modern browser; drop caps use ::first-letter floats with CSS2.1-level support. No prefixes required."
+    }
+  },
+  "fallback": {
+    "zh": "不支持多栏布局时正文自动回流为单栏——栏数只是版面编排,内容与层级不受影响;pull quote 用 column-span: all,不支持时引文块成为普通块级元素,仍以粗衬线 + 上下细线保持「引文」读感。",
+    "en": "Without multi-column support the body reflows to a single column — columns are page arrangement, not content or hierarchy; the pull quote uses column-span: all and, unsupported, becomes a plain block that still reads as a quote via bold serif + hairline rules."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长文/深度报道/newsletter——调研 03§16:2012 年起 Medium/Substack 解锁的网络长文复兴主场景", "en": "Long-form, features and newsletters — the main scene of the post-2012 Medium/Substack web revival (research 03 §16)" },
+      { "zh": "品牌杂志栏、编辑博客与作品集叙事页——需要「编辑自信」的留白与五级层级", "en": "Brand magazine sections, editorial blogs and portfolio narratives — contexts needing 'editorial confidence' whitespace and the five-level hierarchy" },
+      { "zh": "菜谱/指南等图文并重内容——图片是叙事伙伴,图注承担信息(调研 03§16:NYT Cooking 同类)", "en": "Recipes/guides where images and text weigh equally — images as narrative partners with informative captions (cf. NYT Cooking, research 03 §16)" }
+    ],
+    "avoid": [
+      { "zh": "工具/控制台类界面——五级层级与 pull quote 的仪式感会拖慢任务效率", "en": "Utility/console interfaces — the five-level hierarchy and pull-quote ceremony slow task efficiency" },
+      { "zh": "多栏塞进窄视口——2 栏以下宽度强行分栏会击穿行长建议区间(45–90 字符),移动端应回落单栏", "en": "Multi-column in narrow viewports — forcing columns below 2-column width breaks the 45–90 character measure; mobile should fall back to single column" },
+      { "zh": "用装饰字体堆「杂志感」——衬线只给展示层,正文仍是中性无衬线/工作衬线;全篇衬线化会牺牲屏读性", "en": "Faking the magazine feel with decorative faces — serif belongs to the display layer only; body stays a neutral sans/workhorse serif. All-serif hurts screen readability" }
+    ]
+  },
+  "a11y": {
+    "zh": "行高默认 1.6,高于 WCAG 2.2 SC 1.4.12 的 1.5 倍官方下限;行长约束在 45–90 字符区间内保护阅读节奏(Butterick,调研 05§19);分栏内容必须保证 DOM 阅读顺序与视觉栏序一致(CSS columns 按列填充,SC 1.3.2);pull quote 是正文摘录,语义用 <blockquote>/<aside> 而非纯视觉放大;首字下沉的字母必须包含在段落文本内(::first-letter 不产生额外 DOM),读屏不受影响。",
+    "en": "Line-height defaults to 1.6, above the official WCAG 2.2 SC 1.4.12 floor of 1.5×; the measure stays within 45–90 characters to protect reading rhythm (Butterick, research 05 §19); multi-column content must keep DOM reading order aligned with the visual column order (CSS columns fill by column, SC 1.3.2); the pull quote is an excerpt and should be semantic <blockquote>/<aside>, not a purely visual enlargement; the drop-cap letter remains part of the paragraph text (::first-letter adds no DOM), so screen readers are unaffected."
+  },
+  "sources": [
+    "https://design-styles.enlighten-media.net/pages/editorial/",
+    "https://practicaltypography.com/line-length.html",
+    "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html",
+    "https://trends.daisyui.com/ui-design-trends-2026/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一篇杂志编辑风文章页:kicker/衬线大标题/standfirst/byline/正文(2 栏 + 首字下沉)/pull quote/图块与图注五级层级齐全,行长 65ch、行高 1.6,慷慨留白,衬线展示字 × 无衬线正文。",
+      "en": "Replicate a magazine-style article page with the full five-level hierarchy: kicker/serif headline/standfirst/byline/body (2 columns + drop cap)/pull quote/figure with caption; 65ch measure, 1.6 line-height, generous whitespace, serif display × sans body."
+    },
+    "acceptance": [
+      { "zh": "栏数、行长、行高严格使用参数快照值(65ch / 1.6 在 Butterick 45–90 与 WCAG ≥1.5 的记载区间内)", "en": "Columns, measure and lead use the exact snapshot values (65ch / 1.6 sit inside the recorded ranges: Butterick 45–90, WCAG ≥1.5)" },
+      { "zh": "五个排版层级齐全且视觉可辨:kicker → headline → standfirst → byline → body → caption", "en": "All five typographic levels present and visually distinct: kicker → headline → standfirst → byline → body → caption" },
+      { "zh": "pull quote 横跨所有栏(column-span: all)并以语义标签承载", "en": "The pull quote spans all columns (column-span: all) and uses semantic markup" },
+      { "zh": "衬线只给标题与引文,正文用无衬线;不加载商业字体,用系统衬线/无衬线栈并注明", "en": "Serif only for display and quotes; body is sans; no commercial fonts — system serif/sans stacks, stated as such" },
+      { "zh": "分栏在窄视口回落单栏,DOM 顺序与栏序一致", "en": "Columns collapse to one on narrow viewports; DOM order matches column order" }
+    ]
+  }
+}

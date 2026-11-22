@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+Frutiger Aero 是「自然层 + 玻璃层」的场景结构:底层是晴空渐变(天空蓝→浅水色)与草丘椭圆(草绿),上层是白 15% 透明的玻璃卡片与气泡按钮——**自然提供色彩与情绪,玻璃提供操作面**,两者缺一即不成立。
+
+```html
+<div class="scene">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="hill" aria-hidden="true"></div>
+  <div class="bubbles" aria-hidden="true">…</div>
+  <div class="glass-card">
+    <h2>Aqua Player</h2>
+    <button class="bubble-btn">▶ Play</button>
+  </div>
+</div>
+```
+
+关键点:
+
+- 玻璃卡是背景的兄弟层,`backdrop-filter` 模糊透出的天空与草丘;`@supports` 回退提高填充不透明度;
+- 气泡层 `pointer-events: none` + `aria-hidden`,永不拦截交互;
+- 气泡按钮的椭圆高光挂在 `::before`,只占顶缘 40% 高度,**不侵入文字区**。
+
+## 样式与参数
+
+四个参数全部是 CSS 变量型,经 DemoStage 注入:
+
+```css
+.demo-stage {
+  --fa-sky: #8ecdeb;    /* 基准设定,调研未记载色值 */
+  --fa-grass: #7dbb4e;
+  --fa-gloss: 0.35;     /* 落在 09§1.4d 复刻惯例 .25~.4 区间(推导,非官方) */
+  --fa-blur: 20px;      /* Apple 官网生产 CSS 实抓值 */
+}
+.fa-hill {
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(to top, 深绿, var(--fa-grass) 60%, 浅绿);
+}
+.fa-card {
+  background-color: oklch(1 0 0 / 0.15);
+  -webkit-backdrop-filter: blur(var(--fa-blur)) saturate(160%);
+  backdrop-filter: blur(var(--fa-blur)) saturate(160%);
+}
+.fa-btn::before {
+  background: linear-gradient(to bottom,
+    oklch(1 0 0 / calc(0.55 + 0.45 * var(--fa-gloss))), transparent);
+}
+```
+
+数值出处:
+
+- blur 20px = **Apple 官网生产 CSS 实抓** `blur(20px)+saturate(180%)` 基准档(调研 09§1.4a;亦见调研 03§1);
+- glossAlpha 0.35 = 调研 09§1.4d 的 web 复刻惯例推导区间 rgba(255,255,255,.25~.4) 内取值,报告明确标注「推导,非官方数值」;
+- 天空蓝 #8ECDEB / 草绿 #7DBB4E = 本条目基准设定(调研 03§19 只记载「天空蓝/草绿」色彩语义,未记载色值;社区常见值,未证实);
+- backdrop-filter 支持面(Chrome/Edge 76+、Firefox 103+、Safari 9+ 前缀、Safari 18 去前缀)为调研 03§1 记载。
+
+## 动效与交互
+
+Aero 的动效是「水的物理」——上浮、摆动、无棱角:
+
+- **气泡升起**:点「吹泡泡」生成装饰气泡,4–7s 线性上浮 92vh 并渐隐,动画结束自动从 DOM 移除(不堆积节点);
+- **按压反馈**:气泡按钮 `:active` 时 `translateY(1px) scale(0.98)`,像按下一颗水珠;
+- **入场**:玻璃卡淡入 + 14px 上移 + 0.97 缩放,0.5s 一次性;
+- `prefers-reduced-motion: reduce` 时气泡静止悬浮在 30vh 高度、入场动画取消——自然感靠静态材质成立,不靠动画。
+
+## 真实产品案例
+
+- **Windows Vista / 7 的 Aero 玻璃界面(2006/2009,Microsoft)** — 调研 03§1 记载的玻璃语义源头,也是该美学名字里「Aero」的出处:半透明窗框、模糊背板与光泽高光的大规模商用起点。
+- **Nintendo Wii 主机频道界面(2006)** — 公认可归入该美学的产品:白色圆角面板、天蓝底色与光泽通道按钮,是该世代家用屏幕上「自然+科技光泽」的代表作。
+- **iOS 6 及更早的光泽按钮(2007–2013)** — 椭圆顶缘高光的按钮语法在此期间成为移动 UI 的公共语言,2013 年 iOS 7 转向扁平后被整体替换。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `skyBlue` | —(色相宜保持 210–220° 区间,偏紫即滑向 Y2K 语境) | —(过浅接近白底,玻璃失去「晴空」语境;过深则压暗整体情绪) |
+| `grassGreen` | 饱和更高、草丘更「盛夏」,自然情绪变浓,与玻璃的冷暖对比加剧 | 趋近灰绿时自然感消失,场景退化成普通玻璃卡演示 |
+| `glossAlpha` | 高光更亮,「水珠」感更强;>0.45 后高光泛白块,顶缘文字对比开始吃紧 | 高光熄灭,按钮退化为半透明胶囊;=0 时「气泡」语义只剩圆角 |
+| `blur` | 玻璃更厚,天空与草丘化成柔光色场;>30px 后采样开销上升 | 透出更多背景细节,玻璃变「薄」;=0 时只剩 15% 白色填充 |
+
+经验区间:gloss 0.25–0.4(即 09§1.4d 推导区间)、blur 14–24px;天空蓝宜浅、草绿宜中饱和;玻璃上正文字号 ≥13px 且远离高光区。

@@ -1,0 +1,72 @@
+## 结构与 DOM
+
+扁平化是「一块面板 + 平色块」的结构:设置面板(白底细边)里放平色磁贴、几何开关与实底主按钮——**全部层级由颜色深浅、间距与字号承担,零装饰层**。
+
+```html
+<div class="panel">
+  <h2>Settings</h2>
+  <div class="tiles">
+    <button class="tile" aria-pressed="true">…图标 + 文字…</button>
+  </div>
+  <div class="row">
+    <span>Wi-Fi</span>
+    <button role="switch" aria-checked="true" class="switch"><span class="knob"/></button>
+  </div>
+  <button class="btn-primary">Done</button>
+</div>
+```
+
+关键点:
+
+- 图标是内联 SVG 简洁字形,单色 `currentColor`——同一几何在 outline(描边)/filled(填充)两模式间切换,正是「简洁字形图标」的参数化;
+- 开关的可供性完全靠几何:轨道圆角胶囊 + 白色圆钮位移,`role="switch"` + `aria-checked` 表达状态;
+- 选中态用 `aria-pressed` + 强调色底 + 白字三重表达,不依赖单一色相(SC 1.4.1)。
+
+## 样式与参数
+
+两条 CSS 变量、两条 JS 型参数:
+
+```css
+.demo-stage { --fd-accent: #007aff; --fd-radius: 4px; }
+/* ornament 档位:纪律 vs flat 2.0 */
+.fd-scene[data-ornament="gradient"] .fd-tile-accent {
+  background-image: linear-gradient(to bottom, oklch(1 0 0 / 0.14), transparent 55%);
+}
+.fd-scene[data-ornament="shadow"] .fd-panel { box-shadow: 0 4px 14px oklch(0 0 / 0.12); }
+/* 严格扁平(none)时:以上全部不存在 */
+.fd-tile { background: oklch(0.93 0.02 250); border-radius: var(--fd-radius); }
+.fd-tile[aria-pressed="true"] { background: var(--fd-accent); color: oklch(1 0 0); }
+```
+
+数值出处:
+
+- 「简单元素、排版与平色」「简洁字形图标」「无拟物深度」为调研 03§17 原文特征;
+- 演进链(.metro/Metro 2010→Windows 8、Holo 2011→Material 2014、iOS 7 2013、Fluent 2017)与「2020 年代中期被 Glassmorphism 取代」均为调研 03§17 记载;
+- NN/g 2017 研究「扁平界面平均慢 22%」为调研 03§17 记载的原文数据;
+- 强调色 #007AFF(社区通传的 iOS 蓝引用,未核验为官方规范值)、radius 4px 为本条目基准设定。
+
+## 动效与交互
+
+扁平的动效纪律是「状态切换瞬时,位移轻」:
+
+- **开关**:圆钮 0.15s 位移 + 轨道变色——唯一允许的动效,表达状态而非装饰;
+- **磁贴**:hover 加深一档色(0.15s),`aria-pressed` 切换强调色底;不做浮起、不做阴影生长;
+- **按压反馈**:主按钮 hover `brightness(0.94)`——只变色,不位移;这是严格扁平与拟物的分界线;
+- `prefers-reduced-motion: reduce` 时全部过渡取消,状态切换瞬时完成。
+
+## 真实产品案例
+
+- **Windows Phone 7 Metro → Windows 8(2010/2012,Microsoft)** — 调研 03§17 记载的演进链起点:平色磁贴 + 直角 + 字形排版的系统语言,扁平化浪潮的工业起点。
+- **iOS 7(2013,Apple)** — 调研 03§17 记载:抛弃拟物光泽转向细线图标与平色的系统级转折点,移动端扁平化的决定性事件。
+- **Google Holo → Material Design(2011/2014)** — 调研 03§17 记载:从 Holo 的扁平蓝到 Material 以「纸」的隐喻给扁平补回层级,是「flat + shadow」变体的正统化。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `accent` | —(换品牌色即可;但只能有一个——第二强调色出现即破坏平色板纪律) | —(#007AFF 对白底 ≈4:1,按钮白字需粗体;更浅的强调色会跌破 SC 1.4.3) |
+| `ornament` | gradient/shadow 逐步给扁平补回层级线索(交互更快,NN/g 22% 结论的反向操作),但偏离「无拟物深度」的原始纪律 | none 是纪律本身:零渲染成本、无条件可降级,代价是可供性线索最弱 |
+| `iconStyle` | filled 面性图标视觉重量更大,适合磁贴/选中态 | outline 线性图标更轻,适合行内与密集列表 |
+| `radius` | 趋向 iOS 7/Material 的圆角矩形语感;>12px 开始与「简洁」纪律争执行 | 0 回到 Metro 直角纪律,信息密度感上升、亲和力下降 |
+
+经验区间:radius 0(Metro 系)或 8–12(iOS/Material 系),4px 是折中;磁贴底色与面板底保持一档明度差(≥3:1 非文本对比);强调色出现次数 ≤2 处/屏。

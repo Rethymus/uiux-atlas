@@ -68,6 +68,31 @@
         "zh": "玻璃 tint 着色强度。官方 API Glass.tint(_:) 为可选实例方法(调研 02 §1 A3),默认玻璃不着色——故 0 = 关闭;demo 以蓝色薄层的透明度呈现强度(演示用颜色,非官方值)。",
         "en": "Tinting strength of the glass. The official API Glass.tint(_:) is an optional instance method (research 02 §1 A3) and glass ships untinted by default — hence 0 = off; the demo renders strength as the alpha of a blue veil (demo color, not an official value)."
       }
+    },
+    {
+      "type": "number",
+      "name": "refraction",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 34,
+      "effect": {
+        "zh": "折射位移强度,写入 SVG feDisplacementMap 的 scale(仅 Chromium 生效,其余环境回退纯模糊)。默认 34 为本 demo 既有演示值——官方从未公布折射数值(WWDC25 219 只定性 lensing『实时弯折、整形并汇聚光线』,调研 09 §8.1),SVG 位移方案属社区通行做法且调研未能核验原文(调研 09 §8 ⚠️来源未核验)。官方定性「折射强度是尺寸的函数」(219 [422–445s]):demo 在 morph 放大态按当前宽度/胶囊基准宽度的比例同步放大位移。0 = 关闭折射层。JS 型参数,demo 订阅后写滤镜属性。",
+        "en": "Refraction displacement strength, written to the SVG feDisplacementMap scale (Chromium only; everything else falls back to pure blur). The default 34 is this demo's existing value — Apple never publishes refraction numbers (WWDC25 219 only describes lensing qualitatively, research 09 §8.1), and the SVG displacement approach is a community practice whose source could not be verified (research 09 §8 ⚠️unverified). Officially, 'refraction strength is a function of size' (219 [422–445s]): the demo scales the displacement by the current-width / capsule-base-width ratio in the morphed state. 0 = refraction layer off. JS-type param; the demo subscribes and writes the filter attribute."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "morph",
+      "options": [
+        { "value": "pod", "label": { "zh": "胶囊舱 pod", "en": "Pod" } },
+        { "value": "panel", "label": { "zh": "展开面板 panel", "en": "Panel" } }
+      ],
+      "default": "pod",
+      "effect": {
+        "zh": "形态 morph 目标(web 近似演示)。官方语义:『状态切换时,Liquid Glass 在各上下文的控件间动态 morph,维持单一浮动平面』『弹菜单时气泡直接 pop 开露出内容』(WWDC25 219 [283–320s],调研 09 §8.3);真身由 GlassEffectContainer + glassEffectID(_:in:) 驱动。pod = 胶囊控件舱(官方默认形状 Capsule);panel = 就地展开的媒体菜单面板,放大态按官方定性加深阴影并增强折射(219 [422–445s])。demo 订阅后切 data-morph,过渡用 apple.com 生产 CSS token(320ms cubic-bezier(0.4, 0, 0.6, 1),调研 09 §1.4a 实抓)。",
+        "en": "Morph target of the web-approximation demo. Official semantics: 'when state changes, Liquid Glass dynamically morphs between controls across contexts, maintaining a single floating plane' and 'the bubble pops open in place to reveal content' (WWDC25 219 [283–320s], research 09 §8.3); natively driven by GlassEffectContainer + glassEffectID(_:in:). pod = capsule control cluster (the official default Capsule shape); panel = an in-place expanded media menu, whose larger footprint deepens the shadow and boosts refraction per the official qualitative statement (219 [422–445s]). The demo subscribes and toggles data-morph, transitioning with the apple.com production CSS token (320ms cubic-bezier(0.4, 0, 0.6, 1), research 09 §1.4a)."
+      }
     }
   ],
   "browserSupport": {
@@ -100,7 +125,8 @@
   "sources": [
     "https://developer.apple.com/design/human-interface-guidelines/materials",
     "https://developer.apple.com/documentation/swiftui/glass",
-    "https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass"
+    "https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
   ],
   "promptTemplate": {
     "goal": {
@@ -112,6 +138,8 @@
       { "zh": "clear 变体深色 dimming 层不透明度严格取 dimming 快照值(默认 35%,HIG 建议)", "en": "The clear variant's dark dimming layer uses the exact dimming snapshot value (default 35%, the HIG recommendation)" },
       { "zh": "折射用 SVG feDisplacementMap:仅 Chromium 启用,其余环境回退纯模糊并如实告知用户", "en": "Refraction via SVG feDisplacementMap: enabled only in Chromium, with an honest pure-blur fallback elsewhere" },
       { "zh": "控件舱保持 Capsule 形状(官方默认形状)+ 1px 内侧高光", "en": "The control cluster keeps a Capsule shape (the official default) plus a 1px inner highlight" },
+      { "zh": "折射位移场随指针移动(feOffset 平移噪声场,仅 Chromium);morph 放大态折射强度按当前宽度/胶囊基准宽度的比例增大(219 [422–445s])", "en": "The refraction displacement field follows the pointer (feOffset shifts the noise field, Chromium only); the morphed state scales refraction by current-width / capsule-base-width (219 [422–445s])" },
+      { "zh": "morph 过渡用 320ms cubic-bezier(0.4, 0, 0.6, 1)(apple.com 生产 CSS token,调研 09 §1.4a 实抓),维持『单一浮动平面』观感;生产实现换 FLIP/view-transition 只动 transform", "en": "Morph transitions with 320ms cubic-bezier(0.4, 0, 0.6, 1) (apple.com production CSS token, research 09 §1.4a), keeping the 'single floating plane' look; production should switch to FLIP/view-transitions animating only transform" },
       { "zh": "文字/图标对比 4.5:1;动效只动 transform/opacity;prefers-reduced-motion 时停用", "en": "Text/icons at 4.5:1; animate only transform/opacity; disabled under prefers-reduced-motion" }
     ]
   }

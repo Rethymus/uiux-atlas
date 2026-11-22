@@ -56,6 +56,30 @@
         "zh": "同时并存的最大条数,超出即移除最旧一条。AntD message.config.maxCount 默认不限制(-),本 demo 为演示堆栈收敛为 1–5;默认 3 为演示取值,非任何库的官方默认(调研未证实 3 为官方值)。",
         "en": "Max simultaneous toasts; the oldest is removed once exceeded. AntD message.config.maxCount defaults to unlimited (-); this demo narrows the range to 1–5, and the default 3 is a demo value, not any library's official default (3-as-default is unverified in research)."
       }
+    },
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 1,
+      "max": 800,
+      "step": 1,
+      "default": 100,
+      "effect": {
+        "zh": "入场弹簧的刚度 k(半隐式欧拉积分,m=1):ω₀=√(k/m) 越大启动越猛、到位越快,过冲比例不受影响(ζ 不变时)。默认 100 = Motion 引擎 spring.ts 源码默认 stiffness=100(调研 10 §6.3 源码逐字核验;motion.dev 文档页标注默认 1 与源码不一致,以源码为准)。参考档位(调研 10 §2.3 本地实算):700/40 ≈ 快·稳(过冲 2.7%)、300/25 ≈ 中·微弹(3.8%)、200/15 ≈ 慢·弹(14.0%)。",
+        "en": "Stiffness k of the entrance spring (semi-implicit Euler integration, m=1): larger ω₀=√(k/m) starts harder and arrives sooner, with the overshoot ratio unchanged (at fixed ζ). Default 100 = the Motion engine's spring.ts source default stiffness=100 (research 10 §6.3, source verified verbatim; the motion.dev docs page says 1 — the source wins). Reference presets (research 10 §2.3, locally computed): 700/40 ≈ quick-steady (2.7% overshoot), 300/25 ≈ micro-bounce (3.8%), 200/15 ≈ slow-bouncy (14.0%)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "入场弹簧的阻尼系数 c:ζ=c/(2√(km)) 决定过冲——默认 10 与 stiffness 100 组合得 ζ=0.5、首拍过冲约 16.3%(调研 10 §6.3 Motion 源码默认 + §4.3 实算);ζ≈1 为最快无过冲的临界阻尼(如 100/20),ζ>1 过阻尼粘滞(社区流传的 500/50 实为 ζ≈1.12 过阻尼反例,调研 10 §2.3)。c=0 永不停止(Motion 文档警告),故下限 1。",
+        "en": "Damping coefficient c of the entrance spring: ζ=c/(2√(km)) sets the overshoot — the default 10 with stiffness 100 gives ζ=0.5 and a first overshoot of ≈16.3% (research 10 §6.3 Motion source default + §4.3 computation); ζ≈1 is the fastest overshoot-free critical damping (e.g. 100/20), ζ>1 turns sticky (the community-circulated 500/50 is actually an overdamped ζ≈1.12 counter-example, research 10 §2.3). c=0 never settles (Motion docs warning), so the floor is 1."
+      }
     }
   ],
   "browserSupport": {
@@ -88,7 +112,10 @@
   "sources": [
     "https://ant.design/components/message",
     "https://mui.com/material-ui/react-snackbar/",
-    "https://www.w3.org/WAI/ARIA/apg/patterns/alert/"
+    "https://www.w3.org/WAI/ARIA/apg/patterns/alert/",
+    "https://github.com/timolins/react-hot-toast/blob/main/src/components/toast-bar.tsx",
+    "https://github.com/emilkowalski/sonner/blob/main/src/styles.css",
+    "https://github.com/motiondivision/motion/blob/main/packages/motion-dom/src/animation/generators/spring.ts"
   ],
   "promptTemplate": {
     "goal": {
@@ -98,7 +125,7 @@
     "acceptance": [
       { "zh": "每条 toast 用 role=alert 且不夺取焦点;Esc 可关闭", "en": "Each toast uses role=alert without stealing focus; Esc dismisses" },
       { "zh": "duration/maxCount/placement 严格使用参数快照值", "en": "duration/maxCount/placement use the exact parameter snapshot values" },
-      { "zh": "计时超时后整块移除(出场不排队),入场 0.2s 淡入+滑入", "en": "Expiry removes the whole block at once (no exit queue); entrance is a 0.2s fade+slide" },
+      { "zh": "计时超时后整块移除(出场不排队);入场为物理弹簧(半隐式欧拉,m=1),stiffness/damping 严格取参数快照值,从自身高度 200% 外滑入,卡片层叠 0.35s cubic-bezier(.21,1.02,.73,1) 缩放淡入(react-hot-toast 同款)", "en": "Expiry removes the whole block at once (no exit queue); the entrance is a physics spring (semi-implicit Euler, m=1) sliding in from 200% of its own height with exact snapshot stiffness/damping, while the card layer cross-fades/scales over 0.35s cubic-bezier(.21,1.02,.73,1) (react-hot-toast's curve)" },
       { "zh": "命中 prefers-reduced-motion 时取消滑入动画", "en": "Disable the slide-in animation under prefers-reduced-motion" },
       { "zh": "只承载非关键信息;关键操作结果另行持久呈现", "en": "Non-critical messages only; critical outcomes get persistent treatment elsewhere" }
     ]

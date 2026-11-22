@@ -1,0 +1,69 @@
+## Structure & DOM
+
+The "bamboo-slip track" = a fixed rail with N equal-width slots + **one persistent pill**. The de-facto paradigm is Sam Selikoff's AnimatedTabs: render exactly one bubble, slots are just its "homes", switching = physical travel of that single element (research 10 §2.1, signature craft #2):
+
+```html
+<div class="sl-rail" role="radiogroup" aria-label="Segmented control">
+  <div class="sl-pill"><!-- persistent pill, the only moving element --></div>
+  <button role="radio" aria-checked="true">Day</button>
+  <button role="radio" aria-checked="false">Week</button>
+  <button role="radio" aria-checked="false">Month</button>
+  <button role="radio" aria-checked="false">Year</button>
+</div>
+```
+
+Key points:
+
+- The pill is absolutely positioned and only ever animates `transform: translateX` (the demo writes it via a Motion motion value); slot buttons are normal document flow;
+- Two implementation routes: **Motion `layoutId`** (the same `layoutId` across slots, FLIP handled automatically — the BuildUI original) or a **hand-rolled transform slot spring** (semi-implicit Euler `a = (−k(x−to) − cv)/m`, velocity stored on `dataset` for interruption handoff, restDelta aligned with Motion's source) (research 10 §2.1/§2.2); the demo uses Motion's physics spring following the latter's semantics;
+- ARIA is radiogroup/radio + aria-checked (single-selector semantics); arrow keys move, click selects.
+
+## Styling & Parameters
+
+All three parameters are JS-type, assembled by the demo into the Motion spring and slots:
+
+```tsx
+// Pill spring: stiffness 300 / damping 25 (mass 1) = the "medium-microbounce" tier, research 10 §2.3
+animate(x, slotIndex * slotWidth, { type: "spring", stiffness: 300, damping: 25, mass: 1 });
+
+// Readouts (computed locally, mass = 1): ω₀ = √k, ζ = c / (2√k)
+const w0 = Math.sqrt(stiffness);            // 300 → 17.3 rad/s
+const zeta = damping / (2 * w0);            // 25 → 0.722
+const overshoot = zeta < 1
+  ? Math.exp(-Math.PI * zeta / Math.sqrt(1 - zeta * zeta)) * 100  // 3.8%
+  : 0;
+const envelope5 = Math.log(20) / (zeta * w0) * 1000;             // 240ms
+```
+
+Where the numbers come from (research 10 §2.1/§2.3/§2.4):
+
+- **BuildUI AnimatedTabs official recipe**: `bounce 0.2 / duration 0.6` (duration-based spring), converting to ζ≈0.8, overshoot≈1.5% — "bouncy but quiet";
+- **Recommended tiers (locally computed in Python, research 10 §2.3)**: fast-stable 700/40 (ζ0.756, overshoot 2.7%, t_peak 181ms), medium-microbounce 300/25 (ζ0.722, 3.8%, 262ms), slow-bouncy 200/15 (ζ0.530, 14.0%, 262ms), Motion physics default 100/10 (ζ0.500, 16.3%, 362ms);
+- **Counter-example**: `stiffness:500, damping:50` is overdamped (ζ≈1.118) — zero overshoot, duller than the micro-bounce tier; **compute ζ before copying**;
+- The iOS system segmented indicator slides on a spring, but **Apple has not published its stiffness/damping — unverified**; the "medium-microbounce" tier is the standard stand-in.
+
+## Motion & Interaction
+
+- **Slot-to-slot spring**: clicking a slot sends the pill there on `type:"spring"`; rapid re-targets continue **from the current position + current velocity** (Motion physics-spring semantics) — never a from-rest restart (research 10 §7.3);
+- **Live parameters**: dragging stiffness/damping re-runs the current slot immediately; the readout converts ζ / overshoot / envelope→5% / t_peak in real time, building a number↔feel intuition;
+- **Mirroring the iOS segmented control**: equal-width segments, single selector (no action triggers mixed in), ≤5 on iPhone — the demo caps at 5 (HIG qualitative guidance, research 10 §2.4);
+- **Keyboard**: arrow keys move the selection on the radiogroup; aria-checked stays in sync;
+- **Reduced motion**: the spring is skipped and the pill lands on target directly; selection still rides aria-checked + text contrast;
+- Performance: only `transform` animates (pill travel) — compositor-friendly (research 10 §7.1).
+
+## Real-world examples
+
+- **BuildUI AnimatedTabs**: the source of the paradigm — `layoutId` + `bounce 0.2/duration 0.6`, with the radius inlined to get Motion's scale correction (research 10 §2.1);
+- **iOS system segmented controls (Calendar/Clocks etc.)**: the springing indicator is widely recognized system behavior, with equal widths and ≤5 segments per HIG; **Apple has not published the animation parameters — unverified** (research 10 §2.4);
+- **shadcn/ui Tabs**: same family of thinking — the ecosystem widely implements active indicators as "one slider + transform"; shadcn's official buttons/overlays carry no press scaling, and its overlay numbers live in the overlay-entrance entry (research 10 §1.1/§3.1).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stiffness` | ω₀↑: fiercer launch, faster arrival; at the same ζ the waves pack tighter with the overshoot ratio unchanged | more lethargic; below 100 a long slot hop feels like drifting |
+| `damping` | ζ↑ toward critical: overshoot decays exponentially, "steady" feel; past ζ≥1 it turns overdamped — fast start, slow finish | ζ↓ multiplies rebound; ≤0.5 oscillates visibly, below 0.3 bounces like a ball |
+| `segments` | more segments = narrower slots, shorter travel, choppier rhythm | fewer segments = longer travel, a more "whole" feel; 5 is the iPhone ceiling (HIG) |
+| Readouts (read-only) | overshoot % and envelope time give a numeric mirror of the feel while dragging | mirrored the other way; reference: ζ0.7 → 4.6% (bouncy-but-quiet), ζ0.8 → 1.5% (restrained), ζ1 → 0 (critical) |
+
+Working ranges: segmented default 300/25 (ζ≈0.72, overshoot &lt;5%); 700/40 for "fast-stable"; 200/15 for the "bamboo-slip feel"; **always compute ζ first — 0.7 ± 0.1 is the sweet spot for most interactions** (research 10 §2.3, craft #3).

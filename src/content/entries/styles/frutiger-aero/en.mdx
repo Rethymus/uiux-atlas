@@ -1,0 +1,80 @@
+## Structure & DOM
+
+Frutiger Aero is a "nature layer + glass layer" scene: the base is a sky gradient (sky blue → pale aqua) and an elliptical grass hill, topped by a white 15% glass card and bubble buttons — **nature supplies the color and mood, glass supplies the operating surface; remove either and the style collapses**.
+
+```html
+<div class="scene">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="hill" aria-hidden="true"></div>
+  <div class="bubbles" aria-hidden="true">…</div>
+  <div class="glass-card">
+    <h2>Aqua Player</h2>
+    <button class="bubble-btn">▶ Play</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- The glass card is a sibling of the backdrop; `backdrop-filter` blurs the sky and hill showing through, with an `@supports` fallback that raises fill opacity;
+- The bubble layer is `pointer-events: none` + `aria-hidden` and never intercepts interaction;
+- The bubble button's elliptical highlight lives on `::before`, covering only the top 40% — **it never invades the text zone**.
+
+## Styling & Parameters
+
+All four parameters are CSS-variable type, injected via DemoStage:
+
+```css
+.demo-stage {
+  --fa-sky: #8ecdeb;    /* baseline; the research records no hex */
+  --fa-grass: #7dbb4e;
+  --fa-gloss: 0.35;     /* inside 09 §1.4d's derived .25~.4 convention (not official) */
+  --fa-blur: 20px;      /* Apple's production CSS, grabbed first-hand */
+}
+.fa-hill {
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(to top, deep green, var(--fa-grass) 60%, light green);
+}
+.fa-card {
+  background-color: oklch(1 0 0 / 0.15);
+  -webkit-backdrop-filter: blur(var(--fa-blur)) saturate(160%);
+  backdrop-filter: blur(var(--fa-blur)) saturate(160%);
+}
+.fa-btn::before {
+  background: linear-gradient(to bottom,
+    oklch(1 0 0 / calc(0.55 + 0.45 * var(--fa-gloss))), transparent);
+}
+```
+
+Where the numbers come from:
+
+- blur 20px = **grabbed from Apple's production CSS**, the `blur(20px)+saturate(180%)` baseline tier (research 09 §1.4a; also research 03 §1);
+- glossAlpha 0.35 = a value inside the web-replication convention range rgba(255,255,255,.25~.4) derived in research 09 §1.4d, explicitly marked "derived, not official";
+- Sky #8ECDEB / grass #7DBB4E = this entry's baseline settings (research 03 §19 records only the "sky blue / grass green" color semantics, no values; community convention, unverified);
+- backdrop-filter support (Chrome/Edge 76+, Firefox 103+, Safari 9+ prefix, Safari 18 unprefixed) is recorded in research 03 §1.
+
+## Motion & Interaction
+
+Aero motion is "the physics of water" — rising, swaying, no sharp corners:
+
+- **Rising bubbles**: tapping "Bubbles" spawns decorative bubbles that float up 92vh over 4–7s and fade, removed from the DOM when the animation ends (no node build-up);
+- **Press feedback**: bubble buttons get `translateY(1px) scale(0.98)` on `:active` — like pressing a droplet;
+- **Entrance**: the glass card fades in with a 14px rise and 0.97 scale over 0.5s, once;
+- Under `prefers-reduced-motion: reduce`, bubbles hover statically at 30vh and the entrance is removed — the naturalness stands on static material, not animation.
+
+## Real-world examples
+
+- **Windows Vista / 7 Aero glass (2006/2009, Microsoft)** — the glass-semantics source recorded in research 03 §1 and the "Aero" in the style's name: the large-scale commercial start of translucent frames, blurred backdrops and specular highlights.
+- **Nintendo Wii channel menu (2006)** — a widely accepted product of this aesthetic: white rounded panels, sky-blue field and glossy channel buttons — the generation's definitive "nature + tech gloss" home-screen work.
+- **iOS 6-and-earlier glossy buttons (2007–2013)** — the elliptical top-highlight button grammar became mobile UI's common language in this period, wholesale replaced when iOS 7 turned flat in 2013.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `skyBlue` | — (keep the hue in the 210–220° band; drifting purple slides into Y2K territory) | — (too pale nears white and loses the "clear sky" context; too deep darkens the whole mood) |
+| `grassGreen` | higher saturation reads "midsummer", intensifying the nature mood and the warm/cool contrast with glass | near grey-green the nature feel vanishes and the scene degrades into a generic glass-card demo |
+| `glossAlpha` | a brighter sheen, a stronger "droplet" feel; past 0.45 the highlight reads as a white blob and top-edge text contrast tightens | the sheen dies into a translucent capsule; at 0 the "bubble" semantics are only the rounding |
+| `blur` | thicker glass, the sky and hill dissolve into soft color fields; past 30px sampling cost climbs | more backdrop detail shows through — thinner glass; at 0 only the 15% white fill remains |
+
+Working ranges: gloss 0.25–0.4 (09 §1.4d's derived range), blur 14–24px. Keep sky blue light and grass green mid-saturation; body text on glass ≥13px and away from the highlight zone.

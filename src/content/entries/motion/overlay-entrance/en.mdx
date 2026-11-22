@@ -1,0 +1,71 @@
+## Structure & DOM
+
+An overlay = trigger + panel; the panel stays in the DOM and `data-open` drives both directions (shadcn/radix expresses the same via `data-[state=open]` state classes):
+
+```html
+<button class="ov-trigger" aria-expanded="false">Open overlay</button>
+<div class="ov-panel" data-open="false" role="dialog" aria-hidden="true" tabindex="-1">
+  <h4>Overlay</h4>
+  <button class="ov-item">Item one</button>
+</div>
+```
+
+Key points:
+
+- The panel is a **sibling layer** of the trigger (absolutely positioned) with `transform-origin` written per anchor side (trigger below → `origin: bottom`) — Radix officially injects `--radix-popover-content-transform-origin`; the standard substitute is writing it by direction (research 10 §3.1, craft #5);
+- Open/close are **two differently-timed orchestrations**: entrance keyframes `both`, exit the reversed keyframes, with `animationend` semantics covering the lifecycle;
+- Accessibility trio: `aria-expanded` (trigger), `role="dialog"` + `aria-hidden` (panel), focus entering the panel on open and returning to the trigger on close; Esc and outside-click are both dismissal paths (WAI-APG Dialog pattern).
+
+## Styling & Parameters
+
+All five parameters are CSS-variable type, injected as `--overlay-*` and consumed directly by the keyframes:
+
+```css
+.ov-panel {
+  opacity: 0;
+  transform: translateY(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: var(--tf-origin, bottom);
+}
+.ov-panel[data-open="true"]  { animation: ov-in var(--overlay-in-ms) var(--overlay-ease) both; }
+.ov-panel[data-open="false"] { animation: ov-out var(--overlay-out-ms) cubic-bezier(0.4, 0, 1, 1) both; }
+
+@keyframes ov-in  { from { opacity: 0; transform: translateY(var(--overlay-shift)) scale(var(--overlay-scale)); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ov-out { from { opacity: 1; transform: scale(1); }
+                    to   { opacity: 0; transform: scale(var(--overlay-scale)); } }
+```
+
+Where the numbers come from (research 10 §3.1/§3.2/§3.3, all verbatim source-verified):
+
+- **scale(0.95) + opacity 0 + 200ms** = shadcn Dialog `zoom-in-95 + fade-in-0 … duration-200`;
+- **Directional 8px shift** = shadcn Popover `slide-in-from-bottom-2` (Tailwind 2 steps = 8px);
+- **Slow in, quick out**: shadcn Sheet officially ships `data-[state=open]:duration-500` (in) / `data-[state=closed]:duration-300` (out); the demo's 150ms default exit comes from the Motion snippet in research 10 §3.3;
+- **Overshoot curves**: `cubic-bezier(.21,1.02,.73,1)` (react-hot-toast entrance, y₂>1 slight overshoot) and Arco's overshoot token `cubic-bezier(0.3, 1.3, 0.3, 1)`; the standard lane `cubic-bezier(0.4, 0, 0.2, 1)` follows the CSS snippet in research 10 §3.3;
+- M3 emphasized easing's exact value is unverified in the research (m2/m3.material.io pages render via JS); fall back to standard for an M3-flavored lane (research 10 §3.2).
+
+## Motion & Interaction
+
+- **Entrance orchestration**: fade + zoom-95 + directional shift start together; the origin sits on the anchor side so the overlay "grows out of the trigger" instead of the screen center;
+- **The exit is always quicker**: 150ms accelerating out (`cubic-bezier(0.4, 0, 1, 1)`) — "closing is always more decisive than opening; what users wait for is gone" (research 10 craft #7; shadcn Sheet 500/300 and M3 enter>exit agree);
+- **Outside-click dismissal**: a document-level pointerdown closes when the target is outside panel/trigger; **Esc** is listened for in parallel;
+- **Focus management**: open → `panel.focus()` (tabIndex=-1); close → focus returns to the trigger;
+- **Reduced motion**: shift/scale dropped, appearing with an 80ms bare fade (travel-heavy animation is a vestibular trigger, research 04 §6.1);
+- Performance: the entrance animates only `opacity/transform` (compositor props) — the web.dev floor (research 10 §7.1).
+
+## Real-world examples
+
+- **shadcn/ui Dialog / Popover**: zoom-95+fade over 200ms, Popover adding an 8px directional shift and the Radix-variable origin — the web's de-facto overlay entrance, verbatim in source (research 10 §3.1);
+- **GitHub's in-page dropdowns/popovers**: fast open, quicker close, scaling out from the trigger direction (same interaction semantics as radix; GitHub's exact numbers are unpublished, unverified);
+- **Linear / Vercel dashboard menu bubbles**: light overlays commonly enter with a slight overshoot (the bezier y₂>1 family), structurally the same as react-hot-toast's curve (the curve itself has a source-code provenance; Linear/Vercel's exact implementation values are unverified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `initialScale` | approaching 1 leaves a bare fade, losing spatial belonging; >1 with an overshoot curve pops in | more drama; ≤0.85 travels too far and flickers, visibly on modals |
+| `shiftY` | stronger directionality, "grows out of the button" reads clearer; >12px starts stealing attention | 0 degrades to pure zoom+fade (the radix Dialog semantics) and loses direction |
+| `inDuration` | grander; 400ms+ makes people wait — sheet-scale overlays only | reads instant; ≤100ms the entrance degenerates into a flicker |
+| `outDuration` | a sluggish close; exceeding the entrance breaks "slow in, quick out" | more decisive; near 0 it "vanishes" — acceptable but abrupt |
+| `curve` | overshoot/arco lanes carry a slight bounce — livelier for light overlays; clearer with initialScale>1 | the standard lane is restrained — first choice for modals/informational overlays |
+
+Working ranges: initialScale 0.95, shiftY 8px, in 200ms, out 150ms (shadcn family); sheets 500/300. Every overlay entrance must answer one question: where does it grow from — origin and shift direction are the answer.

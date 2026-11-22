@@ -1,0 +1,104 @@
+{
+  "name": "Slot Spring (Segmented)",
+  "nameZh": "卡槽弹簧(竹简槽)",
+  "aliases": ["分段滑块弹簧", "segmented control spring", "layoutId pill", "竹简槽"],
+  "category": "motion",
+  "system": "apple",
+  "star": 3,
+  "tagline": {
+    "zh": "分段控件里滑签沿固定槽位弹簧滑动:一只常驻气泡在 N 个卡位间物理位移(可中断、速度接力),把 iOS 分段控件指示器的滑动感搬进 Web。",
+    "en": "In a segmented control the indicator slides between fixed slots on a spring: one persistent bubble physically travels across N slots (interruptible, velocity-preserving) — the iOS segmented-control indicator feel brought to the web."
+  },
+  "origin": {
+    "zh": "事实范式是 Sam Selikoff 的 AnimatedTabs:只渲染一个气泡、`layoutId` 相同,Motion 自动跨槽位做 FLIP 布局动画,官方配方 `bounce 0.2 / duration 0.6`(换算 ζ≈0.8、过冲≈1.5%)(调研 10§2.1);手写版与 Motion 源码同为半隐式欧拉积分 + restSpeed/restDelta 双阈值停机(调研 10§2.2/§6.3)。iOS 系统分段控件指示器滑动为弹簧动画,但 Apple 未公开其 stiffness/damping——未证实(调研 10§2.4)。",
+    "en": "The de-facto paradigm is Sam Selikoff's AnimatedTabs: one persistent bubble with a shared `layoutId`, FLIP-driven across slots by Motion, with the official recipe `bounce 0.2 / duration 0.6` (converts to ζ≈0.8, overshoot≈1.5%) (research 10 §2.1); the hand-rolled variant shares Motion's semi-implicit Euler integration and restSpeed/restDelta stop thresholds (research 10 §2.2/§6.3). The iOS system segmented-control indicator slides on a spring, but Apple has never published its stiffness/damping — unverified (research 10 §2.4)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 50,
+      "max": 1000,
+      "step": 10,
+      "default": 300,
+      "effect": {
+        "zh": "弹簧刚度 k(mass=1,ω₀=√k)。默认 300 取调研 10§2.3『中·微弹』档(分段控件默认推荐):ω₀≈17.3rad/s、t_peak≈262ms。Motion 源码默认 100(调研 10§6.3)。调大启动更猛、到达更快(过冲比例不变);调小更迟缓。",
+        "en": "Spring stiffness k (mass = 1, ω₀ = √k). Default 300 from the '中·微弹 / medium-microbounce' tier in research 10 §2.3 (the recommended segmented-control default): ω₀≈17.3rad/s, t_peak≈262ms. Motion source default is 100 (research 10 §6.3). Higher = fiercer launch and faster arrival (overshoot ratio unchanged); lower = more lethargic."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 5,
+      "max": 80,
+      "step": 1,
+      "default": 25,
+      "effect": {
+        "zh": "阻尼系数 c。默认 25 与刚度 300 配对得 ζ=0.722、过冲≈3.8%——『弹而不闹』区间(调研 10§2.3)。调大趋近临界(ζ→1 过冲消失);调小回弹增多,ζ<0.5 明显振荡。反例警示:`500/50` 这组社区流传参数其实过阻尼(ζ≈1.118)——抄参数前先算 ζ(调研 10§2.3)。",
+        "en": "Damping coefficient c. Default 25 pairs with stiffness 300 to give ζ=0.722, overshoot≈3.8% — the 'bouncy but quiet' band (research 10 §2.3). Higher approaches critical (ζ→1, overshoot gone); lower multiplies rebound, ζ<0.5 oscillates visibly. Counter-example: the community-circulated `500/50` is actually overdamped (ζ≈1.118) — compute ζ before copying (research 10 §2.3)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "segments",
+      "options": [
+        { "value": "3", "label": { "zh": "3 段", "en": "3 segments" } },
+        { "value": "4", "label": { "zh": "4 段", "en": "4 segments" } },
+        { "value": "5", "label": { "zh": "5 段", "en": "5 segments" } }
+      ],
+      "default": "4",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重建槽位)。HIG 官方定性:分段控件段通常等宽,作为单一选择器使用,宽界面 ≤5–7 段、iPhone ≤5 段(调研 10§2.4);demo 封顶 5 段即按 iPhone 上限收敛。",
+        "en": "JS param (demo rebuilds slots on change). HIG's official qualitative rules: segments are typically equal-width, the control acts as a single selector, wide layouts take ≤5–7 segments and iPhone ≤5 (research 10 §2.4); the demo caps at 5 to honor the iPhone ceiling."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 用 Motion(motion/react)驱动,依赖 JS 执行,禁用 JS 时滑签停在初始槽位;原生 layoutId 属 Motion 布局动画能力(Web 全支持,因实现是 JS 测量 + transform)。Spring 阅读数值(ζ/过冲/包络)由本地公式实算,与浏览器无关。",
+      "en": "The demo rides Motion (motion/react) and needs JS; without it the indicator stays in its initial slot. `layoutId` is a Motion layout-animation capability (works in all browsers — JS measurement + transform underneath). The spring readouts (ζ/overshoot/envelope) are computed locally from formulas, browser-independent."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时跳过弹簧,滑签直接落到目标槽位;分段选择本身绝不能只靠动画表达——选中态必须同时有可读的视觉状态(底色/文字色);reduced-motion 下读数条仍显示当前参数换算值。",
+    "en": "Under prefers-reduced-motion the spring is skipped and the indicator lands on the target slot directly; the selection must never be expressed by motion alone — the selected slot always carries a readable visual state (fill/text color); readouts keep showing the converted values."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "分段控件/标签页指示器:单气泡跨槽位滑动,300/25 起步,追求克制手感降到 700/40(快·稳档)", "en": "Segmented controls / tab indicators: one bubble sliding across slots; start at 300/25, drop toward 700/40 (fast-stable tier) for restraint" },
+      { "zh": "强调『竹简手感』的场合:200/15(慢·弹档,过冲 14%),适合偶发操作的强调,不适合高频切换", "en": "When the 'bamboo-slip feel' is the point: 200/15 (slow-bouncy tier, 14% overshoot) suits emphatic infrequent actions, not high-frequency switching" },
+      { "zh": "与 iOS 分段控件对照:等宽段 + 单一选择器语义 + 弹簧指示器;iPhone 上 ≤5 段(HIG)", "en": "Mirroring the iOS segmented control: equal-width segments + single-selector semantics + a spring indicator; ≤5 segments on iPhone (HIG)" },
+      { "zh": "需要中断接力的滑动:点击新槽位时弹簧从当前位置+当前速度续接,不归零重启", "en": "Interruptible sliding: clicking a new slot continues from the current position + velocity — never a from-rest restart" }
+    ],
+    "avoid": [
+      { "zh": "iPhone 上超过 5 段或混入『动作触发』段——违反 HIG 分段控件规范(调研 10§2.4)", "en": "More than 5 segments on iPhone or mixing in 'action trigger' segments — violates the HIG segmented-control guidance (research 10 §2.4)" },
+      { "zh": "照抄社区流传的 500/50 而不算 ζ——那是过阻尼假弹簧(ζ≈1.118),比微弹档更钝(调研 10§2.3)", "en": "Copying the folk 500/50 without computing ζ — an overdamped fake spring (ζ≈1.118), duller than the micro-bounce tier (research 10 §2.3)" },
+      { "zh": "进度条/连续量用卡槽弹簧——指示器语义是离散槽位;连续量该走进度条(参考 motion-spring 条目同款告诫)", "en": "Slot springs on progress bars / continuous quantities — the indicator means discrete slots; continuous values belong on progress bars (same caveat as the motion-spring entry)" },
+      { "zh": "每个槽位各自渲染选中背景再各自动画——应只养一个常驻气泡(单元素位移),否则槽位间会出现形变与跳变", "en": "Rendering a selected background per slot and animating each — keep exactly one persistent bubble (single-element travel), or slots will morph and jump" }
+    ]
+  },
+  "a11y": {
+    "zh": "分段控件是单选器:demo 用 role=radiogroup + role=radio/aria-checked,方向键在段间移动、空格选中(WAI-APG Radio Group 语义);滑签动画只是选中态的视觉增强,选中信息同时由 aria-checked 与文字对比承载;prefers-reduced-motion 时直落目标槽位;动画不得作为传达选中变化的唯一手段(HIG Motion:动效可关闭)。",
+    "en": "A segmented control is a single selector: the demo uses role=radiogroup + role=radio/aria-checked, arrow keys move between segments, Space selects (WAI-APG Radio Group semantics); the sliding indicator is visual enhancement only — selection is also carried by aria-checked and text contrast; under prefers-reduced-motion the indicator lands directly; motion is never the sole carrier of the selection change (HIG Motion: cancellable)."
+  },
+  "sources": [
+    "https://buildui.com/recipes/animated-tabs",
+    "https://motion.dev/docs/react-layout-animations",
+    "https://github.com/motiondivision/motion/blob/main/packages/motion-dom/src/animation/generators/spring.ts",
+    "https://developer.apple.com/design/human-interface-guidelines/segmented-controls",
+    "https://en.wikipedia.org/wiki/Damping_ratio"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个『竹简槽』分段控件:等宽 N 段(N≤5),一只常驻滑签气泡在槽位间以弹簧(300/25)滑动,可中断、速度接力,实时显示 ζ/过冲/包络时间读数。",
+      "en": "Replicate a 'bamboo-slip' segmented control: N equal-width segments (N≤5), one persistent indicator bubble springing between slots (300/25), interruptible with velocity handoff, with live ζ/overshoot/envelope readouts."
+    },
+    "acceptance": [
+      { "zh": "只渲染一个滑签元素,槽位切换 = 同一元素的物理位移(单一气泡原则,调研 10 巧思 2)", "en": "Exactly one indicator element; slot changes are physical travel of that one bubble (single-bubble rule, research 10 craft #2)" },
+      { "zh": "弹簧参数严格用 stiffness 300 / damping 25(mass 1),并给出 ζ=0.722、过冲≈3.8% 的换算读数", "en": "Spring params strictly stiffness 300 / damping 25 (mass 1), with converted readouts ζ=0.722, overshoot≈3.8%" },
+      { "zh": "段等宽、语义为单一选择器(role=radiogroup + 方向键 + aria-checked),iPhone 上限 5 段", "en": "Equal-width segments, single-selector semantics (role=radiogroup + arrow keys + aria-checked), 5-segment iPhone ceiling" },
+      { "zh": "连续点击不同槽位:弹簧从当前位置与当前速度续接,不得归零重启", "en": "Clicking slots in succession: the spring continues from current position + velocity — never restarts from rest" },
+      { "zh": "prefers-reduced-motion 时滑签直落目标槽位,选中态另有可读视觉承载", "en": "Under prefers-reduced-motion the indicator lands directly, with selection still carried by a readable visual state" }
+    ]
+  }
+}

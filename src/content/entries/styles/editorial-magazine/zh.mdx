@@ -1,0 +1,78 @@
+## 结构与 DOM
+
+编辑风是一篇「带报头语法的文章」:五级排版层级按序落位——kicker(眉题)→ headline(标题)→ standfirst(导语)→ byline(署名行)→ body(正文,分栏 + 首字下沉)→ caption(图注),pull quote 横跨所有栏把长阅读切开。
+
+```html
+<article class="article">
+  <p class="kicker">Dispatch · Typography</p>
+  <h1 class="headline">The Quiet Authority of the Column</h1>
+  <p class="standfirst">导语:一句话把文章卖出去。</p>
+  <p class="byline">By the Atlas Desk · 2026-11</p>
+  <figure class="figure"><figcaption>Fig. 01 — 图注承担信息</figcaption></figure>
+  <div class="body">  <!-- CSS columns -->
+    <p>首字下沉的开头段…</p>
+    <blockquote class="pullquote">「留白是编辑自信的信号。」</blockquote>
+    <p>…</p>
+  </div>
+</article>
+```
+
+关键点:
+
+- pull quote 用 `<blockquote>` 语义承载 + `column-span: all` 横跨栏格——语义与视觉各司其职;
+- 分栏容器只包正文,标题/图块不进栏;CSS columns 按列填充,DOM 顺序 = 阅读顺序(SC 1.3.2);
+- 首字下沉用 `::first-letter`,不产生额外 DOM,读屏照常朗读完整单词。
+
+## 样式与参数
+
+四个参数:两条 CSS 变量、两条 JS 型参数:
+
+```css
+.demo-stage { --em-measure: 65ch; --em-lead: 1.6; }
+.ed-body {
+  font-size: 15px;
+  line-height: var(--em-lead);              /* 1.6 > WCAG 1.5 下限 */
+  max-width: min(100%, var(--em-measure));  /* 65ch 在 Butterick 45–90 区间 */
+}
+.ed-scene[data-cols="2"] .ed-body { columns: 2; column-gap: 24px; }
+.ed-scene[data-dropcap="on"] .ed-body > p:first-of-type::first-letter {
+  float: left; font-size: 3.2em; line-height: 0.86;
+}
+.ed-pullquote {
+  column-span: all;
+  border-top: 2px solid; border-bottom: 1px solid; /* 上下细线是引文的经典语法 */
+}
+```
+
+数值出处:
+
+- 栏数:调研 03§16 原文「2/3/12 列结构化栏格」——demo 提供 1/2/3 栏(12 列指整页版心);
+- 行长:Butterick《Practical Typography》45–90 字符(调研 05§19 原文一手核对);65ch 亦为调研 03§7 minimalism 页记载的示例值;
+- 行高:WCAG 2.2 SC 1.4.12 官方阈值「行高 ≥ 字号 1.5 倍」(调研 05§18 原文),默认 1.6 为长文基准设定;
+- 「首字下沉/引文样式」「衬线展示字体×无衬线正文的配对」均为调研 03§16 原文列出的可调变量。
+
+## 动效与交互
+
+编辑风的动效几乎全部让位给排版本身:
+
+- **入场**:文章整体淡入 + 10px 上移,0.5s,一次性——像一页纸放到桌面上;
+- **字体配对切换**:demo 提供 衬线/无衬线 标题切换(调研 03§16 记载的「衬线展示×无衬线正文」配对及其反向实验),瞬时切换无过渡;
+- **分栏/首字下沉**:由参数面板驱动,布局变化瞬时完成——文字重排不该有动画;
+- `prefers-reduced-motion: reduce` 时仅取消入场淡入;滚动由容器自然接管,无平滑滚动劫持。
+
+## 真实产品案例
+
+- **The Atlantic** — 调研 03§16 收录的当代编辑风代表:standfirst、图注与 pull quote 的完整网络移植,长文在单栏 measure 上保持 45–90 字符纪律。
+- **Monocle** — 调研 03§16 收录:五级层级与「慷慨留白=编辑自信」的纸质语法在网络端的延续,衬线展示字 × 结构化栏格的教科书编排。
+- **NYT Cooking** — 调研 03§16 收录:「图片是叙事伙伴」的实操样本——菜谱步骤图与图注承担信息,编辑层级服务于扫读与烹饪动线。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `cols` | 每栏变窄,行长跌出 45 字符下限,断字增多;3 栏只适合短段落+小图注的「报纸版面」 | 1 栏 measure 最大化舒适度,但长文垂直滚动变长、图块比例变扁 |
+| `measure` | >90 字符后垂直追踪困难(Butterick 原文警告),换行错误率上升 | &lt;45 字符后断行破碎,两端参差感破坏「编辑自信」 |
+| `lead` | >1.8 后段落松散,一屏信息量骤降;好处是标题插入空间更足 | &lt;1.5 跌破 WCAG 2.2 SC 1.4.12 官方阈值,密集文字挤压阅读 |
+| `dropcap` | on 时开场段落获得仪式感,但下沉字母占 3 行高度,短段会被架空 | off 恢复平实开场;非叙事类内容(菜谱/文档)本就应关闭 |
+
+经验区间:正文 2 栏、65ch、1.6 行高是「杂志正文」的默认解;pull quote 每千字不超过 1 处;首字下沉只给文章第一段——第二段再下沉就成了装饰噪音。

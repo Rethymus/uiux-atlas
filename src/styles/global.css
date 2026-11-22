@@ -1,6 +1,6 @@
 /* ============================================================
    UI/UX 设计全解图集 — 双主题工作台(主题层 + 站点骨架)
-   唯一事实来源:docs/design-spec.md(v2.1);与它冲突处以规范为准。
+   唯一事实来源:docs/design-spec.md(v2.6);与它冲突处以规范为准。
    ① 双主题舞台(v2.1 §1-1,废止「永久深色」):默认深色,浅色一等公民;
       语义层不变、值分主题——:root = 深色(默认),
       :root[data-theme="light"] = 浅色全套(§2.1 浅色表,WCAG AA 实算)。
@@ -9,7 +9,10 @@
       --border/--border-strong 不可作控件边界唯一识别依据(§8)。
    ③ 全站 prefers-reduced-motion 降级见文末全局规则(spec §8);
       新增装饰动效必须先在 spec §6 清单登记 RM 降级方案。
-   ④ 玻璃材质只允许两条 sticky 带:站点 header + 列表页过滤栏(spec §2.1)。
+   ④ 材质层(v2.6):Apple 三档材质 token(mat-thin/regular/thick × 深浅两态,
+      .material 工具类)统一模糊/叠色/内高光/细边框参数;语义接入五面 =
+      站点 header + 列表页过滤栏(两条 sticky 带)+ 参数面板/演示面板/
+      Prompt 导出框(spec §2.8;backdrop-filter @supports 门控回退实底)。
    ⑤ 主题切换 = dataset.theme + localStorage("atlas-theme"),规范见 spec §7
       (切换钮/持久化/防闪烁 BeforePaint/theme-color 双值)。
    ============================================================ */
@@ -45,6 +48,18 @@
   --fill-2: rgba(233, 237, 243, 0.08); /* pressed / 选中底 */
   --fill-3: rgba(233, 237, 243, 0.12); /* 拖拽中 / 强调嵌块 */
 
+  /* ── 交互态参数(v2.6 新增;Apple highlighted / focus 语义,09 §3/§4):
+        按压对 = scale + 状态层 alpha(:active 进入、释放/移出退出成对,
+        = UIControl.isHighlighted「自动随 touch 事件设置与清除」,09 §4);
+        scale 0.96 取 09 §4 M1 引用的社区通行量级(iOS 官方未公布,如实标注);
+        焦点环 = apple.com 生产 CSS 逐字规格:2px accent + offset 1px、
+        容器级 3px、圆角跟随(09 §3 实抓三份 CSS) ── */
+  --press-scale: 0.96;
+  --focus-ring-color: var(--accent);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 1px;
+  --focus-ring-offset-container: 3px;
+
   /* ── 全站交互强调色(= Radix step9 solid;面积纪律 <5%) ── */
   --accent: #6db2ff; /* 8.71:1 vs bg */
   --accent-strong: #9cc9ff; /* hover 提亮(= step10 solid hover) */
@@ -75,11 +90,61 @@
   /* 当前分类语义色的运行时指向(容器上按分类覆写) */
   --cat: var(--accent);
 
-  /* ── 玻璃材质 token(apple.com localnav 实测;只允许站点 header 与
-        列表页 sticky 过滤栏两条 sticky 带使用,内容层禁用) ── */
-  --glass-blur: 20px;
-  --glass-saturate: 180%;
-  --glass-bg: color-mix(in srgb, var(--bg) 88%, transparent);
+  /* ── Apple 中性阶梯(v2.6 新增;09 §2 官方值,与工作台四级背景并存,
+        作 Apple 参照系与材质层基色):systemGray 六阶 + systemBackground /
+        grouped 三阶 + separator α 族。separator 语义 = 「允许底层内容透出的
+        细边框/分隔线色」;深色基色为 (84,84,88)@0.6 而非标签族 (235,235,245)
+        ——09 §2.4 已勘误。高对比变体未收录(09 表格有值,本站未启用,如实标注) ── */
+  --ios-gray: #8e8e93;
+  --ios-gray2: #636366;
+  --ios-gray3: #48484a;
+  --ios-gray4: #3a3a3c;
+  --ios-gray5: #2c2c2e;
+  --ios-gray6: #1c1c1e;
+  --ios-bg: #000000;
+  --ios-bg-secondary: #1c1c1e;
+  --ios-bg-tertiary: #2c2c2e;
+  --ios-grouped-bg: #000000;
+  --ios-grouped-bg-secondary: #1c1c1e;
+  --ios-grouped-bg-tertiary: #2c2c2e;
+  --ios-separator: rgba(84, 84, 88, 0.6);
+  --ios-separator-opaque: rgb(56, 56, 58);
+  --ios-label-secondary: rgba(235, 235, 245, 0.6);
+  --ios-fill: rgba(120, 120, 128, 0.36);
+
+  /* ── 材质层三档(v2.6 新增;spec §2.8 统一参数表,mat-thin/regular/thick):
+        模糊基准 = apple.com localnav 生产 CSS 官方 blur(20px) + saturate(180%)
+        (09 §1.4a 唯一权威量级锚点);thin/thick 半径为站点推导阶梯(±8px,
+        iOS 四档官方半径未公布——09 如实标注未证实)。tint 基色取 09 §1.4b
+        apple.com 官方 scrim 色板(浅 rgb(250,250,252) / 深 rgb(22,22,23)):
+        regular α=0.8 = 官方「常规玻璃」档,thick α=0.88/0.92 = 官方「吸顶」档,
+        thin 为站点推导更透档(0.55/0.6)。内高光(顶缘受光)= 09 §1.4d web
+        复刻惯例(亮 .25–.4 / 暗 .08–.15,非官方数值,取档内三点);
+        细边框 hairline = 官方 separator α 色(09 §1.4e/§2.4);
+        阴影挂既有 --shadow-1/2 阶梯;--mat-fallback 供无 backdrop-filter
+        引擎回退实底(@supports 门控,09 §1.4a apple.com 做法)。
+        接入纪律:backdrop-filter 不参与过渡动画(05 §5 性能红线),
+        材质状态切换只动 background/border-color/box-shadow(--dur-2) ── */
+  --mat-saturate: 180%;
+  --mat-thin-blur: 12px;
+  --mat-regular-blur: 20px;
+  --mat-thick-blur: 28px;
+  --mat-thin-tint: rgba(22, 22, 23, 0.55);
+  --mat-regular-tint: rgba(22, 22, 23, 0.8);
+  --mat-thick-tint: rgba(22, 22, 23, 0.88);
+  --mat-thin-highlight: rgba(255, 255, 255, 0.08);
+  --mat-regular-highlight: rgba(255, 255, 255, 0.11);
+  --mat-thick-highlight: rgba(255, 255, 255, 0.14);
+  --mat-hairline: var(--ios-separator);
+  --mat-thin-shadow: none;
+  --mat-regular-shadow: var(--shadow-1);
+  --mat-thick-shadow: var(--shadow-2);
+  --mat-fallback: var(--surface);
+
+  /* ── 旧玻璃 token(v2.1 引入;v2.6 起由材质层接管,保留别名兼容) ── */
+  --glass-blur: var(--mat-regular-blur);
+  --glass-saturate: var(--mat-saturate);
+  --glass-bg: var(--mat-regular-tint);
 
   /* ── 字族(spec §2.2:Inter Variable + Noto Sans SC / JetBrains Mono;
         sans + mono 双声部,mono 只用于数值/计数/快捷键) ── */
@@ -137,6 +202,11 @@
   --ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1); /* M3 emphasized-decelerate(入画) */
   --ease-accel: cubic-bezier(0.3, 0, 0.8, 0.15); /* M3 emphasized-accelerate(出画) */
   --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1); /* 轻回弹,推导值(y>1 合法) */
+  /* 预留语义(v2.6,spec §2.6;09 §5.3 场景档位):卡槽弹簧 / 浮层入场
+     尚未启用,先锁语义名与配对,启用时不再新造 token。
+     真弹簧用 linear() 采样(dogfood motion/linear-easing 条目,09 §9.3) */
+  --ease-card-spring: var(--ease-spring); /* 卡槽弹簧 = snappy 语义档(0.5s/bounce 0.15) */
+  --dur-overlay-in: var(--dur-3); /* 浮层/面板入场 = --dur-3 × --ease-decel(09 §6:apple.com 浮层 320ms ease-in-out 族,本站取最近档 300ms) */
 
   /* ── z-index(spec §2.7 小阶梯;若未来加 modal 按 TDesign 原则重排整表) ── */
   --z-content: 0;
@@ -233,16 +303,45 @@
   /* 卡片顶缘内描边:白卡浮在调性底上的「受光面」(配 §2.5 阴影) */
   --card-lift: inset 0 1px 0 rgb(255 255 255 / 0.9);
 
+  /* ── Apple 中性阶梯浅色(v2.6;09 §2 官方值;systemGray 两态同值 #8e8e93) ── */
+  --ios-gray: #8e8e93;
+  --ios-gray2: #aeaeb2;
+  --ios-gray3: #c7c7cc;
+  --ios-gray4: #d1d1d6;
+  --ios-gray5: #e5e5ea;
+  --ios-gray6: #f2f2f7;
+  --ios-bg: #ffffff;
+  --ios-bg-secondary: #f2f2f7;
+  --ios-bg-tertiary: #ffffff;
+  --ios-grouped-bg: #f2f2f7;
+  --ios-grouped-bg-secondary: #ffffff;
+  --ios-grouped-bg-tertiary: #f2f2f7;
+  --ios-separator: rgba(60, 60, 67, 0.29);
+  --ios-separator-opaque: rgb(198, 198, 200);
+  --ios-label-secondary: rgba(60, 60, 67, 0.6);
+  --ios-fill: rgba(120, 120, 128, 0.2);
+
+  /* ── 材质层浅色值(v2.6;09 §1.4b 官方 scrim 浅色基色 rgb(250,250,252),
+        α 档位同深色注释;内高光取 09 §1.4d 亮档 .3–.4;blur/saturate/
+        hairline/阴影/后备底引用深色块定义,var() 自动随主题换值) ── */
+  --mat-thin-tint: rgba(250, 250, 252, 0.6);
+  --mat-regular-tint: rgba(250, 250, 252, 0.8);
+  --mat-thick-tint: rgba(250, 250, 252, 0.92);
+  --mat-thin-highlight: rgba(255, 255, 255, 0.3);
+  --mat-regular-highlight: rgba(255, 255, 255, 0.35);
+  --mat-thick-highlight: rgba(255, 255, 255, 0.4);
+
   /* 玻璃/字族/字阶/间距/圆角/动效/z-index/骨架几何不随主题变
-     (--glass-bg 引用 --bg 的 color-mix,自动随主题换值) */
+     (v2.6 起 --glass-* 为材质层别名,--mat-hairline 引用 --ios-separator
+     自动随主题换值) */
 }
 
-/* ── 浅色现代化(v2.5):白卡浮起(顶缘受光面)与 hero 环境光;深色不受影响 ── */
+/* ── 浅色现代化(v2.5):白卡浮起(顶缘受光面)与 hero 环境光;深色不受影响。
+   v2.6:demo-panel/param-panel 移出本规则(改由材质层 thick/regular 档承担
+   顶缘内高光与阴影,spec §2.8),site-header 浅色覆写删除(材质 token 随主题换值) ── */
 :root[data-theme="light"] .entry-card,
 :root[data-theme="light"] .cat-card,
-:root[data-theme="light"] .info-card,
-:root[data-theme="light"] .demo-panel,
-:root[data-theme="light"] .param-panel {
+:root[data-theme="light"] .info-card {
   box-shadow: var(--card-lift), 0 1px 2px rgb(28 39 58 / 0.05);
 }
 :root[data-theme="light"] .hero {
@@ -251,8 +350,45 @@
     radial-gradient(640px 300px at 82% 10%, rgb(122 90 248 / 0.075), transparent 62%);
   border-radius: var(--radius-l);
 }
-:root[data-theme="light"] .site-header {
-  background: color-mix(in srgb, #ffffff 66%, transparent);
+
+/* ────────────────────────────────────────────────────────────
+   1c. 材质层工具类(v2.6;spec §2.8:三档可复用玻璃面)。
+      站点五面(header/过滤栏/参数面板/演示面板/Prompt 导出框)按语义各自
+      接入同一 token 组(见 §4/§6/§7 各面板规则,可按语义混搭单参数,
+      如过滤栏吸顶态 = regular blur × thick tint = Apple 吸顶公式);
+      本工具类供新场景直接复用。backdrop-filter 用 @supports 门控
+      (09 §1.4a apple.com 做法),无能力引擎回退实底 --mat-fallback。
+      RM:N/A——材质本身静态无动画;状态切换只动 background/border/box-shadow。
+   ──────────────────────────────────────────────────────────── */
+.material {
+  /* 档位默认 = regular(Apple「regular 为默认」语义,09 §1.2) */
+  --mat-blur: var(--mat-regular-blur);
+  --mat-tint: var(--mat-regular-tint);
+  --mat-highlight: var(--mat-regular-highlight);
+  --mat-shadow: var(--mat-regular-shadow);
+  background: var(--mat-fallback);
+  border: 1px solid var(--mat-hairline);
+  border-radius: var(--radius-l);
+  box-shadow: inset 0 1px 0 var(--mat-highlight), var(--mat-shadow);
+}
+.material--thin {
+  --mat-blur: var(--mat-thin-blur);
+  --mat-tint: var(--mat-thin-tint);
+  --mat-highlight: var(--mat-thin-highlight);
+  --mat-shadow: var(--mat-thin-shadow);
+}
+.material--thick {
+  --mat-blur: var(--mat-thick-blur);
+  --mat-tint: var(--mat-thick-tint);
+  --mat-highlight: var(--mat-thick-highlight);
+  --mat-shadow: var(--mat-thick-shadow);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .material {
+    background: var(--mat-tint);
+    backdrop-filter: blur(var(--mat-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-blur)) saturate(var(--mat-saturate));
+  }
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -326,11 +462,17 @@ html {
   background: var(--text-ghost);
 }
 
-/* Focus ring 全局强制(spec §8):组件内不得覆盖或移除 */
+/* Focus ring 全局强制(spec §8;v2.6 起 = apple.com 生产 CSS 规格,09 §3:
+   2px accent + offset 1px + 圆角跟随;组件内不得覆盖或移除。
+   容器级元素 offset 3px(apple.com --sk-focus-offset-container 同值) */
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
   border-radius: inherit;
+}
+.entry-card:focus-visible,
+.bento-cell:focus-visible {
+  outline-offset: var(--focus-ring-offset-container);
 }
 
 /* 跨文档视图过渡(spec §6-9,渐进增强;RM 媒体查询内 = 直切)。
@@ -482,15 +624,24 @@ html {
 /* ────────────────────────────────────────────────────────────
    4. 顶部导航 / 页面骨架(spec §4/§7)
    ──────────────────────────────────────────────────────────── */
-/* 玻璃第一条 sticky 带:站点 header(spec §2.1) */
+/* 玻璃第一条 sticky 带:站点 header(spec §2.8 材质层 v2.6 接入)
+   档位 = mat-regular:apple.com localnav 即 blur(20px) + saturate(180%) +
+   常规 scrim(09 §1.4a/§1.4b 官方值);内高光顶缘受光(09 §1.4d)+
+   separator α 细边(09 §1.4e);@supports 门控回退实底 */
 .site-header {
   position: sticky;
   top: 0;
   z-index: var(--z-header);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  background: var(--glass-bg);
-  border-bottom: 1px solid var(--border);
+  background: var(--mat-fallback);
+  border-bottom: 1px solid var(--mat-hairline);
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background: var(--mat-regular-tint);
+    backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  }
 }
 .site-header-inner {
   max-width: var(--shell-max);
@@ -582,6 +733,11 @@ html {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-pill);
   position: relative;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .lang-switch::after {
   content: "";
@@ -593,6 +749,11 @@ html {
   border-color: var(--border-strong);
   text-decoration: none;
   background: var(--fill-1);
+}
+/* 按压对(v2.6,09 §4 highlighted 语义):scale + alpha 状态层,释放成对退出 */
+.lang-switch:active {
+  background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 
 /* 主题切换钮(v2.1 §7):语言切换钮旁的图标胶囊钮;aria-pressed = 当前是否浅色。
@@ -612,6 +773,11 @@ html {
   cursor: pointer;
   position: relative;
   padding: 0;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .theme-toggle::after {
   content: "";
@@ -623,8 +789,10 @@ html {
   border-color: var(--border-strong);
   background: var(--fill-1);
 }
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
 .theme-toggle:active {
   background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 .theme-toggle svg {
   width: 16px;
@@ -791,6 +959,11 @@ html {
   border-radius: var(--radius-pill);
   padding: var(--space-1) var(--space-3);
   position: relative;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .hero-open::after {
   content: "";
@@ -802,6 +975,11 @@ html {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--bg) 60%, transparent);
   text-decoration: none;
+}
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
+.hero-open:active {
+  background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 .hero-stage-box {
   position: relative;
@@ -995,6 +1173,8 @@ html {
     transform var(--dur-1) var(--ease-spring);
 }
 .bento-cell:active {
+  /* 容器级卡片按压保持 0.99(v2.6:--press-scale 0.96 只给控件级钮/chip,
+     大面积卡按 Apple 容器语义轻压;09 §4) */
   transform: translateY(0) scale(0.99);
 }
 .bento-name {
@@ -1248,6 +1428,7 @@ html {
     box-shadow var(--dur-1) var(--ease-spring);
 }
 .entry-card:active {
+  /* 容器级卡片按压保持 0.99(v2.6:--press-scale 0.96 只给控件级钮/chip,09 §4) */
   transform: translateY(0) scale(0.99);
 }
 .entry-card .entry-name {
@@ -1374,15 +1555,18 @@ html {
   transition:
     color var(--dur-1) var(--ease-standard),
     background-color var(--dur-1) var(--ease-standard),
-    border-color var(--dur-1) var(--ease-standard);
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .fchip:hover {
   background: var(--fill-1);
   color: var(--text);
   border-color: var(--border-strong);
 }
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
 .fchip:active {
   background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 .fchip[aria-pressed="true"] {
   background: var(--accent-dim);
@@ -1458,7 +1642,12 @@ html {
   color: var(--text-faint);
 }
 
-/* sticky 过滤栏(spec §4.2 / §6-11):初始透明;停靠后玻璃化(玻璃第二条带) */
+/* sticky 过滤栏(spec §4.2 / §6-11):初始透明;停靠后玻璃化(玻璃第二条带)。
+   v2.6 材质层接入(spec §2.8):停靠态走 Apple 三态玻璃公式第 2 态「吸顶」
+   (09 §1.4b)——blur/saturate 不变(regular 档),tint α 上浮至官方吸顶档
+   (深 .88 / 浅 .92 = --mat-thick-tint)+ separator α 细边 + 顶缘内高光。
+   状态切换只动 background/border-color/box-shadow,不动画 backdrop-filter
+   (05 §5 性能红线),过渡 --dur-2 × --ease-standard 与全站动效 token 一致 */
 .filter-sentinel {
   height: 1px;
   pointer-events: none;
@@ -1475,15 +1664,24 @@ html {
   margin-bottom: var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-m);
+  transition:
+    background-color var(--dur-2) var(--ease-standard),
+    border-color var(--dur-2) var(--ease-standard),
+    box-shadow var(--dur-2) var(--ease-standard);
 }
 .filter-bar.is-glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border-color: var(--border);
+  background: var(--mat-fallback);
+  border-color: var(--mat-hairline);
   /* sticky 过滤栏激活后 = --shadow-2(spec §2.5 阴影阶梯用途列的点名分配;
      修正:此前误用 --shadow-1(卡片 hover 档),与规范冲突处一律以规范为准) */
-  box-shadow: var(--shadow-2);
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--shadow-2);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .filter-bar.is-glass {
+    background: var(--mat-thick-tint);
+    backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  }
 }
 .filter-group {
   display: flex;
@@ -1575,10 +1773,10 @@ html {
   color: var(--text);
   background: var(--fill-1);
 }
-/* 按压态:fill-2 底 + 轻收缩(iOS segmented 按压语义;幅度克制 0.97) */
+/* 按压态:fill-2 底 + 轻收缩(iOS segmented 按压语义;v2.6 统一 --press-scale) */
 .seg button:active {
   background: var(--fill-2);
-  transform: scale(0.97);
+  transform: scale(var(--press-scale));
 }
 .seg button[aria-pressed="true"] {
   background: var(--seg-thumb); /* v2.1:选中浮起面 token(浅色=白) */
@@ -1710,19 +1908,31 @@ html {
   }
 }
 
+/* 演示面板(v2.6 材质层接入,spec §2.8):mat-regular 档
+   (Apple「regular 为默认」overlay 语义,09 §1.2)——真实 backdrop-filter
+   采样 + 半透明叠色 + 顶缘内高光 + separator α 细边;@supports 门控回退实底 */
 .demo-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--mat-fallback);
+  border: 1px solid var(--mat-hairline);
   border-radius: var(--radius-l);
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--mat-regular-shadow);
   overflow: hidden;
   min-width: 0;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .demo-panel {
+    background: var(--mat-regular-tint);
+    backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  }
 }
 .demo-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--border);
+  /* 面板内部分隔线 = separator α 色(v2.6;09 §2.4「允许底层内容透出」语义) */
+  border-bottom: 1px solid var(--mat-hairline);
   font-size: var(--step--1);
   letter-spacing: 0.01em;
   color: var(--text-faint);
@@ -1863,6 +2073,11 @@ html {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   cursor: pointer;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .cc-toggle::after {
   content: "";
@@ -1873,6 +2088,11 @@ html {
   color: var(--text);
   border-color: var(--border-strong);
   background: var(--fill-1);
+}
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
+.cc-toggle:active {
+  background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 .cc-panel {
   width: min(400px, calc(100vw - var(--space-16)));
@@ -1912,8 +2132,8 @@ html {
   padding: var(--space-1) var(--space-2);
 }
 .cc-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 .cc-swatch {
   flex: none;
@@ -2081,7 +2301,7 @@ html {
 }
 .bd-tab:active {
   background: var(--fill-2);
-  transform: scale(0.98); /* 按压态(同 .seg,spec §3;幅度更小适配 44px 行) */
+  transform: scale(var(--press-scale)); /* 按压态(v2.6 统一 --press-scale,09 §4) */
 }
 .bd-tab[aria-selected="true"] {
   color: var(--text);
@@ -2242,11 +2462,15 @@ html {
 
 /* 参数面板(仪表台,spec §3):12–13px mono 数值、行间 1px 分隔线、数值右对齐;
    分组标题(几何/色彩/动效/阴影,大写小标同 .section-title);
-   sticky 防御层 --z-panel(spec §2.7);≤900 不 sticky、紧随 demo(spec §7) */
+   sticky 防御层 --z-panel(spec §2.7);≤900 不 sticky、紧随 demo(spec §7)。
+   v2.6 材质层接入(spec §2.8):mat-thick 档——密集细笔画数值按 Apple
+   「更厚的材质更不透明,对细笔画文本对比更好」语义取最厚档(09 §1.2),
+   即官方吸顶 α(深 .88 / 浅 .92)+ thick blur 28px + 内高光 + separator α 边 */
 .param-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--mat-fallback);
+  border: 1px solid var(--mat-hairline);
   border-radius: var(--radius-l);
+  box-shadow: inset 0 1px 0 var(--mat-thick-highlight), var(--mat-thick-shadow);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -2257,6 +2481,13 @@ html {
   max-height: calc(100vh - 96px);
   overflow: auto;
   min-width: 0;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .param-panel {
+    background: var(--mat-thick-tint);
+    backdrop-filter: blur(var(--mat-thick-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-thick-blur)) saturate(var(--mat-saturate));
+  }
 }
 @media (max-width: 900px) {
   .param-panel {
@@ -2289,11 +2520,21 @@ html {
   border-radius: var(--radius-pill);
   padding: var(--space-1) var(--space-3);
   cursor: pointer;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .param-reset:hover {
   color: var(--text);
   border-color: var(--border-strong);
   background: var(--fill-1);
+}
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
+.param-reset:active {
+  background: var(--fill-2);
+  transform: scale(var(--press-scale));
 }
 /* dirty:有参数偏离默认时 Reset 转 --accent 边(spec §3 仪表台状态) */
 .param-reset.is-dirty {
@@ -2310,7 +2551,8 @@ html {
   margin: var(--space-3) 0 var(--space-1);
 }
 .param-row {
-  border-bottom: 1px solid var(--border);
+  /* 行间分隔线 = separator α 色(v2.6;09 §2.4 Apple separator 语义) */
+  border-bottom: 1px solid var(--mat-hairline);
   padding: var(--space-3) 2px;
   min-width: 0;
 }
@@ -2453,7 +2695,7 @@ input[type="range"] {
   height: 44px; /* 整元素命中区 ≥44px(spec §7 触控目标) */
   margin: -6px 0; /* 上下各扩 6px 热区;布局占位 44-12=32px,与 .param-num 同组对齐 */
   background: transparent;
-  outline-offset: 2px;
+  outline-offset: var(--focus-ring-offset); /* v2.6:Apple web 焦点环偏移(09 §3) */
   cursor: pointer;
 }
 input[type="range"]::-webkit-slider-runnable-track {
@@ -2533,7 +2775,7 @@ input[type="range"]:focus-visible::-moz-range-thumb {
     0 0 0 4px var(--accent);
 }
 input[type="range"]:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
 }
 
 .enum-seg {
@@ -2565,7 +2807,7 @@ input[type="range"]:focus-visible {
 }
 .enum-seg button:active {
   background: var(--fill-2);
-  transform: scale(0.97); /* 按压态(同 .seg,spec §3) */
+  transform: scale(var(--press-scale)); /* 按压态(v2.6 统一 --press-scale,09 §4) */
 }
 .enum-seg button[aria-pressed="true"] {
   background: var(--accent-dim);
@@ -2664,14 +2906,25 @@ input[type="color"]:hover {
 }
 
 /* ── Prompt 导出(spec §3 Button + §6-13/§6-18) ── */
-/* 面板第三段:控件区下方的 Prompt 导出区,同 surface 卡片观感 */
+/* 面板第三段:控件区下方的 Prompt 导出区。
+   v2.6 材质层接入(spec §2.8):mat-regular 档(Apple overlay 默认档)——
+   backdrop-filter 采样 + 半透明叠色 + 顶缘内高光 + separator α 细边,
+   @supports 门控回退实底(代码块本体 --bg-elev 不透明,可读性不受影响) */
 .prompt-box {
   margin-top: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--mat-fallback);
+  border: 1px solid var(--mat-hairline);
   border-radius: var(--radius-l);
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--mat-regular-shadow);
   padding: var(--space-4);
   min-width: 0;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .prompt-box {
+    background: var(--mat-regular-tint);
+    backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+    -webkit-backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  }
 }
 .prompt-actions {
   display: flex;
@@ -2693,6 +2946,10 @@ input[type="color"]:hover {
   cursor: pointer;
   /* 视觉 36px 高 + 伪元素扩热区至 ≥44px(spec §7) */
   min-height: 36px;
+  transition:
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .btn-primary::after {
   content: "";
@@ -2702,12 +2959,15 @@ input[type="color"]:hover {
 .btn-primary:hover {
   background: color-mix(in srgb, var(--accent-dim) 60%, var(--accent) 12%);
 }
+/* 按压对(v2.6,09 §4 highlighted):scale(--press-scale)+ 底色向 accent 加深
+   (alpha 状态层;apple.com `:active` = 只换底色不加 outline 的官方做法) */
 .btn-primary:active {
-  transform: translateY(1px);
+  transform: scale(var(--press-scale));
+  background: color-mix(in srgb, var(--accent-dim) 55%, var(--accent) 18%);
 }
 .btn-primary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 /* 复制成功微脉冲(spec §6-18:scale 1→1.04→1,--ease-spring 200ms,一次即止;
    RM 下由全局 0.01ms 规则直出终态,只剩文案切换) */
@@ -2737,6 +2997,11 @@ input[type="color"]:hover {
   border-radius: var(--radius-m);
   cursor: pointer;
   min-height: 36px;
+  transition:
+    color var(--dur-1) var(--ease-standard),
+    background-color var(--dur-1) var(--ease-standard),
+    border-color var(--dur-1) var(--ease-standard),
+    transform var(--dur-1) var(--ease-standard);
 }
 .btn-ghost::after {
   content: "";
@@ -2747,6 +3012,13 @@ input[type="color"]:hover {
   color: var(--text);
   border-color: var(--border-strong);
   background: var(--fill-1);
+}
+/* 按压对(v2.6,09 §4):scale + alpha 状态层 */
+.btn-ghost:active {
+  color: var(--text);
+  background: var(--fill-2);
+  border-color: var(--border-strong);
+  transform: scale(var(--press-scale));
 }
 /* 「Open in v0」用 <a class="btn-ghost"> 承载(导航动作,spec §3/§4.4 外链规则):
    压掉全局 a:hover 下划线(global.css `a` 元素规则),箭头随 acc-src-ico 对齐 */
@@ -3233,12 +3505,20 @@ a.btn-ghost {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  /* §6-5:RM 去掉位移,保留 border/底色变化 */
+  /* §6-5:RM 去掉位移,保留 border/底色变化;
+     v2.6:按压对的 scale(--press-scale)一并直达终态,色彩反馈保留 */
   .entry-card:hover,
   .entry-card:active,
   .bento-cell:hover,
   .bento-cell:active,
-  .btn-primary:active {
+  .btn-primary:active,
+  .btn-ghost:active,
+  .fchip:active,
+  .lang-switch:active,
+  .theme-toggle:active,
+  .hero-open:active,
+  .param-reset:active,
+  .cc-toggle:active {
     transform: none;
   }
   /* 控件按压/悬停缩放与滑杆拇指缩放(spec §3 滑杆解剖的 RM 降级):

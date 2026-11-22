@@ -19,7 +19,7 @@ Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)�
 
 ## 样式与参数
 
-三个参数全部是 JS 型(demo 订阅 store 驱动):`duration` 控制计时器、`placement` 切换容器六方位对齐、`maxCount` 截断最旧条目。视觉上对应这几条声明:
+五个参数全部是 JS 型(demo 订阅 store 驱动):`duration` 控制计时器、`placement` 切换容器六方位对齐、`maxCount` 截断最旧条目、`stiffness`/`damping` 驱动入场弹簧(见「动效与交互」)。视觉上对应这几条声明:
 
 ```css
 .toast-stack {
@@ -41,15 +41,16 @@ Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)�
 }
 ```
 
-数值出处(均核对自 antd 6.7.1):功能色 success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff`(seed 功能色);默认 3s 自动消失、`maxCount` 默认不限制、`pauseOnHover` 默认 true(AntD message 文档)。六方位模型来自 MUI Snackbar 的 `anchorOrigin`(纵向 top/bottom × 横向 left/center/right)。
+数值出处(均核对自 antd 6.7.1):功能色 success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff`(seed 功能色);默认 3s 自动消失、`maxCount` 默认不限制、`pauseOnHover` 默认 true(AntD message 文档)。六方位模型来自 MUI Snackbar 的 `anchorOrigin`(纵向 top/bottom × 横向 left/center/right)。弹簧默认 `stiffness` 100 / `damping` 10 = Motion 引擎 spring.ts 源码默认(调研 10 §6.3 源码逐字核验;文档页标注的 stiffness 默认 1 与源码不一致,以源码为准);入场叠层曲线 `cubic-bezier(.21,1.02,.73,1)` 与「从自身高度 200% 外滑入」取 react-hot-toast 源码(调研 10 §5.1)。
 
 ## 动效与交互
 
-- **入场**:0.2s 淡入 + 8px 滑入,只用 `opacity/translate`(antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`,时长对齐 `motionDurationMid = 0.2s`);
-- **出场不排队**:计时到点**整块直接消失**,不做逐条退出动画——AntD 动效原则「出场比进场更快」;`maxCount` 超限时同样直接移除最旧一条;
+- **入场(弹簧,面板可调)**:新 toast 从自身高度 −200%/+200% 外以**物理弹簧**滑入——半隐式欧拉积分(m=1,dt 单步上限 1/30,restDelta 0.002 对齐 Motion granular 口径),逐帧直写 `el.style.transform`;`stiffness`/`damping` 面板可调,默认 100/10(ζ=0.5,首拍过冲约 16.3%);调参中途触发时从当前位置+当前速度继续(速度接力,可打断不归零重启)。卡片层另叠 react-hot-toast 同款缩放/淡入:0.35s `cubic-bezier(.21,1.02,.73,1)`,scale 0.6→1、opacity 0.5→1;
+- **出场不排队**:计时到点**整块直接消失**,不做逐条退出动画——AntD 动效原则「出场比进场更快」;`maxCount` 超限时同样直接移除最旧一条。库对照:react-hot-toast 退场为 0.4s `cubic-bezier(.06,.71,.55,1)` 纯缓出收尾,sonner 用 400ms 过渡 + 4s 生命周期(调研 10 §5.1)——本 demo 沿用 AntD 整块消失口径;
 - **Esc 关闭**:MUI 无障碍要求 Snackbar 可用 Esc 关闭;demo 在有 toast 时监听 keydown,按 Esc 清空;
 - **悬停暂停**(`pauseOnHover`,AntD 默认 true)与**手动关闭**是可选增强;
-- `prefers-reduced-motion: reduce` 时取消滑入动画,直接出现(MDN:大幅位移动画对前庭障碍用户不友好)。
+- `prefers-reduced-motion: reduce` 时弹簧与缩放淡入全部停用,toast 直接出现(MDN:大幅位移动画对前庭障碍用户不友好);
+- **弹簧专题**:stiffness/damping/mass 与 ζ 的完整手感拆解(ζ↔过冲换算、档位表、可中断速度接力)见动效条目 [Toast 弹簧](/motion/toast-spring/)。
 
 ## 真实产品案例
 
@@ -64,5 +65,7 @@ Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)�
 | `duration` | 信息停留更久、更易读到,但堆积的旧提示会掩盖新反馈;超过 5–6s 用户会误以为它需要手动关闭 | 快节奏但读不完即消失——低于 2s 违反 WCAG 2.2.3 的风险陡增(MUI:给足处理时间);500ms 只适合「已复制」这类瞬间可确认的反馈 |
 | `placement` | 无「大小」可言,换的是注意力锚点:底部方位贴近拇指/视线收尾区,顶部方位更醒目但可能挡导航 | 同上;关键是**同站固定一个方位**,频繁换位会让用户错过提示 |
 | `maxCount` | 并发上限高,信息全保留但堆栈占屏、时间线混乱(MUI 不鼓励堆叠) | 只留最新 1 条,页面干净但中间结果被吞——批量触发场景至少留 2–3 条 |
+| `stiffness` | 启动更猛、到位更快,波次更密(ω₀↑)而过冲比例不变;过高(>700,接近「瞬移」)失去弹簧感 | 起步绵软、到位拖沓;与低 damping 组合会长时间荡摆不停 |
+| `damping` | ζ↑ 过冲指数式下降:ζ≈1 临界最快无过冲复位,ζ>1 过阻尼粘滞(社区流传的 500/50 实为 ζ≈1.12 过阻尼反例,调研 10 §2.3) | 过冲放大:ζ=0.5 首拍过冲约 16.3%,ζ≈0.1 已是「弹跳球」(过冲 72.9%,调研 10 §4.3 实算);c=0 永不停止(Motion 文档警告,故下限 1) |
 
-经验区间:duration 2–5s(默认 3s 对齐 AntD)、maxCount 1–3、placement 全站统一(antd 系顶部居中、MUI 系底部)。关键信息永远不走 toast,走持久 banner 或 alertdialog。
+经验区间:duration 2–5s(默认 3s 对齐 AntD)、maxCount 1–3、placement 全站统一(antd 系顶部居中、MUI 系底部);弹簧档位——微弹 300/25(过冲 3.8%)、Motion 默认 100/10(16.3%)、快·稳 700/40(2.7%),抄参数前先算 ζ=c/(2√(km))(调研 10 §2.3 实算表与巧思 3)。关键信息永远不走 toast,走持久 banner 或 alertdialog。

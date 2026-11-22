@@ -33,19 +33,25 @@ const DATAVIZ_SLUGS = [
 ];
 
 const EXPECTED = {
+  // styles 第 8 批:8 个风格史条目已落地,自本轮起并入缺失强制校验(与 icons/dataviz 同动作)。
   styles: [
     "glassmorphism", "neumorphism", "claymorphism", "neo-brutalism",
     "minimalism", "cyberpunk", "bento-grid",
+    "flat-design", "skeuomorphism", "memphis-design", "swiss-international",
+    "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome",
   ],
   materials: [
     "backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials",
     "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient",
     "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api",
   ],
+  // motion 第 8 批:8 个工艺/行为条目已落地,自本轮起并入缺失强制校验(与 styles 第 8 批同动作)。
   motion: [
     "motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens",
     "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture",
     "skeleton-loading", "stagger-orchestration", "linear-easing",
+    "press-feedback", "toast-spring", "overlay-entrance",
+    "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow",
   ],
   color: [
     "oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color",
@@ -74,6 +80,7 @@ if (!existsSync(entriesRoot)) {
   process.exit(1);
 }
 for (const cat of readdirSync(entriesRoot)) {
+  if (cat.startsWith(".")) continue; // 隐藏目录(.mimosa hook 状态等)不是分类,与 slug 级同规则
   const catPath = join(entriesRoot, cat);
   if (!statSync(catPath).isDirectory()) continue;
   actual[cat] = [];
@@ -147,7 +154,7 @@ for (const [cat, slugs] of Object.entries(EXPECTED)) {
     }
 
     if (typeof schema.name !== "string" || !schema.name) problems.push(`${id}: schema.name missing`);
-    // nameZh:81 条必须全有(scripts/add-name-zh.mjs 映射保证);存在时必须是非空字符串
+    // nameZh:97 条必须全有(scripts/add-name-zh.mjs 映射保证);存在时必须是非空字符串
     if (typeof schema.nameZh !== "string" || !schema.nameZh.trim()) {
       problems.push(`${id}: schema.nameZh missing/empty`);
     }

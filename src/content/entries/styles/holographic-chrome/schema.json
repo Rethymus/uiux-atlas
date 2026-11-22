@@ -1,0 +1,113 @@
+{
+  "name": "Holographic Chrome",
+  "nameZh": "全息铬光",
+  "aliases": ["全息虹彩", "铬金属", "Holographic / Iridescent & Chrome"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "光谱变色与液态金属两类反光材质面:全息虹彩用跨色相光谱渐变模拟衍射薄膜,铬光用银白硬反射线模拟液态金属;镜面高光与衍射微条纹是质感来源,适合电影级发布、时尚与音乐场景。",
+    "en": "Two reflective material families — spectral iridescence and liquid-metal chrome: holographic gradients sweep across hues to mimic diffraction film, chrome lays down silver with a hard horizon reflection; specular sheen and micro diffraction stripes carry the texture, aimed at cinematic launches, fashion and music."
+  },
+  "origin": {
+    "zh": "光谱变色(Holographic/Iridescent)与铬/液态金属(Chrome/Liquid Metal)作为独立材质面被 daisyUI 2026 趋势收录:「Reflective materials remain useful for cinematic launches, fashion, music, and premium technology」;2025 趋势词条 014/015 分立两族(调研 03§20 关联条目)。Y2K 的铬质渐变(调研 03§12)是它的年代前身。",
+    "en": "Spectral iridescence (Holographic/Iridescent) and chrome/liquid metal stand as an independent material family in daisyUI's 2026 trends: 'Reflective materials remain useful for cinematic launches, fashion, music, and premium technology'; the 2025 trend entries 014/015 list them as two distinct families (research 03 §20 related entry). Y2K's chrome gradients (research 03 §12) are its period ancestor."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "holo", "label": { "zh": "全息虹彩", "en": "Holographic" } },
+        { "value": "chrome", "label": { "zh": "液态铬", "en": "Chrome" } }
+      ],
+      "default": "holo",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重算渐变)。holo=跨色相光谱渐变(conic 采样,模拟衍射薄膜);chrome=银白硬反射线液态金属(180° 线性渐变 + 50% 处深色「地平线」)。两族分立是 daisyUI 2025 词条 014/015 的记载结构(调研 03§20)。",
+        "en": "JS-type param (the demo rebuilds gradients on change). holo = cross-hue spectral gradient (conic sampling, mimicking diffraction film); chrome = silver liquid metal with a hard dark 'horizon' at 50% of a 180° linear gradient. The two-family split is the structure recorded in daisyUI 2025 entries 014/015 (research 03 §20)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "hueSpan",
+      "min": 60,
+      "max": 360,
+      "step": 10,
+      "default": 240,
+      "effect": {
+        "zh": "holo 模式的光谱色相跨度(度)。调研把「光谱渐变」列为特征但未记载跨度数值;默认 240° 为本条目基准设定——不足 360° 时色环首尾不闭合,读作「一段光谱」而非「全息色轮」。",
+        "en": "Spectral hue span (degrees) in holo mode. The research lists 'spectral gradients' as a trait without a span value; the 240° default is this entry's baseline — below 360° the ring doesn't close, reading as 'a band of spectrum' rather than a full holographic wheel."
+      }
+    },
+    {
+      "type": "number",
+      "name": "sheen",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 1,
+      "cssVar": "--hc-sheen",
+      "effect": {
+        "zh": "镜面反射强度倍率,作用于指针驱动的高光与标题辉光。镜面高光的官方定性:WWDC25 219 把 specular highlights/lensing 描述为材质定义手段(调研 09§1.4d/§8,属 2025 语境的风格亲缘);倍率 1 为基准设定,调研未记载具体数值。",
+        "en": "Specular-reflection strength multiplier applied to the pointer-driven highlight and the title's glow. Official qualitative referent: WWDC25 session 219 names specular highlights/lensing a material-defining device (research 09 §1.4d/§8 — a 2025-context cousin of this style); multiplier 1 is the baseline, with no value recorded in the research."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "diffraction",
+      "options": [
+        { "value": "off", "label": { "zh": "关", "en": "Off" } },
+        { "value": "on", "label": { "zh": "衍射条纹", "en": "Diffraction" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-diffraction)。on 时在卡片边缘叠加极细重复渐变条纹(微距彩虹),模拟「衍射效果」——调研 03§20 汇总表原文列出的三类特征之一(光谱渐变/镜面反射/衍射效果)。",
+        "en": "JS-type param (demo subscribes and toggles data-diffraction). on overlays ultra-fine repeating-gradient stripes (micro rainbow) on the card edges, mimicking the 'diffraction effect' — one of the three traits listed verbatim in research 03 §20's summary table (spectral gradient / specular reflection / diffraction)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "铬字与虹彩字依赖 background-clip: text(Chromium/Safari 长期需 -webkit- 前缀,Firefox 49+ 无前缀;统一双写并配实色回退);指针高光用 CSS 变量 + radial-gradient,无前缀需求;衍射条纹用 repeating-linear-gradient,基线支持。",
+      "en": "Chrome and iridescent type depend on background-clip: text (Chromium/Safari have long needed the -webkit- prefix, Firefox 49+ unprefixed; always write both plus a solid fallback); the pointer highlight uses CSS variables + radial-gradient with no prefix needs; diffraction stripes use repeating-linear-gradient at baseline support."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 background-clip: text 时标题回退为深底上的亮灰实色 + 辉光;不支持锥形渐变的极旧环境把光谱带退化为双色线性渐变;关闭衍射条纹不影响任何信息传达——反光全部是装饰层。",
+    "en": "Without background-clip: text the title falls back to bright grey solid on dark with a glow; on engines without conic-gradient the spectral band degrades to a two-stop linear gradient; turning diffraction off carries no information loss — all reflectivity is decorative."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "电影级产品发布页与预告 hero——daisyUI 2026 原文场景「cinematic launches」", "en": "Cinematic product launches and teaser heroes — daisyUI 2026's verbatim scene 'cinematic launches'" },
+      { "zh": "时尚/音乐/美妆的限量系列页——反光材质与「premium technology」语境天然匹配(同上引文)", "en": "Fashion/music/beauty limited drops — reflective material matches the 'premium technology' register (same quote)" },
+      { "zh": "深色界面上的单一 hero 元素(标题/徽标/奖牌)——大面积铺开会稀释稀缺感", "en": "A single hero element on a dark interface (title/logo/medal) —大面积 use dilutes the scarcity" }
+    ],
+    "avoid": [
+      { "zh": "正文排版与表单控件——光谱渐变吞噬文字对比度,铬按钮的「地平线」亮暗跨越可达 3:1 以上抖动", "en": "Body text and form controls — spectral gradients devour text contrast; chrome buttons jitter across >3:1 lightness spans" },
+      { "zh": "浅色/白色界面——反光材质需要深底衬托,白底上虹彩会脏", "en": "Light/white interfaces — reflective material needs a dark field; iridescence turns muddy on white" },
+      { "zh": "无障碍关键路径(警示、错误提示)——语义必须靠实色与图标承载,不得依赖反光装饰", "en": "Accessibility-critical paths (warnings, errors) — semantics must ride on solid color and icons, never on reflective decoration" }
+    ]
+  },
+  "a11y": {
+    "zh": "光谱文字对渐变最亮/最暗停靠点分别核对 4.5:1(WCAG 2.1 SC 1.4.3),做不到就退回实色;铬模式 50% 处的深色「地平线」会把文字亮度腰斩,大字标题(≥24px 粗体)才可用(SC 1.4.3 大文本 3:1);镜面高光是装饰,aria-hidden;衍射条纹 alpha ≤0.2 且不压在文字上;所有反光动效(辉光漂移)在 prefers-reduced-motion 下静止。",
+    "en": "Check spectral type against the brightest and darkest stops for 4.5:1 (WCAG 2.1 SC 1.4.3), falling back to solid when it fails; chrome's dark 'horizon' at 50% halves glyph lightness mid-letter — reserve it for large bold display (≥24px, the 3:1 large-text rule); the specular sheen is aria-hidden decoration; diffraction stripes stay ≤0.2 alpha and never over text; all reflective motion (glow drift) freezes under prefers-reduced-motion."
+  },
+  "sources": [
+    "https://trends.daisyui.com/ui-design-trends-2026/",
+    "https://trends.daisyui.com/ui-design-trends-2025/",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块全息铬光 hero 卡:深色底上,光谱渐变大标题(色相跨度可调)或液态铬标题(银白硬反射线),边缘带衍射微条纹,指针移动时镜面高光跟随,辉光强度按参数倍率。",
+      "en": "Replicate a holographic-chrome hero card on a dark field: a spectral-gradient display title (adjustable hue span) or a liquid-chrome title (silver hard horizon), diffraction micro-stripes on the edges, a pointer-following specular highlight, and glow scaled by the sheen multiplier."
+    },
+    "acceptance": [
+      { "zh": "模式、色相跨度、sheen 倍率严格使用参数快照值,不自行调和", "en": "Mode, hue span and sheen multiplier use the exact parameter snapshot values; do not re-tune them" },
+      { "zh": "chrome 模式必须保留 50% 处深色「地平线」反射线,holo 模式色环按跨度采样", "en": "chrome mode keeps the dark 'horizon' reflection line at 50%; holo mode samples the ring per the hue span" },
+      { "zh": "衍射条纹与镜面高光为 aria-hidden 装饰,不压文字、不承载信息", "en": "Diffraction stripes and the specular highlight are aria-hidden decoration — never over text, never informative" },
+      { "zh": "提供 background-clip: text 实色回退;标题按大文本阈值核对对比度", "en": "Provide the background-clip: text solid fallback; check title contrast against the large-text threshold" },
+      { "zh": "prefers-reduced-motion 时辉光漂移静止,保留静态渐变与指针高光", "en": "Under prefers-reduced-motion the glow drift freezes; static gradients and the pointer highlight remain" }
+    ]
+  }
+}

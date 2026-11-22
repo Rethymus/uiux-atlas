@@ -1,0 +1,116 @@
+{
+  "name": "Toast Spring Entrance",
+  "nameZh": "Toast 弹簧入场",
+  "aliases": ["toast 入场", "snackbar spring", "过冲 bezier", "toast bounce-in"],
+  "category": "motion",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "Toast 从屏幕边缘弹入:入场带过冲(真弹簧或 y₂>1 的过冲 bezier),退场纯缓出收尾,生命周期到点自动消失——『进攻退守,一进一出永不打架』。",
+    "en": "A toast springs in from the screen edge: the entrance carries overshoot (a true spring or a y₂>1 overshoot bezier), the exit is a pure eased settle, and the lifecycle auto-dismisses on time — attack in, retreat out, the pair never collides."
+  },
+  "origin": {
+    "zh": "两大标杆源码逐字:react-hot-toast 入场从屏幕外 200% 滑入 + scale 0.6→1 + opacity 0.5→1,0.35s `cubic-bezier(.21,1.02,.73,1)`(y₂>1 造弹簧感),退场 0.4s `cubic-bezier(.06,.71,.55,1)` 纯缓出;sonner 过渡 400ms、生命周期 `TOAST_LIFETIME = 4000`(4s 自动消失)(调研 10§5.1)。Motion 真弹簧版:入场 `bounce 0.25 + visualDuration 0.35`(调研 10§5.2)。与 components/toast(全局提示)条目互链。",
+    "en": "Two benchmark sources, verbatim: react-hot-toast enters from 200% off-screen + scale 0.6→1 + opacity 0.5→1 over 0.35s `cubic-bezier(.21,1.02,.73,1)` (y₂>1 fakes the spring feel), exiting over 0.4s `cubic-bezier(.06,.71,.55,1)` pure ease-out; sonner transitions over 400ms with `TOAST_LIFETIME = 4000` (4s auto-dismiss) (research 10 §5.1). Motion's true-spring take: entrance `bounce 0.25 + visualDuration 0.35` (research 10 §5.2). Cross-linked with the components/toast (global notice) entry."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 50,
+      "max": 1000,
+      "step": 25,
+      "default": 300,
+      "effect": {
+        "zh": "入场弹簧刚度(mass=1)。默认 300 取调研 10§2.3『中·微弹』档(与卡槽弹簧同档):ω₀≈17.3rad/s。Motion 源码默认 100(调研 10§6.3)。调大弹入更猛;调小飘入感更强、占屏时间变长。",
+        "en": "Entrance spring stiffness (mass = 1). Default 300 from the 'medium-microbounce' tier in research 10 §2.3 (the same tier as the slot spring): ω₀≈17.3rad/s. Motion's source default is 100 (research 10 §6.3). Higher = fiercer spring-in; lower = a floatier entrance that occupies the screen longer."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 5,
+      "max": 60,
+      "step": 1,
+      "default": 25,
+      "effect": {
+        "zh": "入场弹簧阻尼。默认 25 与刚度 300 配对 ζ≈0.722、过冲≈3.8%——与 react-hot-toast 过冲 bezier 的轻微过冲量级相当(调研 10§2.3/§5.1)。调大回弹消失(ζ→1);调小过冲变大,ζ<0.5 时 toast 会明显弹跳。",
+        "en": "Entrance spring damping. Default 25 pairs with stiffness 300 at ζ≈0.722, overshoot≈3.8% — comparable to react-hot-toast's slight overshoot bezier (research 10 §2.3/§5.1). Higher removes the bounce (ζ→1); lower grows the overshoot, and ζ<0.5 makes the toast visibly bounce."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "edge",
+      "options": [
+        { "value": "bottom", "label": { "zh": "底部弹出", "en": "From bottom" } },
+        { "value": "top", "label": { "zh": "顶部弹出", "en": "From top" } }
+      ],
+      "default": "bottom",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换弹入边缘)。底部弹出贴近拇指/视线收尾区,顶部弹出更醒目(MUI Snackbar 默认底、AntD message 默认顶居中,见 components/toast 条目);方向语义:toast 从哪条边来、退场回哪条边去。",
+        "en": "JS param (demo switches the entry edge). Bottom suits thumb/reading-finish zones; top is more insistent (MUI Snackbar defaults bottom, AntD message top-center — see the components/toast entry). Directional semantics: the toast returns to the same edge it came from."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lifetime",
+      "unit": "ms",
+      "min": 1500,
+      "max": 8000,
+      "step": 500,
+      "default": 4000,
+      "effect": {
+        "zh": "自动消失计时。默认 4000 = sonner `TOAST_LIFETIME = 4000` 源码值(调研 10§5.1);AntD message 默认 3s(调研 06§4.10)。低于 2s 时读不完即消失、违反 WCAG 2.2.3 风险陡增;上限 8s 再长用户会误以为需要手动关。",
+        "en": "Auto-dismiss timer. Default 4000 = sonner's `TOAST_LIFETIME = 4000` source value (research 10 §5.1); AntD message defaults to 3s (research 06 §4.10). Under 2s it vanishes unread and the WCAG 2.2.3 risk spikes; past 8s users assume it needs manual dismissal."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 用 Motion(AnimatePresence + spring)驱动,依赖 JS;百分比 y 位移与 scale/opacity 过渡均为 Baseline 能力。退场计时与 animationend/退出完成回调为标准事件。reduced-motion 降级为纯 fade(react-hot-toast 官方降级路径,调研 10§5.1)。",
+      "en": "The demo rides Motion (AnimatePresence + spring) and needs JS; percentage-y travel and scale/opacity transitions are all Baseline. Exit timing uses standard timers/completion callbacks. Reduced-motion degrades to a bare fade — react-hot-toast's official degradation path (research 10 §5.1)."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时入/出都退化为纯 fade(react-hot-toast 官方做法);toast 只承载非关键信息,关键信息走持久组件(components/toast 条目口径);消息可手动关闭(✕)+ 悬停可暂停计时是推荐增强;计时器在组件卸载时清理。",
+    "en": "Under prefers-reduced-motion both directions degrade to a bare fade (react-hot-toast's official take); toasts carry non-critical info only — critical messages go to persistent components (the components/toast stance); manual close (✕) and hover-pause are recommended enhancements; timers are cleaned up on unmount."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "保存成功/已复制/已发送类即时确认——从边缘弹入、4s 后自动退场(sonner 生命周期档)", "en": "Instant confirmations (saved/copied/sent) — spring in from the edge, auto-dismiss at 4s (sonner's lifecycle tier)" },
+      { "zh": "轻量反馈但想要『有生命感』:真弹簧(300/25)或过冲 bezier(.21,1.02,.73,1) 替代平淡 fade", "en": "Lightweight feedback that should feel alive: a true spring (300/25) or the overshoot bezier(.21,1.02,.73,1) instead of a flat fade" },
+      { "zh": "移动端底部边缘:与手势区重合,弹入后可用下滑手势提前退场(sonner/vaul 的滑出语义)", "en": "Mobile bottom edge: overlapping the gesture zone, dismissable early with a swipe (sonner/vaul swipe-out semantics)" },
+      { "zh": "批量操作的多条反馈:堆叠上限 2~3 条,超限移除最旧(与 components/toast 的 maxCount 同则)", "en": "Batch-operation feedback: cap the stack at 2–3 and drop the oldest (same rule as components/toast's maxCount)" }
+    ],
+    "avoid": [
+      { "zh": "关键信息(错误需要动作、账户安全)用 toast 自动消失——违反 WCAG 2.2.3 与 WAI-APG Alert 告诫(components/toast 条目已详述)", "en": "Critical info (actionable errors, account security) auto-dismissing in a toast — violates WCAG 2.2.3 and the WAI-APG Alert caveat (detailed in components/toast)" },
+      { "zh": "入出时长打架:入场 0.35s/退场 0.4s 是基准对——退场短于入场残余动画会互相截断(调研 10 巧思 6)", "en": "Entrance/exit colliding: 0.35s in / 0.4s out is the benchmark pair — an exit shorter than the entrance's tail truncates it (research 10 craft #6)" },
+      { "zh": "ζ<0.5 的夸张弹跳放在高频操作上——每次保存都弹跳会迅速从『活泼』变成『噪音』(HIG:高频交互避免加动效)", "en": " ζ<0.5 showy bouncing on high-frequency actions — a bounce on every save quickly turns from lively to noise (HIG: avoid motion on frequent interactions)" },
+      { "zh": "把 toast 从屏幕中央弹出——边缘来、边缘去是方向语义;中央弹入无空间锚点(调研 04§3.3 M3 enter-exit 同则)", "en": "Springing toasts from mid-screen — edge in, edge out is the directional semantics; center entrances have no spatial anchor (same rule as M3 enter-exit, research 04 §3.3)" }
+    ]
+  },
+  "a11y": {
+    "zh": "容器 `role=\"status\"`(aria-live=polite)播报非关键消息;自动消失时长 ≥ 与文本长度匹配的下限(WCAG 2.2.3:自动消失的非干扰内容需可暂停/持久);提供手动 ✕ 关闭;prefers-reduced-motion 时纯 fade;颜色不作成功/错误的唯一区分(配图标/文案)。堆叠时旧消息不被新消息顶掉到读不到(上限内逐条播报)。",
+    "en": "The container carries `role=\"status\"` (aria-live=polite) for non-critical messages; the auto-dismiss timing respects a floor matched to text length (WCAG 2.2.3: auto-dismissing non-interrupting content must be pausable/persistent); a manual ✕ close is provided; bare fade under prefers-reduced-motion; color never alone distinguishes success/error (icon + text). Stacked messages must not push older ones out unread — announce within the cap."
+  },
+  "sources": [
+    "https://github.com/timolins/react-hot-toast/blob/main/src/components/toast-bar.tsx",
+    "https://github.com/emilkowalski/sonner/blob/main/src/styles.css",
+    "https://github.com/emilkowalski/sonner/blob/main/src/index.tsx",
+    "https://github.com/emilkowalski/vaul/blob/main/src/constants.ts",
+    "https://motion.dev/docs/react-transitions"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个从底部边缘弹入的 toast:入场为真弹簧(stiffness 300 / damping 25)从屏外滑入并带 scale 0.6→1、opacity 0.5→1;退场 0.4s 纯缓出回边缘;4s 自动消失;role=status 播报。",
+      "en": "Replicate a bottom-edge toast: the entrance is a true spring (stiffness 300 / damping 25) sliding in from off-screen with scale 0.6→1 and opacity 0.5→1; the exit is a 0.4s pure ease-out back to the edge; 4s auto-dismiss; announced via role=status."
+    },
+    "acceptance": [
+      { "zh": "入场初态与 react-hot-toast 同构:屏外滑入 + scale 0.6 + opacity 0.5(方向按边缘)", "en": "Entrance initial state mirrors react-hot-toast: off-screen travel + scale 0.6 + opacity 0.5 (direction per edge)" },
+      { "zh": "入场弹簧参数严格 stiffness 300 / damping 25(mass 1,ζ≈0.722),退场 0.4s cubic-bezier(.06,.71,.55,1)", "en": "Entrance spring strictly stiffness 300 / damping 25 (mass 1, ζ≈0.722); exit 0.4s cubic-bezier(.06,.71,.55,1)" },
+      { "zh": "生命周期 4000ms 自动消失(sonner 源码值);计时在卸载/手动关闭时清理", "en": "4000ms auto-dismiss lifecycle (sonner's source value); timers cleared on unmount/manual close" },
+      { "zh": "容器 role=status(aria-live=polite),消息可 ✕ 手动关闭;不承载关键信息", "en": "Container role=status (aria-live=polite), messages manually closeable via ✕; never critical info" },
+      { "zh": "prefers-reduced-motion 时入/出均为纯 fade(react-hot-toast 官方降级)", "en": "Under prefers-reduced-motion both directions become a bare fade (react-hot-toast's official degradation)" }
+    ]
+  }
+}

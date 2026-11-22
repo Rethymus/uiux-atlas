@@ -1,0 +1,67 @@
+## Structure & DOM
+
+The toast system has four parts: a trigger button, a **stack container** (role=status, aria-live=polite), individual toasts (dot + text + ✕), and a timer table. The container is fixed at the edge (bottom/top); toasts spring in from — and exit back to — that same edge:
+
+```html
+<div class="ts-stack" role="status" aria-live="polite">
+  <div class="ts-toast">
+    <span class="ts-dot"></span> Saved to cloud <button class="ts-close">✕</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- The stack container is fixed at the edge with `pointer-events: none`; each toast restores `auto` — the layer never blocks what's beneath;
+- **AnimatePresence orchestrates the exit**: removal happens after Motion finishes the 0.4s ease-out, avoiding flash-jumps (same semantics as research 10 §3.3);
+- Stack cap 3, oldest dropped first; each toast owns one `setTimeout` timer, cleared on manual close/unmount;
+- ✕ manual close + role=status announcement satisfy "dismissible non-critical info" (same stance as the components/toast entry).
+
+## Styling & Parameters
+
+All four parameters are JS-type, assembled into a Motion transition:
+
+```tsx
+// Entrance: true spring (stiffness/damping adjustable) + react-hot-toast-shaped initial state
+<motion.div
+  initial={{ y: `${dir * 160}%`, scale: 0.6, opacity: 0.5 }}   // off-screen + shrunk + half-faded
+  animate={{ y: "0%", scale: 1, opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 25, mass: 1 } }}
+  exit={{ y: `${dir * 160}%`, scale: 0.6, opacity: 0,
+    transition: { duration: 0.4, ease: [0.06, 0.71, 0.55, 1] } }} // pure ease-out back to the edge
+/>
+// lifetime reached → setTimeout fires the exit (sonner's TOAST_LIFETIME = 4000 pattern)
+```
+
+Where the numbers come from (research 10 §5.1/§5.2, verbatim source):
+
+- **react-hot-toast entrance**: slides in from 200% off-screen + `scale(.6)` + `opacity .5` over 0.35s `cubic-bezier(.21,1.02,.73,1)` (y₂>1 → slight overshoot); the **exit** is 0.4s `cubic-bezier(.06,.71,.55,1)` pure ease-out; reduced-motion degrades to a bare fade; container carries `will-change: transform`;
+- **sonner**: 400ms transitions, `TOAST_LIFETIME = 4000` (4s auto-dismiss), back rows sink-stacked at `translateY(40%)`;
+- **True-spring tier**: Motion's take uses `bounce 0.25 + visualDuration 0.35` (research 10 §5.2); bounce 0.25 → ζ=0.75 via the bounceToDampingRatio source conversion (research 10 §6.3); the demo defaults to stiffness 300 / damping 25 (ζ≈0.722, overshoot≈3.8%) — the same "bouncy but quiet" band (research 10 §2.3);
+- The lifecycle floor's normative basis: WCAG 2.2.3 (auto-dismissing content must be pausable/persistent) and the WAI-APG Alert caveat — detailed in the components/toast entry.
+
+## Motion & Interaction
+
+- **Attack in, retreat out** (research 10 craft #6): the entrance carries overshoot (spring or y₂>1 bezier), the exit is a pure eased settle — the "attack" energy and the "retreat" calm have separate jobs; `.35/.40` never collide;
+- **Edge semantics**: return to the edge you came from (bottom/top switchable); a toast never appears from mid-screen (same rule as M3 enter-exit, research 04 §3.3);
+- **Live parameters**: dragging stiffness/damping immediately shapes the next toast's spring; ζ≈0.72 overshoots ~4%, perceptually level with the overshoot bezier;
+- **Manual close / batching**: ✕ removes immediately; rapid triggers stack to 3 with the oldest exiting first;
+- **Reduced motion**: both directions degrade to a 0.2s bare fade (react-hot-toast's official degradation);
+- Performance: entrance/exit animate only `transform/opacity`; the container's `will-change: transform` matches react-hot-toast (a single persistent container is the legitimate resident use, research 10 §5.1/§7.2).
+
+## Real-world examples
+
+- **react-hot-toast**: 200% slide-in + scale 0.6 + overshoot bezier 0.35s / 0.4s ease-out — the direct source provenance of this entry's entrance orchestration (research 10 §5.1);
+- **sonner (the shadcn ecosystem's default toast)**: 400ms transitions + 4s lifecycle + sink-stacked back rows and a swipe-out gesture (vaul by the same author, `EASE [0.32,0.72,0,1]`, `CLOSE_THRESHOLD 0.25`) (research 10 §5.1);
+- **Gmail's "Message sent"**: a bottom toast with an Undo action that dies with the toast — the canonical toast-with-action + lifecycle product case (cross-linked with components/toast).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stiffness` | a fiercer, crisper spring-in with shorter off-screen travel | a floatier entrance; ≤100 feels like paper drifting up |
+| `damping` | ζ↑ removes the bounce — the entrance lands in one motion (ζ→1) | bigger overshoot; ζ&lt;0.5 visibly bounces and jelly-wobbles under rapid saves |
+| `edge` | bottom hugs the thumb zone and spares reading (MUI's default) | top is more insistent but presses on content (AntD message defaults top-center); pick one side site-wide |
+| `lifetime` | longer dwell, better readability; >8s reads as "needs manual close" | vanishes unread; under 2s the WCAG 2.2.3 risk spikes; 4s is sonner's source tier |
+
+Working ranges: stiffness 200–400 / damping 20–30 (the 2–8% overshoot "bouncy but quiet" band), lifetime 3–5s, stack ≤3; entrance shorter than exit is the iron rule — attacks may bounce, retreats must be quiet.

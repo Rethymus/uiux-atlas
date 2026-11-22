@@ -1,0 +1,78 @@
+## Structure & DOM
+
+The editorial style is "an article with masthead grammar": five typographic levels land in order — kicker → headline → standfirst → byline → body (multi-column with a drop cap) → caption — and a pull quote crosses all columns to break up the long read.
+
+```html
+<article class="article">
+  <p class="kicker">Dispatch · Typography</p>
+  <h1 class="headline">The Quiet Authority of the Column</h1>
+  <p class="standfirst">Standfirst: one sentence that sells the story.</p>
+  <p class="byline">By the Atlas Desk · 2026-11</p>
+  <figure class="figure"><figcaption>Fig. 01 — captions carry information</figcaption></figure>
+  <div class="body">  <!-- CSS columns -->
+    <p>Opening paragraph with the drop cap…</p>
+    <blockquote class="pullquote">"Whitespace is the signal of editorial confidence."</blockquote>
+    <p>…</p>
+  </div>
+</article>
+```
+
+Key points:
+
+- The pull quote is a semantic `<blockquote>` wearing `column-span: all` — semantics and visuals each do their own job;
+- Only the body goes into columns; the headline and figures stay out; CSS columns fill by column, so DOM order = reading order (SC 1.3.2);
+- The drop cap is `::first-letter` — no extra DOM, screen readers still read the whole word.
+
+## Styling & Parameters
+
+Four parameters: two CSS variables, two JS-type params:
+
+```css
+.demo-stage { --em-measure: 65ch; --em-lead: 1.6; }
+.ed-body {
+  font-size: 15px;
+  line-height: var(--em-lead);              /* 1.6 > the WCAG 1.5 floor */
+  max-width: min(100%, var(--em-measure));  /* 65ch inside Butterick's 45–90 */
+}
+.ed-scene[data-cols="2"] .ed-body { columns: 2; column-gap: 24px; }
+.ed-scene[data-dropcap="on"] .ed-body > p:first-of-type::first-letter {
+  float: left; font-size: 3.2em; line-height: 0.86;
+}
+.ed-pullquote {
+  column-span: all;
+  border-top: 2px solid; border-bottom: 1px solid; /* hairline rules are classic quote grammar */
+}
+```
+
+Where the numbers come from:
+
+- Columns: research 03 §16 records "2/3/12-column structured grids" verbatim — the demo offers 1/2/3 (12 refers to the page-wide grid);
+- Measure: Butterick's Practical Typography, 45–90 characters (research 05 §19, verified first-hand); 65ch is also the example value recorded for minimalism on the superdesign page in research 03 §7;
+- Lead: the official WCAG 2.2 SC 1.4.12 threshold "line height ≥ 1.5× font size" (research 05 §18 verbatim); the 1.6 default is this entry's long-form baseline;
+- "Drop caps / quote styles" and the "serif display × sans body pairing" are both tunable variables listed verbatim in research 03 §16.
+
+## Motion & Interaction
+
+Editorial motion yields almost everything to the typography itself:
+
+- **Entrance**: the article fades in with a 10px rise over 0.5s, once — like a page laid on the desk;
+- **Display pairing switch**: the demo toggles the headline between serif/sans (the recorded "serif display × sans body" pairing and its reverse experiment), swapping instantly with no transition;
+- **Columns/drop cap**: driven from the parameter panel, reflow completes instantly — text re-layout should never animate;
+- Under `prefers-reduced-motion: reduce` only the entrance fade is removed; scrolling stays native with no smooth-scroll hijacking.
+
+## Real-world examples
+
+- **The Atlantic** — a contemporary editorial exemplar recorded in research 03 §16: a complete web transplant of standfirst, captions and pull quotes, holding the 45–90 character discipline on a single-column measure.
+- **Monocle** — recorded in research 03 §16: the print grammar of five-level hierarchy and "generous whitespace as editorial confidence" carried online; a textbook serif-display × structured-grid arrangement.
+- **NYT Cooking** — recorded in research 03 §16: the working sample of "images as narrative partners" — step photos and captions carry the information while the editorial hierarchy serves scanning and the cooking flow.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `cols` | each column narrows, the measure falls under 45 characters, hyphenation climbs; 3 columns only fits short paragraphs with small captions — "newspaper pages" | a 1-column measure maximizes comfort but lengthens vertical scroll and flattens figures |
+| `measure` | past 90 characters vertical tracking gets hard (Butterick's own warning) and regression errors rise | below 45 characters lines shatter; ragged edges undo "editorial confidence" |
+| `lead` | past 1.8 paragraphs loosen and per-screen information drops; the upside is more room for inserted headings | below 1.5 breaks the official WCAG 2.2 SC 1.4.12 threshold; dense text squeezes reading |
+| `dropcap` | on lends the opening ceremony, but the cap spans 3 lines — short paragraphs get propped up awkwardly | off returns a plain opening; non-narrative content (recipes/docs) shouldn't use it at all |
+
+Working ranges: 2 columns, 65ch, 1.6 lead is the "magazine body" default. One pull quote per thousand words at most; drop caps only on the first paragraph of an article — a second one is decorative noise.

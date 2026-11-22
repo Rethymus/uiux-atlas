@@ -1,0 +1,72 @@
+## Structure & DOM
+
+The demo is two craft-contrast lanes + an FPS panel:
+
+- **Lane A (property contrast)**: a box ping-pongs on a 2s sine, with the loop writing `transform: translateX` or `left` per frame (param-switched); the same rAF loop measures mean frame delta and >25ms long frames;
+- **Lane B (interrupt handoff)**: one box, and a "re-target mid-flight" button compared across spring (velocity handoff) and tween (restart from rest) modes.
+
+```html
+<div class="sm-lane"><!-- lane A -->
+  <div class="sm-box"></div>  <!-- rAF writes style.transform / style.left per frame -->
+</div>
+<div class="sm-lane"><!-- lane B -->
+  <motion.div class="sm-interrupt" style="x"></motion.div>
+</div>
+```
+
+Key points:
+
+- Lane A demonstrates the correct per-frame posture — **writing `el.style.transform` directly**, never through CSS variables (per-frame variable changes invalidate the whole subtree's styles, research 10 §7.4);
+- The FPS panel measures inside the same rAF loop, adding no extra listeners;
+- Lane B's motion value is driven by a Motion spring; `animate()` naturally continues from the current value + velocity.
+
+## Styling & Parameters
+
+Three JS-type enum parameters:
+
+```ts
+// Lane A: property switch (per-frame writes)
+if (prop === "left") box.style.left = `${x}px`;            // triggers layout/paint
+else box.style.transform = `translateX(${x}px)`;           // compositor path
+// layerHint (layer promotion, MDN discipline: last resort, set before animating, removed on animationend)
+box.style.willChange = hint === "will-change" ? "transform" : "auto";
+// translateZ(0) promotion (the cheap fallback for older browsers, web.dev)
+box.style.transform = `translateX(${x}px) translateZ(0)`;
+
+// Lane B: two interrupt semantics
+animate(x, next, { type: "spring", stiffness: 300, damping: 25 }); // physics spring: inherits current velocity
+animate(x, next, { duration: 0.7, ease: "easeOut" });              // duration: restarts from rest (ignores velocity)
+```
+
+Numbers and conclusions (research 10 §7, all first-hand sources fetched this session):
+
+- **Animate only transform/opacity**: web.dev's high-performance animations guide — anything else triggers layout/paint; the `top/left` demo **drops 50% of frames vs 1% for the transform version** (Chrome FPS panel measurement); blur/shadow paints are costlier;
+- **will-change (MDN, point by point)**: "last resort — do not use preventively"; overuse → excessive memory + more complex rendering → slower; creates stacking contexts early; the correct posture is **set via JS before the animation, removed on `animationend`**; the cheap fallback without support is `transform: translateZ(0)`;
+- **Interrupt handoff**: Motion docs verbatim — physics springs "incorporate the velocity of any existing gestures or animations"; duration-based springs "start from rest and ignore velocity" (research 10 §7.3);
+- **Baking springs into linear()**: Baseline 2023-12; `linear(0, 0.25 75%, 1)` dense sampling approximates any curve (Jake Archibald's generator ships a Spring preset) (research 10 §7.5);
+- **60/120Hz**: rAF callbacks match the display refresh rate (60/75/120/144Hz common); **always write durations in ms, never in frames** (research 10 §7.6).
+
+## Motion & Interaction
+
+- **Property contrast**: switching to `left` immediately worsens the panel's long-frame count/mean delta (the small stage limits magnitude; the direction matches web.dev's 50%/1% measurement);
+- **Interrupt handoff**: launch lane B's box, then hit "re-target mid-flight" — the spring glides around (velocity preserved) while the tween re-accelerates from rest (a perceptible hitch);
+- **Layer hints**: the will-change/translateZ lanes follow MDN's discipline — teaching switches only, never resident in production;
+- **Reduced motion**: lane A goes static (no per-frame writes), lane B lands directly; the FPS panel keeps working;
+- Performance: both lanes animate transform (Motion's motion value writes styles directly, no CSS variables in the loop).
+
+## Real-world examples
+
+- **react-hot-toast / sonner**: container/key layers carry `will-change: transform` (verbatim in react-hot-toast source) — the legitimate "single resident container" scenario (research 10 §5.1/§7.1);
+- **web.dev's high-performance CSS animations guide**: the top/left vs transform 50%/1% frame-drop comparison is Google's official baseline experiment; "0 ms in the Rendering row of the Performance panel" is the acceptance bar (research 10 §7.1);
+- **Jake Archibald's linear() easing generator**: MDN's "See also" pick — bake the spring into `linear()` to get "the math spring's shape hosted by compositor animations" (research 10 §7.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `animateProperty` | the `left` lane triggers layout+paint every frame: jittery deltas, more long frames — the teaching counter-example | the `transform` lane rides the compositor: deltas stable near 16.7ms (the 60Hz budget) |
+| `layerHint` | the `will-change` lane asks for early layering: steadier animation, but resident use eats memory and creates stacking contexts (MDN's warning) | `none` is zero-hint, zero-cost — the default correct answer for static or one-shot animation; `translateZ` is the legacy fallback |
+| `interruptMode` | the `tween` lane restarts from rest on mid-flight re-targets — a perceptible hitch | the `spring` lane hands velocity over: silky redirections, "interruption is design" (WWDC18 803) |
+| FPS panel (read-only) | a rising long-frame count means the current mode is costlier — use it as review evidence, not decoration | — |
+
+Craft checklist (run before writing code): animate only transform/opacity; write transform directly per frame, keep CSS variables event-level; will-change last-resort and removed after; physics springs for handoffs; durations always in ms; bake springs into CSS via linear() sampling.

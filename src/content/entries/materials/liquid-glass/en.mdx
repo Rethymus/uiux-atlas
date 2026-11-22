@@ -23,7 +23,7 @@ Key points: the pod belongs only to the **functional layer** of controls and nav
 
 ## Styling & Parameters
 
-The web approximation is driven by `--lg-*` variables: blur samples what's behind, the variant decides the state layers, and refraction comes from an SVG `feDisplacementMap`:
+The web approximation is driven by `--lg-*` variables: blur samples what's behind, the variant decides the state layers, and refraction comes from an SVG `feDisplacementMap`; three JS-type params are consumed by the demo's subscription — `variant` toggles the state layers, `refraction` writes the filter's displacement scale, and `morph` switches pod ↔ panel:
 
 ```css
 .glass-pod {
@@ -46,14 +46,27 @@ Where the numbers come from:
 - `variant` two options, default regular: the official definition (research 02 §1 A1) plus the glassEffect default (A2);
 - `tint` default 0: `Glass.tint(_:)` is optional and glass ships untinted (A3);
 - `blur` 20px: Apple publishes no number — borrowed from the classic glass recipe as an approximation (unverified);
-- Refraction: an SVG `feTurbulence → feDisplacementMap` filter, **Chromium only** — Firefox/Safari reject `url()` references inside backdrop-filter, so they fall back to pure blur.
+- `refraction` (JS-type) default 34: this demo's existing value — Apple never publishes refraction numbers (WWDC25 219 describes lensing only qualitatively), and the SVG displacement approach is a community practice whose source could not be verified (research 09 §8: ⚠️unverified);
+- `morph` (JS-type) default pod: the capsule is the official default Capsule shape (A2); the transition timing/curve, 320ms `cubic-bezier(0.4, 0, 0.6, 1)`, is the apple.com production CSS token (research 09 §1.4a/§9.3);
+- Refraction: an SVG `feTurbulence → feOffset → feDisplacementMap` filter, **Chromium only** — Firefox/Safari reject `url()` references inside backdrop-filter, so they fall back to pure blur.
 
 ## Motion & Interaction
 
-- Variant switch: the dimming veil cross-fades over 0.25s; transitions are removed under `prefers-reduced-motion`;
-- The "live content" behind (the demo's drifting color blobs) animates only `transform`, so the pod's blur/refraction re-samples a changing scene each frame — the official picture of content scrolling through the glass;
-- The pod itself never translates: it is a stable functional layer, and hover feedback belongs to system behaviors like `Glass.interactive(_:)` (A3);
-- Live tuning: the blur/dimming/tint variables reshape the transmitted view instantly.
+Liquid Glass's dynamic behaviors (WWDC25 219 official descriptions, research 09 §8), approximated in the demo:
+
+- **Pointer-following refraction (lensing approximation)**: Apple defines glass through lensing — "bends, shapes and gathers light in real time", unlike older materials' scattering (219 [118–159s]). The demo shifts the feDisplacementMap field with the pointer — `feOffset` translates the noise field, and the pointer's offset relative to the pod (normalized, rAF-batched) writes dx/dy. Apple publishes no refraction numbers; the displacement magnitude is a demo value;
+- **Refraction strength is a function of size**: "when the glass flexes/morphs into a bigger element, the material simulates thicker glass: deeper shadows, more pronounced lensing and refraction, softer light scattering" (219 [422–445s]). The demo binds the displacement scale to `refraction × (current width / capsule base width)`, so the panel state automatically deepens distortion and shadow — a proportional implementation with no magic constants;
+- **Morph**: "when state changes, Liquid Glass dynamically morphs between controls across contexts, maintaining a single floating plane"; menus "pop open in place, a lightweight transition that keeps the tapped control connected to its content" (219 [283–320s]); natively driven by `GlassEffectContainer` + `glassEffectID(_:in:)`, with UIKit triggering a materialize animation by swapping `UIGlassEffect` inside an animation block. The demo approximates it with a pod ↔ panel transition on width/height/border-radius — width/height trigger layout, so production morphs should use FLIP/view-transitions animating only transform (research 09 §8 web recipe);
+- **Touch glow**: "lights up from under the fingertip and spreads across the whole element, even to nearby glass" (219 [725–737s]). The demo stacks a pointer-following radial-gradient highlight inside the pod, writing element style directly per frame instead of CSS variables (per-frame variable writes invalidate the whole subtree); the glow recipe is a demo approximation with no published numbers;
+- **Shared sampling domain**: "glass cannot sample glass" — adjacent glass elements must share one container's sampling domain or they render inconsistently (323 [1200–1229s]); the demo's single pod is naturally compliant — wrap multiple glass elements in one container;
+- Existing behaviors unchanged: the variant veil cross-fades over 0.25s; the "live content" behind (drifting blobs) animates only `transform`, feeding the pod's blur/refraction a changing scene each frame; the pod itself never translates — hover feedback belongs to system behaviors like `Glass.interactive(_:)` (A3);
+- Under `prefers-reduced-motion`, the morph transition and entrance animation are removed (pointer-following refraction/glow is input-driven rather than autonomous motion, so it stays).
+
+## Real-world examples
+
+- **iOS 26 system tab bars / toolbars**: Liquid Glass's home turf — a glass control cluster floats above content and morphs between contexts on navigation changes, keeping a single floating plane (WWDC25 219 demo scenarios);
+- **apple.com global nav**: the web production counterpart of the Liquid Glass vocabulary — after scrolling past the hero, `blur(0→20px) saturate(180%)`, the fill lifts from `rgba(250,250,252,.8)` to `.92` (stuck state) and turns solid when the menu opens, transitioning over 320ms `cubic-bezier(0.4, 0, 0.6, 1)` (apple.com production CSS, research 09 §1.4);
+- **visionOS windows**: a system-level, non-modifiable glass material that adapts to ambient brightness with no separate dark-mode switch — the official exemplar of choosing materials by semantics, not looks (HIG Materials, research 09 §1.2).
 
 ## Parameter Sensitivity
 
@@ -63,5 +76,7 @@ Where the numbers come from:
 | `dimming` | a firmer dark layer on clear, steadier text contrast on bright backdrops; past 50% the glass turns murky | text punches through 4.5:1 on bright backdrops; 0% is bare clear — the official 35% exists to rescue bright backdrops |
 | `blur` | a "thicker" pod, less legible content; past 30px it smears into mush | below 8px the glass degrades into a pale block and the refraction texture loses its substrate |
 | `tint` | stronger tint reads more branded, like colored acrylic; past 60% it masks the glass quality | 0% is the official default — untinted glass holds its shape through highlights and refraction |
+| `refraction` | more pronounced distortion and lensing; too high (>80, demo observation) tears the edges into noise and makes the backdrop illegible | distortion falls back to pure blur; 0 = refraction layer off, leaving blur + inner highlight only |
+| `morph` → panel | the enlarged state deepens the shadow and boosts refraction proportionally to width — the official "bigger elements feel thicker" statement (219 [422–445s]) | back to the capsule: minimal footprint, baseline refraction, the quietest visual |
 
 Working ranges: start dimming at the official 35% and raise it only over bright backdrops; blur 12–24px; tint ≤30% for light branding. Native first: with SwiftUI/UIKit available use `glassEffect` — web approximation is always the downgrade path.

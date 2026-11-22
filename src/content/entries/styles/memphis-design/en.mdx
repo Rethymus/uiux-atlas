@@ -1,0 +1,73 @@
+## Structure & DOM
+
+Memphis is a "pattern field + card" two-layer build: the whole scene is a cream laminate field, black-outlined motifs scatter asymmetrically across it (a decorative layer), and one hard-offset-shadow action card floats on top — **the motifs never yield to text; the card stands out via hard shadow and outline alone**.
+
+```html
+<div class="scene">
+  <svg class="pattern" aria-hidden="true"><!-- squiggles/zigzags/dots --></svg>
+  <div class="card">
+    <h2>Headline (outlined)</h2>
+    <button class="btn">Shuffle ↻</button>
+  </div>
+</div>
+```
+
+Key points:
+
+- All motifs are inline SVG (path/polyline/circle), `aria-hidden` decoration with `pointer-events: none`;
+- The card outline and its hard offset shadow (a `0-blur` shadow at `2× stroke width`) share one black — thicken the outline and the shadow follows;
+- Motif placement uses **deterministic pseudo-random** (integer-hashed slots): the same seed reproduces the same layout, no flicker.
+
+## Styling & Parameters
+
+Four parameters: one CSS variable, three JS-type params (re-laid on store change):
+
+```css
+.scene {                       /* classic arrangement: the four hues verbatim from research 03 §13 */
+  --mm-turquoise: #3eb8b0;     /* hexes are baseline settings; the research records no values */
+  --mm-coral: #ff6f61;
+  --mm-yellow: #ffd449;
+  --mm-ink: #141414;
+  --mm-cream: #f6f1e7;
+}
+.scene[data-palette="shuffle"] { --mm-a: coral; --mm-b: yellow; --mm-c: turquoise; }
+.pattern circle,
+.pattern polyline,
+.pattern path { stroke-width: var(--mm-stroke); } /* outline weight, 3px baseline */
+.card {
+  border: var(--mm-stroke) solid var(--mm-ink);
+  box-shadow: calc(var(--mm-stroke) * 2) calc(var(--mm-stroke) * 2) 0 var(--mm-ink);
+}
+```
+
+Where the numbers come from:
+
+- "Pattern density & stacking layers, clashing palette (no-harmony constraint), stroke weight, motif library (squiggle/zigzag/dot), asymmetric composition" are all tunable variables listed verbatim in research 03 §13, **none with recorded values** — 3px stroke, density 8 and the four hexes are this entry's baselines;
+- Palette discipline: only turquoise×coral×yellow×black; the "role swap" arrangement re-deals roles without adding a fifth hue — the correct reading of "no-harmony constraint", not unlimited coloring;
+- The hard offset shadow is syntax shared with Neo-Brutalism (cf. this atlas's neo-brutalism entry, `4px 4px 0 #000`), but Memphis' skeleton is the **pattern** while brutalism's is the **border**.
+
+## Motion & Interaction
+
+Memphis motion keeps a print-like flatness — the card pops on the pattern field with no long ease-out tails:
+
+- **Entrance**: the card lands with a 2° tilt over 0.45s `cubic-bezier(0.22, 1, 0.36, 1)`, once;
+- **Button feedback**: hover grows the offset in reverse (`translate: -1px -1px` + longer shadow); `:active` presses the button "into" its shadow until it hits zero — squashing the hard shadow is the most honest press feedback this style has;
+- **Shuffle**: swaps to a new deterministic seed and re-lays motifs instantly (no transition) — like pulling another silkscreen print;
+- Under `prefers-reduced-motion: reduce` the entrance and button transitions stop; Shuffle still works instantly — motion is expendable, interaction is not.
+
+## Real-world examples
+
+- **Carlton room divider (1981, Ettore Sottsass)** — Memphis' founding icon: zigzag shelving in clashing plastic laminate, the physical prototype of "pattern stacking + no-harmony color" (research 03 §13).
+- **Miami Vice and Nickelodeon (1980s)** — two recorded anchors of Memphis' mid-80s-to-mid-90s spread through pop culture; the neon zigzags and color blocks remain its mass-memory carriers (research 03 §13).
+- **Dior haute couture 2011-12 and Missoni 2015** — two high-profile fashion homages, evidence for the "limited collab / campaign page" usage rather than whole-site adoption (research 03 §13; enlighten is explicit that on the web it's mostly brand assets/patterns/campaign pages).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stroke` | the black gets bossy, card hard shadows thicken in step — stronger poster flatness; past 4px small motifs smear into black blobs | the outline fades and motifs become generic colored decoration; at 1px Memphis loses its black skeleton |
+| `density` | a fuller pattern field and a stronger "stacked" read; past 12 the motifs compete with the card | the field empties into "accents"; at ≤3 the style is barely identifiable |
+| `motif` | — (enum: squiggle is the most "Memphis", zigzag the sharpest, dots the most restrained) | — (dots at low density read Pop-Art, not Memphis) |
+| `palette` | the shuffle arrangement concentrates clash on the warm end (coral field, yellow card) — louder | classic (cool field, warm blocks) is the recorded historical arrangement — calmer |
+
+Working ranges: stroke 2.5–4px, density 6–10. Motifs stay decorative; text and actions always live on solid cards. Any urge to add a fifth hue, a gradient or a blurred shadow strays off the no-harmony discipline.

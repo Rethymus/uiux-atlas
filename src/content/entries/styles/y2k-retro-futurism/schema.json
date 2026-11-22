@@ -1,0 +1,114 @@
+{
+  "name": "Y2K Retro-Futurism",
+  "nameZh": "Y2K 复古未来主义",
+  "aliases": ["Y2K 美学", "千禧复古未来主义", "Y2K Aesthetic"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "1990 年代末–2000 年代初的科技乐观主义:金属铬/虹彩油膜渐变、半透明果冻塑料、荧光色配铬银、像素字体与低分辨率伪影——把「未来的想象」做成怀旧素材。",
+    "en": "Late-90s/early-2000s techno-optimism: chrome and iridescent-oil-slick gradients, translucent jelly plastic, fluorescent accents over chrome silver, pixel type and low-res artifacts — nostalgia built from an imagined future."
+  },
+  "origin": {
+    "zh": "以 1990 年代末–2000 年代初产品与时尚为素材的互联网美学;名称源于程序员 David Eddy 对「2000 年问题」的缩写;CARI 创始人 Evan Collins 建立「Y2K Aesthetic Institute」;前接孟菲斯、后接 Frutiger Aero;2020 年代复兴与疫情及经济衰退相关(学者 Xiaochun Yang,SHS Web of Conferences 2023)(调研 03§12)。",
+    "en": "An internet aesthetics built from late-90s/early-2000s products and fashion; the name comes from programmer David Eddy's abbreviation for the 'Year 2000 problem'; Evan Collins (CARI founder) built the Y2K Aesthetic Institute; it follows Memphis and precedes Frutiger Aero; its 2020s revival has been tied to pandemic and recession moods (Xiaochun Yang, SHS Web of Conferences 2023) (research 03 §12)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "chromeStops",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "铬/虹彩渐变的光谱停靠点数。调研把「铬/虹彩渐变(光谱色停靠点)」列为可调变量但未记载具体数量(design-styles.enlighten-media.net y2k 页);默认 5 为本条目基准设定——首尾两个停靠点固定银白以保证「金属」读感,中间均匀插入光谱色。",
+        "en": "Number of spectral stops in the chrome/iridescent gradient. The research lists 'chrome/iridescent gradient (spectral color stops)' as a tunable variable without a specific count (enlighten Y2K page); the default 5 is this entry's baseline — the first and last stops are pinned to silver-white so it still reads as metal, with spectral hues spread evenly between."
+      }
+    },
+    {
+      "type": "number",
+      "name": "jellyAlpha",
+      "min": 0.15,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.55,
+      "cssVar": "--y2k-jelly-alpha",
+      "effect": {
+        "zh": "果冻按钮的半透明填充 alpha。调研把「半透明『果冻』填充与描边」列为可调变量但未记载数值;默认 0.55 为本条目基准设定(0.15 极限值仅演示透明极限,正文可读性要求见 a11y)。透明塑料的源头参照是 iMac G3 的 blobject 外壳(调研 03§12)。",
+        "en": "Fill alpha of the jelly button. The research lists 'translucent jelly fill and border' as a tunable variable without values; the 0.55 default is this entry's baseline (the 0.15 floor exists only to demo the limit; see a11y for text-contrast rules). The source referent of translucent plastic is the iMac G3 blobject shell (research 03 §12)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "gloss",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 1,
+      "cssVar": "--y2k-gloss",
+      "effect": {
+        "zh": "镜面高光强度倍率,作用于果冻顶部的椭圆高光与铬字的辉光。调研把「镜面高光与反射强度」列为可调变量,未记载数值;倍率 1 为基准设定。镜面高光的官方定性参照:Apple WWDC25 219 把 specular highlights 描述为材质定义手段(调研 09§1.4d,属 2025 年 Liquid Glass 语境的风格亲缘)。",
+        "en": "Specular-highlight strength multiplier applied to the jelly's elliptical top sheen and the chrome title's glow. The research lists 'specular highlights and reflection strength' as a tunable variable without values; multiplier 1 is the baseline. Official qualitative referent for specular highlights: Apple's WWDC25 session 219 names them a material-defining device (research 09 §1.4d — a 2025 Liquid Glass cousin of this period trait)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "grain",
+      "options": [
+        { "value": "off", "label": { "zh": "干净", "en": "Clean" } },
+        { "value": "on", "label": { "zh": "低清伪影", "en": "Low-res grain" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-grain)。on 时叠加像素化网格纹理,模拟「低分辨率与 JPEG 伪影作为年代徽章」(调研 03§12 原文特征);off 为干净现代渲染。",
+        "en": "JS-type param (demo subscribes and toggles data-grain). on overlays a pixel-grid texture evoking 'low resolution and JPEG artifacts as period badges' (verbatim trait from research 03 §12); off is clean modern rendering."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "铬字依赖 background-clip: text——Chromium/Safari 长期要求 -webkit-background-clip 前缀,Firefox 49+ 无前缀;本条目统一同时写前缀与无前缀两行,并配实色回退(支持数据为社区通行口径,未在本次会话逐浏览器核验)。",
+      "en": "Chrome type depends on background-clip: text — Chromium/Safari have long required the -webkit-background-clip prefix, Firefox 49+ is unprefixed; this entry always writes both prefixed and unprefixed lines plus a solid-color fallback (support data is community convention, not re-verified per-browser in this session)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 background-clip: text 时,标题回退为银白实色 + 柔和光晕(可读性不受损);不支持 conic/radial 渐变的极旧环境退化为单色荧光底 + 铬银描边,保留荧光×铬银的配色骨架。",
+    "en": "Without background-clip: text, the title falls back to solid silver-white with a soft glow (readability intact); on very old engines without conic/radial gradients, degrade to a single fluorescent backdrop with chrome-silver edges, keeping the fluorescent × silver skeleton."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "音乐/时尚潮流的活动发布页、专辑与演出物料(调研 03§12:当下由 Charli XCX、aespa/XG 等音乐文化推动)", "en": "Music/fashion campaign pages, album and gig collateral (research 03 §12: currently driven by Charli XCX, aespa/XG and peers)" },
+      { "zh": "千禧主题的营销彩蛋与限时活动页——短时、情绪型场景最能吃下强烈年代感", "en": "Millennium-themed marketing easter eggs and limited-time pages — short, mood-driven scenes absorb the strong period flavor best" },
+      { "zh": "低信息密度装饰层:徽章、挂件、加载彩蛋,配 HUD 读数与像素纹理点题", "en": "Low-density decorative layers: badges, widgets, loading easter eggs, with HUD readouts and pixel textures to set the tone" }
+    ],
+    "avoid": [
+      { "zh": "长文阅读与数据密集界面——铬渐变与荧光色持续抢占注意力,信息层级被装饰淹没", "en": "Long-form reading and data-dense screens — chrome gradients and fluorescent hues keep stealing attention and bury hierarchy" },
+      { "zh": "把果冻半透明色用于关键操作主色——alpha 稀释对比度,表单与警示场景不成立", "en": "Jelly translucency as the primary action color — alpha dilutes contrast; forms and warning contexts can't carry it" },
+      { "zh": "需要多年复用的品牌系统——年代感是双刃剑,调研记载其复兴与经济情绪周期相关,过时风险高", "en": "Brand systems meant to last years — period flavor cuts both ways; the research ties its revival to economic moods, so obsolescence risk is high" }
+    ]
+  },
+  "a11y": {
+    "zh": "铬渐变文字要对渐变的「最亮与最暗停靠点」分别核对 4.5:1(WCAG 2.1 SC 1.4.3),做不到就加 text-shadow 深色衬底或换实色;果冻填充 alpha<0.3 时其上文字对比度不可控,正文禁用;HUD 读数与像素纹理属纯装饰,必须 aria-hidden,不得承载关键信息(SC 1.4.11:装饰元素不承担传达义务,但也不得干扰)。",
+    "en": "Check chrome-gradient type against both the brightest and darkest gradient stops for 4.5:1 (WCAG 2.1 SC 1.4.3); if it fails, add a dark text-shadow backing or switch to solid color; never set body text on jelly fills below alpha 0.3 — contrast becomes uncontrolled; HUD readouts and pixel textures are purely decorative and must be aria-hidden, carrying no key information (SC 1.4.11)."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Y2K_aesthetic",
+    "https://design-styles.enlighten-media.net/pages/y2k/",
+    "https://trends.daisyui.com/ui-design-trends-2025/",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块 Y2K 千禧播放器卡片:多停靠点铬质渐变大标题、半透明果冻按钮(顶部椭圆镜面高光 + 半透明描边)、荧光色×铬银配色,叠加 HUD 读数与低清像素纹理,悬浮在星空点阵背景上。",
+      "en": "Replicate a Y2K millennium player card: a multi-stop chrome-gradient headline, a translucent jelly button (elliptical top specular + translucent border), fluorescent × chrome-silver palette, HUD readouts and low-res pixel grain, floating over a starfield-dot backdrop."
+    },
+    "acceptance": [
+      { "zh": "标题用 background-clip: text 的铬质多停靠点渐变,首尾停靠点固定银白,同时写 -webkit- 前缀", "en": "Headline uses background-clip: text with a multi-stop chrome gradient, first/last stops pinned to silver-white, with the -webkit- prefix in place" },
+      { "zh": "果冻按钮的填充 alpha、高光倍率严格使用参数快照值,不要自行调整", "en": "Jelly fill alpha and gloss multiplier use the exact parameter snapshot values; do not adjust them" },
+      { "zh": "HUD 读数与像素纹理为纯装饰并 aria-hidden,不承载任何操作信息", "en": "HUD readouts and pixel grain are decorative and aria-hidden, carrying no actionable information" },
+      { "zh": "提供 background-clip: text 的实色回退与 @supports 门控", "en": "Provide a solid-color fallback and @supports gating for background-clip: text" },
+      { "zh": "prefers-reduced-motion 时关闭闪动/脉冲动画,仅保留静态铬质与果冻质感", "en": "Under prefers-reduced-motion, stop blink/pulse animations and keep only the static chrome and jelly surfaces" }
+    ]
+  }
+}

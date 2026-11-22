@@ -1,9 +1,17 @@
 # UI/UX 设计全解图集 · 设计语言规范(Single Source of Truth)
 
-- 版本:v2.5 · 2026-11-21(v2.5:浅色主题现代化——`--bg-wash` 三盏环境色温灯 + `--card-lift` 卡片浮起 + hero 光晕,回应「浅色过素」验收意见;v2.4:回填第五张页面蓝图「趋势追踪页」;v2.3 曾补「资源导航页」与「继续深入卡」;既有结构与数值保留)
+- 版本:v2.6 · 2026-11-22(v2.6:材质层——Apple 中性阶梯 token + 三档参数化材质组(mat-thin/regular/thick × 深浅)+ `.material` 工具类 + 五面语义接入 + 按压对 + 焦点环统一,参数全部溯源 `out/design-study/09-apple-materials.md`;v2.5:浅色主题现代化——`--bg-wash` 三盏环境色温灯 + `--card-lift` 卡片浮起 + hero 光晕;v2.4:回填第五张页面蓝图「趋势追踪页」;v2.3 曾补「资源导航页」与「继续深入卡」;既有结构与数值保留)
 - 适用范围:`uiux-atlas` 全站(Astro 静态站 + React 岛屿;**43 个条目 × 中英双语 = 86 个 MDX** + schema)
 - 地位:本文件是本站设计决策的**单一事实来源**;与它冲突的样式/组件实现以本文件为准,改动先改本文件。
 - 用法:agent 与人读同一份。所有 token 给具体值;所有决策给理由;未核验处如实标注。
+
+**v2.5 → v2.6 变更摘要(材质层)**
+
+1. §2.1 新增 **Apple 中性阶梯 token**(两主题各一套):iOS `systemGray` 六阶 + `systemBackground`/`systemGroupedBackground` 三阶 + `separator` α 族(`--ios-*` 前缀;官方值溯源 09 §2,深色 separator 基色 (84,84,88)@0.6 已按 09 勘误)。工作台四级背景**并存不替换**——12 对 AA 对比度配对不受影响(`check:contrast` 复跑 12/12)。
+2. §2.8 新增**材质层章节**:参数化材质 token 组(每档 blur/saturate/叠色 tint α/内高光/细边框/阴影 × 深浅两态 × 三档)+ `.material` 工具类 + **五面语义接入**(站点 header、过滤栏、参数面板、演示面板、Prompt 导出框)+ `@supports` 门控回退。v2.1「玻璃只允许两条 sticky 带」纪律由本节**接替更新**:两条 sticky 带升入同体系,内容层新增三块语义面板接入(各自静态、不动画 backdrop-filter)。
+3. §3 统一状态集补**按压对**规格:全站按钮(主/次/chip/seg/tab)按压 = `scale(var(--press-scale) 0.96)` + alpha 状态层(`--fill-2`),Apple `UIControl.isHighlighted` 成对语义(09 §4;0.96 为 09 引用的社区量级,官方未公布,如实标注)。容器级卡片保持 0.99。
+4. §8 焦点环改 **Apple web 官方规格**(09 §3 实抓):2px accent + offset **1px**(原 2px 非官方值)+ 圆角跟随,容器级 offset **3px**;token 化 `--focus-ring-*`。
+5. §2.6 动效预留语义:`--ease-card-spring`(卡槽弹簧 = snappy 档)与 `--dur-overlay-in`(浮层入场 = --dur-3 × --ease-decel)先锁名占位,启用不新造 token。
 
 **v2.2 → v2.3 变更摘要(规范缺口回填)**
 
@@ -134,7 +142,7 @@
 | `--cat-type` | `#4353e6` | 4.98 |
 | `--cat-layout` | `#0a753c` | 4.97 |
 
-浅色附加规则(§2 逐项对映):① **方向反转**——深色阶梯「浮起 = 提亮」(卡比页底亮、hover 提亮、`--accent-strong` 提亮),浅色整体反转「浮起 = 提白」:卡(白)比页底灰、hover 加深、`--accent-strong` 加深(= 02 §1.4 TDesign「亮色 hover=6 加深邻位、暗色往浅走」的同构做法,语义名不变);新增 `--seg-thumb`(选中浮起面)token 承载 seg/bd-tabs 指示块与导航当前项:深色 = `--surface-2`、浅色 = `--surface`。② **阴影减弱**:`--shadow-1/2/3` 浅色 = `rgb(28 39 58 / .08/.12/.16)`(02 §4.1 TDesign 亮色三层投影 5–12% 黑同档),深色保持 `.35/.45/.55`。③ `--stage-glint`(v2.1 新增,原 `.demo-stage` 硬编码 `rgb(255 255 255 / .02)` token 化):深色白 2%、浅色白 65%(02 §4.2 亮色内描边思路)。④ `color-scheme`:深色 `dark`、浅色 `light`(原生控件/滚动条跟随)。⑤ `--glass-bg` 引用 `--bg` 的 color-mix、`::selection` 引用 `--accent` 的 color-mix,自动随主题。⑥ demo 舞台内部布景与条目 demo 组件**不随主题变**(条目自身内容);站点侧仅 hero/bento 的静态微缩预览为自包含画作,两主题通用,同样不改。⑦ **环境光晕与卡片浮起(v2.5 新增,回应「浅色过素」的验收意见)**:`--bg-wash` = 三盏低饱和色温灯(蓝 `rgb(26 105 210/.075)`、紫 `rgb(122 90 248/.065)`、薄荷 `rgb(13 115 112/.055)` 的 radial-gradient 组,α≤7.5%)以 `background-image`(no-repeat)铺于文档顶部,随滚动自然离场——刻意不用 fixed 层/`background-attachment: fixed`(滚动重绘、无障碍滚动与页面捕获均会劣化),深色不定义 → 纯 `--bg` 舞台不变;`--card-lift` = 白卡顶缘受光内描边 `inset 0 1px 0 rgb(255 255 255/.9)` + 1px 投影,作用于 entry/cat/info 卡与 demo/param 面板;hero 区加同 hue 9.5%/7.5% 双灯光晕;浅色页头玻璃改白 66%。α≤7.5% 对 §8 的 12 对 AA 配对无实质影响(check:contrast 复跑 12/12 通过)。首页 bento 的 count-up 数字滚动为 dogfood 巧思,截图/存档须等动画落定(≥2s)后取值。
+浅色附加规则(§2 逐项对映):① **方向反转**——深色阶梯「浮起 = 提亮」(卡比页底亮、hover 提亮、`--accent-strong` 提亮),浅色整体反转「浮起 = 提白」:卡(白)比页底灰、hover 加深、`--accent-strong` 加深(= 02 §1.4 TDesign「亮色 hover=6 加深邻位、暗色往浅走」的同构做法,语义名不变);新增 `--seg-thumb`(选中浮起面)token 承载 seg/bd-tabs 指示块与导航当前项:深色 = `--surface-2`、浅色 = `--surface`。② **阴影减弱**:`--shadow-1/2/3` 浅色 = `rgb(28 39 58 / .08/.12/.16)`(02 §4.1 TDesign 亮色三层投影 5–12% 黑同档),深色保持 `.35/.45/.55`。③ `--stage-glint`(v2.1 新增,原 `.demo-stage` 硬编码 `rgb(255 255 255 / .02)` token 化):深色白 2%、浅色白 65%(02 §4.2 亮色内描边思路)。④ `color-scheme`:深色 `dark`、浅色 `light`(原生控件/滚动条跟随)。⑤ v2.1 的「`--glass-bg` 引用 `--bg` 的 color-mix」已随 v2.6 材质层改组:玻璃/材质底色 = `--mat-*-tint`(浅色基色取 09 §1.4b 官方 scrim `rgb(250,250,252)`,自动随主题),`::selection` 仍引用 `--accent` 的 color-mix。⑥ demo 舞台内部布景与条目 demo 组件**不随主题变**(条目自身内容);站点侧仅 hero/bento 的静态微缩预览为自包含画作,两主题通用,同样不改。⑦ **环境光晕与卡片浮起(v2.5 新增,回应「浅色过素」的验收意见)**:`--bg-wash` = 三盏低饱和色温灯(蓝 `rgb(26 105 210/.075)`、紫 `rgb(122 90 248/.065)`、薄荷 `rgb(13 115 112/.055)` 的 radial-gradient 组,α≤7.5%)以 `background-image`(no-repeat)铺于文档顶部,随滚动自然离场——刻意不用 fixed 层/`background-attachment: fixed`(滚动重绘、无障碍滚动与页面捕获均会劣化),深色不定义 → 纯 `--bg` 舞台不变;`--card-lift` = 白卡顶缘受光内描边 `inset 0 1px 0 rgb(255 255 255/.9)` + 1px 投影,v2.6 起作用于 entry/cat/info 卡(demo/param 面板移入 §2.8 材质层,顶缘内高光由 `--mat-*-highlight` 承担);hero 区加同 hue 9.5%/7.5% 双灯光晕;浅色页头玻璃 v2.5 的「白 66%」覆写已删除,由 `--mat-regular-tint`(浅 `rgba(250,250,252,.8)`)随主题接管。α≤7.5% 对 §8 的 12 对 AA 配对无实质影响(check:contrast 复跑 12/12 通过)。首页 bento 的 count-up 数字滚动为 dogfood 巧思,截图/存档须等动画落定(≥2s)后取值。⑧ **材质层浅色值(v2.6)**:`--mat-thin/regular/thick-tint` = `rgba(250,250,252,.6/.8/.92)`、`--mat-*-highlight` = 白 `.3/.35/.4`(09 §1.4d 亮档),其余参数引用深色块定义自动随主题——全表见 §2.8。
 
 **六个分类 accent(装饰原值 = 文本用值)**。原值全部取自 Apple 官方暗色色板(01 §3.2 一手 `alt` 实读);六个值经脚本实测在 `--bg`/`--bg-elev`/`--surface` 上全部 ≥4.76:1。这是 04 §2.1 Webflow「Explosion of color:整套色系上全线」的克制版——六个分类色**共享同一明度框架**,不是六个独立主题:
 
@@ -149,13 +157,30 @@
 
 用法纪律(← Apple:"一个颜色只承担一个语义";Radix:step9 solid 面积 <5%):分类色只出现在 ① 首页 bento 分类格标识条与数字 ② 条目页头部 accent 渐变带 ③ 面包屑/列表页头当前分类。**不**用于链接、按钮、边框;全站可交互语义只有 `--accent` 一个蓝。
 
-**玻璃材质 token**(apple.com localnav 实测值,01 §4.3/§5.4):只允许两条 sticky 带使用(站点 header `global.css:284-293`、列表页过滤栏 `global.css:992-998`),内容层禁用(NN/g 对 Liquid Glass 的可用性批评 + Apple iOS 27 主动回调透明度,04 §2.3「玻璃退潮」证据链):
+**玻璃材质 token(v2.6 起由 §2.8 材质层接管)**:v2.1 的三 token(apple.com localnav 实测,01 §4.3/§5.4)`--glass-blur: 20px / --glass-saturate: 180% / --glass-bg: color-mix(in srgb, var(--bg) 88%, transparent)` 已由参数化材质组(三档 × 深浅,§2.8)接替——20px/180% 即材质层 `--mat-regular-blur/--mat-saturate` 的官方锚点,`--glass-bg`(88% 单态)升格为三态公式(常规/吸顶/实色)。v2.1「只允许两条 sticky 带,内容层禁用」纪律同步更新为 §2.8 的**五面语义接入清单**(两条 sticky 带 + 三块工作台面板;仍禁止全屏化/整页玻璃,NN/g 与 04 §2.3「玻璃退潮」的克制结论不变)。
 
-```css
---glass-blur: 20px;
---glass-saturate: 180%;
---glass-bg: color-mix(in srgb, var(--bg) 88%, transparent);  /* 等价 rgba(22,22,23,.88) 的本站换算 */
-```
+**Apple 中性阶梯 token(v2.6 新增;官方值溯源 09 §2,`--ios-*` 前缀)**:与工作台四级背景**并存不替换**——本站带蓝 hue 的工作台阶是「站点自身身份」,iOS 官方阶是「Apple 参照系与材质层基色」,两套并存(12 对 AA 配对不受影响,`check:contrast` 复跑 12/12)。深浅两态各自一套值,语义层不变、值分主题(v2.1 同规):
+
+| token | 深色(:root) | 浅色([data-theme="light"]) | 官方名(09 出处) |
+|---|---|---|---|
+| `--ios-gray` | `#8e8e93` | `#8e8e93` | systemGray(两态同值) |
+| `--ios-gray2` | `#636366` | `#aeaeb2` | systemGray2 |
+| `--ios-gray3` | `#48484a` | `#c7c7cc` | systemGray3 |
+| `--ios-gray4` | `#3a3a3c` | `#d1d1d6` | systemGray4 |
+| `--ios-gray5` | `#2c2c2e` | `#e5e5ea` | systemGray5 |
+| `--ios-gray6` | `#1c1c1e` | `#f2f2f7` | systemGray6 |
+| `--ios-bg` | `#000000` | `#ffffff` | systemBackground |
+| `--ios-bg-secondary` | `#1c1c1e` | `#f2f2f7` | secondarySystemBackground |
+| `--ios-bg-tertiary` | `#2c2c2e` | `#ffffff` | tertiarySystemBackground |
+| `--ios-grouped-bg` | `#000000` | `#f2f2f7` | systemGroupedBackground |
+| `--ios-grouped-bg-secondary` | `#1c1c1e` | `#ffffff` | secondarySystemGroupedBackground |
+| `--ios-grouped-bg-tertiary` | `#2c2c2e` | `#f2f2f7` | tertiarySystemGroupedBackground |
+| `--ios-separator` | `rgba(84,84,88,0.6)` | `rgba(60,60,67,0.29)` | separator(α 色,「允许底层内容透出」) |
+| `--ios-separator-opaque` | `rgb(56,56,58)` | `rgb(198,198,200)` | opaqueSeparator |
+| `--ios-label-secondary` | `rgba(235,235,245,0.6)` | `rgba(60,60,67,0.6)` | secondaryLabel(标签透明度族) |
+| `--ios-fill` | `rgba(120,120,128,0.36)` | `rgba(120,120,128,0.2)` | systemFill |
+
+如实标注:① 高对比变体(09 §2.1 表的第 3/4 列)未收录——本站未启用高对比主题;② HIG 官方提醒「不要硬编码系统色值」(09 §2.1),故落为可整体切换的 token 而非散落字面值;③ separator 深色基色为 **(84,84,88)@0.6** 而非任务假设的 (235,235,245) 族——09 §2.4 已勘误((235,235,245) 是深色标签族基色)。
 
 **条目头渐变带**:静态(无动画,理由 §6-12),暗底 + 分类色低透明度双 radial,叠 4% 噪点防 banding(配方来源:`05 §4.3` grain 参数 `feTurbulence baseFrequency 0.65 / numOctaves 3`,与站内 `materials/grain-gradient` 条目配方一致;轻量变体 0.9/2 octaves + opacity 0.16 留档):
 
@@ -259,6 +284,17 @@
 
 标注:`--ease-spring` 是推导值非官方;HIG 原则「让人可以取消动效」= 任何可交互动效在新输入到来时直接跳终态(transition 打断即天然满足,JS 动画需手动 cancel)。Semi 的「动效 token 默认全 0ms、开启才有时长」(03 §3)是 §8 全局 RM 降级的理论原型。
 
+**预留语义(v2.6 新增;09 §5.3 场景档位,启用前先锁名,启用时不再新造 token)**:
+
+```css
+--ease-card-spring: var(--ease-spring); /* 卡槽弹簧 = snappy 语义档(0.5s / bounce 0.15,09 §5.3:
+  卡片/面板位移、抽屉推荐档);真弹簧用 linear() 采样(dogfood motion/linear-easing 条目,09 §9.3) */
+--dur-overlay-in: var(--dur-3); /* 浮层/面板入场 = --dur-3 × --ease-decel(09 §6:apple.com
+  浮层/帘幕 320ms cubic-bezier(0.4,0,0.6,1),本站取最近既有档 --dur-3 300ms × decel) */
+```
+
+材质层动效衔接纪律(§2.8):backdrop-filter/blur 本体**不参与过渡动画**(05 §5 性能红线「只动 transform/opacity/box-shadow」);材质状态切换(过滤栏玻璃化、面板出离视口等)只过渡 `background-color / border-color / box-shadow`,配 `--dur-2 × --ease-standard`。
+
 ### 2.7 z-index
 
 ```css
@@ -275,11 +311,53 @@
 
 对照(扩展预案,当前不启用):02 §4.3 TDesign 按遮挡关系定距(dialog 2500 → popup 5500,popup 是 dialog 内部元素必须压过一切 dialog);03 §2.3 Semi modal 1000/toast 1010/popover 1030/dropdown 1050/tooltip 1060/image-preview 1070/拖拽 2000。本站无模态/弹层层叠场景,小阶梯够用;若未来加 modal,按 TDesign 原则**重排整表**而非插值。
 
+### 2.8 材质层(v2.6 新增;统一参数表:颜色层级/透明度/模糊/内高光/细边框/阴影/焦点环 × 深浅两态 × 三档)
+
+「参考 Apple」的落地不是文案,是**可验证的参数化材质层**。全部数值溯源 `out/design-study/09-apple-materials.md`(下称 09);官方未公布的量级如实标注为推导/未证实。
+
+**① 三档材质 token(实现 = `global.css` §1 token 组 + §1c `.material` 工具类)**
+
+| 档 | blur | saturate | 叠色 tint(深) | 叠色 tint(浅) | 内高光(深) | 内高光(浅) | 细边框 hairline | 阴影 |
+|---|---|---|---|---|---|---|---|---|
+| `--mat-thin-*` | 12px | 180% | `rgba(22,22,23,.55)` | `rgba(250,250,252,.6)` | 白 `.08` | 白 `.3` | separator α | none |
+| `--mat-regular-*` | 20px | 180% | `rgba(22,22,23,.8)` | `rgba(250,250,252,.8)` | 白 `.11` | 白 `.35` | separator α | `--shadow-1` |
+| `--mat-thick-*` | 28px | 180% | `rgba(22,22,23,.88)` | `rgba(250,250,252,.92)` | 白 `.14` | 白 `.4` | separator α | `--shadow-2` |
+
+另有 `--mat-fallback`(深 `var(--surface)` / 浅 `var(--surface)` 实底)与 `--mat-hairline`(引用 `--ios-separator`,随主题)。溯源与未证实标注:
+
+- **blur 基准 = apple.com localnav 生产 CSS** `backdrop-filter: saturate(180%) blur(20px)`(09 §1.4a,官方 CSS 实抓)→ `--mat-regular-blur 20px`。iOS 四档各自的模糊半径官方从未公布(09 ⚠️未证实)→ thin/thick 取基准 ±8px 的站点推导阶梯(12/28),用途按 09 §1.2 官方语义选档,不按观感选档。
+- **tint 基色 = apple.com 官方 scrim 色板**(09 §1.4b):浅 `rgb(250,250,252)` / 深 `rgb(22,22,23)`;α 档位——regular `0.8` = 官方「常规玻璃」档,**thick `0.88/0.92` = 官方「吸顶」档(深 .88 / 浅 .92 逐字)**,thin(0.55/0.6)为站点推导更透档(对应 09 §1.2 thin「弥散+轻微压暗」语义)。深浅按 Apple 方式区分 = **基色换、结构不换**(同一 α 体系,浅色近白、深色近黑)。
+- **内高光(顶缘受光)= 09 §1.4d web 复刻惯例**(亮 `.25–.4` / 暗 `.08–.15`;具体强度官方未公布 ⚠️未证实,本站取档内三点 .08/.11/.14 与 .3/.35/.4),实现为 `box-shadow: inset 0 1px 0` 顶缘 1px 受光(lensing 定性依据 09 §8-1)。
+- **hairline = 官方 separator α 色**(09 §1.4e/§2.4):深 `rgba(84,84,88,.6)` / 浅 `rgba(60,60,67,.29)`,三档统一——官方对 hairline 线宽/颜色无公开数值,「把 separator 色作玻璃 hairline 基色」是 09 给出的符合系统语感的做法;线宽恒 1px。
+- **阴影**挂既有 §2.5 三档(thin 不投影 / regular `--shadow-1` / thick `--shadow-2`),材质自身不新造阴影值;`inset 高光 + 外阴影` 同一条 box-shadow 声明承载。
+- **能力门控**:`@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))` 内才写 `backdrop-filter + tint`(09 §1.4a apple.com `@supports(backdrop-filter: initial)` 同法);门控外回退 `--mat-fallback` 实底 + hairline + 内高光——层次不塌方,可读性不受损。
+- **性能红线**:backdrop-filter 是静态材质属性,**不参与 transition/animation**(05 §5);材质状态切换只过渡 `background-color/border-color/box-shadow`(`--dur-2 × --ease-standard`)。
+
+**② 工具类(§1c)**:`.material`(默认 = regular 档,Apple「regular 为默认」09 §1.2)、`.material--thin`、`.material--thick`——通过覆写组件级 `--mat-blur/--mat-tint/--mat-highlight/--mat-shadow` 四个内部变量换档,档位可整体套用,也可按语义混搭单参数(见下表过滤栏吸顶态 = regular blur × thick tint)。
+
+**③ 五面语义接入(全站材质消费清单;其余区域禁用 backdrop-filter)**
+
+| 面 | 档位组合 | 语义依据(09) |
+|---|---|---|
+| 站点 header(sticky 带 1) | mat-regular 全套(20px + tint .8 + 内高光 + hairline) | apple.com localnav 即此配方(09 §1.4a/b 官方值逐字) |
+| 列表页过滤栏(sticky 带 2,`.is-glass` 吸顶态) | **regular blur × thick tint** = Apple 三态公式第 2 态「吸顶」(blur 不变、tint α 上浮 8 个百分点)+ `--shadow-2` | 09 §1.4b 三态配方:常规 .8 → 吸顶 .92/.88 → 展开实色;本站用前两态 |
+| 参数面板(仪表台,sticky) | mat-thick 全套(28px + tint .88/.92 + 内高光 .14/.4 + hairline + `--shadow-2`) | 09 §1.2 官方:「更厚的材质更不透明,对细笔画文本对比更好」——12–13px mono 密集数值取最厚档 |
+| 演示面板(workbench 左) | mat-regular 全套 | Apple overlay 默认档(09 §1.2「regular(默认)」);舞台内容自绘不受影响 |
+| Prompt 导出框(`.prompt-box`) | mat-regular 全套 | 同上;代码块本体 `--bg-elev` 不透明,可读性不受影响 |
+
+克制纪律(与 v2.1 一脉相承):仍**禁止**把玻璃铺进 hero/bento/卡片网格/MDX 正文(04 §2.3「玻璃退潮」+ NN/g 可用性结论);材质只给「功能层」(导航带 + 工作台面板),不给内容装饰。行内分隔线(`.param-row`、`.demo-panel-head`、面板边框)同步换用 separator α 色(09 §2.4「允许底层内容透出」的语义)。
+
+**④ 按压对(Apple highlighted 语义,09 §4)**:全站按钮(主 `btn-primary` / 次 `btn-ghost` / chip `fchip`/`lang-switch`/`theme-toggle`/`hero-open`/`param-reset`/`cc-toggle` / seg / enum-seg / bd-tab)按压态统一 = `transform: scale(var(--press-scale))` + alpha 状态层(`--fill-2` 底;btn-primary 为 accent 加深变体)——`UIControl.isHighlighted`「自动随 touch 事件设置与清除」的成对语义(`:active` 进入、释放/移出退出,09 §4 官方);`scale 0.96` 取 09 §4 M1 引用的社区通行量级(**官方未公布 ⚠️未证实,如实标注**);apple.com `:active` = 只换底色不加 outline(09 §4 官方 CSS 实抓)→ 本站按压不新增 outline。容器级卡片(entry-card/bento-cell)保持 `scale(0.99)` 轻压(控件 0.96 / 容器 0.99 两级)。RM 下全部 `transform: none` 直达终态、色彩反馈保留(`global.css` §9)。
+
+**⑤ 焦点环(全站统一,09 §3 apple.com 生产 CSS 逐字规格)**:2px `--focus-ring-color`(= accent)+ `outline-offset: var(--focus-ring-offset) = 1px` + `border-radius: inherit`(现代浏览器 outline 跟随圆角);容器级元素(entry-card/bento-cell)offset 3px(`--focus-ring-offset-container`,apple.com `--sk-focus-offset-container` 同值);v2.5 前的 offset 2px 为非官方值,已统一。详见 §8。
+
+**⑥ 与既有层次体系的关系**:材质层是**第五个背景层级**(bg → bg-elev → surface → surface-2 → 材质面)的「透」变体——同一语义面板既可用实底(surface)也可用材质面(同族 α tint + blur),切换不改变层级次序;12 对 AA 配对全部建立在实底 token 上,材质 α 合成后的面板底色与实底 luminance 差 <3%(深色 tint .8 压 `--bg` ≈ rgb(20,20,21) vs `--surface` #161b23;浅色 .92 压 `--bg` ≈ rgb(249,250,251) vs #fff),文本对比度不受实质影响。
+
 ---
 
 ## 3. 组件规范(结构与状态)
 
-统一状态集:每个交互组件必须实现 `rest / hover / focus-visible / active / disabled` 五态;hover 只允许动 `border-color`、`background` 与 `transform`,时长 `--dur-1`;focus 统一 §8 的 ring。
+统一状态集:每个交互组件必须实现 `rest / hover / focus-visible / active / disabled` 五态;hover 只允许动 `border-color`、`background` 与 `transform`,时长 `--dur-1`;focus 统一 §8 的 ring;**active 按压对(v2.6)= `scale(var(--press-scale) /* 0.96 */)` + alpha 状态层(`--fill-2`;btn-primary 为 accent 加深变体)——Apple `UIControl.isHighlighted` 成对语义(09 §4),规格详见 §2.8-④;控件级 0.96、容器级卡片 0.99**。
 
 **Card(`.entry-card` / `.bento-cell` / `.info-card`)**
 - 结构:`<a class="entry-card">` = 标题(`--step-1`/600)→ tagline(`--step--1`/`--text-dim`,2 行截断)→ meta 行(Chip × 2);bento 变体见 §4.1。
@@ -546,15 +624,19 @@
 - 六分类 accent 对全部三层背景 ≥4.76:1,可作文本色;红绿永不作唯一成败标识(§3 Badge)。
 - 高对比扩展预案(01 §3.2 HIG Increase Contrast 变体,如 Blue #5CB8FF):v2.1 已建浅色全套主题(§2.1),高对比变体仍不在列;若做,只提亮/加深文本与 accent 两档,不动背景阶梯。
 
-**Focus ring(全局强制)**:
+**Focus ring(全局强制;v2.6 起 = apple.com 生产 CSS 逐字规格,09 §3)**:
 ```css
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: inherit; /* 或 4px 兜底 */
+  outline: var(--focus-ring-width) solid var(--focus-ring-color); /* 2px × accent */
+  outline-offset: var(--focus-ring-offset);                       /* 1px(apple.com :focus-visible 同值) */
+  border-radius: inherit; /* 圆角跟随元素(outline 现代浏览器自动跟随) */
+}
+.entry-card:focus-visible,
+.bento-cell:focus-visible {
+  outline-offset: var(--focus-ring-offset-container); /* 容器级 3px(apple.com --sk-focus-offset-container) */
 }
 ```
-组件内不得覆盖或移除(现值 `global.css:168-172`);深色上 `--accent` 8.71:1、浅色上 4.81:1(§2.1),均满足非文本 3:1;双层 ring(外 accent 内 bg)用于与 accent 底重叠的场景(btn-primary)。
+token 组(v2.6 新增):`--focus-ring-color: var(--accent)` / `--focus-ring-width: 2px` / `--focus-ring-offset: 1px` / `--focus-ring-offset-container: 3px`。v2.5 前的 `outline-offset: 2px` 为非官方取值,已按 09 §3 实抓的 apple.com 三份生产 CSS(`2px solid var(--sk-focus-color)` + `outline-offset: 1px` / 容器 3px / 小控件负偏移贴合)统一;macOS/iOS 原生焦点环像素值官方未公布(09 ⚠️未证实),本站以 Apple web 一手规格为准。组件内不得覆盖或移除;深色上 `--accent` 8.71:1、浅色上 4.81:1(§2.1),均满足非文本 3:1;双层 ring(外 accent 内 bg)用于滑杆拇指等与 accent 底重叠的场景(box-shadow 实现,不受 outline token 约束)。
 
 **prefers-reduced-motion 全局降级**:保留全局规则(`global.css:1672-1679`:时长压至 0.01ms + 迭代 1 次)并补两条工程规则:① JS 动画(WAAPI/JS 驱动)必须 `matchMedia('(prefers-reduced-motion: reduce)')` + `change` 监听实时停起(`Base.astro:96-99` 已实现);② 新增装饰动效必须先在 §6 清单登记 RM 降级方案,无降级方案不合并。§6 每条已逐一给出 RM 行为。架构佐证:Semi 把「动效 token 默认 0ms」做成全局开关(03 §3),本站的等价物就是这条全局媒体查询。05 §5 的「RM 三层策略」(CSS/JS/库内建)是移植任何第三方片段的前置检查项。
 
@@ -572,3 +654,9 @@
 4. v2.1 浅色 token 校验:`python -I .scratch-design-study/check_tokens_light.py`(2026-11-21 实跑)→ 浅色文本四级对 bg/surface = 14.29/7.00/4.94/3.17 与 15.61/7.64/5.39/3.46(--text-dim 7:1 达成;ghost 为禁用豁免档);accent 4.81/5.26、accent-strong 7.21/7.88;ok/warn/danger = 4.89/5.04/4.83(vs bg);六分类 accent 对全部四层底 min 4.56–4.98:1;accent 边对 accent-dim 复合底 4.57:1。**全部通过**(文本用值 AA ≥4.5:1;Arco/TDesign 亮色原值不达 AA 处已加深并记录)。主题切换运行时行为(dataset.theme/localStorage/BeforePaint 防闪烁)无法由静态检查覆盖,如实标注:仅通过 astro check 的类型与语法校验,未做浏览器实机验证。
 5. 未跑(如实标注):浏览器端 360px scrollWidth 实测、Lighthouse/axe 扫描、RM 下的实机走查——§7/§8 的命令级验收留给实现后执行。
 5. 素材缺口:无——五份研究本次全部读取;04 研究自身标注的未核验项(Pantone HEX、Awwwards 四维权重、Coolors 趋势页、godly 逐作品共性)随其原文如实带档,不影响本规范的取值。
+6. **v2.6 材质层校验(2026-11-22 本次会话实跑)**:
+   - `node scripts/check-theme-contrast.mjs` → **12/12 配对达标,0 解析错误,exit 0**(材质层/中性阶梯 token 新增不影响 12 对 AA 配对;深色 16.45/14.71/8.90/7.96/6.43/8.71,浅色 14.29/15.61/7.00/7.64/4.94/4.81)。
+   - `pnpm exec astro check` → **0 errors / 0 warnings / 1 hint**(hint 为 `PromptExport.tsx:76` `document.execCommand` 弃用提示,既有且本次未触碰该文件)。
+   - `pnpm exec astro build` → **186 页构建成功**(15.78s)。
+   - 深色主题目检(headless Chromium @ astro preview,截图逐张自查):① 首页 hero+bento——header 玻璃带(tint+blur)、细边 hairline 正常;② 条目页 workbench——demo-panel(mat-regular)与 param-panel(mat-thick)材质边框/顶缘内高光/行间 separator α 分隔线正常,computed style 实测 `rgba(22,22,23,.8/.88)` + `blur(20px/28px) saturate(1.8)` 与 §2.8 参数表逐值一致;③ 过滤栏停靠态(is-glass 手动置态)——computed `rgba(22,22,23,.88)` + `blur(20px) saturate(1.8)` + `rgba(84,84,88,.6)` 边 + 内高光+`--shadow-2`,卡片在玻璃后可见模糊;④ Prompt 导出框——「复制复刻 Prompt」文案逐字保留,材质正常(按钮文案为产物校验标记,未动);⑤ Tabs/Accordion/继续深入卡后段渲染正常;⑥ 浅色主题 spot-check——header/workbench 材质与可读性正常。**环境限制如实标注**:本 headless 会话 IntersectionObserver 回调不派发(探针实测 probeFired=false),`is-glass` 停靠态由手动加类验证——真实浏览器由 FilterBar 既有哨兵逻辑触发,该路径本次未改动;一张全黑截图经复测确认为 headless 合成瞬时伪影(布局与 computed style 均正确,复拍正常)。
+   - **既有问题记录(非本次引入,留档)**:桌面 ≥900 视口下,sticky 参数面板停靠范围内 Prompt 导出框会被面板遮挡(WorkbenchPanel flex 列的既有几何:面板 pinned 高度恒覆盖 prompt 静态位置;本次任务不改布局,仅材质;移动 <900 面板 static 不受影响)。

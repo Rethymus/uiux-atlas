@@ -1,0 +1,93 @@
+{
+  "name": "Scroll Overflow Behavior",
+  "nameZh": "滚动溢出行为",
+  "aliases": ["overscroll-behavior", "滚动链", "scroll chaining", "滚动穿透"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "overscroll-behavior 决定滚到边界后发生什么:contain 拦滚动链、留回弹;none 两者都拦;overflow:hidden 的容器恒在边界,天生可当弹层打开时的背景锁。",
+    "en": "overscroll-behavior decides what happens at a scroll boundary: contain blocks scroll chaining but keeps rubber-banding; none blocks both; an overflow:hidden container sits permanently at its boundary — a free background lock while overlays are open."
+  },
+  "origin": {
+    "zh": "MDN overscroll-behavior 官方语义(本次全文抓取):`auto` 默认(滚界后继续滚动链);**`contain` 阻止滚动链(scroll chaining)但保留 overscroll 回弹**;`none` 同时阻止滚动链与回弹;形式语法 `[contain|none|auto|chain]{1,2}` 支持双轴;2025 标准新增 `chain`(允许链但禁回弹);滚动链定义即『对话框滚到底后,底层页面开始滚动』(调研 10§8.1、09§7.1 双源一致)。",
+    "en": "MDN's official semantics (full-page fetch): `auto` default (scrolling continues past the boundary via chaining); **`contain` blocks scroll chaining but keeps overscroll bounce**; `none` blocks both; the grammar `[contain|none|auto|chain]{1,2}` allows two axes; 2025 adds `chain` (allow chaining, disable bounce); scroll chaining is defined as 'a dialog scrolling to its end starts scrolling the page beneath' (research 10 §8.1, 09 §7.1 agree)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "innerMode",
+      "options": [
+        { "value": "auto", "label": { "zh": "auto(默认,链出)", "en": "auto (default, chains)" } },
+        { "value": "contain", "label": { "zh": "contain(拦链留弹)", "en": "contain (block chain, keep bounce)" } },
+        { "value": "none", "label": { "zh": "none(拦链拦弹)", "en": "none (block both)" } }
+      ],
+      "default": "contain",
+      "cssVar": "--ob-inner",
+      "effect": {
+        "zh": "弹层内滚动容器的 overscroll-behavior。默认 contain = 弹层防穿透的标准姿势(MDN:『拦滚动链不拦回弹』);auto 是浏览器默认、也是滚动穿透的来源;none 连 iOS 橡皮筋回弹一并禁掉,弹层内少用。demo 用穿透计数器实时显示 auto 档的滚动链后果。",
+        "en": "The overlay's inner scroller overscroll-behavior. Default contain = the standard anti-chaining posture for overlays (MDN: 'blocks chaining, keeps bounce'); auto is the browser default and the source of scroll bleed-through; none also kills the iOS rubber band — rare inside overlays. The demo's bleed-through counter shows what auto's chaining does in real time."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "lockPage",
+      "options": [
+        { "value": "off", "label": { "zh": "不锁", "en": "Unlocked" } },
+        { "value": "on", "label": { "zh": "overflow:hidden 锁背景", "en": "overflow:hidden lock" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-locked)。on = 外层页面容器 overflow:hidden——MDN 原文推论:『无滚动溢出的滚动容器(如 overflow:hidden)恒处于边界 → 设 contain/none 即可阻止背景滚动』,是弹层打开时锁背景的标准做法;配合内层 contain 形成完整防穿透。",
+        "en": "JS param (demo toggles data-locked). on = the outer page container goes overflow:hidden — MDN's own corollary: 'a scroll container without overflowing content (like overflow:hidden) is permanently at its boundary → setting contain/none there stops background scrolling', the standard background lock while overlays are open; pair it with inner contain for full bleed-through protection."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "overscroll-behavior:Chrome/Edge 63+(2017)、Firefox 59+(2018)、Safari 16+(2022)起支持——**具体版本号为 MDN 兼容表内容,本次调研未逐项核验,以 MDN 页为准**;2025 标准新增 `chain` 关键字(浏览器落地进度同样以 MDN 为准)。iframe 不是滚动容器,控制 iframe 内滚动链需在其文档的 html/body 上设置(MDN 原文)。",
+      "en": "overscroll-behavior: Chrome/Edge 63+ (2017), Firefox 59+ (2018), Safari 16+ (2022) — **version numbers come from MDN's compatibility table and were not re-verified this session; defer to the MDN page**; the 2025 `chain` keyword's browser rollout likewise defers to MDN. iframes are not scroll containers — controlling chaining inside one requires setting it on that document's html/body (MDN)."
+    }
+  },
+  "fallback": {
+    "zh": "Safari 15 及更早不支持 overscroll-behavior:内层滚到底会继续链出——退路是 JS 在内层 touchmove 到边界时 preventDefault,或接受穿透并保证背景无危险交互;scroll snap 配套警告:mandatory 在内容超高时可能永远看不到某段内容,一般交互用 proximity(MDN 原文);demo 无 JS 时弹层常开,内层为普通滚动容器。",
+    "en": "Safari 15 and older lack overscroll-behavior: the inner scroller chains through at its boundary — fallbacks are JS preventDefault on boundary touchmove, or accepting the bleed while keeping the background interaction-free; the scroll-snap companion warning: mandatory can hide content that never fits, prefer proximity for general use (MDN); without JS the demo keeps the overlay open and the inner scroller behaves as a plain scroll container."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "弹层(dialog/drawer/popover)内的滚动区:必挂 `overscroll-behavior: contain`(调研 10 巧思 8)", "en": "Scroll areas inside overlays (dialog/drawer/popover): always `overscroll-behavior: contain` (research 10 craft #8)" },
+      { "zh": "打开弹层时锁背景:外层页面容器 overflow:hidden(+ contain),MDN 官方做法", "en": "Locking the background while an overlay is open: overflow:hidden (+ contain) on the page container — MDN's official recipe" },
+      { "zh": "横向轮播/卡片流:`overscroll-behavior-x: contain` 防横滑链出页面,配 scroll-snap-type: x proximity(调研 10§8.4)", "en": "Horizontal carousels/card streams: `overscroll-behavior-x: contain` to keep horizontal swipes from chaining, with scroll-snap-type: x proximity (research 10 §8.4)" },
+      { "zh": "嵌入第三方页面的滚动组件(聊天窗、日历):contain 防止组件滚穿宿主页面;iframe 场景在其文档根上设置", "en": "Embedded scrollable widgets (chat, calendar): contain stops the widget bleeding into the host page; inside an iframe set it on that document's root" }
+    ],
+    "avoid": [
+      { "zh": "给整页 body 设 `none`——连橡皮筋回弹都消失,iOS 上像页面卡死;页面级留 auto 或 contain", "en": "`none` on the whole body — even the rubber band vanishes and iOS feels frozen; pages keep auto or contain" },
+      { "zh": "依赖 overscroll-behavior 替代焦点管理——它只管滚动链,弹层的键盘焦点圈定仍是 WAI-APG Dialog 的必答题", "en": "Using overscroll-behavior as a focus-management substitute — it only governs scroll chaining; keyboard focus containment remains the WAI-APG Dialog must-do" },
+      { "zh": "滚动容器里 `mandatory` 吸附配超高内容——MDN:用户可能永远看不到某段内容,一般交互用 proximity", "en": "`mandatory` snapping with taller-than-viewport content inside scrollers — MDN: some content may become unreachable; proximity for general use" },
+      { "zh": "以为 contain 能阻止背景滚动却不锁背景——contain 只拦『链』,背景自身仍可被直接滚动;锁背景要用 overflow:hidden/滚动锁", "en": "Expecting contain alone to freeze the background — it blocks chaining only; the background itself still scrolls when touched directly; use overflow:hidden/scroll locks for that" }
+    ]
+  },
+  "a11y": {
+    "zh": "滚动链是触控/滚轮用户的操作正确性问题,也是 WCAG 2.1 SC 2.1.1(键盘全功能)的邻接面:弹层内滚动区需可聚焦且支持方向键/翻页键滚动;锁背景(overflow:hidden)时保证页面滚动位置不丢、关闭后可恢复;滚动条用 scrollbar-width 控制时注意 none 影响键盘滚动(MDN 警告);prefers-reduced-motion 下本条目无动画依赖,平滑滚动(如 scroll-behavior:smooth)应同时关闭。",
+    "en": "Chaining is an operational correctness issue for touch/wheel users and brushes WCAG 2.1 SC 2.1.1 (full keyboard access): inner scroll areas must be focusable and scrollable via arrow/page keys; when locking the background (overflow:hidden) preserve scroll position and restore it on close; if controlling scrollbars with scrollbar-width, note that none kills keyboard scrolling (MDN); this entry has no animation dependency — disable smooth scrolling (scroll-behavior:smooth) under prefers-reduced-motion too."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll_snap/Basic_concepts",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width",
+    "https://developer.apple.com/documentation/safari-release-notes/safari-13-release-notes.md"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个嵌套滚动防穿透演示:外层假页面 + 居中弹层(内含长列表),内层 `overscroll-behavior: contain`,外层在弹层打开时 overflow:hidden 锁背景,穿透计数器实时显示滚动链是否发生。",
+      "en": "Replicate a nested-scroll bleed-through demo: an outer fake page + centered overlay (long list inside), inner `overscroll-behavior: contain`, the outer page locked via overflow:hidden while open, and a live bleed-through counter showing whether chaining happens."
+    },
+    "acceptance": [
+      { "zh": "内层滚动容器严格 `overscroll-behavior: contain`(拦链、保留 iOS 回弹)", "en": "The inner scroller strictly `overscroll-behavior: contain` (blocks chaining, keeps the iOS bounce)" },
+      { "zh": "弹层打开时外层容器 overflow:hidden 锁背景(MDN 官方推论做法)", "en": "While the overlay is open the outer container locks the background via overflow:hidden (MDN's official corollary)" },
+      { "zh": "穿透可观测:外层滚动在弹层打开且指针位于内层时计数并展示", "en": "Bleed-through is observable: outer scrolls count and display while the overlay is open and the pointer sits over the inner scroller" },
+      { "zh": "Esc 关闭弹层、焦点打开入弹层/关闭归还;内层滚动区可键盘滚动", "en": "Esc closes the overlay with focus entering on open and returning on close; the inner scroller is keyboard-scrollable" },
+      { "zh": "不支持 overscroll-behavior 的环境有说明或回退(如边界 preventDefault)", "en": "Environments without overscroll-behavior get a note or a fallback (e.g. boundary preventDefault)" }
+    ]
+  }
+}

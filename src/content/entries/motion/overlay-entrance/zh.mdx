@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+浮层 = 触发钮 + 面板两层;面板常驻 DOM,用 `data-open` 驱动进/出场(shadcn/radix 语义是 `data-[state=open]` 状态类,同构):
+
+```html
+<button class="ov-trigger" aria-expanded="false">打开浮层</button>
+<div class="ov-panel" data-open="false" role="dialog" aria-hidden="true" tabindex="-1">
+  <h4>浮层</h4>
+  <button class="ov-item">条目一</button>
+</div>
+```
+
+关键点:
+
+- 面板是触发钮的**兄弟层**(绝对定位),`transform-origin` 按锚点方向写(触发钮在下方 → `origin: bottom`)——Radix 官方做法是由库写 `--radix-popover-content-transform-origin`,标准替代就是按方向手写(调研 10§3.1/巧思 5);
+- 打开/关闭是**两条不同时长的编排**:入走 keyframes `both`,出走反向 keyframes,`animationend` 语义天然覆盖;
+- 无障碍三件套:`aria-expanded`(触发钮)、`role="dialog"`+`aria-hidden`(面板)、焦点打开入面板/关闭归还触发钮;Esc 与点击外部均为关闭路径(WAI-APG Dialog 模式)。
+
+## 样式与参数
+
+五个参数全部是 CSS 变量型,经 `--overlay-*` 注入后被 keyframes 直接消费:
+
+```css
+.ov-panel {
+  opacity: 0;
+  transform: translateY(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: var(--tf-origin, bottom);
+}
+.ov-panel[data-open="true"]  { animation: ov-in var(--overlay-in-ms) var(--overlay-ease) both; }
+.ov-panel[data-open="false"] { animation: ov-out var(--overlay-out-ms) cubic-bezier(0.4, 0, 1, 1) both; }
+
+@keyframes ov-in  { from { opacity: 0; transform: translateY(var(--overlay-shift)) scale(var(--overlay-scale)); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ov-out { from { opacity: 1; transform: scale(1); }
+                    to   { opacity: 0; transform: scale(var(--overlay-scale)); } }
+```
+
+数值出处(调研 10§3.1/§3.2/§3.3,均为源码逐字核验):
+
+- **scale(0.95) + opacity 0 + 200ms** = shadcn Dialog `zoom-in-95 + fade-in-0 … duration-200`;
+- **方向性位移 8px** = shadcn Popover `slide-in-from-bottom-2`(Tailwind 2 格 = 8px);
+- **进慢出快**:shadcn Sheet 官方 `data-[state=open]:duration-500`(入)/`data-[state=closed]:duration-300`(出);demo 默认出 150ms 取调研 10§3.3 Motion 版;
+- **过冲曲线**:`cubic-bezier(.21,1.02,.73,1)`(react-hot-toast 入场,y₂>1 轻微过冲)、Arco 过冲 token `cubic-bezier(0.3, 1.3, 0.3, 1)`;standard 档 `cubic-bezier(0.4, 0, 0.2, 1)` 取调研 10§3.3 CSS 版;
+- M3 emphasized easing 的具体数值调研未证实(m2/m3.material.io 正文 JS 渲染未抓到),如需 M3 档用 standard 兜底(调研 10§3.2)。
+
+## 动效与交互
+
+- **入场编排**:fade + zoom-95 + 方向位移同帧起跑;origin 在锚点侧,缩放「从触发钮长出来」而不是从屏幕中心;
+- **出场永远更快**:150ms 缓出(`cubic-bezier(0.4, 0, 1, 1)` 加速曲线)——「关闭永远比打开果断,用户在等的是离开」(调研 10 巧思 7;shadcn Sheet 500/300 与 M3 enter>exit 双源一致);
+- **点击外部关闭**:document 级 pointerdown,目标不在面板/触发钮内即关;**Esc 关闭**同步监听;
+- **焦点管理**:打开 → `panel.focus()`(tabIndex=-1),关闭 → 归还触发钮;
+- **reduced-motion**:取消位移/缩放,以 80ms 纯 fade 出现(位移类动画是前庭障碍触发源,调研 04§6.1);
+- 性能:入场只动 `opacity/transform`(合成器属性),web.dev 底线(调研 10§7.1)。
+
+## 真实产品案例
+
+- **shadcn/ui Dialog / Popover**:zoom-95+fade 200ms、Popover 附 8px 方向位移与 Radix 变量 origin——Web 浮层入场的事实标准,源码逐字(调研 10§3.1);
+- **GitHub 站内下拉菜单/Popover**:打开快、关闭更快,菜单从触发点方向缩放展开(与 radix 同族交互语义;具体数值 GitHub 未公开,未证实);
+- **Linear / Vercel 仪表盘的菜单气泡**:轻浮层普遍带轻微过冲的入场(bezier y₂>1 一族),与 react-hot-toast 过冲曲线同构(曲线本身有源码出处,Linear/Vercel 的具体实现数值未证实)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `initialScale` | 趋近 1 时只剩淡入,空间归属感消失;>1 配过冲曲线可做 overshoot 弹入 | 戏剧感增强;≤0.85 位移过大易闪,模态场景明显 |
+| `shiftY` | 方向感更强,「从按钮长出来」更明确;>12px 开始抢注意力 | 0 退化为纯 zoom+fade(radix Dialog 语义),方向信息丢失 |
+| `inDuration` | 更隆重;400ms+ 开始让人等待,适合 sheet 级大浮层 | 瞬开感;≤100ms 入场退化为闪烁 |
+| `outDuration` | 关闭变拖沓,超过入场时长违反「进慢出快」 | 更果断;趋近 0 时像「消失」,可接受但不留余韵 |
+| `curve` | overshoot/arco 档带轻微过冲,轻浮层更「弹」;配 initialScale>1 更明显 | standard 档克制标准,模态/信息型浮层首选 |
+
+经验区间:initialScale 0.95、shiftY 8px、入 200ms、出 150ms(shadcn 系);sheet 类入 500/出 300。所有浮层入场都应回答一个问题:它是从哪长出来的——origin 与位移方向就是答案。

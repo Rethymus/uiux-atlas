@@ -1,0 +1,74 @@
+## Structure & DOM
+
+Skeuomorphism is "a material panel + real controls": the panel base is a CSS-gradient approximation of a material (leather grain / brushed metal / paper / wood), carrying real controls (a toggle switch, a stepped knob) — **decoration (texture/stitching/bevels) lives entirely on aria-hidden layers; semantics ride on the real controls**.
+
+```html
+<div class="panel"> <!-- material base + stitched ::after -->
+  <h2>Studio Console</h2>
+  <div class="plate">Master Bus — Analog</div> <!-- beveled plate: lighting model demo -->
+  <button role="switch" aria-checked="true" class="switch">
+    <span class="nub">ON</span>
+  </button>
+  <button class="knob" aria-label="Gain knob: 33%, click to step"></button>
+</div>
+```
+
+Key points:
+
+- Bevels (inset box-shadow) always appear as pairs: a top inner highlight + a bottom inner shadow, both steered by `--sk-angle` — the minimal implementation of a "lighting model";
+- The switch is `role="switch"` + `aria-checked`; the knob is a button with an `aria-live` readout — the mechanics are skin, semantics are skeleton;
+- Stitching is a dashed inner border on `::after` with `pointer-events: none`.
+
+## Styling & Parameters
+
+Two CSS variables, two JS-type params:
+
+```css
+.demo-stage { --sk-angle: 135deg; --sk-emboss: 1; }
+/* Material texture (CSS approximation, no external textures): leather = 2 grain radials + base */
+.sk-scene[data-texture="metal"] .sk-panel {
+  background-image: repeating-linear-gradient(90deg, hairlines 1px 3px), linear-gradient(…); /* brush grain */
+}
+/* Lighting model: bevel gradients take their direction from --sk-angle, strength times --sk-emboss */
+.sk-switch .sk-nub {
+  background: linear-gradient(var(--sk-angle), light, mid 60%, semi-light);
+  box-shadow:
+    inset 0 1.5px 1px oklch(1 0 0 / calc(0.95 * var(--sk-emboss))),   /* top-lit edge */
+    inset 0 -1.5px 1px oklch(0 0 / calc(0.55 * var(--sk-emboss))),    /* bottom falloff */
+    0 2px 3px oklch(0 0 / 0.5);                                       /* drop shadow */
+}
+```
+
+Where the numbers come from:
+
+- "Material textures, mechanical control metaphors, lighting model" are tunable variables listed verbatim in research 03 §18's summary table, **none with values** — the 135° light angle, emboss multiplier 1 and the four gradient recipes are this entry's baselines;
+- The top-lit inner highlight mirrors the replication convention in research 09 §1.4d (rgba(255,255,255,.25~.4), marked "derived, not official");
+- The 2026 four-branch revival (manuscript/solid-wood/glowing-organic/Y2K-tech skeuomorphism) is recorded in research 03 §18 as daisyUI 2025 entries 008/022/023/024.
+
+## Motion & Interaction
+
+Skeuomorphic motion is "physical intuition" — weight, friction, sinking:
+
+- **Toggle**: the nub travels to the other end in 0.15s; on `:active` its inner shadow flips (dark edge to the top) — a physical sink, no glow;
+- **Knob**: each click steps through 4 positions (0/33/66/100%), `rotate` turning 0.2s to the mapped angle (−135° → −45° → 45° → 135°), with the value announced via `aria-live`;
+- **Entrance**: the panel fades in with a 10px rise over 0.5s, once;
+- Under `prefers-reduced-motion: reduce` all transitions stop — displacements and rotations become instant; the physical feel rests on static bevels.
+
+**The historical contrast with flat design**: skeuomorphism and flat design are two sides of the same decade — the public reason iOS 7 went flat in 2013 was precisely "decoration fighting content"; research 03 §17 records flat being replaced by the glass family (Glassmorphism) by the mid-2020s, and research 03 §18 records skeuomorphism returning in 2026 as a four-branch "new materials family". Three material worldviews rotated within one decade; boundary conditions for each live in this entry's scenarios.
+
+## Real-world examples
+
+- **iOS 6-and-earlier native apps (2007–2013, Apple)** — the widely accepted peak-period samples: the Calendar's stitched leather and tear-off pages, Game Center's felt table, Notes' yellow legal pad — a textbook collection of "material texture + mechanical metaphor".
+- **daisyUI's 2026 "new materials family" four branches** — the contemporary revival recorded in research 03 §18: manuscript, solid-wood, glowing-organic and Y2K-tech skeuomorphism; direct evidence of skeuomorphism moving from "dated" back into the trend vocabulary.
+- **Retro radio / car-dashboard apps** — brushed-metal panels, knobs and toggles whose mechanical metaphors mirror the content (radio/tuning); the most defensible local skeuomorphic scene today (community convention, not from the research).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `texture` | — (enum: leather is the most "iOS 6", metal the most industrial, paper the lightest, wood the most furniture-like; the material's semantics must mirror the content) | — (paper with emboss=0 is the terminus of the skeuomorphic→flat degradation path) |
+| `lightAngle` | the key light orbits the panel, rotating every bevel with it; straying from 135° breaks the upper-left convention and reads oddly | near top light (90°) bevels look "correct"; at 180° (head-on) bevels nearly vanish |
+| `emboss` | deeper relief, but inner shadows eat boundary contrast — past 1.5 add a 1px solid stroke to hold 3:1 (SC 1.4.11) | flattens out; at 0 only the material base remains — skeuomorphism degrades into a flat print |
+| `stitch` | on gives leather its strongest period feel, but stitching on metal/paper is a semantic mismatch (keep it off) | off is more universal; the discipline of binding stitching to material matters more than the stitching itself |
+
+Working ranges: light angle 120–150°, emboss 0.7–1.3. Materials stay at panel level (per-control materials fight each other); always audit bevels and strokes as a pair — that's skeuomorphism's first accessibility gate.

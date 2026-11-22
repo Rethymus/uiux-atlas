@@ -1,0 +1,137 @@
+{
+  "name": "Press Feedback Pair",
+  "nameZh": "按压反馈对",
+  "aliases": ["按压态", "pressed state", "highlighted", "active 反馈"],
+  "category": "motion",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "按压/释放是一对状态:按下瞬时生效(0ms)、松手才给短过渡——成熟组件库默认做色彩阶进而非 scale,scale(0.95~0.98) 是社区惯例。",
+    "en": "Press and release form a state pair: the press lands instantly (0ms) and only the release gets a short transition — mature libraries default to color-stepping, not scale; scale(0.95–0.98) is a community convention."
+  },
+  "origin": {
+    "zh": "两条一手源码证据链:Arco Button `transition: all 0.1s linear` + `:active { transition: none }`(按压瞬时,松手走 0.1s)与 primary hover=色阶-5/active=色阶-7;AntD Button 只过渡 color 等 5 个颜色系属性、时长 `motionDurationMid`=0.2s easeInOut,默认不缩放(调研 10§1.1)。Apple 侧对照:UIControl.isHighlighted『随合适的 touch 事件自动设置与清除』——按下进入、移出/释放退出,天然成对(调研 09§4)。",
+    "en": "Two first-hand source-code chains: Arco Button `transition: all 0.1s linear` + `:active { transition: none }` (instant press, 0.1s release) with primary hover = color step −5 / active = step −7; AntD Button only transitions five color-ish props over `motionDurationMid` = 0.2s easeInOut and does not scale by default (research 10 §1.1). Apple counterpart: UIControl.isHighlighted is 'set and cleared automatically with the appropriate touch events' — pressed in, released/moved-out out, a natural pair (research 09 §4)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "pressScale",
+      "min": 0.9,
+      "max": 1,
+      "step": 0.005,
+      "default": 0.97,
+      "cssVar": "--press-scale",
+      "min": 0.9,
+      "max": 1,
+      "step": 0.005,
+      "default": 0.97,
+      "cssVar": "--press-scale",
+      "effect": {
+        "zh": "按压缩放量。默认 0.97:社区常见值,未证实——本次在 AntD/Arco/shadcn/Magic UI 默认按钮源码中均未发现任何按压 scale(调研 10§1.1/§9),常见经验区间 scale(0.95~0.98)。调大更接近 1 反馈越弱;调小按压感越重、文字形变越明显。",
+        "en": "Press scale factor. Default 0.97: a community-common value, unverified — no default button in AntD/Arco/shadcn/Magic UI ships any press scale (research 10 §1.1/§9); the folk range is scale(0.95–0.98). Higher (closer to 1) = weaker feedback; lower = heavier press and more visible text distortion."
+      }
+    },
+    {
+      "type": "number",
+      "name": "pressAlpha",
+      "min": 0.5,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.8,
+      "cssVar": "--press-alpha",
+      "effect": {
+        "zh": "按压透明度。默认 0.8:社区常见值,未证实(调研 10§1.1 记载常见经验 alpha≈0.7~0.8,无一手库默认值)。iOS 原生 highlighted 的 alpha 变化量官方同样未公布(调研 09§4)。调大更含蓄;调小对比度损失大,浅色按钮上文字可读性风险高。",
+        "en": "Press opacity. Default 0.8: community-common, unverified (research 10 §1.1 records the folk range alpha≈0.7–0.8 with no first-hand library default). iOS' native highlighted alpha change is likewise unpublished (research 09 §4). Higher = more subtle; lower = big contrast loss and legibility risk on light buttons."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "releaseDuration",
+      "unit": "ms",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "default": 120,
+      "cssVar": "--press-release-ms",
+      "effect": {
+        "zh": "松手回弹时长。默认 120ms,取调研 10§1.3 可复用代码(结构仿 Arco:按下瞬时、松手缓出);Arco 官方实际档位是 0.1s linear(`@transition-duration-1`)。调大更『黏』,超过 200ms 跟手感明显劣化;调小趋近 0 则与『按压瞬时』无异,反馈只剩状态切换。",
+        "en": "Release rebound duration. Default 120ms from the reusable snippet in research 10 §1.3 (Arco-shaped: instant press, eased release); Arco's official tier is 0.1s linear (@transition-duration-1). Higher = stickier; past 200ms hand-following degrades clearly. Near 0 it equals the instant press — feedback reduces to a bare state flip."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "pressResponse",
+      "options": [
+        { "value": "instant", "label": { "zh": "瞬时(Arco)", "en": "Instant (Arco)" } },
+        { "value": "eased", "label": { "zh": "带过渡", "en": "Eased" } }
+      ],
+      "default": "instant",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-response)。instant=`:active { transition: none }`——按压 0ms 生效,Arco 官方工艺;eased=按下也走同一过渡,按下感被延迟,是反面教学档。Apple 侧同语义:WWDC18 803 要求所有交互对象『必须即时响应』(调研 09§4)。",
+        "en": "JS param (demo subscribes and toggles data-response). instant = `:active { transition: none }` — the press lands in 0ms, Arco's official craft; eased = the same transition also on press-in, delaying the press feel — kept as a teaching counter-example. Apple's counterpart semantics: WWDC18 803 requires every interactive object to 'respond immediately' (research 09 §4)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "scale", "label": { "zh": "scale+透明度", "en": "Scale + alpha" } },
+        { "value": "color", "label": { "zh": "色彩阶进(库默认)", "en": "Color step (lib default)" } }
+      ],
+      "default": "scale",
+      "effect": {
+        "zh": "JS 型参数(demo 切换 data-mode)。scale=社区惯例的 scale+alpha 按压对(数值已标注未证实);color=库默认语义:只变底色/字色——AntD 官方实现只过渡 color/background-color/border-color/box-shadow/opacity 五属性 0.2s easeInOut,Apple 官网 `:active` 也只换底色与字色、不加 outline(调研 10§1.1、09§4)。",
+        "en": "JS param (demo toggles data-mode). scale = the community-convention scale+alpha press pair (values flagged unverified); color = the library-default semantics: only background/text colors change — AntD's official implementation transitions just color/background-color/border-color/box-shadow/opacity over 0.2s easeInOut, and apple.com's `:active` also swaps fill and text color without touching outline (research 10 §1.1, 09 §4)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只用 `:active`/`:focus-visible` + transition/transform/opacity,均为 Baseline 能力;`:active` 在触屏上跟随触摸按下生效。demo 另用 pointer 事件驱动高亮语义读数,事件均为 Baseline。",
+      "en": "Implementation only uses `:active`/`:focus-visible` plus transition/transform/opacity — all Baseline; on touch, `:active` follows the touch press. The demo additionally drives the highlighted-semantics readout via pointer events, themselves Baseline."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时取消 scale 回弹与 release 过渡,保留瞬时色彩/透明度状态切换(状态本身是信息,不应被删);按压反馈不得作为传达『可点击』的唯一手段——仍需光标/形态等常规 affordance。",
+    "en": "Under prefers-reduced-motion, drop the scale rebound and release transition but keep the instant color/alpha state flip (the state itself is information and must survive); press feedback is never the sole affordance for 'clickable' — keep cursor and shape cues."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "所有可点按钮/卡片的基础反馈:默认做色彩阶进(Arco hover −5 / active −7 的语义)", "en": "Baseline feedback for every tappable button/card: default to color stepping (Arco hover −5 / active −7 semantics)" },
+      { "zh": "触屏优先的产品:scale+alpha 按压对提供物理『按下去』的错觉,释放用 100~120ms 缓出", "en": "Touch-first products: a scale+alpha press pair sells the physical 'pushed down' illusion, released over 100–120ms ease-out" },
+      { "zh": "键盘可达性:`:active` 与 `:focus-visible` 成对设计,Space/Enter 触发时同样能看到按压态", "en": "Keyboard reachability: design `:active` together with `:focus-visible` so Space/Enter activation shows the pressed state too" },
+      { "zh": "高频操作按钮:遵循 HIG『高频交互避免加动效』,只做瞬时色彩切换即可", "en": "High-frequency buttons: follow HIG 'avoid motion on frequent interactions' — an instant color flip is enough" }
+    ],
+    "avoid": [
+      { "zh": "按下也加过渡——按压感被延迟,违反『即时响应』(WWDC18 803);Arco 官方即 `:active { transition: none }`", "en": "Transitioning the press-in too — it delays the press feel against 'respond immediately' (WWDC18 803); Arco officially ships `:active { transition: none }`" },
+      { "zh": "把 scale 按压说成组件库默认——AntD/Arco/shadcn/Magic UI 默认按钮均无 scale,该说法无一手证据(调研 10§9)", "en": "Claiming press-scale is a library default — no default AntD/Arco/shadcn/Magic UI button scales; the claim has no first-hand evidence (research 10 §9)" },
+      { "zh": "按压 alpha 压得太低(如 ≤0.6)——文字对比度骤降,浅色底上直接不可读", "en": "Pressing alpha too low (≤0.6) — text contrast collapses, unreadable on light fills" },
+      { "zh": "release 时长超过 200ms 还在回弹——高频点击时上一次反馈还没结束,状态语义开始打架", "en": "Release rebounds past 200ms — with rapid clicking the previous feedback is still playing and state semantics start to collide" }
+    ]
+  },
+  "a11y": {
+    "zh": "按压态是视觉增强,不是可点击性的唯一信号(WCAG 2.1 SC 1.4.11 非文本对比:控件边界 ≥3:1);键盘用户经 `:focus-visible` 必须看到等价的焦点反馈(Apple 官网焦点环:2px accent outline + 1px offset,调研 09§3);`prefers-reduced-motion` 时保留状态切换、去掉回弹;按压导致的透明度变化不得把文字对比压到 4.5:1 以下(WCAG 2.1 SC 1.4.3)。",
+    "en": "The pressed state is visual enhancement, never the sole signal of clickability (WCAG 2.1 SC 1.4.11: component boundaries ≥3:1); keyboard users must see an equivalent focus cue via `:focus-visible` (apple.com's ring: 2px accent outline + 1px offset, research 09 §3); under prefers-reduced-motion keep the state flip and drop the rebound; the alpha change must not push text below 4.5:1 (WCAG 2.1 SC 1.4.3)."
+  },
+  "sources": [
+    "https://github.com/arco-design/arco-design/blob/main/components/Button/style/index.less",
+    "https://github.com/arco-design/arco-design/blob/main/components/Button/style/token.less",
+    "https://github.com/ant-design/ant-design/blob/master/components/button/style/index.ts",
+    "https://developer.apple.com/documentation/uikit/uicontrol/ishighlighted.md",
+    "https://developer.apple.com/videos/play/wwdc2018/803/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组『按压反馈对』按钮:按下瞬时生效(0ms),松手 120ms 缓出回弹;同时提供色彩阶进版(只换底色/字色)作对照,并实时显示 normal/highlighted 状态读数。",
+      "en": "Replicate a pair of press-feedback buttons: the press lands instantly (0ms), the release eases back over 120ms; include a color-step variant (fill/text swap only) for contrast, with a live normal/highlighted state readout."
+    },
+    "acceptance": [
+      { "zh": "按下瞬间 0ms 生效:实现 `:active { transition: none }`(Arco 官方工艺),松手才给 `--press-release-ms` 过渡", "en": "The press lands in 0ms: implement `:active { transition: none }` (Arco's official craft); only the release gets the `--press-release-ms` transition" },
+      { "zh": "scale(0.97)+alpha(0.8) 需标注为社区常见值、未证实,不得写成任何库的官方默认", "en": "scale(0.97) + alpha(0.8) must be flagged as community-common, unverified — never presented as any library's official default" },
+      { "zh": "色彩阶进版只过渡 color/background-color/border-color/box-shadow/opacity(AntD 官方五属性语义)", "en": "The color-step variant transitions only color/background-color/border-color/box-shadow/opacity (AntD's official five-prop semantics)" },
+      { "zh": "键盘触发(Space/Enter)与指针按压呈现同一按压态;提供 :focus-visible 焦点反馈", "en": "Keyboard activation (Space/Enter) shows the same pressed state as pointer press; provide a :focus-visible focus cue" },
+      { "zh": "prefers-reduced-motion 时去掉 scale/过渡,保留瞬时状态切换", "en": "Under prefers-reduced-motion, drop the scale/transition but keep the instant state flip" }
+    ]
+  }
+}

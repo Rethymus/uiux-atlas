@@ -1,0 +1,69 @@
+## Structure & DOM
+
+The demo is two nested scroll layers: an **outer fake page** (the stage acts as the scroll container, 14 rows) + a **centered overlay** (header + an inner 30-item list). With the overlay open, whether scrolling past the inner list's end "chains" into the outer page is this entry's entire subject:
+
+```html
+<div class="so-outer" data-locked="false"><!-- outer scroll container -->
+  <div class="so-page">…background content…</div>
+</div>
+<div class="so-modal" role="dialog" aria-modal="true">
+  <div class="so-modal-head">Overlay <button class="so-close">Close ✕</button></div>
+  <div class="so-inner" tabindex="0" role="region" aria-label="Inner list"><!-- inner scroll container -->
+    <div class="so-item">Item 1</div>…
+  </div>
+</div>
+```
+
+Key points:
+
+- The inner scroll area carries `tabindex=0` + `role="region"` — focusable and scrollable via arrow/page keys (adjacent to WCAG 2.1 SC 2.1.1);
+- The bleed-through counter: while the overlay is open and the pointer sits over the inner list, any outer scroll means chaining happened — scroll bleed becomes an observable event;
+- The overlay is `role="dialog"` + `aria-modal`, Esc-closable, with focus entering on open and returning on close (WAI-APG Dialog semantics).
+
+## Styling & Parameters
+
+Two parameters — one CSS variable, one JS switch:
+
+```css
+/* Inner: the standard anti-chaining posture (injected via --ob-inner) */
+.so-inner {
+  overflow-y: auto;
+  overscroll-behavior: var(--ob-inner, contain);  /* contain blocks chain, keeps bounce / none blocks both */
+  scrollbar-width: thin;
+}
+/* Outer: background lock while the overlay is open (MDN's own corollary) */
+.so-outer[data-locked="true"] { overflow: hidden; }
+```
+
+Semantics and numbers (MDN overscroll-behavior full-page fetch; research 10 §8.1 / 09 §7.1 agree):
+
+- **Scroll chaining defined**: "a dialog scrolling to its end starts scrolling the page beneath";
+- **Four values**: `auto` chains by default; `contain` blocks chaining and **keeps the bounce**; `none` blocks both; 2025 adds `chain` (allow chaining, disable bounce); the grammar supports two axes `overscroll-behavior: x y`;
+- **The background-lock corollary (MDN verbatim)**: "a scroll container without overflowing content (like overflow:hidden) is permanently at its boundary → setting contain/none there stops background scrolling" — the standard background lock while overlays are open;
+- **Edge**: iframes are not scroll containers — controlling chaining inside one requires setting it on that document's html/body;
+- Companion warnings (MDN verbatim): scroll-snap `mandatory` can make some content unreachable when it exceeds the viewport — use `proximity` for general interactions; `scrollbar-width: none` breaks keyboard scrolling (WCAG 2.1.1).
+
+## Motion & Interaction
+
+- **Experiment flow**: the overlay opens by default → switch `innerMode` to `auto` → scroll the inner list past its end — the outer page scrolls along, the counter ticks → switch back to `contain`, repeat — the outer page holds still (iOS bounce preserved);
+- **Background-lock experiment**: flip `lockPage` to on and the outer container goes `overflow:hidden`, fully freezing the background — the official "lock while open" posture; note contain only blocks "chaining", not direct scrolling of the background, so the two combine;
+- **none vs contain**: choose contain inside overlays — the rubber band survives; `none` kills it too and feels frozen on iOS — never on a whole page body;
+- **Reduced motion**: `scroll-behavior: smooth` and the toolbar's backdrop-filter (demonstrative only) are disabled; this entry has no animation dependency;
+- The inner scroll area is keyboard-reachable (`tabindex=0`) with `scrollbar-width: thin` (space-saving, not aesthetics — MDN).
+
+## Real-world examples
+
+- **MDN's official overlay example**: the dialog scroll area carries `overscroll-behavior: contain` alongside `::backdrop { backdrop-filter: blur(0.5rem) }` — the direct model for this demo (research 10 §8.1);
+- **iOS modal sheets**: when system sheet content reaches its end, further dragging moves the sheet itself rather than bleeding into the page beneath — the native gold standard; the web equivalent is inner contain + background overflow:hidden;
+- **Twitter/X and Reddit timeline layers**: opening a detail layer freezes the background timeline and closing restores position — the "lock + restore" product paradigm (implementation not frame-verified; the interaction behavior is well known).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `innerMode` | auto→contain: chaining vanishes, the iOS bounce survives (recommended); contain→none: the bounce dies too and touch feels "hard" | the reverse: at auto the bleed-through happens — scrolling past the overlay's end scrolls the page beneath and the operating context vanishes |
+| `lockPage` | on: the background freezes completely, the cleanest overlay experience; remember to restore scroll position on close | off: the background can still scroll directly (contain blocks chaining, not direct scrolls); fine for non-modal layers |
+| Inner content length | longer lists hit the boundary more often — the more contain pays off | content under one viewport keeps the inner scroller permanently at its boundary — even auto barely bleeds, but explicit contain stays the correct posture |
+| Bleed counter (read-only) | counts only while "overlay open + pointer over the inner list" — a clean experimental control | — |
+
+Craft conclusion: overlay scroll areas always carry `overscroll-behavior: contain` (research 10 craft #8); lock backgrounds via overflow:hidden's "permanently at boundary" corollary; horizontal carousels pair `overscroll-behavior-x: contain` + `scroll-snap-type: x proximity`; `none` is only for local widgets that truly must not bounce.

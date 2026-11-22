@@ -19,7 +19,7 @@ Key points:
 
 ## Styling & Parameters
 
-All three parameters are JS-type (the demo subscribes to the store): `duration` drives the timer, `placement` switches the container's 6-way alignment, `maxCount` trims the oldest entries. Visually they map to:
+All five parameters are JS-type (the demo subscribes to the store): `duration` drives the timer, `placement` switches the container's 6-way alignment, `maxCount` trims the oldest entries, and `stiffness`/`damping` drive the entrance spring (see "Motion & Interaction"). Visually they map to:
 
 ```css
 .toast-stack {
@@ -41,15 +41,16 @@ All three parameters are JS-type (the demo subscribes to the store): `duration` 
 }
 ```
 
-Where the numbers come from (all checked against antd 6.7.1): functional colors success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff` (seed tokens); 3s auto-dismiss default, unlimited `maxCount`, `pauseOnHover` true (AntD message docs). The 6-way model comes from MUI Snackbar's `anchorOrigin` (vertical top/bottom × horizontal left/center/right).
+Where the numbers come from (all checked against antd 6.7.1): functional colors success `#52c41a` / warning `#faad14` / error `#ff4d4f` / info `#1677ff` (seed tokens); 3s auto-dismiss default, unlimited `maxCount`, `pauseOnHover` true (AntD message docs). The 6-way model comes from MUI Snackbar's `anchorOrigin` (vertical top/bottom × horizontal left/center/right). The spring defaults `stiffness` 100 / `damping` 10 are the Motion engine's spring.ts source defaults (research 10 §6.3, source verified verbatim; the docs page's stiffness default of 1 disagrees with the source — the source wins); the entrance overlay curve `cubic-bezier(.21,1.02,.73,1)` and the "slide in from 200% of its own height" start come from react-hot-toast's source (research 10 §5.1).
 
 ## Motion & Interaction
 
-- **Entrance**: 0.2s fade + 8px slide, only `opacity/translate` (antd `motionEaseOut = cubic-bezier(0.215,0.61,0.355,1)`, duration matching `motionDurationMid = 0.2s`);
-- **No exit queue**: when the timer fires the whole block disappears at once — no per-item exit animation, per AntD's "exits are faster than entrances" principle; hitting `maxCount` likewise drops the oldest immediately;
+- **Entrance (spring, panel-tunable)**: a new toast slides in from −200%/+200% of its own height on a **physics spring** — semi-implicit Euler integration (m=1, per-step dt capped at 1/30, restDelta 0.002 matching Motion's granular threshold), writing `el.style.transform` per frame; `stiffness`/`damping` are panel-tunable with defaults 100/10 (ζ=0.5, first overshoot ≈16.3%); retuning mid-flight continues from the current position and velocity (velocity handoff — interruptible, never restarts from zero). The card layer additionally carries react-hot-toast's scale/fade: 0.35s `cubic-bezier(.21,1.02,.73,1)`, scale 0.6→1, opacity 0.5→1;
+- **No exit queue**: when the timer fires the whole block disappears at once — no per-item exit animation, per AntD's "exits are faster than entrances" principle; hitting `maxCount` likewise drops the oldest immediately. Library contrast: react-hot-toast exits with a 0.4s `cubic-bezier(.06,.71,.55,1)` pure ease-out, and sonner uses a 400ms transition + 4s lifetime (research 10 §5.1) — this demo keeps AntD's whole-block dismissal;
 - **Esc to close**: MUI's accessibility requirement for Snackbar; the demo listens for keydown while toasts exist and clears on Esc;
 - **Pause on hover** (`pauseOnHover`, AntD default true) and a manual close button are optional enhancements;
-- Under `prefers-reduced-motion: reduce`, drop the slide-in and just appear (MDN: large translation animations discomfort vestibular users).
+- Under `prefers-reduced-motion: reduce`, both the spring and the scale/fade are disabled and the toast simply appears (MDN: large translation animations discomfort vestibular users);
+- **Spring deep-dive**: the full stiffness/damping/mass ↔ ζ feel breakdown (ζ↔overshoot conversion, preset table, interruptible velocity handoff) lives in the motion entry [Toast spring](/motion/toast-spring/).
 
 ## Real-world examples
 
@@ -64,5 +65,7 @@ Where the numbers come from (all checked against antd 6.7.1): functional colors 
 | `duration` | messages linger and get read, but stale toasts pile up and mask fresh feedback; past 5–6s users assume a manual close is needed | snappier, but unread messages vanish — below 2s the WCAG 2.2.3 risk climbs fast (MUI: leave processing time); 500ms only suits instantly-verifiable feedback like "Copied" |
 | `placement` | no "size" per se — it changes the attention anchor: bottom spots sit near thumb/eye rest, top spots are more visible but may cover nav | same; the real rule is **one fixed anchor per product** — jumping positions makes users miss toasts |
 | `maxCount` | higher ceilings keep every message but flood the stack and scramble the timeline (MUI discourages stacking) | keeping only the newest 1 keeps things clean but swallows intermediate results — batch scenarios want at least 2–3 |
+| `stiffness` | harder start, faster arrival, denser oscillation (ω₀↑) with the overshoot ratio unchanged; too high (>700, near "teleport") loses the spring feel | a soft, sluggish start; combined with low damping it wobbles for a long time |
+| `damping` | ζ↑ shrinks the overshoot exponentially: ζ≈1 is the fastest overshoot-free critical damping, ζ>1 turns sticky (the community-circulated 500/50 is actually an overdamped ζ≈1.12 counter-example, research 10 §2.3) | the overshoot grows: ζ=0.5 overshoots ≈16.3% on the first pass, ζ≈0.1 is a "bouncing ball" (72.9%, research 10 §4.3 computation); c=0 never settles (Motion docs warning — hence the floor of 1) |
 
-Working ranges: duration 2–5s (default 3s matching AntD), maxCount 1–3, one placement per product (antd-family top-center, MUI-family bottom). Critical information never rides a toast — use a persistent banner or an alertdialog.
+Working ranges: duration 2–5s (default 3s matching AntD), maxCount 1–3, one placement per product (antd-family top-center, MUI-family bottom); spring presets — micro-bounce 300/25 (3.8% overshoot), Motion default 100/10 (16.3%), quick-steady 700/40 (2.7%), and always compute ζ=c/(2√(km)) before copying numbers (research 10 §2.3 computed table + craft 3). Critical information never rides a toast — use a persistent banner or an alertdialog.

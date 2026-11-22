@@ -1,0 +1,115 @@
+{
+  "name": "Memphis Design",
+  "nameZh": "孟菲斯设计",
+  "aliases": ["孟菲斯", "Memphis Group", "Memphis Style"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "1981 年米兰孟菲斯集团的后现代语言:之字纹/波点/棋盘格几何图案堆叠、turquoise×coral×yellow×black 无调和冲突配色、带粗黑描边的扁平几何(圆/三角/蚯蚓线),故意「不和谐」。",
+    "en": "The postmodern language of the 1981 Milan Memphis Group: zigzag/polka-dot/checkerboard geometric patterning, deliberately clashing turquoise×coral×yellow×black, and flat geometry with thick black outlines (circles/triangles/squiggles) that refuses to harmonize."
+  },
+  "origin": {
+    "zh": "意大利设计与建筑团体,Ettore Sottsass 于 1980-12-06 米兰聚会创立( Bob Dylan《Stuck Inside of Mobile with the Memphis Blues Again》循环播放时得名),活跃 1980–1987;1981 年首批作品在 Salone del Mobile 引发轰动,代表物 Carlton 房间屏风;90 年代末被 Y2K 美学接棒,2010 年代其图形语言融入 vaporwave(调研 03§13)。",
+    "en": "An Italian design-and-architecture collective founded by Ettore Sottsass at a Milan gathering on 1980-12-06 — named while Bob Dylan's 'Stuck Inside of Mobile with the Memphis Blues Again' played on repeat — active 1980–1987; its debut caused a sensation at the 1981 Salone del Mobile with the Carlton room divider as the icon; Y2K took its baton in the late 90s and its graphic language fed vaporwave in the 2010s (research 03 §13)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "stroke",
+      "unit": "px",
+      "min": 1,
+      "max": 6,
+      "step": 0.5,
+      "default": 3,
+      "cssVar": "--mm-stroke",
+      "effect": {
+        "zh": "几何母题的黑描边粗细。调研把「描边粗细」列为可调变量但未记载具体数值(design-styles.enlighten-media.net memphis 页);默认 3px 为本条目基准设定。描边是孟菲斯「扁平几何」的骨架——没有黑边,图案就退化为普通装饰。",
+        "en": "Outline weight of the geometric motifs. The research lists 'stroke weight' as a tunable variable without a specific value (the enlighten Memphis page); the 3px default is this entry's baseline. The black outline is the skeleton of Memphis' flat geometry — without it the patterns degrade into generic decoration."
+      }
+    },
+    {
+      "type": "number",
+      "name": "density",
+      "min": 3,
+      "max": 14,
+      "step": 1,
+      "default": 8,
+      "effect": {
+        "zh": "母题铺排数量(场景内几何图形个数)。调研把「图案密度与叠放层数」列为可调变量,未记载数值;默认 8 为本条目基准设定。JS 型参数——demo 订阅后重排母题。",
+        "en": "Number of motifs laid out in the scene. The research lists 'pattern density and stacking layers' as a tunable variable without values; the default 8 is this entry's baseline. JS-type param — the demo re-lays motifs on change."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "motif",
+      "options": [
+        { "value": "squiggle", "label": { "zh": "蚯蚓线", "en": "Squiggle" } },
+        { "value": "zigzag", "label": { "zh": "之字纹", "en": "Zigzag" } },
+        { "value": "dot", "label": { "zh": "波点", "en": "Polka dot" } }
+      ],
+      "default": "squiggle",
+      "effect": {
+        "zh": "几何母题库切换(squiggle/zigzag/dot 三类母题即调研 03§13 原文列举的「圆/三角/蚯蚓线」扁平几何中的线条族)。JS 型参数——demo 订阅后切换母题集合。",
+        "en": "Switches the motif library (squiggle/zigzag/dot — the line family of the flat geometry listed verbatim in research 03 §13). JS-type param — the demo swaps the motif set on change."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "palette",
+      "options": [
+        { "value": "classic", "label": { "zh": "经典 1981", "en": "Classic 1981" } },
+        { "value": "shuffle", "label": { "zh": "角色互换", "en": "Role swap" } }
+      ],
+      "default": "classic",
+      "effect": {
+        "zh": "冲突色板编排。经典编排使用调研 03§13 原文记载的四色:turquoise×coral×yellow×black;「角色互换」只重排同一四色的角色(底/主/点缀互换),不引入第五种色相——孟菲斯纪律是「无调和约束」而非无限加色。具体色值调研未记载,均为本条目基准设定。",
+        "en": "Clashing-palette arrangement. The classic arrangement uses the four hues recorded verbatim in research 03 §13: turquoise×coral×yellow×black; 'role swap' only re-deals roles among the same four hues (bg/lead/accent swap) — the Memphis discipline is 'no-harmony constraint', not unlimited extra hues. Specific hexes are undocumented; all values here are this entry's baselines."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 全部母题用内联 SVG(path/polyline/circle)绘制,支持面等同 SVG 1.1——所有现代浏览器;描边用 stroke-width 属性驱动,无前缀、无 @supports 分支。CSS 变量注入路径与其它条目一致。",
+      "en": "All motifs in the demo are inline SVG (path/polyline/circle) — support equals SVG 1.1, i.e. every modern browser; outlines are driven by the stroke-width attribute, no prefixes, no @supports branches. The CSS-variable injection path matches other entries."
+    }
+  },
+  "fallback": {
+    "zh": "极端环境(禁用 SVG/图片)下,图案层整体消失,界面退化为「奶油底 + 黑描边卡片 + 冲突色块」的静态构成——层级与可读性仍在,只是失去图案堆叠的视觉密度。",
+    "en": "In extreme environments (SVG/images disabled) the pattern layer drops out entirely and the interface degrades to a static composition of cream field + black-outlined card + clashing color blocks — hierarchy and readability survive; only the visual density of pattern-stacking is lost."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "品牌识别、活动海报与社媒图——调研 03§13:网页上多为品牌资产/图案/活动页而非整站语言", "en": "Brand identity, event posters and social graphics — research 03 §13: on the web it's mostly brand assets/patterns/campaign pages, not whole-site language" },
+      { "zh": "面向年轻受众的插画型落地页局部(页眉横幅、章节分隔、贴纸挂件)", "en": "Illustrated landing-page sections for young audiences (hero banners, section dividers, sticker badges)" },
+      { "zh": "Gen-Z 80s 复古潮下的限量联名与快闪活动——调研 03§13 记载其全面复兴正在发生", "en": "Limited collabs and pop-ups riding the Gen-Z 80s revival — research 03 §13 records the revival as ongoing" }
+    ],
+    "avoid": [
+      { "zh": "正文排版与数据表格——图案堆叠直接吃掉文字层级,冲突色持续干扰扫读", "en": "Body typography and data tables — pattern stacking buries text hierarchy and clashing hues fight scanning" },
+      { "zh": "无障碍敏感场景(医疗、政务、银行)——「无调和」的配色纪律与 3:1/4.5:1 对比度要求天然冲突", "en": "Accessibility-sensitive contexts (health, government, banking) — the no-harmony palette discipline collides with 3:1/4.5:1 contrast rules" },
+      { "zh": "整站全屏铺满——enlighten 明示孟菲斯在网页上是局部语言,强行整站会迅速视觉疲劳", "en": "Whole-site saturation — enlighten is explicit that Memphis is a local language on the web; forcing it site-wide fatigues fast" }
+    ]
+  },
+  "a11y": {
+    "zh": "冲突色并置(turquoise 上放 coral、yellow 上放 coral)对比度天然不达标——所有母题一律 aria-hidden 当装饰,不得承载信息;文字永远坐在纯色(奶油/黑)底上,按最坏背景核对 4.5:1(WCAG 2.1 SC 1.4.3);黑描边让图形边界保持 3:1 非文本对比(SC 1.4.11);图案是唯一氛围载体,关掉后界面必须仍可读。",
+    "en": "Clashing hue pairings (coral on turquoise, coral on yellow) naturally fail contrast — every motif is aria-hidden decoration and carries no information; text always sits on solid cream/black fields checked for 4.5:1 against the worst backdrop (WCAG 2.1 SC 1.4.3); black outlines keep shape boundaries at 3:1 non-text contrast (SC 1.4.11); patterns are the only atmosphere carrier — with them off, the interface must still read."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Memphis_Group",
+    "https://design-styles.enlighten-media.net/pages/memphis/",
+    "https://trends.daisyui.com/ui-design-trends-2025/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块孟菲斯风格活动卡:奶油层压板底上散布粗黑描边的扁平几何母题(蚯蚓线/之字纹/波点),turquoise×coral×yellow×black 冲突配色,黑描边标题,非对称构图,禁止调和与渐变。",
+      "en": "Replicate a Memphis event card: flat black-outlined motifs (squiggles/zigzags/dots) scattered over a cream laminate field, clashing turquoise×coral×yellow×black, an outlined headline, asymmetric composition — no harmonizing, no gradients."
+    },
+    "acceptance": [
+      { "zh": "所有母题带黑描边,描边粗细严格使用参数快照值", "en": "Every motif carries the black outline at the exact parameter snapshot weight" },
+      { "zh": "色板只用 turquoise/coral/yellow/black 四色(基准色值),不引入第五色相、不加渐变不加阴影", "en": "The palette uses only turquoise/coral/yellow/black (baseline hexes) — no fifth hue, no gradients, no shadows" },
+      { "zh": "母题层 aria-hidden,纯装饰;文字坐在纯色底上", "en": "The motif layer is aria-hidden decoration; text sits on solid fields" },
+      { "zh": "构图非对称:母题沿对角线/边缘散布,不做居中对称排版", "en": "Composition is asymmetric: motifs scatter along diagonals/edges, never a centered symmetric layout" },
+      { "zh": "prefers-reduced-motion 时关闭入场与摇摆动画", "en": "Entrance and wiggle animations stop under prefers-reduced-motion" }
+    ]
+  }
+}

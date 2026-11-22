@@ -1,0 +1,108 @@
+{
+  "name": "Smoothness Craft",
+  "nameZh": "丝滑工艺",
+  "aliases": ["高性能动画", "compositor-friendly", "will-change 纪律", "velocity preserve"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "丝滑是工艺不是参数:只动 transform/opacity、逐帧直写 transform、will-change 最后手段用后即撤、中断接力交给物理弹簧——同一动画,工艺不同,帧率天差地别。",
+    "en": "Smoothness is craft, not parameters: animate only transform/opacity, write transform directly per frame, treat will-change as a last resort removed after use, and hand interruption to physics springs — same animation, different craft, wildly different frame rates."
+  },
+  "origin": {
+    "zh": "web.dev《高性能 CSS 动画》实测:top/left 动画示例丢帧 50%,transform 版仅 1%(Chrome FPS 面板);MDN will-change:「last resort——不要预防性使用」,过量 → 内存 + 渲染复杂度 → 更慢,正确姿势是 JS 动画前设置、animationend 后移除(调研 10§7.1/§7.2);Motion 文档:物理弹簧 incorporate 当前速度,duration 版 starts from rest and ignores velocity(§7.3);逐帧直写 transform、CSS 变量只做事件级开关(§7.4)。",
+    "en": "web.dev's high-performance animations guide measured: the top/left demo drops 50% of frames vs 1% for the transform version (Chrome FPS panel); MDN will-change: 'last resort — do not use preventively', overuse → memory + rendering complexity → slower, correctly set via JS before the animation and removed on animationend (research 10 §7.1/§7.2); Motion docs: physics springs incorporate the current velocity while duration versions 'start from rest and ignore velocity' (§7.3); write transform directly per frame, CSS variables only at event level (§7.4)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "animateProperty",
+      "options": [
+        { "value": "transform", "label": { "zh": "transform(合成器)", "en": "transform (compositor)" } },
+        { "value": "left", "label": { "zh": "left(触发布局)", "en": "left (triggers layout)" } }
+      ],
+      "default": "transform",
+      "effect": {
+        "zh": "JS 型参数(demo 逐帧直写对应属性)。transform 走合成器路径;left 每帧触发布局+绘制——web.dev 实测丢帧 50% vs 1%,demo 帧率表可现场复现趋势(小舞台幅度有限)。",
+        "en": "JS param (the demo writes the chosen property per frame). transform rides the compositor; left triggers layout+paint every frame — web.dev measured 50% vs 1% frame drops, and the demo's FPS panel reproduces the trend live (magnitude limited by the small stage)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "layerHint",
+      "options": [
+        { "value": "none", "label": { "zh": "无提示", "en": "No hint" } },
+        { "value": "will-change", "label": { "zh": "will-change: transform", "en": "will-change: transform" } },
+        { "value": "translateZ", "label": { "zh": "translateZ(0) 提层", "en": "translateZ(0) promotion" } }
+      ],
+      "default": "none",
+      "effect": {
+        "zh": "JS 型参数(演示提层提示的开关)。MDN 纪律:will-change 是 last resort、动画前设置 animationend 后移除、绝不常驻撒到 body;translateZ(0) 是不支持 will-change 时的廉价回退(web.dev)。demo 中仅为教学开关,生产勿常驻。",
+        "en": "JS param (a teaching switch for layer promotion). MDN's discipline: will-change is a last resort — set before the animation, removed on animationend, never smeared across body; translateZ(0) is the cheap fallback where will-change is unsupported (web.dev). A demo switch only — never resident in production."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "interruptMode",
+      "options": [
+        { "value": "spring", "label": { "zh": "spring(速度接力)", "en": "spring (velocity handoff)" } },
+        { "value": "tween", "label": { "zh": "tween(从静止重启)", "en": "tween (restart from rest)" } }
+      ],
+      "default": "spring",
+      "effect": {
+        "zh": "JS 型参数(中断接力对照)。spring=Motion 物理弹簧,中途换目标从当前值+速度续接(文档原文:incorporate the velocity of any existing gestures or animations);tween=duration 动画,从静止重启、忽略速度(文档原文:starts from rest and ignores velocity)——运动中重定向会出现可感知顿挫。",
+        "en": "JS param (interrupt-handoff contrast). spring = Motion physics springs continuing from the current value + velocity (docs: 'incorporate the velocity of any existing gestures or animations'); tween = duration animation restarting from rest, ignoring velocity (docs: 'starts from rest and ignores velocity') — a perceptible hitch on mid-flight re-targets."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "全部工艺均为 Baseline:transform/opacity 合成器动画、will-change(CSS Will Change Module)、translateZ、rAF(MDN:回调频率匹配刷新率,60/75/120/144Hz 常见);linear() 烤弹簧 Baseline 2023-12(调研 10§7.5/§7.6)。",
+      "en": "All crafts are Baseline: transform/opacity compositor animation, will-change (CSS Will Change Module), translateZ, rAF (MDN: callbacks match refresh rate, 60/75/120/144Hz common); baking springs via linear() is Baseline 2023-12 (research 10 §7.5/§7.6)."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时逐帧写样式的循环静止直出、中断轨直落目标位;帧率表仍工作(纯测量,非动画);所有演示效果有文字读数兜底,不依赖动画传达。",
+    "en": "Under prefers-reduced-motion the per-frame loop goes static and the interrupt lane lands directly; the FPS panel keeps working (pure measurement, not animation); every demo effect has a textual readout fallback — nothing depends on motion alone."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "写任何动画前的工艺自查:只动 transform/opacity;位移用 translate,缩放用 scale,显隐用 opacity", "en": "A craft preflight before any animation: transform/opacity only — translate for travel, scale for sizing, opacity for visibility" },
+      { "zh": "手势逐帧驱动:直接写 el.style.transform(或 Motion motion value),CSS 变量只做事件级开关", "en": "Per-frame gesture driving: write el.style.transform directly (or a Motion motion value); CSS variables only at event level" },
+      { "zh": "需要中途重定向的动画(跟随、抽屉、卡槽):物理弹簧或 visualDuration,让速度接力", "en": "Animations needing mid-flight re-targets (follow, drawers, slot pills): physics springs or visualDuration so velocity hands over" },
+      { "zh": "性能评审:Chrome Performance 面板 Rendering 行 0 开销为验收线;60/120Hz 下时长一律写 ms", "en": "Performance reviews: 0ms in Chrome's Performance panel Rendering row is the acceptance bar; durations always in ms across 60/120Hz" }
+    ],
+    "avoid": [
+      { "zh": "动画 top/left/width/margin——每帧触发布局;必须改布局时用 FLIP(transform 反演)", "en": "Animating top/left/width/margin — layout every frame; use FLIP (transform inversion) when layout must change" },
+      { "zh": "will-change 常驻撒到大量元素——MDN:过量内存 + 更复杂渲染反而更慢;也会提前创建 stacking context", "en": "Resident will-change across many elements — MDN: excessive memory + more complex rendering can be slower; it also creates stacking contexts early" },
+      { "zh": "逐帧改 CSS 变量驱动子树样式——变量继承传播触发整树 invalidation(调研 10§7.4)", "en": "Driving subtree styles through per-frame CSS variable writes — inherited propagation invalidates the whole tree (research 10 §7.4)" },
+      { "zh": "按帧数写时长(『跑 12 帧』)——rAF 跟随刷新率,120Hz 上时长减半;一律 ms", "en": "Writing durations as frame counts ('run 12 frames') — rAF follows refresh rate, halving durations at 120Hz; use ms" }
+    ]
+  },
+  "a11y": {
+    "zh": "工艺演示不承载唯一信息(全部有文字读数);prefers-reduced-motion 时静止直出;持续动画的元素注意不遮挡内容;帧率表是教学工具,真实产品里性能问题应修复而不是让用户适应;大幅/闪烁动画始终给关闭路径(HIG Motion:动效可关闭)。",
+    "en": "The craft demo carries no sole information (textual readouts everywhere); static output under prefers-reduced-motion; continuously animating elements must not obscure content; the FPS panel is a teaching tool — in production you fix performance rather than acclimate users; large/flashing motion always offers an off switch (HIG Motion: cancellable)."
+  },
+  "sources": [
+    "https://web.dev/articles/animations-guide",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/will-change",
+    "https://motion.dev/docs/react-transitions",
+    "https://drafts.csswg.org/css-variables-1/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/linear",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame",
+    "https://www.html5rocks.com/en/tutorials/speed/high-performance-animations/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个丝滑工艺对照演示:同一往返运动分别逐帧写 transform 与 left(帧率表现场测帧间隔与长帧),will-change/translateZ 提层开关,中断接力轨对比 spring(速度接力)与 tween(从静止重启)。",
+      "en": "Replicate a smoothness-craft contrast demo: one ping-pong motion written per frame as transform vs left (an FPS panel measuring deltas and long frames live), will-change/translateZ promotion switches, and an interrupt lane contrasting spring (velocity handoff) vs tween (restart from rest)."
+    },
+    "acceptance": [
+      { "zh": "逐帧驱动直写 el.style.transform,不经 CSS 变量(变量逐帧改触发整树 invalidation)", "en": "Per-frame driving writes el.style.transform directly, never through CSS variables (per-frame writes invalidate the whole tree)" },
+      { "zh": "will-change 仅作演示开关并标注 MDN 三条纪律;translateZ(0) 标注为旧浏览器廉价回退", "en": "will-change appears only as a labeled teaching switch with MDN's three disciplines; translateZ(0) labeled the legacy fallback" },
+      { "zh": "spring 档中途换目标从当前值+速度续接;tween 档如实呈现『从静止重启』并引用 Motion 文档原文", "en": "The spring lane continues from current value + velocity on re-targets; the tween lane honestly shows 'restart from rest' citing Motion's docs" },
+      { "zh": "web.dev 50%/1% 丢帧实测数据引用时注明出处与测量环境(Chrome FPS 面板)", "en": "web.dev's 50%/1% frame-drop measurements are cited with provenance (Chrome FPS panel)" },
+      { "zh": "prefers-reduced-motion 时逐帧循环静止直出、中断轨直落目标位", "en": "Under prefers-reduced-motion the per-frame loop goes static and the interrupt lane lands directly" }
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+演示是两层滚动嵌套:**外层假页面**(stage 充当滚动容器,14 行内容)+ **居中弹层**(标题栏 + 内层 30 条列表)。弹层打开时,在内层滚到底,浏览器要不要把滚动「链」给外层,就是本条目的全部:
+
+```html
+<div class="so-outer" data-locked="false"><!-- 外层滚动容器 -->
+  <div class="so-page">…背景内容…</div>
+</div>
+<div class="so-modal" role="dialog" aria-modal="true">
+  <div class="so-modal-head">弹层 <button class="so-close">关闭 ✕</button></div>
+  <div class="so-inner" tabindex="0" role="region" aria-label="内层列表"><!-- 内层滚动容器 -->
+    <div class="so-item">条目 1</div>…
+  </div>
+</div>
+```
+
+关键点:
+
+- 内层滚动区 `tabindex=0` + `role="region"`——可聚焦、方向键/翻页键可滚(WCAG 2.1 SC 2.1.1 邻接要求);
+- 穿透计数器:弹层打开且指针悬于内层时,外层发生滚动即滚动链发生——把「滚动穿透」变成可观测事件;
+- 弹层为 `role="dialog"` + `aria-modal`,Esc 关闭、焦点打开入弹层/关闭归还(WAI-APG Dialog 语义)。
+
+## 样式与参数
+
+两个参数,一条 CSS 变量、一个 JS 开关:
+
+```css
+/* 内层:防滚动链标准姿势(参数经 --ob-inner 注入) */
+.so-inner {
+  overflow-y: auto;
+  overscroll-behavior: var(--ob-inner, contain);  /* contain 拦链留弹 / none 拦链拦弹 */
+  scrollbar-width: thin;
+}
+/* 外层:弹层打开时锁背景(MDN 原文推论) */
+.so-outer[data-locked="true"] { overflow: hidden; }
+```
+
+数值与语义出处(MDN overscroll-behavior 全文抓取,调研 10§8.1/09§7.1 双源):
+
+- **滚动链定义**:「对话框滚到底后,底层页面开始滚动」;
+- **四值语义**:`auto` 默认链出;`contain` 阻止滚动链、**保留回弹**;`none` 两者都拦;2025 新增 `chain`(允许链但禁回弹);形式语法支持 `overscroll-behavior: x y` 双轴;
+- **锁背景推论(MDN 原文)**:「无滚动溢出的滚动容器(如 overflow:hidden)恒处于滚动边界 → 设 contain/none 即可阻止背景滚动」——弹层打开时锁背景的标准做法;
+- **边界**:iframe 不是滚动容器,控制 iframe 内滚动链需在其文档的 html/body 上设置;
+- 配套警告(MDN 原文):scroll-snap `mandatory` 在内容超高时用户可能永远看不到某段内容——一般交互用 `proximity`;`scrollbar-width: none` 影响键盘滚动(WCAG 2.1.1)。
+
+## 动效与交互
+
+- **实验流程**:弹层默认打开 → 把 `innerMode` 切到 `auto` → 在内层列表滚到底继续滚——外层页面跟着滚,穿透计数 +1 → 切回 `contain` 同样操作——外层纹丝不动(iOS 回弹保留);
+- **锁背景实验**:`lockPage` 切 on,外层 `overflow:hidden`,背景完全冻结——这是「弹层打开时锁背景」的官方姿势;注意 contain 只拦「链」,不拦用户直接滚动背景,所以两者要配合;
+- **none 与 contain 的取舍**:弹层内选 contain——保留回弹的手感;`none` 连橡皮筋一并禁掉,iOS 上像卡死,整页 body 千万别用;
+- **reduced-motion**:关掉 `scroll-behavior: smooth` 与工具条 backdrop-filter(演示性效果);本条目无动画依赖;
+- 弹层内滚动区键盘可达(`tabindex=0`),滚动条 `scrollbar-width: thin`(省空间而非审美,MDN)。
+
+## 真实产品案例
+
+- **MDN 官方弹层示例**:dialog 滚动区挂 `overscroll-behavior: contain`,配 `::backdrop { backdrop-filter: blur(0.5rem) }`——本条目 demo 的直接母本(调研 10§8.1);
+- **iOS 模态 sheet**:系统 sheet 内容滚到底继续滚是拖动 sheet 本身而非穿透背景页——原生交互的标准答案;Web 对位就是内层 contain + 背景 overflow:hidden;
+- **Twitter/X 与 Reddit 的时间线抽层**:打开详情层后背景时间线不可滚、关闭后回到原位——「锁背景 + 位置保持」的产品范式(具体实现未逐帧核验,交互行为公知)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `innerMode` | auto→contain:滚动链消失、iOS 回弹保留(推荐);contain→none:回弹也消失,触感变「硬」 | 反向:auto 档穿透发生——弹层滚动到底继续滚背景,操作上下文瞬间丢失 |
+| `lockPage` | on:背景完全冻结,弹层滚动体验最干净;记得关闭后恢复滚动位置 | off:背景可被直接滚动(注意 contain 拦链不拦直滚);适合非模态浮层 |
+| 内层内容量 | 列表越长,滚到边界的概率越高,contain 的价值越大 | 内容不足一屏时内层恒在边界——此时即便 auto 也几乎不穿透,但显式 contain 仍是正确姿势 |
+| 穿透计数(只读) | 计数只在「弹层开 + 指针在内层」时累计——干净的实验对照 | — |
+
+工艺结论:弹层滚动区必挂 `overscroll-behavior: contain`(调研 10 巧思 8);锁背景用 `overflow:hidden` 的「恒在边界」推论;轮播横滑配 `overscroll-behavior-x: contain` + `scroll-snap-type: x proximity`;`none` 只给确需禁回弹的局部组件。

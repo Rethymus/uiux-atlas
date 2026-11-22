@@ -1,0 +1,117 @@
+{
+  "name": "Skeuomorphism",
+  "nameZh": "拟物化",
+  "aliases": ["拟物", "拟物设计", "Skeuomorph UI"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "模拟真实材质与机械控制器的 UI 传统:材质贴图(皮革/拉丝金属/纸纹/木纹)、顶缘受光的凹凸光照模型、可按压/可旋转的机械控制隐喻——2026 年以「新材质家族」四分支回潮。",
+    "en": "The UI tradition of mimicking real materials and mechanical controls: material textures (leather/brushed metal/paper/wood), a top-lit bevel lighting model, pressable and rotatable mechanical metaphors — reviving in 2026 as a four-branch 'new materials family'."
+  },
+  "origin": {
+    "zh": "「模拟真实材质/控制器」的 UI 传统;2026 年以「新材质家族」回潮——历史手稿拟物/实木拟物/发光生态拟物/Y2K 科技拟物四分支被 daisyUI 2026 趋势独立收录(2025 趋势词条 008/022/023/024)(调研 03§18 关联条目)。术语 neo+skeuomorphism 的合成词 Neumorphism 亦以它为词根(调研 03§3)。",
+    "en": "The UI tradition of 'mimicking real materials/controls'; in 2026 it returns as a 'new materials family' — manuscript, solid-wood, glowing-organic and Y2K-tech skeuomorphism listed as four distinct branches in daisyUI's 2026 trends (2025 entries 008/022/023/024) (research 03 §18 related entry). Neumorphism ('neo' + 'skeuomorphism') also takes it as its root (research 03 §3)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "texture",
+      "options": [
+        { "value": "leather", "label": { "zh": "皮革", "en": "Leather" } },
+        { "value": "metal", "label": { "zh": "拉丝金属", "en": "Brushed metal" } },
+        { "value": "paper", "label": { "zh": "纸纹", "en": "Paper" } },
+        { "value": "wood", "label": { "zh": "木纹", "en": "Wood" } }
+      ],
+      "default": "leather",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换面板材质渐变)。「材质贴图」为调研 03§18 汇总表原文列出的可参数化变量(枚举四类为 demo 的 CSS 近似,无外部贴图)。皮革对应 iOS 缝线皮革年代样本,金属对应收音机/仪表面板,纸纹对应备忘录便笺。",
+        "en": "JS-type param (demo subscribes and swaps the panel's material gradients). 'Material textures' is a tunable variable listed verbatim in research 03 §18's summary table (the four enum kinds are this demo's CSS approximations, no external textures). Leather maps to the iOS stitched-leather era, metal to radio/instrument panels, paper to memo pads."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "lightAngle",
+      "unit": "deg",
+      "min": 60,
+      "max": 300,
+      "step": 15,
+      "default": 135,
+      "cssVar": "--sk-angle",
+      "effect": {
+        "zh": "光照模型的主光源入射角(驱动凹凸渐变的方向)。调研 03§18 把「光照模型」列为可参数化变量但未记载角度;默认 135° 为本条目基准设定——「左上方来光」是拟物凹凸的社区惯例(未证实为规范值),角度改变时高光与暗影随之旋转。",
+        "en": "Incident angle of the lighting model's key light (drives the bevel gradient direction). Research 03 §18 lists 'lighting model' as a tunable variable without angles; the 135° default is this entry's baseline — 'light from upper-left' is the community convention for bevels (unverified as a norm); highlights and shadows rotate with the angle."
+      }
+    },
+    {
+      "type": "number",
+      "name": "emboss",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 1,
+      "cssVar": "--sk-emboss",
+      "effect": {
+        "zh": "凹凸(emboss)强度倍率,作用于控件顶缘亮内阴影与底缘暗内阴影。调研未记载数值;倍率 1 为基准设定。内高光顶缘受光是拟物「凸起」读感的来源(与调研 09§1.4d 记载的顶缘受光复刻惯例同构:亮色 rgba(255,255,255,.25~.4),推导非官方)。",
+        "en": "Bevel (emboss) strength multiplier applied to the control's top inner highlight and bottom inner shadow. No value recorded in the research; multiplier 1 is the baseline. Top-lit inner highlights are the source of the 'raised' read — structurally the same as the top-lit replication convention in research 09 §1.4d (rgba(255,255,255,.25~.4), derived, not official)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "stitch",
+      "options": [
+        { "value": "off", "label": { "zh": "无缝线", "en": "No stitching" } },
+        { "value": "on", "label": { "zh": "缝线描边", "en": "Stitched edge" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换缝线内描边)。缝线(dashed 内边框)是皮革拟物的年代签名细节,demo 用它演示「机械控制隐喻」之外的工艺层;调研未记载该细节,为本条目基准设定。",
+        "en": "JS-type param (demo subscribes and toggles the stitched inner border). Stitching (a dashed inner border) is the period signature detail of leather skeuomorphism — the demo uses it to show the craft layer beyond 'mechanical control metaphors'; undocumented in the research, a baseline setting of this entry."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "全部材质与光照用 CSS 渐变近似(repeating-linear-gradient 做拉丝/木纹、radial-gradient 做皮革粒面),无外部贴图、无滤镜链——支持面为 CSS Image Values 基线;凹凸用 box-shadow inset,基线能力。性能上比真实贴图/滤镜便宜一个量级。",
+      "en": "All materials and lighting are CSS-gradient approximations (repeating-linear-gradient for brush/wood grain, radial-gradient for leather grain) — no external textures, no filter chains; support equals the CSS Image Values baseline; bevels use inset box-shadow, a baseline capability. Performance sits an order of magnitude under real textures/filters."
+    }
+  },
+  "fallback": {
+    "zh": "渐变不支持时退化为单色底 + 描边,凹凸(inset shadow)失效后控件仍以形状与位置表达可交互性;拟物的降级终点天然是扁平——把 emboss 调 0、texture 换 paper 即可预览这条退化路径。",
+    "en": "Without gradient support it degrades to a solid field + strokes; once inset shadows fail, controls still communicate interactivity through shape and placement. Skeuomorphism's degradation terminus is naturally flat — set emboss to 0 and texture to paper to preview that path."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "音乐/收音机/复古主题的播放器与调音界面——旋钮、拨杆、拉丝金属的机械隐喻与内容语境同构", "en": "Music/radio/retro players and tuners — knobs, toggles and brushed metal mirror the content's own mechanics" },
+      { "zh": "儿童与教育产品——「像真东西一样可抓握」的心理暗示降低学习成本(与 2026 发光生态拟物分支的场景重合)", "en": "Children's and education products — the 'grabbable like a real thing' cue lowers learning cost (overlapping with the 2026 glowing-organic branch)" },
+      { "zh": "仪式感/纪念性场景(证书、票据、会员卡)——纸纹与皮革的材质语义传递「值得保存」", "en": "Ceremonial/commemorative surfaces (certificates, tickets, membership cards) — paper and leather textures say 'worth keeping'" }
+    ],
+    "avoid": [
+      { "zh": "高密度生产力界面——材质噪点与凹凸阴影吃掉信息对比度,表格/代码编辑器不成立", "en": "Dense productivity surfaces — texture noise and bevel shadows eat information contrast; tables/code editors can't carry it" },
+      { "zh": "系统级 UI 全铺开——iOS 7 放弃拟物的历史原因(装饰干扰内容)至今成立,拟物只适合局部主题化", "en": "Whole-system UI — the historical reason iOS 7 dropped skeuomorphism (decoration fighting content) still holds; keep it to local theming" },
+      { "zh": "可访问性关键路径——凹凸阴影会稀释控件边界对比,务必核对 3:1 非文本对比(SC 1.4.11),必要时补描边", "en": "Accessibility-critical paths — bevel shadows dilute control boundaries; verify 3:1 non-text contrast (SC 1.4.11) and add strokes where needed" }
+    ]
+  },
+  "a11y": {
+    "zh": "拟物的装饰层(贴图/缝线/凹凸)必须 aria-hidden,语义靠真实控件承载(按钮/开关用 role 与 aria-checked);凹凸的顶缘亮边与底缘暗边会压缩控件边界的有效对比,按 SC 1.4.11 核对 3:1,不足时叠加 1px 实色描边;旋钮/开关的可操作状态必须同时有 aria 状态与视觉状态;leather 底上的浅色文字按最暗粒面区域核对 4.5:1(SC 1.4.3)。",
+    "en": "Skeuomorphic decoration (textures/stitching/bevels) must be aria-hidden; semantics ride on real controls (role + aria-checked for buttons/switches); top highlight and bottom shadow compress a control's effective boundary contrast — check SC 1.4.11's 3:1 and add a 1px solid stroke when short; knob/switch state must exist in both ARIA state and visual state; light text on leather is checked for 4.5:1 against the darkest grain region (SC 1.4.3)."
+  },
+  "sources": [
+    "https://trends.daisyui.com/ui-design-trends-2025/",
+    "https://trends.daisyui.com/ui-design-trends-2026/",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块拟物控制面板:皮革(或金属/纸/木)纹理底、缝线内描边、顶缘受光的凹凸金属旋钮与机械拨动开关,135° 主光源方向的凹凸光照模型,按压时控件「物理下沉」。",
+      "en": "Replicate a skeuomorphic control panel: a leather (or metal/paper/wood) textured field, stitched inner border, a top-lit beveled metal knob and a mechanical toggle switch, a 135° key-light bevel model, and controls that physically sink when pressed."
+    },
+    "acceptance": [
+      { "zh": "材质、光角、凹凸倍率严格使用参数快照值;纹理全部用 CSS 渐变近似并注明,不引用外部贴图", "en": "Texture, light angle and emboss multiplier use the exact snapshot values; textures are CSS-gradient approximations, stated as such — no external textures" },
+      { "zh": "凹凸 = 顶缘亮内阴影 + 底缘暗内阴影成对出现,方向随 lightAngle 旋转", "en": "Bevels appear as top inner highlight + bottom inner shadow pairs, rotating with lightAngle" },
+      { "zh": "开关/旋钮为真实控件(role=switch/按钮),ARIA 状态与视觉状态同步,装饰层 aria-hidden", "en": "Switch/knob are real controls (role=switch/buttons) with ARIA state synced to visual state; decoration layers are aria-hidden" },
+      { "zh": "按压反馈是「物理下沉」:位移 + 内阴影加深,不用发光或缩放动画", "en": "Press feedback is a physical sink: displacement + deepening inner shadow — no glow, no scale animation" },
+      { "zh": "prefers-reduced-motion 时取消过渡,状态切换瞬时;控件边界核对 3:1 非文本对比", "en": "Transitions stop under prefers-reduced-motion — states swap instantly; control boundaries hold 3:1 non-text contrast" }
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "name": "Frutiger Aero",
+  "nameZh": "Frutiger Aero",
+  "aliases": ["Frutiger 美学", "水色科技自然风", "Aero Glass"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "2005–2013 前后的「自然 + 科技光泽」美学:天空蓝与草绿的明快底色、玻璃气泡、椭圆光泽高光与水感玻璃质感——Y2K 的后继、玻璃时代(Glassmorphism/Liquid Glass)的前身。",
+    "en": "The 2005–2013 'nature + tech gloss' aesthetic: brisk sky-blue and grass-green fields, glass bubbles, elliptical specular highlights and watery glass texture — successor to Y2K and the forerunner of the glass era (Glassmorphism/Liquid Glass)."
+  },
+  "origin": {
+    "zh": "2005–2013 前后「自然+科技光泽气泡」美学,Y2K 的后继、玻璃时代的前身;TechRadar 认为其影响了 Apple 2025 年的 Liquid Glass(调研 03§19 关联条目;en.wikipedia.org/wiki/Y2K_aesthetic「succeeded by Frutiger Aero」;en.wikipedia.org/wiki/Liquid_Glass 引 TechRadar)。名字来自这段时期的主流人文无衬线字体 Frutiger 与 Windows Vista 的「Aero」玻璃界面。",
+    "en": "The 2005–2013 'nature + glossy bubbles' aesthetic, successor to Y2K and forerunner of the glass era; TechRadar credits it as an influence on Apple's 2025 Liquid Glass (research 03 §19 related entry; en.wikipedia.org/wiki/Y2K_aesthetic 'succeeded by Frutiger Aero'; en.wikipedia.org/wiki/Liquid_Glass citing TechRadar). The name blends the era's humanist sans Frutiger with Windows Vista's 'Aero' glass interface."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "skyBlue",
+      "format": "hex",
+      "default": "#8ECDEB",
+      "cssVar": "--fa-sky",
+      "effect": {
+        "zh": "天空蓝主色,场景上层的晴空底。调研 03§19 记载该美学的标志性色彩为「天空蓝/草绿」但未记载具体色值;#8ECDEB 为本条目基准设定(社区常见值,未证实)。",
+        "en": "The sky-blue lead color of the upper scene. Research 03 §19 records the aesthetic's signature hues as 'sky blue / grass green' without specific values; #8ECDEB is this entry's baseline (community convention, unverified)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "grassGreen",
+      "format": "hex",
+      "default": "#7DBB4E",
+      "cssVar": "--fa-grass",
+      "effect": {
+        "zh": "草绿辅色,场景下缘的草地/自然层。调研 03§19 记载「草绿」但未记载色值;#7DBB4E 为本条目基准设定(社区常见值,未证实)。自然元素(草、水、天空)与科技光泽并置是该美学的定义性特征。",
+        "en": "The grass-green support color of the lower nature layer. Research 03 §19 records 'grass green' without a value; #7DBB4E is this entry's baseline (community convention, unverified). Nature elements (grass, water, sky) juxtaposed with tech gloss is the defining trait of the aesthetic."
+      }
+    },
+    {
+      "type": "number",
+      "name": "glossAlpha",
+      "min": 0,
+      "max": 0.6,
+      "step": 0.05,
+      "default": 0.35,
+      "cssVar": "--fa-gloss",
+      "effect": {
+        "zh": "气泡/玻璃顶缘椭圆高光的 alpha。调研 09§1.4d 的 web 复刻惯例推导值:顶缘受光内高光亮色 rgba(255,255,255,.25~.4)(明确标注为推导、非官方数值);默认 0.35 落在该区间内。",
+        "en": "Alpha of the elliptical top-edge highlight on bubbles/glass. The web-replication convention derived in research 09 §1.4d: top-lit inner highlight at rgba(255,255,255,.25~.4) — explicitly marked as derived, not official; the 0.35 default sits inside that range."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--fa-blur",
+      "effect": {
+        "zh": "玻璃卡片的 backdrop-filter 模糊半径。默认 20px 取自 Apple 官网生产 CSS 实抓的 blur(20px)+saturate(180%) 基准档(调研 09§1.4a 一手实抓;亦见调研 03§1)。Aero 时代的玻璃语义与今日玻璃材质一脉相承。",
+        "en": "Backdrop blur radius of the glass card. The 20px default comes from Apple's own production CSS — blur(20px)+saturate(180%) as the 1× baseline tier (research 09 §1.4a, grabbed first-hand; also research 03 §1). Aero-era glass semantics flow straight into today's glass materials."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "玻璃卡片依赖 backdrop-filter:Chrome/Edge 76+(2019)、Firefox 103+(2022)、Safari 9+ 需 -webkit- 前缀,Safari 18(2024-09)起无前缀(调研 03§1);椭圆高光/草丘用 radial-gradient,支持面为 CSS Image Values 基线,无额外前缀。",
+      "en": "The glass card depends on backdrop-filter: Chrome/Edge 76+ (2019), Firefox 103+ (2022), Safari 9+ with the -webkit- prefix, unprefixed since Safari 18 (2024-09) (research 03 §1); elliptical highlights and grass hills use radial-gradient at CSS Image Values baseline, no extra prefixes."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 backdrop-filter 时提高玻璃填充不透明度(白 0.7 左右)并保留描边与光泽高光——Aero 的辨识度一半来自高光与色彩,即使失去模糊仍可成立;极端环境退化为天空蓝实底 + 草丘 + 白色圆角卡。",
+    "en": "Without backdrop-filter, raise the glass fill opacity (white ≈0.7) and keep the border and specular highlight — half of Aero's identity is gloss and color, so it survives losing the blur; in the worst case degrade to a solid sky field + grass hill + white rounded card."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "健康/自然/环保主题的产品页——水、天空、草地的语义与主题天然契合", "en": "Health/nature/eco product pages — water, sky and grass semantics fit the subject natively" },
+      { "zh": "面向大众的轻量工具与启动器(天气、日历、播放器)——气泡按钮大而圆润、光泽提供「可按压」暗示", "en": "Mass-market lightweight tools and launchers (weather, calendar, player) — big round bubble buttons whose gloss hints pressability" },
+      { "zh": "怀旧营销与「千禧一代童年」主题活动——Aero 是 2005–2013 世代最具辨识度的屏幕记忆", "en": "Nostalgia marketing and 'millennial childhood' campaigns — Aero is the most recognizable screen memory of the 2005–2013 generation" }
+    ],
+    "avoid": [
+      { "zh": "高密度信息面板——光泽高光与气泡形会持续消耗注意力,表格/仪表盘不成立", "en": "Dense information panels — gloss and bubble shapes keep draining attention; tables/dashboards can't carry it" },
+      { "zh": "专业开发/终端工具——「自然+光泽」的语义与工程师语境错位,可信度受损", "en": "Developer/terminal tools — the 'nature + gloss' semantics misalign with engineer contexts and hurt credibility" },
+      { "zh": "低对比警示信息——白色椭圆高光下的浅色文字对比度极易不足,警示场景需换实底", "en": "Low-contrast warning content — pale text over white elliptical gloss fails contrast easily; warnings need solid fields" }
+    ]
+  },
+  "a11y": {
+    "zh": "玻璃上的文字按透出的最亮(白色高光)与最暗(草绿)背景分别核对 4.5:1(WCAG 2.1 SC 1.4.3);气泡按钮的光泽高光不得侵入文字区域(高光 alpha 越高,顶部文字对比越差);升起的气泡是纯装饰层,aria-hidden 且 pointer-events: none,不拦截交互;blur 失效回退路径必须保证文字仍在可读底色上。",
+    "en": "Check text on the glass against both the brightest (white gloss) and darkest (grass green) backdrops for 4.5:1 (WCAG 2.1 SC 1.4.3); the specular highlight must never invade the text zone — the higher the gloss alpha, the worse top-edge text contrast; rising bubbles are a purely decorative layer, aria-hidden with pointer-events: none; the no-blur fallback must keep text on a readable field."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Y2K_aesthetic",
+    "https://en.wikipedia.org/wiki/Liquid_Glass",
+    "https://namethatui.com/styles",
+    "https://www.apple.com/ac/localnav/9/styles/ac-localnav.built.css"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块 Frutiger Aero 场景:天空蓝晴空 + 草绿草丘的自然底,一块白 15% 透明玻璃卡(blur 20px + 顶缘椭圆高光 0.35)浮起,玻璃气泡按钮带光泽,装饰气泡从草丘升起。",
+      "en": "Replicate a Frutiger Aero scene: a sky-blue field over a grass-green hill, a white 15% glass card floating on blur(20px) with a 0.35 elliptical top highlight, glossy glass bubble buttons, and decorative bubbles rising from the hill."
+    },
+    "acceptance": [
+      { "zh": "天空蓝/草绿严格使用参数快照值,自然层(天空+草丘)是场景底,不是卡片装饰", "en": "Sky blue/grass green use the exact snapshot values; the nature layer (sky + hill) is the scene base, not card decoration" },
+      { "zh": "玻璃卡 blur、光泽 alpha 严格使用参数快照值,同时写 -webkit-backdrop-filter", "en": "Glass blur and gloss alpha use the exact snapshot values, with -webkit-backdrop-filter in place" },
+      { "zh": "椭圆光泽高光只在元素顶缘,不侵入文字区", "en": "The elliptical specular sits only at the top edge, never over text" },
+      { "zh": "装饰气泡 aria-hidden 且不拦截指针事件,提供 @supports 无模糊回退", "en": "Decorative bubbles are aria-hidden and pointer-transparent; provide an @supports no-blur fallback" },
+      { "zh": "prefers-reduced-motion 时气泡静止、入场动画取消", "en": "Under prefers-reduced-motion bubbles stand still and entrance animations are removed" }
+    ]
+  }
+}

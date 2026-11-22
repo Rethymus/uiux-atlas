@@ -23,7 +23,7 @@ HStack { Image(systemName: "play.fill"); Image(systemName: "pause.fill") }
 
 ## 样式与参数
 
-Web 近似由 `--lg-*` 变量驱动:blur 采样身后内容,variant 决定状态层,折射用 SVG `feDisplacementMap`:
+Web 近似由 `--lg-*` 变量驱动:blur 采样身后内容,variant 决定状态层,折射用 SVG `feDisplacementMap`;另有三个 JS 型参数由 demo 订阅消费——`variant` 切状态层,`refraction` 写滤镜位移 scale,`morph` 切胶囊↔面板形态:
 
 ```css
 .glass-pod {
@@ -46,14 +46,27 @@ Web 近似由 `--lg-*` 变量驱动:blur 采样身后内容,variant 决定状态
 - `variant` 两档、默认 regular:官方定义(调研 02 §1 A1)+ glassEffect 默认值(A2);
 - `tint` 默认 0:`Glass.tint(_:)` 是可选方法,玻璃默认不着色(A3);
 - `blur` 20px:Apple 未公布数值,借经典玻璃配方作近似起点(未证实);
-- 折射:SVG 滤镜 `feTurbulence → feDisplacementMap`,**仅 Chromium 生效**,Firefox/Safari 不支持 backdrop-filter 的 `url()` 引用——回退纯模糊。
+- `refraction`(JS 型)默认 34:本 demo 既有演示值——官方从未公布折射数值(WWDC25 219 只定性 lensing),SVG 位移方案属社区通行做法且调研未能核验原文(调研 09 §8:⚠️来源未核验);
+- `morph`(JS 型)默认 pod:胶囊为官方默认形状 Capsule(A2);过渡时长/曲线 320ms `cubic-bezier(0.4, 0, 0.6, 1)` 取 apple.com 生产 CSS token(调研 09 §1.4a/§9.3 实抓);
+- 折射:SVG 滤镜 `feTurbulence → feOffset → feDisplacementMap`,**仅 Chromium 生效**,Firefox/Safari 不支持 backdrop-filter 的 `url()` 引用——回退纯模糊。
 
 ## 动效与交互
 
-- 变体切换:dimming 薄层 0.25s opacity 过渡;`prefers-reduced-motion` 时取消过渡;
-- 背景『活体内容』(demo 的漂移色斑)只动 `transform`,让玻璃舱的模糊/折射每帧采样到变化——这正是 Liquid Glass『内容穿透滚动』的官方图景;
-- 玻璃舱本身不做位移动效:官方定位是稳定的功能层,hover 反馈交给 `Glass.interactive(_:)`(A3)一类的系统行为;
-- 调参即时可见:blur/dimming/tint 三个变量直接改写透出层的观感。
+Liquid Glass 的动态表现(WWDC25 219 官方定性,调研 09 §8)在 demo 里以 web 近似呈现:
+
+- **折射随指针(lensing 近似)**:官方定义玻璃以 lensing「实时弯折、整形并汇聚光线」区别于旧材质的散射(219 [118–159s])。demo 用 feDisplacementMap 位移场随指针偏移——`feOffset` 平移噪声场,指针相对玻璃舱的偏移量(归一化后 rAF 合帧)写入 dx/dy。折射数值官方从未公布,位移幅度为演示值;
+- **折射强度是尺寸的函数**:「玻璃 flex/morph 成大元素时,材质特性变化模拟更厚实材料:更深阴影、更明显的 lensing 与折射、更柔的光散射」(219 [422–445s])。demo 把位移 scale 绑定为 `refraction × (当前宽度 / 胶囊基准宽度)`,面板态自动加深畸变与阴影——比例式落地,无魔法常数;
+- **形态 morph**:「状态切换时,Liquid Glass 在各上下文的控件间动态 morph,维持单一浮动平面」「弹菜单时气泡直接 pop 开露出内容,轻量就地过渡」(219 [283–320s]);真身由 `GlassEffectContainer` + `glassEffectID(_:in:)` 驱动,UIKit 在动画块内换 `UIGlassEffect` 触发 materialize。demo 以胶囊↔展开面板的 width/height/border-radius 过渡近似——width/height 会触发 layout,生产 morph 应换 FLIP/view-transition 只动 transform(调研 09 §8 web 近似配方);
+- **触碰辉光**:「从指尖下方点亮,扩散至整个元素乃至邻近玻璃」(219 [725–737s])。demo 在玻璃舱内叠一层跟随指针的 radial-gradient 高光,逐帧直接写元素 style 而非 CSS 变量(每帧写变量会触发整棵子树样式失效);辉光配方为演示近似,官方未公布数值;
+- **共享采样域**:「玻璃不能采样玻璃」——相邻玻璃必须共享一个容器采样域,否则表现不一致(323 [1200–1229s]);demo 单舱单采样域天然合规,多玻璃并排时记得包进同一容器;
+- 既有行为不变:变体切换 dimming 薄层 0.25s opacity 过渡;背景「活体内容」(漂移色斑)只动 `transform`,让玻璃舱的模糊/折射每帧采样到变化;玻璃舱自身不做位移动效,hover 反馈属 `Glass.interactive(_:)`(A3)一类的系统行为;
+- `prefers-reduced-motion` 时取消 morph 过渡与入场动画(指针跟随的折射/辉光是输入驱动而非自主运动,予以保留)。
+
+## 真实产品案例
+
+- **iOS 26 系统 tab bar / 工具栏**:Liquid Glass 的官方主场——玻璃控件舱浮在内容之上,导航状态切换时在上下文之间 morph、维持单一浮动平面(WWDC25 219 官方演示场景);
+- **apple.com 全局导航**:Liquid Glass 语汇的 web 生产落地——滚过 hero 后 `blur(0→20px) saturate(180%)`,底色从 `rgba(250,250,252,.8)` 上浮到 `.92`(吸顶)、菜单展开转实色,过渡 320ms `cubic-bezier(0.4, 0, 0.6, 1)`(apple.com 生产 CSS 实抓,调研 09 §1.4);
+- **visionOS 窗口**:系统级不可修改的 glass 材质,随环境亮度自适应、无独立深色模式开关——「按语义而非观感选材质」的官方样板(HIG Materials,调研 09 §1.2)。
 
 ## 参数敏感度
 
@@ -63,5 +76,7 @@ Web 近似由 `--lg-*` 变量驱动:blur 采样身后内容,variant 决定状态
 | `dimming` | clear 下深色层更实,亮背景上的文字对比度更稳;>50% 玻璃发闷 | 亮背景上文字会顶穿 4.5:1;0% 等于裸 clear——官方 35% 是为亮背景兜底的 |
 | `blur` | 舱体更『厚』、内容更不可辨;>30px 糊成一片 | 低于 8px 玻璃感退化成淡色块,折射纹理也失去依托 |
 | `tint` | 着色越强品牌感越重,像彩色亚克力;>60% 掩盖玻璃质感 | 0% 是官方默认——不着色的玻璃靠高光和折射撑形态 |
+| `refraction` | 折射畸变更明显、lensing 感更强;过大(>80,演示观察)边缘撕裂成噪点、背后内容不可辨 | 畸变退回纯模糊;0 = 关闭折射层,玻璃只剩模糊+内侧高光 |
+| `morph` → panel | 放大态阴影更深、折射按宽度比例增强——官方「体积越大材质越厚实」的定性(219 [422–445s]) | 回到胶囊舱:最小 footprint,折射按基准值,视觉最安静 |
 
 经验区间:dimming 用官方 35% 起步只在亮背景上加码;blur 12–24px;tint ≤30% 做轻品牌化。真身优先:有 SwiftUI/UIKit 环境时用 `glassEffect`,Web 近似永远是降级路径。

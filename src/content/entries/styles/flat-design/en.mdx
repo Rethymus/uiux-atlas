@@ -1,0 +1,72 @@
+## Structure & DOM
+
+Flat design is "one panel + color blocks": a settings panel (white, hairline border) holding flat-color tiles, a geometric switch and a solid primary button — **all hierarchy rides on color value, spacing and type size; zero decoration layers**.
+
+```html
+<div class="panel">
+  <h2>Settings</h2>
+  <div class="tiles">
+    <button class="tile" aria-pressed="true">…icon + label…</button>
+  </div>
+  <div class="row">
+    <span>Wi-Fi</span>
+    <button role="switch" aria-checked="true" class="switch"><span class="knob"/></button>
+  </div>
+  <button class="btn-primary">Done</button>
+</div>
+```
+
+Key points:
+
+- Icons are inline SVG simple glyphs in a single `currentColor` — the same geometry switches between outline and filled modes, which is exactly the parameterized "simple glyph icon";
+- The switch's affordance is purely geometric: a rounded track plus a white knob's displacement, with `role="switch"` + `aria-checked` carrying the state;
+- The selected state is triple-expressed — `aria-pressed`, accent fill, white label — never hue alone (SC 1.4.1).
+
+## Styling & Parameters
+
+Two CSS variables, two JS-type params:
+
+```css
+.demo-stage { --fd-accent: #007aff; --fd-radius: 4px; }
+/* ornament tiers: discipline vs flat 2.0 */
+.fd-scene[data-ornament="gradient"] .fd-tile-accent {
+  background-image: linear-gradient(to bottom, oklch(1 0 0 / 0.14), transparent 55%);
+}
+.fd-scene[data-ornament="shadow"] .fd-panel { box-shadow: 0 4px 14px oklch(0 0 / 0.12); }
+/* strict flat (none): none of the above exists */
+.fd-tile { background: oklch(0.93 0.02 250); border-radius: var(--fd-radius); }
+.fd-tile[aria-pressed="true"] { background: var(--fd-accent); color: oklch(1 0 0); }
+```
+
+Where the numbers come from:
+
+- "Simple elements, typography and flat color", "simple glyph icons" and "no skeuomorphic depth" are verbatim traits from research 03 §17;
+- The lineage (Metro 2010 → Windows 8, Holo 2011 → Material 2014, iOS 7 2013, Fluent 2017) and "by the mid-2020s gradually replaced by glassmorphism" are recorded in research 03 §17;
+- NN/g's 2017 finding that flat interfaces were 22% slower on average is verbatim from research 03 §17;
+- The accent #007AFF (community-circulated iOS blue reference, not verified as an official spec value) and radius 4px are this entry's baselines.
+
+## Motion & Interaction
+
+Flat's motion discipline: "state changes are instant; movement stays light":
+
+- **Switch**: knob translate 0.15s + track recolor — the only allowed motion, expressing state rather than decorating;
+- **Tiles**: hover deepens one color step (0.15s); `aria-pressed` swaps to the accent fill — no lift, no shadow growth;
+- **Press feedback**: the primary button hovers to `brightness(0.94)` — color only, no displacement; that's the flat-vs-skeuomorphic line;
+- Under `prefers-reduced-motion: reduce` all transitions stop; state changes complete instantly.
+
+## Real-world examples
+
+- **Windows Phone 7 Metro → Windows 8 (2010/2012, Microsoft)** — the starting point of the lineage recorded in research 03 §17: flat tiles, sharp corners and typographic layout as a system language; the industrial start of the flat wave.
+- **iOS 7 (2013, Apple)** — recorded in research 03 §17: the system-level pivot away from skeuomorphic gloss to hairline icons and flat color; the decisive event of mobile flattening.
+- **Google Holo → Material Design (2011/2014)** — recorded in research 03 §17: from Holo's flat blue to Material handing flatness back its hierarchy via the "paper" metaphor — the canonical "flat + shadow" variant.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `accent` | — (swap brand color freely, but keep exactly one — a second accent breaks the flat palette) | — (#007AFF on white ≈4:1, so button labels need bold; a lighter accent falls below SC 1.4.3) |
+| `ornament` | gradient/shadow gradually hand flatness back its affordance cues (faster interactions — the reverse of NN/g's 22% finding) at the cost of straying from the "no skeuomorphic depth" discipline | none is the discipline itself: zero render cost, unconditionally degradable — and the weakest affordance cues |
+| `iconStyle` | filled glyphs carry more visual weight — tiles and selected states | outline glyphs stay lighter — inline use and dense lists |
+| `radius` | drifts toward the iOS 7/Material rounded-rect voice; past 12px it argues with "simplicity" | 0 returns to Metro's sharp-corner discipline — denser, less friendly |
+
+Working ranges: radius 0 (Metro) or 8–12 (iOS/Material), with 4px the compromise; keep tile fill one value-step off the panel (≥3:1 non-text contrast); accent appearances ≤2 per screen.

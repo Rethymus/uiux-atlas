@@ -1,0 +1,66 @@
+## Structure & DOM
+
+The demo is **five spring lanes at one target**: an adjustable lane on top (ζ continuously adjustable) + four fixed reference lanes (0.3 bouncy / 0.5 Motion default / 0.8 restrained / 1.1 overdamped). Each lane is just a "target marker + one ball":
+
+```html
+<div class="dc-row">
+  <div class="dc-meta"><b>bouncy ζ=0.30</b><span>overshoot 37.2%</span><span>envelope→5% 300ms</span></div>
+  <div class="dc-lane" aria-hidden="true">
+    <div class="dc-goal"></div>
+    <motion.div class="dc-ball" style="x"></motion.div>
+  </div>
+</div>
+```
+
+Key points:
+
+- All five lanes **share one stiffness and one target** — ζ is the only variable; every difference comes from the damping ratio;
+- Per-lane readouts (overshoot %, envelope→5% time) are computed from formulas and displayed alongside the animation, so "feel" can always be cited numerically;
+- Lanes are `aria-hidden` — pure visual contrast carrying no sole information.
+
+## Styling & Parameters
+
+Two JS-type parameters, converted by the demo into per-lane Motion springs:
+
+```tsx
+// Per-lane damping solved from the ratio (mass = 1): c = 2·ζ·√(k·m) — the critical-damping definition c_c=2√(mk)
+const damping = 2 * zeta * Math.sqrt(stiffness);
+animate(x, target, { type: "spring", stiffness, damping, mass: 1 });
+
+// Readouts (computed locally, research 10 §2.3):
+const w0 = Math.sqrt(stiffness);                    // ω₀ = √(k/m)
+const overshoot = Math.exp(-Math.PI * zeta / Math.sqrt(1 - zeta * zeta)) * 100; // ζ<1
+const envelope5 = Math.log(20) / (zeta * w0) * 1000; // ms until the envelope decays to 5%
+```
+
+Where the numbers come from (research 10 §6.1/§6.2/§6.3/§4.3):
+
+- **Physics** (Wikipedia Damping ratio): ζ=c/c_c, ω₀=√(k/m), `m·x''+c·x'+k·x=0`; 0&lt;ζ&lt;1 underdamped (overshoot oscillating with exponential decay), ζ=1 critical (fastest no-overshoot settle), ζ>1 overdamped;
+- **ζ→overshoot table** (computed locally in Python): 0.10→72.9%, 0.15→62.1%, 0.25→44.4%, **0.50→16.3% (Motion's source-default spring 100/10)**, 0.70→4.6%, **0.80→1.5% (BuildUI bounce 0.2)**, 1.00→0;
+- **Perceptual bands**: 0.3–0.7 = the "bouncy" band; 0.5–0.8 = the target band for most UI; 0.7–0.85 for high-frequency interactions; ζ=1 = Apple's official "more damping, less oscillation" tier; ζ>1 overdamped crawl (Motion's negative bounce expresses the same);
+- **bounce↔ζ conversion** (Motion's bounceToDampingRatio source): bounce 0.2→ζ0.8, 0.3→ζ0.7, 0.7→ζ0.3; **SwiftUI's dampingFraction is ζ**, official default 0.825 (overshoot≈1.3%, dual-source confirmed in the swiftui-spring entry).
+
+## Motion & Interaction
+
+- **Same-target race**: one click launches all five balls from the same start to the same target — 0.3 overshoots hugely, 0.5 sways once, 0.8 trembles faintly, 1.1 crawls: **four hand-feels on one screen**;
+- **Live parameters**: dragging ζ reshapes only the adjustable lane's damping; dragging stiffness retunes every lane's tempo (wave density) — verifying "ζ decides how many wobbles, ω₀ how fast";
+- **Interrupt handoff**: rapid re-launches continue from current position + velocity (physics springs);
+- **Reduced motion**: animation skipped, all five balls land directly, readouts stay;
+- Performance: only `transform` animates (ball travel) — compositor-friendly.
+
+## Real-world examples
+
+- **Motion's (framer-motion successor) default spring**: source `stiffness:100, damping:10, mass:1` → ζ=0.5, overshoot≈16.3% — the "factory feel" of UI springs sits mid-bouncy (research 10 §6.3);
+- **Apple's `UISpringTimingParameters.init(dampingRatio:)`**: ζ is a first-class iOS spring parameter, officially "more damping/less oscillation → 1.0; more oscillation → close to 0.15" — platform-level evidence (research 10 §4.3);
+- **BuildUI's slot bubble**: `bounce 0.2 / duration 0.6` → ζ≈0.8, overshoot≈1.5% — a production instance of the "restrained" tier (research 10 §2.1).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `zeta` | overshoot decays exponentially: 0.7→4.6%, 0.8→1.5%, 1→0 (critical, fastest no-overshoot); >1 overdamped — fast start, sticky finish | overshoot grows exponentially: 0.3→37%, 0.25→44%, 0.15→62% (Apple's "more oscillation" floor), 0.1→73% (bouncing ball) |
+| `stiffness` | ω₀↑: every lane snappier, waves denser, envelope shorter, overshoot ratio unchanged | slower, stickier everywhere; at the same ζ it only slows the tempo — the feel category stays |
+| Reference lanes | the 0.8 lane caps "restrained": a felt tremble that never nags; the 1.1 lane shows overdamping's cost (slow arrival) | the 0.3 lane shows the "toy" floor; the 0.5 lane is Motion's factory value — the anchor between extremes |
+| Readouts (read-only) | overshoot % makes "how much bounce" reviewable; envelope→5% makes "how long to settle" schedulable | — |
+
+Working ranges: most UI at ζ 0.5–0.8 (overshoot 16%→1.5%); high-frequency at 0.7–0.85; gesture-end emphasis at 0.3–0.5; **compute ζ before shipping any combo (craft #3) — 0.7 ± 0.1 is the universal sweet spot**.
