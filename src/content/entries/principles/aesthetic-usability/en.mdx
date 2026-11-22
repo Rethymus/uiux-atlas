@@ -1,0 +1,66 @@
+## Structure & DOM
+
+The demo is an A/B self-experiment of **the same functionality at two finish levels**: two ATM-style cards whose button layout and count are byte-identical — only the decoration layer differs.
+
+```html
+<div class="au-cards">
+  <section class="au-card">                <!-- plain control, ATM-A -->
+    <h3>Plain terminal ATM-A</h3>
+    <div class="au-menu">…4 menu buttons…</div>
+    <p class="au-status" aria-live="polite">time — ms · misses 0</p>
+    <label class="au-rate">Perceived ease <input type="range" min="1" max="7" /></label>
+  </section>
+  <section class="au-card" data-beauty="refined">  <!-- refined, ATM-B -->
+    …structure identical to the left…
+  </section>
+</div>
+<div class="au-compare">Perceived gap +1 · measured time gap 0 ms · miss gap 0</div>
+```
+
+Key points:
+
+- The **functional layer is identical on both sides** (4 buttons, the same "balance check" task); `data-beauty` only switches the right card's decoration — a controlled variable, so any rating gap can only come from finish level;
+- The `handicap` defect is injected **equally into both sides** (same defect, same place), cleanly isolating "beauty tolerance" as the variable;
+- The conclusion never relies on reading a chart: time, misses, perceived gap and measured gap all appear as text (`aria-live` keeps it synced).
+
+## Styling & Parameters
+
+```css
+/* Finish level lives only in the decoration layer: radius, border color, shadow, header underline */
+.au-card[data-beauty="refined"],
+.au-card[data-beauty="premium"] {
+  border-color: color-mix(in srgb, var(--au-accent) 45%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+.au-card[data-beauty="premium"] { border-radius: 18px; /* + gradient header, more whitespace */ }
+```
+
+- Three `beauty` tiers: **plain** (identical to the control — degenerates into an A/A self-test) → **refined** (14px radius + soft shadow + accent color) → **premium** (plus gradient header, 18px radius, more whitespace); all are demo teaching tiers;
+- The two `handicap` demo defect values: **small-target = 18px-tall buttons**, **slow-response = 900ms delayed success feedback** — neither is a law constant, stated as such in the schema;
+- `accent` arrives via `--au-accent` and colors only decoration (underline, hover, success state); text keeps a fixed dark color;
+- The experiment's official numbers: **26 ATM interface variants × 252 participants** (Kurosu & Kashimura 1995, Hitachi Design Center; supplement research 12 §14) — the law's evidence, not adjustable knobs;
+- The 1–7 rating scale is a demo teaching choice (the original study used semantic-differential scales); it measures your own relative gap, it does not reproduce the study's absolute values.
+
+## Motion & Interaction
+
+- Any button click starts the timer; hitting "balance check" stops it: elapsed = real milliseconds from first interaction to success; the `slow-response` tier inserts a 900ms "processing…" state before success — equally slow on both sides;
+- Perceived ratings use the **native `input[type=range]`** with synced numeric text, no custom component;
+- The compare strip at the bottom only concludes once both sides are done; before that it shows an honest placeholder;
+- Under `prefers-reduced-motion: reduce` button transitions drop and the success state changes color only — ratings and timing are unaffected by the motion setting.
+
+## Real-world examples
+
+- **Hitachi ATMs (the vehicle of Kurosu & Kashimura 1995)**: 26 interface variants tested on real ATM layouts with 252 participants, whose aesthetic ratings correlated more strongly with perceived usability — the law was first quantified on a product, not on an abstract lab task (supplement research 12 §14);
+- **Apple's global nav and the macOS Big Sur translucent sidebar**: production reference points recorded in research 03 §1 — high-finish materials make system-level interfaces read as "polished, trustworthy", a direct case of aesthetic investment converting into perceived quality (editorial extrapolation from research 03 §1);
+- **Cautionary case: the full-screen criticism of Apple Liquid Glass**: NN/g criticized its full-screen use for hurting readability (research 03 §2) — when aesthetic upgrades outrun readability, the aesthetic-usability effect flips into harm, and "beautiful" no longer masks the problem.
+
+## Parameter Sensitivity
+
+| Parameter | Up / higher tier… | Down / lower tier… |
+| --- | --- | --- |
+| `beauty` | premium: gradient header + big radius + whitespace usually stretches the perceived gap to its max | plain: both sides identical (A/A self-test), the perceived gap should collapse to ~0 — the baseline for checking whether your own ratings are fair |
+| `handicap` | both defect tiers make the *measured* gap appear: 18px targets raise misses, the 900ms delay raises time — yet the refined side's perceived rating usually drops less: tolerance made visible | none: back to a pure finish-level contrast; measured performance ties and only the perceived gap remains |
+| `accent` | changes decoration color only, function and data untouched — tests whether a color-only change is enough to move your perceived score | has no effect on the plain card (it never consumes the variable); the control side stays neutral |
+
+The lesson: **aesthetics is a legitimate usability investment — but guard it in the test protocol** — run the first usability round on unpolished wireframes, or force-measure task time and error rate on the polished build; praise is not a metric (supplement research 12 §14).

@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+纯图标按钮的分工是三层的:**真实 `<button>` 承载交互与键盘,图标纯装饰,名称挂在按钮层**——与 APG Button 模式对照,原生 `<button>` 天生满足其键盘契约(Enter/Space 激活),完全不需要 `role="button" + tabindex="0"` 的手工仿写:
+
+```html
+<!-- 方案②(Sara Soueidan 推荐):hidden 文本 + aria-labelledby,名在 DOM 里 -->
+<button aria-labelledby="btn-search" aria-pressed="false">
+  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">…</svg>
+  <span id="btn-search" hidden>搜索</span>
+</button>
+
+<!-- 方案③:按钮直接拿 aria-label(可用但有四缺点) -->
+<button aria-label="搜索">
+  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">…</svg>
+</button>
+```
+
+四条铁律(12 §12 一手结论):
+
+1. **名称写在按钮层,不写在 SVG 上**——Scott O'Hara 的跨浏览器/读屏组合测试中,「名只放 SVG」的方案存在大量失败组合;
+2. **图标装饰化**:`aria-hidden="true"` 且永不落在可聚焦元素或其祖先上(焦点不得落进隐藏子树,MDN 红线);SVG 加 `focusable="false"` 防 IE 双 Tab 停靠;
+3. **名称写动作不写形状**:「搜索」不是「放大镜」(WAI 教程);有可见文字时 `aria-label` 必须与之一致(WCAG 2.1 Label in Name);
+4. **`aria-label` 的四缺点先知晓再用**:文本不进 DOM、整页翻译工具无法处理、部分语音控制识别困难、不可复制。
+
+## 样式与参数
+
+四个参数把「名称实现 × 热区策略」做成可审计实验:两个 CSS 变量驱动热区与图标,两个 JS 型开关切换命名方案与热区实现:
+
+```css
+.icb-btn {
+  width: var(--icb-target);            /* 热区边长,默认 48px(M3 target 48dp) */
+  height: var(--icb-target);
+}
+.icb-btn svg { width: var(--icb-icon); height: var(--icb-icon); } /* 字形,默认 24px */
+
+/* 伪元素扩热区:视觉不变,::before 以负 inset 越过可视边界(社区常见做法) */
+.icb-btn[data-expand="pseudo"] { width: calc(var(--icb-icon) + 16px); height: calc(var(--icb-icon) + 16px); }
+.icb-btn[data-expand="pseudo"]::before {
+  content: "";
+  position: absolute;
+  inset: calc((100% - var(--icb-target)) / 2);  /* 负值 = 向外扩到热区尺寸 */
+  border-radius: inherit;
+}
+```
+
+数值出处:
+
+- `hitTarget` 默认 **48px = M3 触控目标规格 target 48dp**(research 04 §2.1);法定底线 **≥24×24 CSS px = WCAG 2.2 SC 2.5.8**(principles/wcag-checklist 条目同源);
+- `iconSize` 默认 **24px = Material 图标展示尺寸 24×24 dp**(07 §2);
+- 「图标 16px + 热区 48px」的常见生产组合无统一标准值(**社区常见值,未证实**),demo 不预设该组合。
+
+## 动效与交互
+
+- **命名方案切换**(`naming`)直接改写真实按钮的 DOM 结构:labelledby 档挂 `hidden` 文本,hidden-text 档挂视觉隐藏文本(`clip-path: inset(100%)` 家族),aria-label 档挂 `aria-label`——审计面板按同一规则函数输出读屏播报推演与判定(推荐/可用/失败);
+- **热区审计**(`hitTarget`):虚线审计框与按钮同心,呈现实际可点区;低于 24px 变红(法定底线失守),背景刻度尺对照 24/48 两档;`expand=pseudo` 时可视盒缩小而审计框不变——直观看到「热区越过可视边界」;
+- **键盘行为是真实行为**:两个按钮都是原生 `<button>`,Tab 聚焦、Enter/Space 激活、`:focus-visible` 蓝色焦点环;交互日志把 Enter/Space 事件显式标出(「APG Button」),证明键盘与鼠标行为完全一致;
+- 无装饰性运动动效,`prefers-reduced-motion: reduce` 时仅有的过渡直切,状态反馈不删。
+
+## 真实产品案例
+
+- **Sara Soueidan《Accessible Icon Buttons》**:三方案对照与推荐(hidden 文本 + `aria-labelledby`)的原始出处;文中还引 Scott O'Hara 的浏览器/读屏矩阵证明「名只放 SVG」不可靠(12 §12);
+- **WAI-ARIA Authoring Practices Button 模式**:按钮键盘行为的权威基线——Enter/Space 激活是模式的核心键盘契约;原生 `<button>` 开箱即满足,手写仿写必须补齐(本条目 demo 即用原生按钮对照);
+- **TDesign 文档站顶栏操作栏**(调研 02 实测):32×32 图标按钮 + 8px 间距,hover/active 用分层背景——紧凑桌面工具栏把可视盒压到 32px 级,命中合规靠间距与悬停反馈补足(实测值出自 out/design-study/02-tdesign.md)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `naming` | labelledby/hidden-text 两档是推荐区:名在 DOM、可翻译可复制 | svg-only/none 两档是失败区:播报降级为「按钮」甚至不确定——读屏用户失去全部操作语义 |
+| `hitTarget` | 48px 级触控舒适、误触率低;占用布局空间变大 | 低于 24px 直接触发 WCAG 2.5.8 违规(审计框变红),相邻按钮开始抢命中区 |
+| `iconSize` | 字形变大、热区不变——「大图标小热区」是倒置的合规观 | 12–16px 的紧凑字形 + 48px 热区是常见生产形态(具体组合无统一标准,社区常见值,未证实) |
+| `expand` | pseudo 档布局零占位变大,但命中区越过可视边界会与相邻热区重叠 | padding 档热区随盒走、无重叠陷阱,是兜底首选 |
+
+锚点:名称永远在按钮层写动作;热区永远 ≥24×24,生产看 48;键盘永远交给原生 `<button>`;伪元素扩热区是紧凑场景的技巧,不是合规底线本身。

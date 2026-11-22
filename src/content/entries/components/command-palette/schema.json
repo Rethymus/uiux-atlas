@@ -1,0 +1,103 @@
+{
+  "name": "Command Palette",
+  "nameZh": "命令面板",
+  "aliases": ["Ctrl+K", "Cmd+K", "⌘K", "Command Menu", "Quick Switcher", "快速切换器", "全局搜索", "命令窗口"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "按 Ctrl+K / Cmd+K(或点页头搜索钮)唤起的全局命令浮层:子序列模糊搜索全部条目,↑↓ 选择、Enter 直达、Esc 关闭——APG combobox/listbox 语义 + focus trap + body 滚动锁定的完整零依赖实现。",
+    "en": "A global command overlay summoned with Ctrl+K / Cmd+K (or the header search button): subsequence fuzzy search across all entries, ↑↓ to select, Enter to jump, Esc to close — a complete zero-dependency implementation of APG combobox/listbox semantics with focus trap and body scroll lock."
+  },
+  "origin": {
+    "zh": "桌面应用的命令行心智搬到 Web:WAI-ARIA APG「Combobox with Listbox Popup」模式定义了 combobox/listbox/option + aria-activedescendant 的完整语义(2026-11-23 实抓核验);生产参照系是 VS Code / Linear / Raycast 的 Cmd+K 面板。本站实现说明:这个条目吃自己的狗粮——demo 直接复用站点全站面板组件本体(src/components/CommandPalette.tsx,client:load 挂在 Base.astro),数据为构建时注入的全部条目索引,匹配为自写的零依赖子序列模糊算法;材质层走本站 §2.8 mat-regular 档(20px blur + saturate 180% + 叠色 tint + 内高光 + separator α hairline)。",
+    "en": "The desktop command-line mental model brought to the web: the WAI-ARIA APG \"Combobox with Listbox Popup\" pattern defines the full combobox/listbox/option + aria-activedescendant semantics (verified live 2026-11-23); the production reference is the Cmd+K palette of VS Code / Linear / Raycast. Site implementation notes: this entry eats its own dogfood — the demo directly reuses the site-wide palette component itself (src/components/CommandPalette.tsx, a client:load island mounted in Base.astro), the data is the build-time-injected index of all entries, and the matcher is a hand-written zero-dependency subsequence fuzzy algorithm; the material layer uses this site's §2.8 mat-regular recipe (20px blur + saturate 180% + tint + inner highlight + separator-α hairline)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "matchMode",
+      "options": [
+        { "value": "subsequence", "label": { "zh": "子序列匹配", "en": "Subsequence" } },
+        { "value": "prefix", "label": { "zh": "前缀匹配", "en": "Prefix" } }
+      ],
+      "default": "subsequence",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换匹配算法)。subsequence=query 逐字符按序命中目标即命中,「gsm」能搜到 Glassmorphism——现代命令面板的主流口径(VS Code 快速打开、Linear 同此);prefix=仅从词首起匹配,更严苛、误报更少,但召回率明显下降。两种档共用同一评分骨架:词首命中加权、连击加权、残余更短的目标微加权。",
+        "en": "JS-type param (the demo subscribes and switches the matcher). subsequence = every query char must hit the target in order, so \"gsm\" finds Glassmorphism — the mainstream palette behavior (VS Code Quick Open, Linear); prefix = matches only from the string start: stricter and fewer false positives, but recall drops noticeably. Both modes share the same scoring skeleton: word-start bonus, streak bonus, and a slight boost for shorter remainders."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxResults",
+      "min": 5,
+      "max": 20,
+      "step": 1,
+      "default": 8,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后裁剪结果列表)。一次同屏展示的结果上限:列表内部滚动,超出部分靠继续键入收窄。上限过小会让正确答案落选,过大则扫视成本上升(Hick 定律,调研 07§23);生产命令面板常取 8-12,本站全站面板默认 12。",
+        "en": "JS-type param (the demo subscribes and clips the result list). The cap on results shown at once: the list scrolls internally, and everything beyond is reachable by typing more. Too small pushes the right answer off the list; too large raises scanning cost (Hick's law, research 07§23). Production palettes commonly take 8-12; this site's global palette defaults to 12."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "hotkeyDisplay",
+      "options": [
+        { "value": "ctrl-k", "label": { "zh": "Ctrl+K", "en": "Ctrl+K" } },
+        { "value": "cmd-k", "label": { "zh": "Cmd+K", "en": "Cmd+K" } }
+      ],
+      "default": "ctrl-k",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 kbd 徽标文案)。面板头部与页头搜索钮上展示的快捷键徽标:Windows/Linux 惯例 Ctrl+K,macOS 惯例 ⌘K(Cmd+K)。注意这是展示档——实际监听同时收 Ctrl+K 与 Cmd+K;本站全站面板按 navigator.userAgent 探测自动切换徽标(navigator.platform 已废弃),勿在服务端预判平台(会与客户端水合结果不一致)。",
+        "en": "JS-type param (the demo subscribes and switches the kbd badge text). The hotkey badge shown in the palette header and on the header search button: Windows/Linux convention is Ctrl+K, macOS shows ⌘K (Cmd+K). Note this only controls the display — the listener always accepts both Ctrl+K and Cmd+K; the site's global palette detects the platform via navigator.userAgent (navigator.platform is deprecated) and swaps the badge automatically, and must not pre-judge the platform server-side (it would mismatch client hydration)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 兼容性门槛:结构是普通 DOM + ARIA(role=dialog/combobox/listbox/option 与 aria-activedescendant,主流浏览器与读屏均支持,APG 模式 2026-11-23 实抓核验);材质层的 backdrop-filter 由 @supports 门控(§2.8),不支持时回退实底 --mat-fallback;color-mix() 遮罩在不支持时回退纯 --bg(降一层可辨度,不影响可用)。",
+      "en": "No CSS compatibility gate: plain DOM + ARIA (role=dialog/combobox/listbox/option with aria-activedescendant — supported across mainstream browsers and screen readers; APG pattern verified live 2026-11-23); the material layer's backdrop-filter is @supports-gated (§2.8) and falls back to the solid --mat-fallback; the color-mix() scrim falls back to plain --bg where unsupported (one less veil level, still usable)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 时浮层不渲染(渐进增强:面板是 client:load 岛屿,无 JS 即无面板、无 body 锁定),站点导航(九分类 + 资源 + 页内标题层级)完整可用;页头搜索钮退化为无动作按钮。材质层无 backdrop-filter 引擎时回退实底(spec §2.8 门控),层次不塌方。",
+    "en": "Without JS the overlay never renders (progressive enhancement: the palette is a client:load island — no JS means no palette and no body lock), while site navigation (nine categories + resources + heading hierarchy) stays fully usable and the header search button is a no-op. Where the backdrop-filter engine is missing, the material layer falls back to the solid surface (spec §2.8 gating) so hierarchy never collapses."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "中大型站点的全局跳转:条目/页面/动作多到导航栏放不下,一键键盘直达(本站 186+ 条目即此场景)", "en": "Global jumping on mid-to-large sites: more entries/pages/actions than a nav bar can hold — one keystroke takes you there (this site's 186+ entries are exactly this case)" },
+      { "zh": "键盘重度用户的效率路径:记住 Ctrl+K 一个快捷键,替代在多层导航里点选", "en": "The efficiency path for keyboard-first users: remember one shortcut, Ctrl+K, instead of clicking through multi-level navigation" },
+      { "zh": "把「动作」与「页面」统一成一个可搜索列表(跳转、复制链接、切主题都能进面板)", "en": "Unifying actions and destinations into one searchable list (jump, copy link, toggle theme can all live in the palette)" },
+      { "zh": "新用户探索:面板即目录——空 query 列出条目,输入即收窄,兼作站点索引", "en": "New-user exploration: the palette doubles as a table of contents — an empty query lists entries, typing narrows them down" }
+    ],
+    "avoid": [
+      { "zh": "移动端作为唯一入口——触屏没有 Ctrl+K,浮动层还遮住整屏;必须保留可见导航,面板只是增强", "en": "As the only entry point on touch devices — no Ctrl+K there and the overlay covers the screen; always keep visible navigation and treat the palette as enhancement" },
+      { "zh": "结果列表一次吐几十条——扫视成本随条目上升(Hick 定律),上限 8-12 并靠键入收窄", "en": "Dumping dozens of results at once — scanning cost grows with each item (Hick's law); cap at 8-12 and narrow by typing" },
+      { "zh": "只靠 hover 或鼠标暴露结果——键盘(↑↓/Enter/Esc)必须是一等路径(APG 键盘界面实践)", "en": "Exposing results only via hover or mouse — keyboard (↑↓/Enter/Esc) must be the first-class path (APG keyboard interface practices)" },
+      { "zh": "无语义的 div 堆叠——缺 combobox/listbox 语义与 activedescendant,读屏用户拿到的是一堆哑文本", "en": "Stacks of unsemantic divs — without combobox/listbox semantics and activedescendant, screen-reader users get inert text" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG「Combobox with Listbox Popup」语义(2026-11-23 实抓核验):input[role=combobox] 声明 aria-expanded/aria-haspopup=listbox/aria-controls/aria-autocomplete=list,方向键漫游时以 aria-activedescendant 指向当前 li[role=option](焦点恒留在输入框,选中项随焦点);列表项 aria-selected 双编码高亮;外层 role=dialog + aria-modal=true 承载 focus trap(Tab 留在面板内)与 Esc 关闭后焦点归还唤起者;开面板锁 body 滚动防止背景滚动失焦;Enter 直达目标页。鼠标移动即置选中(选中随焦点),触屏点击与键盘 Enter 等价。kbd 徽标纯展示(aria-hidden),快捷键以 aria-keyshortcuts 在触发钮上声明。",
+    "en": "APG \"Combobox with Listbox Popup\" semantics (verified live 2026-11-23): input[role=combobox] declares aria-expanded/aria-haspopup=listbox/aria-controls/aria-autocomplete=list; arrow-key roving is announced via aria-activedescendant pointing at the current li[role=option] (focus stays on the input, selection follows focus); the highlighted option is doubly encoded with aria-selected; the outer role=dialog + aria-modal=true carries the focus trap (Tab stays inside) and Esc-close with focus returned to the invoker; opening locks body scroll so the background cannot scroll away; Enter jumps to the target page. Pointer movement sets the selection (selection follows focus), and touch taps are equivalent to keyboard Enter. The kbd badge is display-only (aria-hidden); the shortcut is declared via aria-keyshortcuts on the trigger button."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/",
+    "https://uiux-atlas.example.com/components/command-palette/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条全站命令面板:页头搜索钮(放大镜 + 快捷键徽标)与 Ctrl+K/Cmd+K 唤起居中玻璃浮层(mat-regular 档:blur 20px + saturate 180% + 叠色 + 内高光 + separator α 细边);顶部 combobox 搜索框 + listbox 结果列表(名称/别名/分类点/星级),子序列模糊匹配 + 评分排序,↑↓ 漫游、Enter 跳转、Esc 关闭;开面板锁 body 滚动、关面板焦点归还。",
+      "en": "Replicate a site-wide command palette: a header search button (magnifier + hotkey badge) and Ctrl+K/Cmd+K summon a centered glass overlay (mat-regular: blur 20px + saturate 180% + tint + inner highlight + separator-α hairline); a top combobox search field + listbox results (name/alias/category dot/stars), subsequence fuzzy matching with scored ranking, ↑↓ roving, Enter to jump, Esc to close; opening locks body scroll, closing returns focus to the invoker."
+    },
+    "acceptance": [
+      { "zh": "APG 语义逐项落位:combobox + aria-expanded/aria-controls/aria-autocomplete=list/aria-activedescendant,listbox + option + aria-selected;焦点恒在输入框", "en": "APG semantics placed item by item: combobox + aria-expanded/aria-controls/aria-autocomplete=list/aria-activedescendant, listbox + option + aria-selected; focus always stays on the input" },
+      { "zh": "子序列模糊匹配零依赖实现:词首/连击加权,评分排序,别名字段参与检索;空 query 直出前 N 条", "en": "Zero-dependency subsequence fuzzy matching: word-start/streak bonuses, scored ranking, aliases searchable; an empty query lists the first N entries" },
+      { "zh": "focus trap:Tab 留在面板内;Esc 关闭并把焦点还给唤起者;开面板锁 body 滚动(补偿滚动条宽度)", "en": "Focus trap: Tab stays inside; Esc closes and returns focus to the invoker; opening locks body scroll (with scrollbar-width compensation)" },
+      { "zh": "面板走参数化材质层(blur+saturate+叠色 tint+内高光+hairline+阴影),@supports 门控回退实底;入场只动 opacity/transform,RM 降级直出终态", "en": "The panel uses the parameterized material layer (blur+saturate+tint+inner highlight+hairline+shadow) with @supports fallback to solid; entrance animates only opacity/transform and RM renders the final state instantly" },
+      { "zh": "快捷键徽标按平台显示(⌘K / Ctrl K)但不预判水合;aria-keyshortcuts 在触发钮上声明;触屏走搜索钮点击等价路径", "en": "The hotkey badge shows per platform (⌘K / Ctrl K) without pre-judging hydration; aria-keyshortcuts declared on the trigger; touch uses the search button as the equivalent path" }
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+## 结构与 DOM
+
+三层结构**只允许单向引用**,换肤发生在第 1 层:primitive 每主题一行,semantic 主题无关,component 零 hex:
+
+```html
+<div class="scene" data-theme="crimson">
+  <div class="card">
+    <button class="btn">主操作</button>
+    <span class="chip">soft bg 语义底</span>
+  </div>
+</div>
+```
+
+```css
+/* 第 1 层 primitive:换主题只换这一行(data-theme 重挂) */
+[data-theme="blue"]    { --tk-brand: oklch(0.62 0.19 250); }
+[data-theme="crimson"] { --tk-brand: oklch(0.58 0.2 20); }
+[data-theme="forest"]  { --tk-brand: oklch(0.6 0.15 150); }
+
+/* 第 2 层 semantic:主题无关,color-mix 现场派生 */
+.tk-scene {
+  --tk-primary:      var(--tk-brand);
+  --tk-primary-soft: color-mix(in oklab, var(--tk-brand) 12%, transparent);
+  --tk-on-primary:   color-mix(in oklab, var(--tk-brand), white 85%);
+}
+
+/* 第 3 层 component:只消费语义变量 */
+.tk-btn { background: var(--tk-primary); color: var(--tk-on-primary); }
+```
+
+关键点:
+
+- 引用链单向:component → semantic → primitive,组件摸 primitive 是 Android 文档点名的反模式(调研 06§10);
+- **换肤 = 重挂一张 primitive 表**:主题数量 = 表数量,与组件数无关——Primer 用同一架构承载 9 套主题(调研 06§10);
+- 语义名必须是角色词(primary / on-primary / soft),观感词(--light-blue-500)换一次主题就失效(调研 06§10)。
+
+## 样式与参数
+
+theme 为 JS 型参数(订阅后只写 data-theme);softBg/borderMix/hoverMix 为 CSS 变量型参数,经 `calc(var(--…))` 进语义层 color-mix:
+
+```css
+/* 语义派生配方(补研 12§11 片段) */
+.tk-scene {
+  --tk-primary-hover: color-mix(in oklab, var(--tk-brand), black calc(var(--tk-hover-mix))); /* 12% */
+  --tk-border:        color-mix(in oklab, var(--tk-brand) calc(var(--tk-border-mix)), transparent); /* 40% */
+}
+```
+
+数值出处:
+
+- 三套 primitive 值逐字取自补研 12§11 片段:`oklch(0.62 0.19 250)` / `oklch(0.58 0.2 20)` / `oklch(0.6 0.15 150)`;本会话换算 sRGB:**#0088F2**(blue,越域裁剪,调研 06§2)/ **#D73246**(crimson)/ **#25984D**(forest);
+- 派生配方同片段:hover=black 12%、soft=12% 掺 transparent、border=40% 掺 transparent、on-brand=white 85%;
+- 分层与命名同构 Primer:`base.color.*` 式 primitive、`bgColor-default` 式角色词、W3C DTCG `$value/$type` 格式(调研 06§10);
+- 兜底:语义管线整体包在 `@supports (color: color-mix(in oklab, red, blue))` 内,不支持时给中性灰 token + 说明行(不冒认派生色)。
+
+## 动效与交互
+
+- 主题切换改写 data-theme:primitive 变量重挂,**语义派生由浏览器同步重算**,组件侧 0.25s ease 过渡;`prefers-reduced-motion` 时取消;
+- softBg/borderMix/hoverMix 滑杆动的是语义层参数——换主题不需要碰它们,这正是「层职责」的可玩证明;
+- 三层定义面板实时显示当前主题的 primitive 值、semantic 派生式、component 消费式——层边界看得见;
+- 对比度徽标在主题切换瞬间重算(无过渡):换肤 = 整组复核重跑,结论不跨主题搬运。
+
+## 真实产品案例
+
+- **GitHub.com**:Primer 9 套主题(亮暗 × 高对比 × 色盲)全部由语义层换映射表承载,同一份组件 CSS,用户在 settings/appearance 切换(调研 06§10/§19);
+- **Android Dynamic Color**:官方文档原文「用 design token 语义化分配 color role 而非具体值」,壁纸动态取色与亮暗主题共享同一套 token(调研 06§10 佐证)——同一架构的移动端同构;
+- **Tailwind CSS v4**:`@theme` 自定义色直接写 oklch 值进 primitive 层,工具类经 `var(--color-*)` 语义引用,换主题只换 `@theme` 表(官方公告,调研 06§4)。
+
+## 参数敏感度
+
+| 参数 | 换成… | 会… |
+| --- | --- | --- |
+| `theme` → crimson | 品牌底变红,全部派生色随动;白字对比 4.74:1 过 AA | 三主题中唯一白字过正文 AA 的——同一配方结论不同,必须逐主题复核 |
+| `theme` → forest | 品牌底变绿;白字 3.70:1 不过 AA | soft/border/on-brand 全部重派生,组件零改动 |
+| `softBg` | 淡底更浓,上面的深字对比下降(实测 15.0:1 量级的安全余量收窄) | 淡底趋白,状态感减弱 |
+| `hoverMix` | hover 更深,与 base 拉开 | hover 与 base 难区分;\<5% 时按压态不可辨 |
+| `borderMix` | 语义边框更实,过 3:1 更稳 | 边框变虚,跌破 3:1 时只剩装饰作用 |
+
+经验:换肤不是换颜色,是换一张 primitive 表 + 重跑一次验证管线;每个主题的派生组合逐套复核(WCAG,调研 06§17),组件与语义层在三层架构里永不参与换肤。

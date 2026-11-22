@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+三件套各司其职,DOM 结构由用途决定:
+
+```html
+<!-- 仅多分辨率:官方建议直接 img,不包 picture(省流模式可自动降密度,调研 12§1) -->
+<img src="hero.jpg"
+     srcset="hero.avif 1200w, hero@2x.avif 2400w"
+     sizes="(min-width: 900px) 60vw, 100vw"
+     width="1200" height="675" fetchpriority="high" alt="…" />
+
+<!-- 艺术指导/格式切换:picture 显式控制,img 兜底 -->
+<picture>
+  <source type="image/avif" srcset="hero.avif 1200w, hero@2x.avif 2400w"
+          sizes="(min-width: 900px) 60vw, 100vw" />
+  <source type="image/webp" srcset="hero.webp 1200w" />
+  <img src="hero.jpg" width="1200" height="675" alt="…" />
+</picture>
+```
+
+关键点:
+
+- `srcset` 每项 = URL + 描述符:`1200w` 宽度描述符或 `2x` 密度描述符,**两者不可混用、不允许重复值**;`sizes` 是「媒体条件–槽宽对」,只在 srcset 用 `w` 描述符时生效(调研 12§1);
+- 选择规则:有 `sizes` 时「**槽宽 × DPR = 理想宽度**」,浏览器下载前从候选里选最接近者;全部不匹配回退 `<img src>`(调研 12§1);
+- `<source>` 的 `media` 条件为假、或 `type` MIME 不认识,就跳过该 source 选下一个——兜底 img 永远在最后;
+- `fetchpriority` 是提示性信号非指令(high/low/auto,默认 auto);`object-fit`/`object-position` 必须写在子 `<img>` 上,不是 `<picture>` 上(调研 12§1)。
+
+## 样式与参数
+
+本条目的「参数」更多是属性级配置,demo 三个参数全部 JS 型驱动(浏览器选择算法不吃自定义属性):
+
+```html
+<img srcset="…640w, …1200w, …2400w"
+     sizes="{槽宽}px"
+     fetchpriority="high" width="1200" height="675" />
+```
+
+数值出处:
+
+- `60vw` 与 `min-width: 900px` 断点、`1200w/2400w` 候选、`width="1200" height="675"` 配对**逐字出自调研 12§1 片段**;demo 补的 640w 档为**演示补充档,未证实**(为让小槽位也有可见切换);
+- 视口档位 390/768/1280px 为**社区常见设备基准值,未证实**为规范值(手机 CSS 宽 390、iPad 竖屏 768、入门桌面 1280 的社区划分惯例);
+- `<picture>`:Baseline Widely available 自 2016-03(MDN,调研 12§1);fetchpriority:Chrome/Edge 102+、Firefox 132+、Safari 17.2+(web.dev,调研 12§1)。
+
+## 动效与交互
+
+这张图「动」的其实是选择算法,不是动画:
+
+- **切视口/槽宽占比**:demo 重写 `sizes` 属性——srcset/sizes 是「相关变更」,浏览器重跑选择算法并即时换图;demo 每帧读 `currentSrc` 展示真实命中,不做预测;
+- **DPR 参与运算**:读数展示 `槽宽 × DPR = 理想宽度`,DPR 取真实 `devicePixelRatio`(高分屏 2x 档下槽位更宽、命中更大候选);
+- **艺术指导面板**的 `media` 条件按**真实浏览器视口**求值(模拟视口改不了它)——拖动真实窗口宽度才能看到宽幅/方幅切换,demo 如实标注这一差别;
+- **fetchpriority** 只在真实网络加载时起效:demo 写入属性并回显;调研 12§1 实测 Google Flights 给 LCP 图加 high 后 LCP 2.6s→1.9s,Oodle 轮播非首图设 low 省 2s;`loading="lazy"` 的近视口图若仍被 high 加载,应改用 `fetchpriority="low"`;
+- 候选切换无过渡动画——换图是瞬时资源替换,淡入反而不真实。
+
+## 真实产品案例
+
+- **Google Flights(web.dev 实测,调研 12§1)**:给 LCP 首图加 `fetchpriority="high"`,LCP 从 2.6s 降到 1.9s——该案例连同「lazy 图仍被 high 加载时改 low」的细则一起收录在 web.dev fetch-priority 文档;
+- **Oodle 轮播(web.dev 实测,调研 12§1)**:非首图设 `fetchpriority="low"`,页面加载减少 2s——「首图 high、其余 low」的轮播配方出处;
+- **MDN `<picture>` 文档场景三分法(调研 12§1)**:art direction / 格式切换 / 按设备能力选图的官方分类, AVIF→WebP→jpg 的 source 排列即文档推荐形态(编辑性组合——具体站点采用清单未逐一核实)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `viewport` | 槽宽变大 → 理想宽度上移,命中更大候选(流量换清晰) | 槽宽收缩 → 命中小候选(清晰换流量);命中标签实时反映 |
+| `vwShare` | 槽位占视口更满,64%→100% 每档都可能跨过候选边界 | 槽位变窄;20% 的窄图槽在 2x 屏也只配得上一半候选 |
+| `fetchpriority` | high 把资源提到加载队列前排——只该给 LCP 图,全员 high 等于没提示 | low 主动让路——轮播非首图与折叠下方图适用;auto 交还浏览器默认 |
+
+经验要点:候选按 2x 递增(1200w→2400w)比均匀铺更省流量;sizes 断点跟着布局槽位走,而不是跟着设备型号走;`width/height` 属性 + 槽位 CSS 比例锁,加载前后零偏移。

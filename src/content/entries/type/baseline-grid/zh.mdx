@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+无特殊结构——普通文档流即可,纪律在 CSS 的垂直尺寸上:
+
+```html
+<article class="col">
+  <p class="kicker">眉标</p>
+  <h2>标题</h2>
+  <p>正文段落</p>
+  <div class="card"><p>描边卡片内文</p></div>
+</article>
+```
+
+```css
+.col   { font-size: 16px; line-height: 1.5; }      /* 行盒 24px = 3×8px */
+.col > * { margin-block-end: calc(var(--unit) * 2); } /* 段距 = 2 步 */
+.card  { border: 1px solid; padding: 7px; }         /* 1px 描边计入预算:1+7=8px */
+```
+
+关键点:
+
+- 三个量纲共同决定节奏:**字号 × 行高比(行盒)+ margin/padding(间距)+ 边框(常被忘掉的一环)**;
+- 判据是「步长整数倍或半步」:8px 步长允许 4px 半步——本站 4/8 间距网格即此规则(源码 `src/styles/global.css:165`);
+- Bringhurst 名言「空间如时间,比例化间隔远胜任意值」经 Rutter 24ways 文章转述(调研 12§9);
+- 可视化叠加层是**教学层**:repeating-linear-gradient 画线,`pointer-events:none` + `aria-hidden`,关掉即普通页面。
+
+## 样式与参数
+
+四个参数:三个 CSS 变量型 + 一个 JS 型可视化开关:
+
+```css
+.col { font-size: var(--bl-size);      /* 16px */
+  line-height: var(--bl-lh);           /* 1.5 → 24px 行盒 */
+  --bl-unit: 8px;                      /* 步长 */
+}
+/* overlay 经 data-overlay 切换,叠加层按 var(--bl-unit) 与 var(--bl-size)*var(--bl-lh) 画线 */
+```
+
+数值出处:
+
+- 步长默认 8px:本站 spec「间距:4/8 网格(禁止非 4 倍数 padding/margin 字面值)」;业界 8pt grid 为社区惯例(未证实);
+- 行高默认 1.5:同时是 WCAG 2.2 SC 1.4.12 的行高阈值(≥1.5× 字号,调研 05§18),16px × 1.5 = 24px = 3 步;
+- 呼吸空间常数 8:与 TDesign 官方公式「行高 = 字号 + n,n = 8」同构(官网 design-basic.ts,调研 02§2)——16/14px 常用字号下 1.5 倍与 +8 完全重合;
+- 1px 描边 + 8px 内边距 = 9px:12§10 记载的经典半单元案例(18px 单元体系里 9px 恰为半步;8px 体系里判违规,把 unit 调到 18 可见审计转绿)。
+
+## 动效与交互
+
+- **可视化开关**:overlay 参数(none/grid/baselines/both)经 `data-overlay` 切换两组渐变层的 opacity(0.2s 过渡,`prefers-reduced-motion` 时关闭过渡);网格线每 unit 一条,基线线按当前行盒高度绘制在 ~80% 处(基线精确位置因字体度量而异,教学近似);
+- **偏移审计**:对每个块实测 `getBoundingClientRect().top` 相对列顶的偏移,判据「步长整数倍或半步」,✓/✗ 逐块列出——参数一动,审计实时重算;
+- **调参互动**:拖 `unit` 到 18px,9px 的卡片内文从违规变达标;拖 `lineHeight` 偏离 1.5,行盒离开网格,基线层立刻显示文本漂移。
+
+## 真实产品案例
+
+- **TDesign**:官方公式 `line-height = font-size + 8`(常数 8 让 14/16px 字号与 1.5 倍行高完全重合,大字号不再行距膨胀),写在官网字体页 design-basic.ts 里(调研 02§2,官方源码一手核对)——「8 的呼吸常数」进入了主流设计系统的正式规范。
+- **本站 uiux-atlas**:间距 token 全表即 4/8 网格(`--space-1: 4px … --space-16: 64px`),并明文「禁止非 4 倍数 padding/margin 字面值」(源码 `src/styles/global.css:165`)——半步规则作为硬约束写进了工程规范。
+- **Rutter 的 24ways 经典方法**:2006 年《Compose to a Vertical Rhythm》确立「基本单元 = 正文行高(12px × 1.5 = 18px)、标题行高反推、间距取整倍数、全部用 em」的完整算法(调研 12§9,URL 已核)——至今仍是基线网格教学的基准文本。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `unit` | 网格更疏朗,对齐更醒目;32px 步长下小间距元素被迫挤在同一格 | 4px 起接近像素自由排版,审计噪音增多;纪律性下降 |
+| `fontSize` | 字号上行盒变高,若 `size×lh` 不再是步长倍数,基线层立即显示漂移 | 文本变小,行盒落格更容易,但可读性下降 |
+| `lineHeight` | 行盒拉高;偏离「步长倍数」时文本在基线间漂移(1.5 是 16px 的落格点) | 低于 1.5 触发 WCAG 1.4.12 阈值风险;低于字号时行间重叠 |
+| `overlay` | both 最严格:网格定步长、基线定行盒,两层错位一眼可见 | 关闭后回归普通视图,只剩审计列表兜底 |
+
+经验区间:unit 8px(半步 4)、正文 16px × 1.5、段距 2 步;1px 描边必须计入预算(1+7=8 或 1+8=9 半步)。多字号混排时允许局部豁免(实践共识,未证实)。

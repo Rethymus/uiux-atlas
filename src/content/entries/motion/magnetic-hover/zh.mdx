@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+磁吸只需要「一个感应区 + 一个被吸的按钮」,没有额外层级:
+
+```html
+<div class="field">          <!-- 感应区:监听 pointermove/pointerleave -->
+  <button class="magnetic">CTA</button>
+</div>
+```
+
+关键点:
+
+- 判定与插值全在 JS,DOM 不为动效服务;按钮本体是普通 `<button>`,键盘可达、语义完整;
+- 位移直写 `el.style.translate`(合成器路径),**不走 CSS 变量**——逐帧改自定义属性会让子树样式失效,事件级开关才用变量(调研 10§7.4);
+- 触屏判定交给媒体查询与 `pointerType`:`(hover: none)` 环境直接不启动磁吸(补研 12§5)。
+
+## 样式与参数
+
+三个参数全部是 JS 型(demo 订阅 store 驱动),对应补研 12§5 实现片段的三个量:
+
+```js
+// 距离判定(补研 12§5 片段逐字):
+const reach = Math.max(r.width, r.height) / 2 / (1 - radius);
+if (dist < reach) { tx = mx * radius; ty = my * radius; }  // 吸住:目标 = 指针偏移 × radius
+else              { tx = 0; ty = 0; }                       // 半径外:弹回
+
+// 逐帧插值 + rAF(12§5 片段的手写 lerp 版):
+cx += (tx - cx) * lerp; cy += (ty - cy) * lerp;
+el.style.translate = `${cx}px ${cy}px`;
+```
+
+```css
+/* 降级双保险(补研 12§5 CSS 片段):触屏无 hover 语义、reduced-motion 前庭安全 */
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .magnetic { translate: none !important; }
+}
+```
+
+数值出处:
+
+- `radius = 0.45`、`lerp = 0.15` 是补研 12§5 实现片段的默认值;该页记载 lerp 常用区间 **0.05~0.2**、判定带常用「盒边界内缩/外扩 25%~50%」;
+- GSAP 路线:官方推荐 `gsap.quickTo()` 为「同一目标同一属性的高频 tween」预配置复用(3.10.0+),官方示例场景即鼠标跟随与磁吸按钮(补研 12§5)——demo 的手写 lerp 版是其零依赖等价物;
+- Codrops 磁吸教程 URL 因搜索结果污染未能核验(补研 12§5 如实记录),本条数值一律以 GSAP 官方文档与标准 lerp 数学为锚,未引第三方教程数值。
+
+## 动效与交互
+
+- **预告性位移**:磁吸的价值在「按钮先向指针靠拢半步」——把可点性预告给指针;位移量被 radius 压在指针偏移的 45% 内,永远吸不到指针上,点击落点不漂移;
+- **回位即是弹回**:离开半径目标归零,lerp 的指数逼近天然给出「先快后慢」的回弹感,无需再叠缓动曲线;
+- **跟手感调 lerp**:0.05~0.2 之间,越大越跟手、越小越「稠」;逐帧直写 translate,循环在归位后自动停,不让 rAF 空转;
+- **降级纪律(补研 12§5)**:`(hover: none)` 触屏与 `prefers-reduced-motion`(大位移平移/缩放是前庭障碍典型触发源)直出普通 hover;demo 实时显示两项检测结果,mode=plain 可预览降级形态;
+- 高频按钮不磁吸——Apple HIG「高频交互避免加动效」;按压态的色彩反馈另见 press-feedback 条目。
+
+与 smooth-craft 条目的关系:磁吸是「只动 transform + 逐帧直写」工艺的教科书场景;欲把回位换成真弹簧(速度接力),见 handoff-curves 条目。
+
+## 真实产品案例
+
+- **GSAP 官方文档**:quickTo 页把「鼠标跟随与磁吸按钮」列为该 API 的官方示例场景(补研 12§5,gsap.com 一手文档)——磁吸模式在工具链层面的官方认证;
+- **营销站 CTA 磁吸化**(Stripe、Linear 等产品官网的 hero 按钮常见此形态):社区流行做法,本调研未逐站核验,参数通常收敛在 radius 0.3~0.5 / lerp 0.1~0.2 的区间内;
+- **macOS Dock 图标放大**:指针接近时图标按距离衰减放大——「距离场驱动 UI」的系统级原型(公知系统行为,Apple 未公开参数);磁吸按钮是同一思想的按钮级应用。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `radius` | 吸引更猛,按钮贴向指针更近;>0.6 后点击瞄准开始受干扰 | 磁感微弱,只剩「轻微点头」;\<0.2 时几乎不可感,不如不加 |
+| `lerp` | 跟手更硬、回位更快,「机械感」上升;>0.3 接近直接跟随 | 位移黏稠拖延,「果冻感」上升;\<0.05 时按钮像在蜜里移动,回位明显滞后 |
+| `mode` | plain 预览触屏/reduced-motion 用户的真实所见——验证降级路径 | magnet 是桌面指针用户的完整体验,两者必须同时可达 |
+
+选型口诀:radius 0.3~0.5 起步,按钮越大 radius 越小;lerp 0.1~0.2 之间微调;只在桌面 hover 环境启用,触屏与 reduced-motion 直出普通态——磁吸是给「多出来的注意力」用的,不是给任务关键路径用的。

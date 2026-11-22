@@ -1,0 +1,113 @@
+{
+  "name": "Rate",
+  "nameZh": "评分",
+  "aliases": ["星级评分", "Star Rating", "Rating"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "用一排星星对事物打分:悬停预览、点击落值,支持半星与再次点击清空;键盘按 radiogroup 漫游选择。",
+    "en": "Score something with a row of stars: hover to preview, click to commit, with half stars and click-again-to-clear; keyboard navigates it as a radiogroup."
+  },
+  "origin": {
+    "zh": "评分组件定位是「对某物评分」(补研 12§15);APG 没有独立的 rating 模式,官方提供 Rating Radio Group Example——五角星用 role=\"radiogroup\" + role=\"radio\"[aria-checked] 实现方向键漫游(roving tabindex)、Space 选中(补研 12§15)。生产参照系是 Ant Design Rate(补研 12§15 记载 API:count 默认 5、allowHalf、allowClear 默认 true、tooltips[]、character(可换字/图标/汉字)、disabled、value/defaultValue、onChange、onHoverChange,2026-11-22 抓取 ant.design 现行文档)。",
+    "en": "The rate component is positioned as 'scoring something' (supplementary study 12 §15); APG has no dedicated rating pattern and ships an official Rating Radio Group Example — stars as role=\"radiogroup\" + role=\"radio\"[aria-checked] with arrow-key roving tabindex and Space to select (12 §15). The production reference is Ant Design Rate (12 §15 records count default 5, allowHalf, allowClear default true, tooltips[], character (swap glyph/icon/character), disabled, value/defaultValue, onChange, onHoverChange — captured from current ant.design docs on 2026-11-22)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "count",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后增减星星数)。对应 antd Rate 的 count,**官方默认 5**(补研 12§15)——五星制是评分组件的默认心智。",
+        "en": "JS-type param (demo subscribes to add/remove stars). Maps to antd Rate's count, **officially defaulting to 5** (12 §15) — the five-star scale is the rating component's default mental model."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "allowHalf",
+      "options": [
+        { "value": "off", "label": { "zh": "整星 off", "en": "Whole off" } },
+        { "value": "on", "label": { "zh": "半星 on", "en": "Half on" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后每颗星分左右两个半区,可选 0.5 档)。对应 antd Rate 的 allowHalf(补研 12§15);官方默认值调研未记载,demo 默认 off 为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes to split each star into left/right halves selectable at 0.5 steps). Maps to antd Rate's allowHalf (12 §15); the official default is unrecorded — the demo's off default is a community-common value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "allowClear",
+      "options": [
+        { "value": "on", "label": { "zh": "开 on", "en": "On" } },
+        { "value": "off", "label": { "zh": "关 off", "en": "Off" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后再次点击当前值即清空回 0)。对应 antd Rate 的 allowClear,**官方默认 true**(补研 12§15)——「再点一次撤销」是评分区别于普通单选的关键交互。",
+        "en": "JS-type param (demo subscribes so clicking the current value again clears to 0). Maps to antd Rate's allowClear, **officially defaulting to true** (12 §15) — 'click again to undo' is the interaction that sets rating apart from plain radio groups."
+      }
+    },
+    {
+      "type": "color",
+      "name": "activeColor",
+      "format": "hex",
+      "default": "#faad14",
+      "cssVar": "--rate-active",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入 .demo-stage)。激活星(及悬停预览)的填充色。antd Rate 官方默认色 token 调研未证实;demo 默认 #faad14 = antd gold 主色/seed 金 #FAAD14(设计调研 06§1.2/§2.2),为社区常见的评分激活色,未证实为官方值。",
+        "en": "CSS-var param (injected onto .demo-stage by DemoStage). Fill color of active (and hover-preview) stars. antd Rate's official default color token is unverified in the research; the demo default #faad14 = antd's gold primary / seed gold #FAAD14 (design study 06 §1.2/§2.2), a community-common rating accent not confirmed as the official value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "评分是纯 DOM/CSS/JS 自绘:视觉上是叠层文字星形,交互骨架是 role=\"radiogroup\"+role=\"radio\"[aria-checked](APG 官方 Rating Radio Group Example,补研 12§15),方向键漫游与 Space 选中需脚本实现;半星的左右分区命中判定用 mousemove 几何计算,触屏无 hover,点击直接落值。",
+      "en": "The rate is pure DOM/CSS/JS: visually stacked text stars, interactively a role=\"radiogroup\" + role=\"radio\"[aria-checked] skeleton (APG's official Rating Radio Group Example, 12 §15) whose arrow-key roving and Space selection must be scripted; half-star hit zones are computed geometrically on mousemove, and on touch (no hover) a tap commits directly."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 环境退化为原生 radio 组(一星一 radio,含半星则每星两个)或一个 number input(min 0 max count step 0.5);无 hover 的触屏环境悬停预览自动失效,点击直接落值,功能不受损。",
+    "en": "In no-JS environments degrade to a native radio group (one radio per star; two per star with halves) or a number input (min 0, max count, step 0.5); on touch devices without hover the preview silently drops and a tap commits directly — no functional loss."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "订单完成后的服务/商品评价:五星制 + 文案标签(很差→超赞)降低理解成本", "en": "Post-order service/product reviews: five stars + text labels (terrible → amazing) to cut interpretation cost" },
+      { "zh": "内容消费前的质量预期:应用商店、点评平台的商家/影游评分", "en": "Pre-consumption quality expectation: app-store and review-platform ratings for shops, films, games" },
+      { "zh": "轻量 NPS 式打分:一屏一问,星星即答案", "en": "Lightweight NPS-style scoring: one question per screen, stars as the answer" },
+      { "zh": "需要精细刻度的评价:半星档区分「还行」与「还不错」", "en": "Fine-grained assessment: half-star steps separate 'ok' from 'pretty good'" }
+    ],
+    "avoid": [
+      { "zh": ">10 星的刻度——决策时间随选项上升(Hick 定律,调研 07§23),五星或十分制足够", "en": "Scales beyond 10 stars — decision time climbs with options (Hick's law, research 07 §23); five or ten points suffice" },
+      { "zh": "没有文字标签的裸星星——星级含义(1 星是差还是最低?)因文化而异,须配文案", "en": "Bare stars with no text labels — what one star means varies by culture; always pair copy" },
+      { "zh": "离散二选一(推荐/不推荐)——thumbs up/down 或 radio 更直接", "en": "Binary choice (recommend / not) — thumbs up/down or radios are more direct" },
+      { "zh": "把评分当进度条用——进度语义请用 Progress,不要混用星形隐喻", "en": "Using stars as a progress bar — progress semantics belong to Progress, not the star metaphor" }
+    ]
+  },
+  "a11y": {
+    "zh": "视觉是星星,语义是单选组:容器 role=\"radiogroup\"(aria-label「评分」),每颗星(半星档每半区)是 role=\"radio\"[aria-checked],方向键在组内漫游(roving tabindex)、Space/Enter 选中——APG 官方 Rating Radio Group Example 的实现方式(补研 12§15;radio 方向键组内移动,调研 07§36);每枚 radio 的 aria-label 带数值与文案(「4 星:推荐」),半星标注「3.5 星」;焦点环不可移除(WebAIM,调研 07§36);悬停预览不改变 aria-checked,只有选中才改变——focus ≠ selection(调研 07§35);状态含义不单独依赖颜色,星级数值同时以文字回显。",
+    "en": "Stars visually, a radio group semantically: the container is role=\"radiogroup\" (aria-label 'Rating'), each star (each half, in half mode) is role=\"radio\"[aria-checked], arrows rove within the group (roving tabindex) and Space/Enter select — exactly APG's official Rating Radio Group Example (supplementary study 12 §15; radio arrows move within the group, research 07 §36); each radio's aria-label carries the number and copy ('4 stars: great', halves as '3.5 stars'); never remove the focus ring (WebAIM, research 07 §36); hover preview never flips aria-checked — only selection does: focus ≠ selection (research 07 §35); meaning never rides on color alone, the numeric value is echoed as text."
+  },
+  "sources": [
+    "https://ant.design/components/rate",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/radio/examples/radio-rating/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一排可交互评分星:悬停预览、点击落值,支持半星 0.5 档与再次点击清空(tooltips 文案),键盘以 radiogroup 漫游(roving tabindex)方向键移动、Space 选中。",
+      "en": "Replicate an interactive star rating row: hover preview, click to commit, optional 0.5-step halves and click-again-to-clear (tooltips copy), with keyboard as a radiogroup — roving tabindex, arrows to move, Space to select."
+    },
+    "acceptance": [
+      { "zh": "容器 role=\"radiogroup\" + aria-label;每星 role=\"radio\"[aria-checked],半星档每星拆两个 radio(0.5/1.0)", "en": "Container role=\"radiogroup\" + aria-label; each star role=\"radio\"[aria-checked], split into two radios (0.5/1.0) in half mode" },
+      { "zh": "键盘:方向键组内漫游(roving tabindex)、Space/Enter 选中、Home/End 可省;focus 环可见", "en": "Keyboard: arrows rove (roving tabindex), Space/Enter selects; focus ring visible" },
+      { "zh": "allowClear=on 时再点当前值清空回 0;悬停预览不改 aria-checked", "en": "With allowClear=on clicking the current value again clears to 0; hover preview never flips aria-checked" },
+      { "zh": "count 严格用参数快照值(默认 5);激活色走 --rate-active(默认 #faad14),空星描边 #d9d9d9", "en": "count uses the exact snapshot value (default 5); active color via --rate-active (default #faad14), empty stars outlined #d9d9d9" },
+      { "zh": "星级含义配文字标签(tooltips),当前值以文字回显;悬停缩放动效尊重 prefers-reduced-motion", "en": "Star meaning pairs with text labels (tooltips); the current value echoes as text; hover scale honors prefers-reduced-motion" }
+    ]
+  }
+}

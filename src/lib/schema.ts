@@ -18,7 +18,14 @@ const numberRange = { min: z.number(), max: z.number(), step: z.number().positiv
 export const paramSchema = z.discriminatedUnion("type", [
   z.object({ ...paramBase, type: z.literal("dimension"), unit: z.string().min(1), ...numberRange }),
   z.object({ ...paramBase, type: z.literal("number"), ...numberRange, unit: z.string().optional() }),
-  z.object({ ...paramBase, type: z.literal("color"), format: z.enum(["oklch", "hex"]), default: z.string().min(1) }),
+  z.object({
+    ...paramBase,
+    type: z.literal("color"),
+    format: z.enum(["oklch", "hex"]),
+    default: z.string().min(1),
+    /** 预设色板(清单 color-no-preset-swatches;zod 默认剥除未知键,须显式收编) */
+    presets: z.array(z.string().min(1)).optional(),
+  }),
   z.object({
     ...paramBase,
     type: z.literal("cubicBezier"),
@@ -42,6 +49,8 @@ export const paramSchema = z.discriminatedUnion("type", [
         color: z.string().min(1),
       }),
     ),
+    /** 逐层 color 预设色板(可选;zod 默认剥除未知键,须显式收编) */
+    presets: z.array(z.string().min(1)).optional(),
   }),
 ]);
 

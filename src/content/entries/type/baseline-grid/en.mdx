@@ -1,0 +1,67 @@
+## Structure & DOM
+
+No special structure — ordinary document flow; the discipline lives in the CSS vertical dimensions:
+
+```html
+<article class="col">
+  <p class="kicker">Kicker</p>
+  <h2>Heading</h2>
+  <p>Body paragraph</p>
+  <div class="card"><p>Bordered card text</p></div>
+</article>
+```
+
+```css
+.col   { font-size: 16px; line-height: 1.5; }        /* line box 24px = 3×8px */
+.col > * { margin-block-end: calc(var(--unit) * 2); } /* paragraph gap = 2 steps */
+.card  { border: 1px solid; padding: 7px; }           /* borders count into the budget: 1+7=8px */
+```
+
+Key points:
+
+- Three quantities shape the rhythm: **font size × line-height ratio (line boxes) + margins/paddings (gaps) + borders (the commonly forgotten one)**;
+- The criterion is "integer multiple of the step, or a half-step": an 8px step allows 4px half-steps — exactly this site's 4/8 spacing grid (`src/styles/global.css:165`);
+- Bringhurst's line "space, like time, is best divided proportionally rather than arbitrarily" reaches modern web practice through Rutter's 24ways article (research 12 §9);
+- The visualization overlay is a **teaching layer**: repeating-linear-gradient lines with `pointer-events:none` + `aria-hidden`; switch it off and the page is ordinary again.
+
+## Styling & Parameters
+
+Four parameters: three CSS-variable params plus one JS visualization switch:
+
+```css
+.col { font-size: var(--bl-size);   /* 16px */
+  line-height: var(--bl-lh);        /* 1.5 → 24px line box */
+  --bl-unit: 8px;                   /* step */
+}
+/* overlay toggles via data-overlay; layers are drawn from var(--bl-unit) and var(--bl-size)*var(--bl-lh) */
+```
+
+Where the numbers come from:
+
+- Default step 8px: this site's spec "spacing: 4/8 grid (no non-multiple-of-4 padding/margin literals)"; the industry 8pt grid is a community convention (unverified);
+- Default line-height 1.5: it is simultaneously the WCAG 2.2 SC 1.4.12 line-height threshold (≥1.5× font size, research 05 §18), and 16px × 1.5 = 24px = 3 steps;
+- The breathing constant 8 matches TDesign's official formula "line-height = font-size + n, n = 8" (design-basic.ts, research 02 §2) — at the common 14/16px sizes the 1.5× ratio and +8 coincide exactly;
+- 1px border + 8px padding = 9px: the classic half-unit case recorded in 12 §10 (in an 18px-unit system 9px is exactly a half-step; under an 8px system it fails — push unit to 18 and watch the audit turn green).
+
+## Motion & Interaction
+
+- **Overlay switch**: the overlay param (none/grid/baselines/both) toggles the two gradient layers' opacity through `data-overlay` (0.2s transition, removed under `prefers-reduced-motion`); grid lines run every unit, baseline lines follow the current line-box height at ~80% (the exact baseline position varies by font metrics — a teaching approximation);
+- **Offset audit**: each block's `getBoundingClientRect().top` is measured against the column top, judged by "integer multiple or half-step of the step", listed block by block with ✓/✗ — the audit recomputes live as parameters move;
+- **Param play**: drag `unit` to 18px and the 9px card text flips from violation to compliant; drag `lineHeight` away from 1.5 and the line box leaves the grid — the baseline layer shows the drift immediately.
+
+## Real-world examples
+
+- **TDesign**: the official formula `line-height = font-size + 8` (the constant 8 makes 14/16px sizes coincide exactly with the 1.5× ratio and stops line spacing from inflating on large sizes), published on the official fonts page's design-basic.ts (research 02 §2, verified from official source code) — the "breathing constant of 8" entered a mainstream design system's formal spec.
+- **This site, uiux-atlas**: the spacing token table is the 4/8 grid (`--space-1: 4px … --space-16: 64px`) with an explicit rule "no non-multiple-of-4 padding/margin literals" (`src/styles/global.css:165`) — the half-step rule written into engineering spec as a hard constraint.
+- **Rutter's 24ways classic**: the 2006 Compose to a Vertical Rhythm established the full algorithm — base unit = body line-height (12px × 1.5 = 18px), heading line-heights derived backwards, gaps at integer multiples, everything in em (research 12 §9, URL verified) — still the reference text for baseline-grid teaching.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `unit` | airier grid, more visible alignment; at 32px small-gap elements crowd onto the same cell | from 4px down it approaches pixel-free layout, audit noise grows, discipline weakens |
+| `fontSize` | taller line boxes; if `size×lh` stops being a step multiple the baseline layer shows drift instantly | smaller text lands on the grid more easily, but readability drops |
+| `lineHeight` | taller line boxes; drifting off "step multiples" shows in the baseline layer (1.5 is the landing point for 16px) | below 1.5 risks the WCAG 1.4.12 threshold; below the font size, lines overlap |
+| `overlay` | both is the strictest: grid fixes the step, baselines fix the line box — misalignment is visible at a glance | off returns the plain view with only the audit list as backstop |
+
+Working ranges: unit 8px (half-step 4), body 16px × 1.5, paragraph gaps 2 steps; count 1px borders into the budget (1+7=8, or 1+8=9 as a half-step). Local exemptions are acceptable in mixed-size editorial work (community practice, unverified).

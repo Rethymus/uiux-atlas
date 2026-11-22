@@ -1,0 +1,114 @@
+{
+  "name": "Kinetic Typography",
+  "nameZh": "动态文字",
+  "aliases": ["动态文字", "动态字体", "Kinetic typography", "Variable font animation", "逐字揭示"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "两条路线:可变字体的注册轴(wght 等)做字重/宽度渐变动画——改一个变量、零重排;或把文本拆成字符/单词做交错(stagger)揭示。演示的标题既逐字上升,也随轴值连续变重。",
+    "en": "Two routes: registered variable-font axes (wght et al.) animate weight/width — one variable, zero reflow; or split text into characters/words for staggered reveal. The demo headline both rises letter by letter and thickens continuously on the axis."
+  },
+  "origin": {
+    "zh": "MDN 可变字体指南:注册轴 wght(1–1000)↔ font-weight、wdth ↔ font-stretch、自定义轴(如 GRAD)改变视觉密度不改变占位、font-variation-settings 是需整条重声明的低层语法——用 CSS 变量绕过(补研 12§6);逐字揭示的事实标准是 GSAP SplitText(type: \"words, chars\" + mask + aria,官方示例 stagger 0.05),无库兜底是手写拆字 + 40ms 交错 + rise 0.6s(补研 12§6)。",
+    "en": "The MDN variable fonts guide: registered axes wght (1–1000) ↔ font-weight, wdth ↔ font-stretch, custom axes (like GRAD) change visual density without changing metrics, and font-variation-settings is a low-level syntax requiring full restatement — bypassed with CSS variables (12 §6); the de-facto standard for char reveals is GSAP SplitText (type: \"words, chars\" + mask + aria, official example stagger 0.05), with the no-library fallback being hand-split chars + 40ms stagger + rise 0.6s (12 §6)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stagger",
+      "min": 0,
+      "max": 150,
+      "step": 5,
+      "default": 40,
+      "unit": "ms",
+      "effect": {
+        "zh": "逐字符交错间隔(JS 型,demo 按 i × stagger 内联 animation-delay)。默认 40ms 取补研 12§6 无库兜底片段的手写拆字间隔;GSAP SplitText 官方示例用 stagger 0.05(=50ms),两者同为调研记载的参考值。",
+        "en": "Per-character stagger interval (JS-type; the demo inlines animation-delay = i × stagger). Default 40ms comes from the hand-split fallback snippet in 12 §6; the GSAP SplitText official example uses stagger 0.05 (=50ms) — both are research-recorded reference values."
+      }
+    },
+    {
+      "type": "number",
+      "name": "rise",
+      "min": 200,
+      "max": 1200,
+      "step": 25,
+      "default": 600,
+      "unit": "ms",
+      "cssVar": "--kinetic-rise",
+      "effect": {
+        "zh": "单字符上升时长,CSS 型参数(经 --kinetic-rise 注入 keyframes)。默认 600ms 取补研 12§6 兜底片段(rise .6s cubic-bezier(.2,.7,.3,1) both),缓动同取该片段,不单列参数。",
+        "en": "Per-character rise duration, a CSS-type param (injected via --kinetic-rise into the keyframes). Default 600ms from the fallback snippet in 12 §6 (rise .6s cubic-bezier(.2,.7,.3,1) both); the easing is taken from the same snippet rather than a separate param."
+      }
+    },
+    {
+      "type": "number",
+      "name": "wght",
+      "min": 100,
+      "max": 900,
+      "step": 25,
+      "default": 400,
+      "cssVar": "--k-wght",
+      "effect": {
+        "zh": "字重轴目标值,CSS 型参数(经 --k-wght 注入,经 @property 注册后可过渡)。注册轴 wght 官方范围 1–1000(MDN,补研 12§6);demo 字体 Inter Variable 的 wght 范围为 100–900,面板限在其中。0.5s 的轴过渡时长取 12§6 片段(transition --wght .5s)。",
+        "en": "Target weight-axis value, a CSS-type param (injected via --k-wght, transitionable once registered via @property). The registered wght axis spans 1–1000 officially (MDN, 12 §6); the demo font Inter Variable covers 100–900 and the panel clamps to that. The 0.5s axis transition comes from the 12 §6 snippet (transition --wght .5s)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "reveal",
+      "options": [
+        { "value": "chars", "label": { "zh": "逐字符", "en": "Per character" } },
+        { "value": "words", "label": { "zh": "逐单词", "en": "Per word" } }
+      ],
+      "default": "chars",
+      "effect": {
+        "zh": "拆分粒度(JS 型):对应 GSAP SplitText 官方 type: \"words, chars\" 的两档;chars 是标题动效的默认选择,words 播得更快、语义块更完整。default chars 为演示选择。",
+        "en": "Split granularity (JS-type): the two tiers of GSAP SplitText's official type: \"words, chars\"; chars is the default for headline motion, words plays faster with more complete semantic blocks. Default chars is the demo's choice."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "可变字体需 @supports (font-variation-settings) 检测;旧系统(macOS < 10.13)不支持可变字体(补研 12§6);轴插值经 @property 注册(已 Baseline widely available,调研 09§1.2),不支持的浏览器里轴值跳变不插值;拆字方案是纯 DOM/CSS,无门槛。demo 字体为打包的 Inter Variable(与 variable-fonts 条目同源),不请求外部资源。",
+      "en": "Variable fonts need @supports (font-variation-settings); older systems (macOS < 10.13) lack variable fonts (12 §6); axis interpolation rides @property registration (Baseline widely available, research 09 §1.2) — without it axis values jump instead of interpolating; the char-split route is plain DOM/CSS with no floor. The demo font is the bundled Inter Variable (same source as the variable-fonts entry) with no external requests."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 时字符不做上升位移、直接呈现(补研 12§6:animation: none),轴过渡同样关闭(字重跳变但不动画);不支持可变字体的环境里 font-variation-settings 声明无效,标题以回退字重静态渲染,逐字揭示不受影响;文本语义靠 aria-label + 逐字 aria-hidden 保持完整,读屏读到整句而非碎片。",
+    "en": "Under prefers-reduced-motion: reduce, characters skip the rise and render directly (12 §6: animation: none) and the axis transition is also disabled (weight jumps without animating); environments without variable fonts ignore font-variation-settings and render the headline statically at the fallback weight — the char reveal is unaffected; text semantics stay whole via aria-label + per-char aria-hidden, so screen readers hear the sentence, not fragments."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "营销页 hero 标题的首次揭晓——逐字/逐词上升 + 交错,是 SplitText 的官方主场景(补研 12§6)", "en": "First reveal of a marketing hero headline — per-char/word rise + stagger, SplitText's flagship scenario (12 §6)" },
+      { "zh": "交互状态的字重呼吸:GRAD/wght 轴 hover 强调——不加粗折行、零重排(补研 12§6/巧思 8)", "en": "Weight breathing on interaction states: GRAD/wght hover emphasis — no bold reflow, zero layout shift (12 §6 / craft 8)" },
+      { "zh": "章节转场的标题接力(page-transitions 的容器转场内嵌逐词揭示)", "en": "Section-transition title relays (per-word reveals nested in page-transitions container transitions)" }
+    ],
+    "avoid": [
+      { "zh": "正文与长段落——逐字动画破坏阅读节奏,动效语义只属于标题级文字", "en": "Body copy and long paragraphs — per-character animation wrecks reading rhythm; motion semantics belong to headline-scale text" },
+      { "zh": "wdth 轴大范围动画落在会折行的容器里——宽度变化引发重排,轴动画「零重排」的前提被打破(只有不改占位的轴如 GRAD 才绝对安全)", "en": "Wide-range wdth animation inside line-wrapping containers — width changes reflow, breaking the zero-reflow premise (only metric-neutral axes like GRAD are absolutely safe)" },
+      { "zh": "把拆字文本直接暴露给读屏——逐字 span 会把单词读成字母碎片,必须 aria-label 整句 + 字符 aria-hidden", "en": "Exposing split text directly to screen readers — per-char spans read words as letter fragments; always aria-label the sentence and aria-hidden the chars" }
+    ]
+  },
+  "a11y": {
+    "zh": "拆字后语义必须完整:标题容器带 aria-label 整句,全部拆分 span aria-hidden(等价 SplitText aria: \"auto\" 的语义,补研 12§6);prefers-reduced-motion 时取消上升与轴过渡;逐字动画不得作为信息传达的唯一手段(纯装饰);焦点/选择不受影响——标题不是交互控件。",
+    "en": "Split text must keep whole semantics: the headline container carries an aria-label of the full sentence and every split span is aria-hidden (the equivalent of SplitText's aria: \"auto\", 12 §6); prefers-reduced-motion cancels the rise and the axis transition; the per-char animation never carries information alone (pure decoration); focus/selection are untouched — the headline is not a control."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_fonts/Variable_fonts_guide",
+    "https://gsap.com/docs/v3/Plugins/SplitText/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条动态文字标题:文本拆成字符(或单词),逐单元上升揭示(默认 600ms cubic-bezier(.2,.7,.3,1)、按快照 stagger 交错);同时经 @property 注册的 --k-wght 驱动 Inter Variable 的 wght 轴,标题字重以 0.5s 平滑过渡到快照值;读屏读整句。",
+      "en": "Replicate a kinetic headline: split text into characters (or words), reveal each with a rise (default 600ms cubic-bezier(.2,.7,.3,1), staggered at the snapshot interval); simultaneously a @property-registered --k-wght drives Inter Variable's wght axis, easing the headline weight to the snapshot value over 0.5s; screen readers hear the whole sentence."
+    },
+    "acceptance": [
+      { "zh": "拆分单元带 overflow hidden 裁剪容器(mask 语义),上升从 translateY(110%) 到 0,只动 transform+opacity", "en": "Split units sit in overflow-hidden mask wrappers; the rise goes from translateY(110%) to 0 animating only transform+opacity" },
+      { "zh": "交错间隔与上升时长取参数快照(stagger × i 内联 delay;rise 经 --kinetic-rise)", "en": "Stagger interval and rise duration follow the snapshot (stagger × i inline delays; rise via --kinetic-rise)" },
+      { "zh": "字重轴经 @property 注册的变量驱动 font-variation-settings,0.5s 过渡(不支持的浏览器降级为跳变)", "en": "The weight axis drives font-variation-settings through a @property-registered variable with a 0.5s transition (browsers without it degrade to jumps)" },
+      { "zh": "标题容器 aria-label 整句、拆分 span 全部 aria-hidden;读屏永不读到字母碎片", "en": "The headline container carries the sentence in aria-label and every split span is aria-hidden; screen readers never hear letter fragments" },
+      { "zh": "prefers-reduced-motion: reduce 时取消上升与轴过渡,文字直接完整呈现", "en": "Under prefers-reduced-motion: reduce, cancel the rise and axis transition; the text renders complete and static" }
+    ]
+  }
+}

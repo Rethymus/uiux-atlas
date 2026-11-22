@@ -1,0 +1,104 @@
+{
+  "name": "Small Multiples",
+  "nameZh": "小倍数图",
+  "aliases": ["Trellis Chart", "Lattice Chart", "Panel Chart", "Grid Chart"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "同标度、同轴的一组相似小图并排:每个面板只讲一个系列,靠「全部面板共用同一把尺」实现跨面板直接对比——Tufte 的定义性要求;双轴混杂图恰恰是它的反面。",
+    "en": "A row of similar small charts at one shared scale and axes: each panel tells a single series, and cross-panel comparison works only because every panel shares the same ruler — Tufte's defining requirement; the dual-axis mashup is its exact opposite."
+  },
+  "origin": {
+    "zh": "由 Edward Tufte 推广:《Envisioning Information》(1990, p.67)——「定量推理的核心是一句话:和什么比?」;同标度并置、trellis/lattice/panel chart 等别名与「刻意不同标度强调相对变化」的变体均见 Wikipedia Small multiple 条目(补研 12§13,页面已核);面板间距默认 8px 逐字对应 Grafana GRID_CELL_VMARGIN(public/app/core/constants.ts,调研 08§4.1 源码核验)。",
+    "en": "Popularized by Edward Tufte, *Envisioning Information* (1990, p.67) — \"the core of quantitative reasoning is one sentence: compared to what?\"; the juxtaposed same-scale definition, the trellis/lattice/panel aliases and the deliberately-different-scales variant are all in Wikipedia's Small multiple article (supplement 12 §13, page verified); the 8px default panel gap matches Grafana's GRID_CELL_VMARGIN verbatim (public/app/core/constants.ts, research 08 §4.1 source-verified)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "layout",
+      "options": [
+        { "value": "multiples", "label": { "zh": "小倍数阵列", "en": "Multiples grid" } },
+        { "value": "dual-axis", "label": { "zh": "双轴混杂(对照)", "en": "Dual-axis mashup (contrast)" } }
+      ],
+      "default": "multiples",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换)。multiples=四个区域各占一个小面板,全部面板共用同一 y 域(0–100)——小倍数的定义形态;dual-axis=同样四条线塞进一张图,华东/华南走左轴 0–100、华北/西部走右轴 0–70:两组线各自被自己的轴拉伸,交叉点不再构成任何比较——这就是「同标度」纪律要防的反面教材。",
+        "en": "JS-type param (the demo subscribes and switches). multiples = four regions, one small panel each, all panels sharing one y domain (0–100) — the defining form; dual-axis = the same four lines crammed into one chart, East/South on a left axis of 0–100 and North/West on a right axis of 0–70: each group is stretched by its own axis and crossings no longer mean anything — exactly the anti-pattern the shared-scale discipline exists to prevent."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "scaleMode",
+      "options": [
+        { "value": "shared", "label": { "zh": "同标度(默认)", "en": "Shared scale" } },
+        { "value": "independent", "label": { "zh": "各面板独立标度", "en": "Independent scales" } }
+      ],
+      "default": "shared",
+      "effect": {
+        "zh": "JS 型参数(仅 multiples 模式生效)。shared=全部面板 0–100 同标度,柱高/线高可跨面板直接读大小——小倍数的定义性要求;independent=各面板按自身极值缩到顶(华东 0–100 / 华南 0–90 / 华北 0–70 / 西部 0–50),即 Wikipedia 记载的「刻意不同标度强调相对变化」变体——形状对比仍在,量级对比失效,必须逐面板标明刻度上限。",
+        "en": "JS-type param (applies in multiples mode only). shared = every panel spans 0–100 so line heights read as magnitudes across panels — the defining requirement; independent = each panel scales to its own max (East 0–100 / South 0–90 / North 0–70 / West 0–50), the Wikipedia-documented \"deliberately different scales to stress relative change\" variant — shape comparison survives, magnitude comparison dies, and each panel must carry its own scale ceiling."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "panelGap",
+      "unit": "px",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--sm-gap",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入)。面板纵向/横向间距,默认 8px 逐字对应 Grafana GRID_CELL_VMARGIN(public/app/core/constants.ts:GRID_COLUMN_COUNT 24、GRID_CELL_HEIGHT 30、GRID_CELL_VMARGIN 8、MIN_PANEL_HEIGHT 90,调研 08§4.1 源码核验);仪表盘面板阵列就是小倍数的工程化落地。0px 会让相邻面板粘连,超过 24px 阵列散架。",
+        "en": "CSS-var param (injected by DemoStage). Panel gap; the 8px default matches Grafana's GRID_CELL_VMARGIN verbatim (public/app/core/constants.ts: GRID_COLUMN_COUNT 24, GRID_CELL_HEIGHT 30, GRID_CELL_VMARGIN 8, MIN_PANEL_HEIGHT 90 — research 08 §4.1 source-verified); a dashboard panel grid is small multiples engineered. 0px glues panels together; past 24px the array falls apart."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为 CSS Grid + 手绘 SVG,无新特性依赖,全现代浏览器可用;面板切换为即时重绘、无过渡依赖。",
+      "en": "The demo is CSS Grid + hand-drawn SVG with no cutting-edge dependencies; panel switching is an instant redraw with no transition dependencies."
+    }
+  },
+  "fallback": {
+    "zh": "无兼容回退;真正的回退是原则级的:实在塞不进阵列时,用「分面 + 各面板明示刻度」而不是回到双轴;independent 模式必须逐面板标注刻度上限(0–50 与 0–100 的小图放一起,不加注就是误导);面板过多放不下时优先砍系列数,不砍同标度。",
+    "en": "No compat fallback; the real fallback is principle-level: when the array truly won't fit, go faceted with explicit per-panel scales instead of returning to dual axes; independent mode must label each panel's scale ceiling (a 0–50 mini next to a 0–100 mini without labels is a lie); if panels overflow, cut series before cutting the shared scale."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "多区域/多产品/多站点的同单位指标横比——每个面板一个系列,一眼看出谁高谁低", "en": "Same-unit metrics across regions/products/sites — one series per panel, magnitudes readable at a glance" },
+      { "zh": "时间序列按时间点切片(月/季度面板)——地图研究结论:时间点之间的对比小倍数胜过动画", "en": "Time series sliced into per-period panels — map research: between-timepoint comparison favors small multiples over animation" },
+      { "zh": "仪表盘面板阵列——Grafana 24 列 × 30px 行高 × 8px 间距的网格即工程化先例", "en": "Dashboard panel arrays — Grafana's 24 columns × 30px row × 8px gap grid is the engineering precedent" },
+      { "zh": "需要强调「形状/趋势差异」的独立标度变体——Wikipedia 记载的刻意用法,但必须逐面板标注刻度", "en": "The independent-scale variant stressing shape/trend — a deliberate Wikipedia-documented use, but label every panel's scale" }
+    ],
+    "avoid": [
+      { "zh": "把多系列塞进一张图再用双轴「解决」刻度冲突——交叉点不构成比较,正是本条目 demo 的反面对照", "en": "Cramming series into one chart and \"solving\" scale clashes with dual axes — crossings imply nothing, the demo's contrast case" },
+      { "zh": "同单位指标却各面板独立缩放且不加注——读者把被拉高的 0–50 面板误读为更高", "en": "Independent scales on same-unit data without labels — readers misjudge a stretched 0–50 panel as higher" },
+      { "zh": "不同单位的系列并置(如 % 与件数)共用一把尺——先换算或拆面板,不要共轴", "en": "Different-unit series on one ruler (% vs. counts) — convert or split panels; never share the axis" },
+      { "zh": "面板内塞回完整轴系(网格+刻度+图例)——小面板只留基线、上限刻度与直标,参考层纪律见坐标轴条目", "en": "Restoring full axis furniture inside each panel — minis keep only baseline, ceiling tick and direct labels; see the Chart Axes entry for reference-layer discipline" }
+    ]
+  },
+  "a11y": {
+    "zh": "每个面板 svg 用 role=\"img\" + aria-label 写明「系列名+时间范围+指标」;跨面板比较的信息(谁最高/最大差值)写进图外的文字摘要,读屏用户不靠扫视四个小图也能得到结论;色板用 Okabe-Ito(R grDevices 固化 hex,调研 08§1.1 核验)并在面板标题直标最新值(jfly:图上直标优于远处对色图例);面板间距低于 4px 时相邻面板可能被读成一个整体,触控目标(若有)≥24px。",
+    "en": "Give each panel svg role=\"img\" and an aria-label naming series + period + metric; put the cross-panel takeaway (who's highest, biggest gap) in a text summary outside the chart so screen-reader users get conclusions without scanning four minis; use the Okabe-Ito palette (hex as fixed in R grDevices, research 08 §1.1) and direct-label the latest value in the panel title (jfly: on-graph labels beat remote color keys); below a 4px gap adjacent panels may read as one blob, and any touch targets stay ≥24px."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Small_multiple",
+    "https://raw.githubusercontent.com/grafana/grafana/main/public/app/core/constants.ts",
+    "https://jfly.uni-koeln.de/color/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 CSS Grid + 手绘 SVG 实现一组 2×2 小倍数:四个系列各占一个面板,全部面板共用 0–100 同标度,面板间距走 --sm-gap(默认 8px = Grafana GRID_CELL_VMARGIN),每个面板标题直标系列名与最新值,并附带「双轴混杂」反面对照模式。",
+      "en": "Implement a 2×2 small-multiples array with CSS Grid + hand-drawn SVG: one series per panel, every panel on the same 0–100 scale, panel gap via --sm-gap (default 8px = Grafana GRID_CELL_VMARGIN), direct-labeled series name and latest value per panel, plus a dual-axis-mashup contrast mode."
+    },
+    "acceptance": [
+      { "zh": "全部面板共用同一 y 域(默认 0–100);切换独立标度时逐面板标注刻度上限", "en": "All panels share one y domain (0–100 by default); when switching to independent scales, label every panel's ceiling" },
+      { "zh": "面板间距默认 8px(Grafana GRID_CELL_VMARGIN 逐字),经 CSS 变量注入可调", "en": "Panel gap defaults to 8px (Grafana GRID_CELL_VMARGIN verbatim), tunable via an injected CSS variable" },
+      { "zh": "对照模式如实呈现双轴混杂的读数陷阱(左轴 0–100 / 右轴 0–70,交叉点无意义),不美化", "en": "The contrast mode honestly shows the dual-axis trap (left 0–100 / right 0–70, meaningless crossings) without softening it" },
+      { "zh": "每个面板 role=\"img\" + aria-label(系列+时间+指标);跨面板结论写在图外文字摘要", "en": "Each panel carries role=\"img\" + aria-label (series + period + metric); the cross-panel takeaway lives in text outside the chart" },
+      { "zh": "系列色取 Okabe-Ito 固化 hex(#0072B2/#E69F00/#009E73/#D55E00),不自行配色", "en": "Series colors come from fixed Okabe-Ito hex (#0072B2/#E69F00/#009E73/#D55E00) — no ad-hoc palette" }
+    ]
+  }
+}

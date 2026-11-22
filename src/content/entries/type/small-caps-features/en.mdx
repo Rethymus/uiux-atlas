@@ -1,0 +1,64 @@
+## Structure & DOM
+
+No special structure — features are declared on text elements; prefer the high-level `font-variant-*` first:
+
+```html
+<p class="kicker">Uiux Atlas · Typography Notes</p>
+<p class="liga">Difficult waffles — efficient airflow.</p>
+<p class="num">O0 · Order 0070</p>
+```
+
+```css
+.kicker { font-variant-caps: all-small-caps; }           /* high level: c2sc + smcp */
+.liga   { font-variant-ligatures: no-common-ligatures; } /* ligatures off ≡ low-level "liga" 0 */
+.num    { font-variant-numeric: slashed-zero; }          /* high level ≡ "zero" 1 */
+
+/* Low-level fallback: only where the high level cannot express the feature (stylistic sets ss01–ss20, swashes) */
+.fancy  { font-feature-settings: "ss07" 1; }
+```
+
+Key points:
+
+- **Tag syntax**: a low-level tag is exactly 4 ASCII characters (U+20–U+7E); a malformed tag invalidates the whole declaration; `on/off ≡ 1/0`, default 1; non-boolean features take a number to pick a glyph variant (e.g. `"swsh" 2` = the second swash) (research 12 §10, MDN verbatim);
+- **Official layering guidance**: use the high level wherever it exists; MDN explicitly says "do not use it [font-feature-settings] to enable small caps" (12 §10, verified);
+- Features only take effect if the **font file ships the OpenType tables**; without the table the declaration is inert but harmless.
+
+## Styling & Parameters
+
+All three parameters are CSS-variable type, each landing on one high-level property:
+
+```css
+.sc-kicker { font-variant-caps: var(--sc-caps); }     /* normal|small-caps|all-small-caps */
+.sc-liga   { font-variant-ligatures: var(--sc-lig); } /* common|no-common-ligatures */
+.sc-zero   { font-variant-numeric: var(--sc-zero); }  /* normal|slashed-zero */
+```
+
+Where the numbers come from:
+
+- `font-feature-settings` Baseline 2016-03; `font-variant-caps` Baseline 2020-01 (MDN, re-verified this batch);
+- Keyword→OpenType mapping on font-variant-caps (MDN, re-verified this batch): `small-caps` = smcp (lowercase only); `all-small-caps` = c2sc + smcp (uppercase too); `pcap`/`unic`/`titl` are extended values and MDN notes not every browser implements every one;
+- **Missing-glyph fallback** (MDN, re-verified this batch): when a font has no small-capital glyphs, the browser **synthesizes** approximate small caps from uppercase glyphs; caseless characters (punctuation) are **never** synthesized; the low-level font-feature-settings only toggles tables the font already ships — absent tables do nothing;
+- Tracking 0.08em: the same value as this site's uppercase-label discipline (`src/styles/global.css:852-856`); apply the same tracking when small caps carry the eyebrow.
+
+## Motion & Interaction
+
+- **Width probes**: two identical texts side by side (left plain, right with features applied) measure `getBoundingClientRect().width` live — a small-caps Δ>0 means glyphs were substituted (true smcp glyphs or, per MDN, synthesized ones; width cannot tell them apart); at Δ≈0 the demo honestly notes "the current font likely lacks this feature table";
+- **Ligature switch**: flipping to no-common-ligatures instantly changes the width of the fi/fl pairs in `waffle airflow` — common ligatures (liga) are on by default and are the easiest feature to verify by measurement;
+- **Slashed zero**: the zero keyword of font-variant-numeric, shipped by Inter officially (research 05 §24), directly visible;
+- No animation anywhere — instant reflows only, nothing to do for `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **MDN's official layering guidance is itself the industry narrative**: "use the high-level properties where possible, do not use it to enable small caps" sits in the font-feature-settings reference body (12 §10, verified) — the low-level property is officially positioned as the fallback for stylistic sets and swashes the high level cannot express.
+- **Inter**: the official repo lists slashed zero, tabular figures and other OpenType features (research 05 §24), adopted by Figma, GitLab and NASA — feature-table quality decides what your CSS can actually do; choosing a font is choosing a feature supply.
+- **This site, uiux-atlas**: metadata labels use "all-uppercase + 0.08em tracking" rather than small caps (`src/styles/global.css:852-856`) — a system font stack cannot guarantee smcp glyph supply, so uppercase is the zero-dependency controlled alternative; a real engineering tradeoff grounded in the "features depend on the font" precondition.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `caps` | all-small-caps converts the whole line (the usual eyebrow setting); synthesized per MDN rules when glyphs are missing | normal restores original casing; use beyond short labels with care — long passages are hard to read (MDN accessibility note) |
+| `ligatures` | common-ligatures returns to default ligatures, fi/fl merge and the line flows | no-common-ligatures splits them apart — clearer per-character rendering for code and URLs |
+| `zero` | slashed-zero prevents O/0 confusion (error-saver for order numbers and codes) | normal keeps the font's default zero shape |
+
+Working rules: small caps for short labels only; confirm the font's feature tables first (CSS just flips the switch); prefer high-level properties and save the low level for stylistic sets; synthesis varies by browser — test on the fonts that ship with your UI.

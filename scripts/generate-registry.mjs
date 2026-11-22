@@ -1,4 +1,6 @@
-// shadcn registry 生成器:24 条「前端部件」(components 分类)的 demo 发布为
+// shadcn registry 生成器:31 条「前端部件」(components 分类:24 基础 + 二批 6
+// cascader/collapse-panel/rate-score/stepper/timeline/upload-states + command-palette;
+// 清单 mcp-registry-stale 三口径同步)的 demo 发布为
 // shadcn registry item JSON + registry index(JSON 数组),输出到 public/registry/
 // (Astro 约定 public/ 原样拷贝进 dist/,build 时随 dist 发布,静态托管即可拉取)。
 //
@@ -39,10 +41,14 @@ const AT_MODULE_HINTS = {
     "本站演示舞台组件(.demo-stage:cssVar 注入点 + 舞台铭牌 + #s= 分享参数恢复)," +
     "registry 消费端不可用;接入时请以自有舞台容器(如一个 <div>)替代," +
     "文件体内的 <DemoStage> 标签需同步替换。",
+  "@/components/CommandPalette":
+    "本站全站命令面板组件(PalettePanel 面板本体 + PaletteItem 条目类型," +
+    "站点 Ctrl/Cmd+K 检索即它),registry 消费端不可用;接入时请以你自己的" +
+    "检索面板实现替代,文件体内的 <PalettePanel> 标签与 PaletteItem 类型注解需同步替换。",
 };
 
 // 原位改写一条 import 行:`import X from "@/…";` → 「[registry 改写]」说明注释。
-// 仅匹配双引号形式的 @/ 模块 import(24 个 demo 现状即此);遇到未登记的 @/ 模块直接报错,
+// 仅匹配双引号形式的 @/ 模块 import(31 个 demo 现状即此);遇到未登记的 @/ 模块直接报错,
 // 不静默放过(诚实标注优先于生成成功)。
 function rewriteAtImports(src, slug) {
   const problems = [];
@@ -105,8 +111,15 @@ function buildItem(schema, slug) {
 }
 
 // ── 主流程 ──
+// 统一条目谓词 = schema.json + demo/Demo.tsx + zh.mdx 三件齐全(清单 mcp-registry-stale:
+// 与 verify-registry.mjs / mcp/server.mjs loadEntries 同一口径,schema-only 在制骨架不入册)
 const slugs = readdirSync(entriesRoot)
-  .filter((s) => existsSync(join(entriesRoot, s, "schema.json")) && existsSync(join(entriesRoot, s, "demo", "Demo.tsx")))
+  .filter(
+    (s) =>
+      existsSync(join(entriesRoot, s, "schema.json")) &&
+      existsSync(join(entriesRoot, s, "demo", "Demo.tsx")) &&
+      existsSync(join(entriesRoot, s, "zh.mdx")),
+  )
   .sort(); // 字典序稳定排序,输出确定性可 diff
 
 const problems = [];
@@ -133,8 +146,8 @@ for (const slug of slugs) {
   items.push(buildItem(schema, slug));
 }
 
-if (problems.length > 0 || items.length !== 24) {
-  problems.push(`期望 24 个部件条目,实际取到 ${items.length} 个(与 verify-entries.mjs 的 COMPONENT_SLUGS 口径应一致)`);
+if (problems.length > 0 || items.length !== 31) {
+  problems.push(`期望 31 个部件条目,实际取到 ${items.length} 个(与 verify-entries.mjs 的 COMPONENT_SLUGS 口径应一致)`);
   console.error(JSON.stringify({ problems }, null, 2));
   process.exit(1);
 }

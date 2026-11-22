@@ -1,0 +1,103 @@
+{
+  "name": "Upload",
+  "nameZh": "上传三态",
+  "aliases": ["文件上传", "File Uploader", "Dropzone"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "点击或拖拽把文件交给系统:上传中带百分比进度、成功打勾、失败给修复指引——每个文件在列表里走完自己的状态机。",
+    "en": "Hand files to the system by click or drag: uploading shows a percent bar, success ticks, failure gives repair guidance — each file walks its own state machine in the list."
+  },
+  "origin": {
+    "zh": "上传组件的两条一手参照线:IBM Carbon File Uploader(调研 07§14)——按钮/拖放两变体、拖入时边框变色加粗、**上传中文件三态 loading/success/uploaded**、错误态要给清晰修复指引、标题描述上传区用途、描述写明大小/格式限制、长文件名省略号+tooltip、键盘 Space/Enter 打开选择框且关闭后焦点回触发元素;Ant Design Upload(补研 12§15)——文件 status 四值 uploading(进度条)/done/error/removed、beforeUpload 返回 false 阻止上传、maxCount=1 时替换当前文件、Upload.Dragger 拖拽容器。demo 五态 = 入口(点击/拖拽)+ 拖拽悬停 + Carbon 三态映射 antd status(2026-11-20/22 抓取一手文档)。",
+    "en": "Two primary-source lines anchor the upload: IBM Carbon File Uploader (research 07 §14) — button/dropzone variants, border color+thicken on drag-in, **three states for files being uploaded: loading/success/uploaded**, error states demand clear repair guidance, the heading describes the zone's purpose, the description states size/format limits, long filenames ellipsize with a tooltip, and Space/Enter opens the dialog with focus returning to the trigger; Ant Design Upload (supplementary study 12 §15) — file status uploading (progress bar)/done/error/removed, beforeUpload returning false blocks upload, maxCount=1 replaces the current file, Upload.Dragger as the drag container. The demo's five states = entry (click/drag) + drag hover + Carbon's three states mapped onto antd status (primary docs captured 2026-11-20/22)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "dropzone", "label": { "zh": "拖拽区 dropzone", "en": "Dropzone" } },
+        { "value": "button", "label": { "zh": "按钮 button", "en": "Button" } }
+      ],
+      "default": "dropzone",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换入口形态)。对应 Carbon File Uploader 的两变体(按钮触发文件选择对话框 / 拖放 drop zone,调研 07§14)与 antd Upload 的 Upload.Dragger(补研 12§15);变体官方默认值调研未记载,demo 默认 dropzone 为演示选择(拖拽态只在 dropzone 下可演示)。",
+        "en": "JS-type param (demo subscribes to switch the entry form). Maps to Carbon File Uploader's two variants (button-triggered dialog / drag-drop zone, research 07 §14) and antd's Upload.Dragger (12 §15); the official default is unrecorded — the demo defaults to dropzone as a demo choice (drag states are only demonstrable there)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "simulate",
+      "options": [
+        { "value": "success", "label": { "zh": "模拟成功", "en": "Simulate success" } },
+        { "value": "fail", "label": { "zh": "模拟失败", "en": "Simulate failure" } }
+      ],
+      "default": "success",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后控制模拟上传的结局:成功→done 打勾;失败→约 60% 处转 error + 修复指引)。这是 demo 教学开关,非组件 API——用于演示 antd file.status 的 done/error 分支(补研 12§15)与 Carbon 错误态「清晰修复指引」要求(调研 07§14)。",
+        "en": "JS-type param (demo subscribes to control the simulated upload outcome: success → done with a tick; failure → flips to error with repair guidance around 60%). A demo teaching switch, not a component API — it exercises antd file.status done/error branches (12 §15) and Carbon's 'clear repair guidance' error-state requirement (research 07 §14)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxCount",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后限制列表文件数,超出给出提示不再添加)。对应 antd Upload 的 maxCount——官方记载 =1 时替换当前文件(补研 12§15);默认值调研未记载,demo 默认 3 为演示教学值。",
+        "en": "JS-type param (demo subscribes to cap the list length, refusing extras with a notice). Maps to antd Upload's maxCount — officially recorded to replace the current file at =1 (12 §15); the default is unrecorded — the demo default of 3 is a demo teaching value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "上传入口是原生 <input type=\"file\">(视觉隐藏,经 label/button 触发)+ dragover/drop 事件:文件对话框与文件系统访问全平台可用;DataTransfer 拖拽是 DOM 标准事件;进度条动画用 CSS width 过渡(教学模拟,生产应监听真实上传进度)。demo 不真正发送网络请求。",
+      "en": "The entry is a native <input type=\"file\"> (visually hidden, triggered via label/button) plus dragover/drop events: the file dialog and filesystem access work on every platform; DataTransfer drag is standard DOM; the progress bar animates via CSS width transitions (a teaching simulation — production should listen to real upload progress). The demo sends no network requests."
+    }
+  },
+  "fallback": {
+    "zh": "拖拽不可用(触屏/不支持 DataTransfer)时按钮路径完全兜底;无 JS 环境退化为原生 <input type=\"file\"> + 表单提交;模拟进度应换成真实上传进度回调(antd onChange event.percent,补研 12§15),无进度回调的上传按 NN/g 准则:2–10s 用 spinner、≥10s 才需要 percent-done 进度条(调研 07§19)。",
+    "en": "When drag is unavailable (touch / no DataTransfer) the button path fully covers it; in no-JS environments degrade to a native <input type=\"file\"> plus form submit; the simulated progress should be replaced by real upload progress callbacks (antd onChange event.percent, supplementary study 12 §15); uploads without progress callbacks follow NN/g guidance: spinners for 2–10s, percent-done bars only at ≥10s (research 07 §19)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "头像/封面等单文件上传:maxCount=1,新选即替换(antd maxCount=1 语义,补研 12§15)", "en": "Single-file uploads like avatars/covers: maxCount=1, a new pick replaces (antd maxCount=1 semantics, 12 §15)" },
+      { "zh": "附件/凭证批量上传:列表逐文件展示状态,失败可单独重试", "en": "Batch attachment/proof uploads: per-file status rows, individual retry on failure" },
+      { "zh": "拖拽为主的资料导入:从桌面/邮件客户端整批拖入", "en": "Drag-first data imports: whole batches dragged from desktop/mail clients" },
+      { "zh": "需要即时校验的导入:beforeUpload 式前置校验(格式/大小)不合格即拦截并给出修复指引(Carbon 错误态要求,调研 07§14)", "en": "Imports needing upfront validation: beforeUpload-style checks (format/size) that block and guide (Carbon error-state requirement, research 07 §14)" }
+    ],
+    "avoid": [
+      { "zh": "模态框里上传多个文件——列表纵向堆叠放不下(Carbon 明确警告,调研 07§14)", "en": "Uploading multiple files inside a modal — the stacked list won't fit (explicit Carbon warning, research 07 §14)" },
+      { "zh": "上传无任何进度反馈的静默等待——任何动作发起都要立即给视觉反馈(NN/g,调研 07§19)", "en": "Silent waits with no progress feedback — every initiated action needs immediate visual feedback (NN/g, research 07 §19)" },
+      { "zh": "隐藏文件类型/大小限制——描述必须写明大小/格式限制(Carbon 内容规范,调研 07§14)", "en": "Hiding type/size limits — the description must state size/format limits (Carbon content spec, research 07 §14)" },
+      { "zh": "失败只显示红叉不给修复指引——错误态要给清晰修复指引(Carbon,调研 07§14)", "en": "A bare red cross on failure — error states demand clear repair guidance (Carbon, research 07 §14)" }
+    ]
+  },
+  "a11y": {
+    "zh": "入口是视觉隐藏的原生 <input type=\"file\">,由按钮/拖拽区以点击或 Space/Enter 打开文件选择框(Carbon 键盘要求,调研 07§14;MUI 的 label+隐藏 input 模式,调研 07§1),对话框关闭后焦点自然回到触发元素(Carbon,调研 07§14);文件列表用 ul/li,行内删除按钮可 Tab 到达、Space/Enter 删除(Carbon 键盘路径,调研 07§14);长文件名省略号 + title 提示全名(Carbon,调研 07§14);每个文件的状态以可见文字表达(上传中 60% / 已完成 / 失败),进度条只是冗余视觉,不依赖颜色单独传达;状态变化经 aria-live 区域播报。",
+    "en": "The entry is a visually hidden native <input type=\"file\"> opened by click or Space/Enter on the button/dropzone (Carbon keyboard requirement, research 07 §14; MUI's label + hidden input pattern, research 07 §1), with focus returning naturally to the trigger after the dialog closes (Carbon, 07 §14); the file list is ul/li with row delete buttons reachable by Tab and activated by Space/Enter (Carbon keyboard path, 07 §14); long filenames ellipsize with a title tooltip for the full name (Carbon, 07 §14); every file's state is visible text (uploading 60% / done / failed) — the bar is redundant visuals and color never alone carries state; state changes announce through an aria-live region."
+  },
+  "sources": [
+    "https://carbondesignsystem.com/components/file-uploader/usage/",
+    "https://ant.design/components/upload",
+    "https://www.nngroup.com/articles/progress-indicators/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个五态上传组件:拖拽区(拖入边框变色加粗)+ 文件列表,文件依次经历 uploading(百分比进度条)→ done(✓)或 error(✕ + 修复指引 + 重试),支持删除(removed)、maxCount 上限提示与长文件名省略号。",
+      "en": "Replicate a five-state uploader: a dropzone (border color+thicken on drag-in) plus a file list where each file walks uploading (percent bar) → done (✓) or error (✕ + repair guidance + retry), with delete (removed), maxCount capping and long-name ellipsis."
+    },
+    "acceptance": [
+      { "zh": "入口为视觉隐藏的 <input type=\"file\"> + 按钮/拖拽区,Space/Enter 可开文件框,拖拽 dragover 时边框变色加粗", "en": "Entry = visually hidden <input type=\"file\"> + button/dropzone, Space/Enter opens the dialog, dragover repaints the border thicker and colored" },
+      { "zh": "文件状态机严格走 uploading(百分比)→ done/error;error 行附修复指引文案与重试按钮", "en": "The file state machine strictly runs uploading (percent) → done/error; error rows carry repair guidance copy and a retry button" },
+      { "zh": "删除按钮可 Tab 到达、Space/Enter 激活;长文件名省略号 + title 全名", "en": "Delete buttons are Tab-reachable and Space/Enter activated; long names ellipsize with a title tooltip" },
+      { "zh": "maxCount 严格用参数快照值,超出即提示不再添加;列表语义 ul/li,状态变化经 aria-live 播报", "en": "maxCount uses the exact snapshot value, refusing extras with a notice; list semantics ul/li; state changes announce via aria-live" },
+      { "zh": "模拟上传约 1.5s(教学时长);进度条动画尊重 prefers-reduced-motion;拖拽不可用时按钮路径完整可用", "en": "Simulated uploads run ~1.5s (teaching duration); bar animation honors prefers-reduced-motion; with drag unavailable the button path fully works" }
+    ]
+  }
+}

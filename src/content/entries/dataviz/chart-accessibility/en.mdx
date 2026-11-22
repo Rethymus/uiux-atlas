@@ -1,0 +1,66 @@
+## Structure & DOM
+
+Complex images need "**two-tier alternative text**" (the W3C WAI complex-images tutorial): tier one is a short `alt` / svg `aria-label` naming the **chart type + content summary**; tier two is an in-page **long description** carrying trend conclusions, scale, color order and relative heights — **visible to everyone**, preferably riding `figure role="group"` + `figcaption`.
+
+```html
+<figure role="group">
+  <svg role="img" aria-label="Bar chart: site visits March–August, rising overall, see long description">
+    <title>…</title><desc>…</desc>
+    …bars and axes…
+  </svg>
+  <figcaption><!-- long description: table or prose, visible to all users -->
+    <table><caption>Site visits March–August</caption>…</table>
+  </figcaption>
+</figure>
+```
+
+Key points:
+
+- `aria-describedby` **takes plain text only**: hang a structured table on it and screen readers read it as one run-on paragraph (WAI verbatim) — tables belong in figcaption;
+- Summarize the chart in one sentence in the body text before the figure — the tutorial's own ordering;
+- There must be a second channel beyond hue: **direct value labels** (jfly: "label elements of the graph on the graph itself rather than making a separate color-coded key") and **decal patterns**;
+- The svg carries `title` + `desc` as a backstop; interactive tooltips additionally owe the WCAG 2.1 SC 1.4.13 trio (Esc-dismissible/hoverable/persistent, W3C understanding page verified — see the Tooltip & Legend entry).
+
+## Styling & Parameters
+
+All three parameters are JS-type (the demo subscribes to the store), defaults verifiable verbatim:
+
+| Parameter | Default | Source (verified verbatim) |
+| --- | --- | --- |
+| `decal` | **off** | ECharts `aria.decal.show` officially defaults to false (`src/visual/aria.ts`, research 08 §3.4) — decals are the colorblind safety net, shipped off by the library and requiring explicit enabling; decal params (dashArrayX/dashArrayY/rotation) live in `util/decal.ts`, and the demo sketches an equivalent SVG pattern |
+| `directLabel` | **on** | jfly CUD page verbatim (08 §1.1 verified): on-graph labels beat remote color keys |
+| `longDesc` | **table** | the WAI tutorial prefers figcaption as the long-description carrier; both tiers must fill the trend/scale/color-order/relative-heights checklist |
+
+Companion defaults (ECharts `aria.ts` source-verified): `aria.label.enabled` defaults **true** — the library auto-generates a graphic summary for screen readers; but decals `aria.decal.show` defaults **false**; the pair is deliberate: summaries are standard equipment, patterns are an explicit choice.
+
+```css
+/* Decal: a second visual channel beyond hue (SVG pattern sketch; ECharts uses decal.ts dashArray/rotation) */
+<defs>
+  <pattern id="decal" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(255,255,255,.8)" stroke-width="2.5"/>
+  </pattern>
+</defs>
+```
+
+## Motion & Interaction
+
+- **The long description switches via an ARIA tablist**: two `role="tab"` buttons (`aria-selected` + roving tabindex) + `role="tabpanel"`, arrow keys to switch; in the demo a tab click writes back to the parameter store, keeping panel and view in sync;
+- **Sonification notes**: mapping values onto sound parameters (this demo's original sketch: value → pitch, 220–880Hz sine blips) gives blind users a second, audible perception channel; **product-level sonification implementations (specific libraries and their defaults) were not verified this round — no specifics cited**; WebAudio requires creating the AudioContext after a user gesture (autoplay policy), and playback status announces via `aria-live="polite"`;
+- Decal/label toggles redraw instantly with no transition dependencies; the chart body's motion discipline (data-layer animation, static axes, final state under reduce) lives in the Chart Animation entry;
+- The screen-reader path never depends on motion: values are always reachable via axis ticks, `<title>` and the figcaption table — three independent channels.
+
+## Real-world examples
+
+- **ECharts v5.5.1** (aria.ts verified verbatim, research 08 §3.4): `aria.label.enabled` defaults true (auto graphic summary for screen readers), `aria.decal.show` defaults false — "summary on by default, patterns off by default" is the library's official a11y stance; decal params (dashArrayX/Y, rotation) sit in `util/decal.ts`.
+- **W3C WAI complex-images tutorial** (w3.org verified, supplement 12 §13): alt names "chart type + content summary", the long description carries trend/scale/color order/relative heights, `figure role="group"` + `figcaption` is preferred, `aria-describedby` takes plain text only — this demo's whole structure is built to that spec.
+- **jfly / Okabe-Ito CUD guide** (research 08 §1.1, page verified): "For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key" — the original source of the direct-labeling principle; value labels on bar tops apply it directly to bar charts.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `decal` | on gives colorblind users a texture channel when hue fails; patterns too dense (wide strokes) flower the bar face and hurt label legibility | off is the official default — solid bars lean on hue alone, so colorblind scenes must fall back to labels/the table |
+| `directLabel` | on reads values without axis or color; on narrow panels the top labels may collide with neighbors | off degrades to axis ticks only: read precision drops and screen readers still have the table, but the low-vision scan channel narrows |
+| `longDesc` | text tier gives the narrative conclusion fastest; weaker for structured proofing than the table | table tier keeps values copyable and checkable; hung on aria-describedby instead of figcaption, screen readers read it as a run-on paragraph |
+
+Working combination: decal=off (official default) + directLabel=on + longDesc=table is the safest factory state; switch decals on for colorblind or grayscale-print scenes; reserve `aria-describedby` for plain-text summaries — structured data always goes in figcaption.

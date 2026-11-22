@@ -1,0 +1,71 @@
+## Structure & DOM
+
+One UI skeleton runs three strategies while the skeleton never changes — **only the token sheet swaps**. That is the structural proof of "dark is not inversion": inversion is "flip the same sheet value by value", semantic dark is "another sheet picked per role".
+
+```html
+<div class="scene" data-strategy="dark-semantic">
+  <div class="bar">Window bar (base tier)</div>
+  <div class="card">Card (raised tier): heading, body, button, badge, figure</div>
+</div>
+```
+
+Key points:
+
+- **Layering**: dark-on-dark tiers are conveyed by lifting surfaces — Apple ships base (darker, so the background recedes) and elevated (brighter, so the foreground advances) backgrounds, and foreground presentation (popover/modal sheet) switches automatically (research 06 §13);
+- **Tiers belong to surfaces, not shadows**: pure-black shadows are illegible on black (visible in the demo's dark-inverted tier), so the lift carries the tiering while shadows stay but lose weight (Apple's mechanism, research 06 §13; layered-shadow craft in research 12 §7);
+- **Saturation**: vivid accents brighten and desaturate in dark — the official M3 baseline is the exemplar: light primary `#6750A4` → dark primary `#D0BCFF` (≈ tone 80, research 06 §7/§13);
+- **Brand color**: swap the accent for a brightened/desaturated dark pair and dim white-background imagery to stop the "glow" (Apple HIG, research 06 §13); every pick goes through semantic variables — hard-coded colors are the failure list the Android docs name (research 06 §12).
+
+## Styling & Parameters
+
+Four params: accentLight / accentDark are CSS-variable (hex); strategy / elevation are JS-type:
+
+```css
+/* Semantic dark token sheet (surface ladder is demo values; the official anchors are directions + baseline colors, research 06 §13) */
+[data-strategy="dark-semantic"] {
+  --dp-canvas: oklch(0.17 0.012 297);   /* base */
+  --dp-surface: oklch(0.21 0.014 297);  /* raised: tier = per-step lift */
+  --dp-fg: oklch(0.92 0.01 297);        /* ≈ #E5E3EB */
+  --dp-accent: #D0BCFF;                 /* official M3 dark primary baseline (research 06 §7) */
+  --dp-on-accent: #381E72;              /* official M3 dark on-primary baseline */
+  --dp-shadow: 0 6px 16px rgba(0, 0, 0, 0.32); /* shadow loses weight */
+}
+
+/* Naive inversion (the anti-pattern tier): light values flipped per channel, accent untouched */
+[data-strategy="dark-inverted"] {
+  --dp-canvas: #000401;                 /* invert(#FFFBFE) */
+  --dp-surface: #000000;                /* invert(#FFFFFF) — three identical tiers, layering dead */
+  --dp-fg: #E3E4E0;                     /* invert(#1C1B1F) */
+  --dp-accent: var(--dm-accent-light);  /* the light accent lands on dark as-is */
+}
+```
+
+Where the numbers come from:
+
+- `#6750A4` / `#D0BCFF` / `#381E72` / `#B3261E` / `#FFFBFE` / `#1C1B1F` are all official M3 baseline values (Android developer docs, research 06 §7); re-measured this session: #D0BCFF with #381E72 reads **7.71:1**, and #D0BCFF on the dark surface **11.25:1**;
+- The semantic dark surface ladder L 0.17/0.21/0.25 is a **demo ladder** — the official per-step elevation-overlay opacity table was not found during research (recorded as such in research 06 §13); text on the three tiers measures **15.09 / 13.97 / 12.64:1**;
+- Pure inverted white/black reads **21:1** — an overshoot past the AAA ceiling, the quantified form of "excessive contrast causes visual fatigue" (hype4, research 06 §13).
+
+## Motion & Interaction
+
+- Strategy/elevation switches rewrite the CSS variables; surfaces, text and shadows cross-fade over 0.25s ease; disabled under `prefers-reduced-motion`;
+- **The elevation control is the evidence chain**: in the semantic tier, base→raised→overlay lifts the surface step by step and the card floats; in the dark-inverted tier all three are identical — layering visibly fails, the anti-pattern made playable;
+- Badge and button color swaps commit instantly with no smoothing over verdict changes; the figure's dimming layer fades over 0.25s;
+- Entrance animation moves only `opacity/transform` (compositor properties), disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Apple iOS/iPadOS system dark mode**: the base/elevated background pair ships in the OS, foreground presentation (popovers, modal sheets) switches from base to elevated automatically; system semantic colors adapt with the appearance, and custom colors are expected to ship light/dark variants via Xcode Color Sets (Apple HIG, research 06 §13);
+- **Android Force Dark**: the official "analyze every View and invert automatically" fallback, with the docs explicitly demanding thorough testing and per-View exclusions — the platform itself posting a warning sign on the naive-inversion road (research 06 §12);
+- **GitHub Primer**: dark and dark-dimmed coexist as two dark themes — two mapping sheets over one semantic token set, not "the same colors darker" (research 06 §10) — the engineering proof that a dark theme is an independent sheet.
+
+## Parameter Sensitivity
+
+| Parameter | Switch to… | And… |
+| --- | --- | --- |
+| `strategy` → dark-inverted | pitch-black surfaces, 21:1 white-on-black overshoot, the light accent hard-landed on dark, invisible black shadows, glowing white imagery | the anti-pattern collection: every item maps to a documented warning (Apple's "not necessarily inversions", hype4's fatigue, the Android failure list) |
+| `strategy` → dark-semantic | lifted surface tiers, the #D0BCFF accent pair, desaturated badges, 25% image dimming | all four patterns at once; text contrast lands at 12.6–15.1:1 — comfortable and all-AAA instead of overshooting |
+| `elevation` | base→raised→overlay, lifting surfaces in the semantic tier | identical in the inverted tier — whether tiering holds is visible at a glance |
+| `accentDark` | a brighter, more saturated dark accent | shifts the non-text margin (accent/surface 3:1 gate); oversaturated accents glare on dark (hype4, research 06 §13) |
+
+Working rule: a dark theme is a **re-pick, not a flip**; audit every pairing per dark sheet (Apple floor 4.5:1, aiming 7:1 on small text, research 06 §13), hand tiering to surface lift, and let shadows assist only.

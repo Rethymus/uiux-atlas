@@ -1,0 +1,69 @@
+## Structure & DOM
+
+No special structure — `font-variant-numeric` is an ordinary CSS property declared on any element that carries digits:
+
+```html
+<table class="stats">
+  <tr><td>Revenue</td><td class="num">12,830,457</td></tr>
+  <tr><td>Orders</td><td class="num">9,021</td></tr>
+</table>
+```
+
+```css
+.num {
+  font-variant-numeric: tabular-nums;              /* core: equal-width digits (OpenType tnum) */
+  font-variant-numeric: tabular-nums slashed-zero; /* add the slashed zero when O/0 confusion matters */
+}
+```
+
+Key points:
+
+- The "equal width" itself lives in the **font file** as the OpenType `tnum` feature table; CSS only flips the switch — a font without the table makes the declaration inert but harmless (research 12 §9);
+- `font-variant-numeric` values compose with spaces: `tabular-nums slashed-zero` and `oldstyle-nums ordinal` are both valid combinations;
+- The full value family per MDN (research 12 §9): `lining-nums`/`oldstyle-nums`, `proportional-nums`/`tabular-nums`, `diagonal-fractions`/`stacked-fractions`, `ordinal`, `slashed-zero`.
+
+## Styling & Parameters
+
+Three parameters: one CSS-variable param plus two JS params (slashed zero via `data-zero`, counting tempo):
+
+```css
+.tn-num {
+  font-variant-numeric: var(--tn-numeric);                /* tabular-nums (default) */
+  font-family: var(--font-mono, ui-monospace, monospace); /* a monospace stack is the strong fallback */
+}
+.tn-board[data-zero="on"] .tn-num {
+  font-variant-numeric: var(--tn-numeric) slashed-zero;
+}
+```
+
+Where the numbers come from:
+
+- The definition "easily aligned like in tables" is MDN's own wording (research 12 §9, verified);
+- Baseline Widely available since 2020-01 (research 12 §9);
+- This site's Inter Variable ships the `tnum` and slashed-zero features (Inter repo specs, research 05 §24) — so the demo's width probe measures real differences on this site's font;
+- Site-wide, all numerals follow the mono + tabular-nums discipline: see the hero stat row at `src/styles/global.css:896-914`.
+
+## Motion & Interaction
+
+Motion discipline for numeric UI: animate text, never layout.
+
+- **Count-up counters**: the demo steps three KPI rows on a timer; value changes touch text nodes only. Under the tabular style the column width jitter stays 0, while the proportional style visibly jumps every step — the width meter reports the spread live;
+- **Width probe**: it measures the rendered widths of `1111111111` vs `1234567890` in the current font; Δ≈0 means equal-width is active — the conclusion comes from measurement, not a hardcoded claim;
+- **Slashed-zero switch**: toggled through a `data-zero` attribute, demonstrating how `slashed-zero` guards against O/0 confusion;
+- The `countSpeed` param is a demo parameter (not a spec value); under `prefers-reduced-motion` counting stops while the static values and probe remain.
+
+## Real-world examples
+
+- **Inter's official distribution**: the repo specs list tabular numbers and slashed zero among its OpenType features, and the typeface is adopted by Figma, GitLab and NASA (research 05 §24) — the supply side of data-dense products ships this capability built in.
+- **This site, uiux-atlas**: the hero stat row and all countable metadata follow a uniform "mono family + `font-variant-numeric: tabular-nums`" discipline (`src/styles/global.css:896-914`, spec §2.2/§6-16); the expansion study (12 §16) lists "site-wide numeric columns on tabular-nums so dashboards breathe without jitter" among its signature moves.
+- **Data-dense dashboards as a class**: equal-width numerals that align vertically per column are the default choice for financial reports and order-management interfaces (community practice, unverified; you can self-verify on any font with this entry's width probe).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `numericStyle` | switching to `oldstyle-nums` blends 3/4/5/7/9 into prose with descenders, weakening column alignment | `tabular-nums` is the only strictly equal-width option; `proportional-nums` is more economical but breaks alignment |
+| `slashedZero` | `on` slashes the zero so O and 0 stop being confusable — a genuine error-saver for order numbers and OTP codes | `off` returns to the plain 0 and leans on the font's own digit design |
+| `countSpeed` | denser steps make the proportional column's jitter obvious (always 0 under tabular) | slower steps produce fewer jitter samples and the probe settles down |
+
+Working rules: `tabular-nums` on every data table and dashboard; keep inline prose numerals proportional by default; add `slashed-zero` only on code-like strings that sit next to the letter O. The font is the precondition — confirm the tnum table exists before talking alignment.

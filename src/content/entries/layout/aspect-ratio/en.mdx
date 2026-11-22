@@ -1,0 +1,75 @@
+## Structure & DOM
+
+Ratio locking is a two-layer "container + replaced content" structure: the outer box declares the ratio, the inner image fills it:
+
+```html
+<div class="ratio-box">
+  <img src="photo.jpg" width="1200" height="900" alt="…" />
+</div>
+```
+
+```css
+.ratio-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;   /* omitting the height after the slash treats it as 1, e.g. 21 / 9 */
+}
+.ratio-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* must sit on the img, not the container (research 12 §1) */
+}
+```
+
+Key points:
+
+- The ratio only applies when at least one of the box's sizes is auto — hard-code both and the declaration is ignored (explicit MDN condition); in the demo the height stays auto, derived from the ratio;
+- `aspect-ratio = auto || <ratio>`: the `auto <ratio>` combination is special for replaced elements like img — the declared ratio reserves space before content loads, then the intrinsic ratio takes over (MDN);
+- The img's `width`/`height` **attributes** (not CSS) let the browser reserve space at the intrinsic ratio before load — itself a CLS defense (the topic of MDN's "Image aspect-ratio: preventing jank" guide);
+- `object-fit` decides how the image sits inside the ratio box: cover crops to fill, contain letterboxes, fill stretches — `object-position` then controls the crop anchor.
+
+## Styling & Parameters
+
+Three parameters, all CSS-variable injected:
+
+```css
+.ratio-box {
+  width: var(--ar-width, 320px);          /* default 320px: demo baseline, unverified */
+  aspect-ratio: var(--ar-ratio, 16 / 9);  /* default 16/9: an MDN official example value */
+  overflow: hidden;
+  border-radius: 12px;
+}
+.ratio-box img {
+  object-fit: var(--ar-fit, cover);       /* cover / contain / fill */
+}
+```
+
+Where the numbers come from:
+
+- `16 / 9`, `1 / 1`, `0.5` come from MDN's official examples; the `auto 3/2` placeholder-fallback form is likewise an MDN example;
+- The 4:3, 3:2, 21:9 and 9:16 presets in the panel are **common content ratios in the community, unverified** as spec recommendations — choose by content shape (square avatars, widescreen video, vertical shorts);
+- The sample image is deliberately 4:3 intrinsic (1200×900), different from the default 16:9 box, so the crop/letterbox/squash of the three object-fit grades is unmistakable.
+
+## Motion & Interaction
+
+The ratio is a geometric constraint; interaction feedback rides the "width changes → height follows" derivation:
+
+- Dragging the width slider or switching the ratio re-flows instantly, no tween — transitions on layout properties would cause continuous re-layout, so restraint wins;
+- The demo readout shows both the **measured height** (ResizeObserver on the real layout) and the **computed height** (width × height/width); their constant equality is direct proof the ratio is active;
+- The box fades in over 0.45s with a 10px rise, animating only `opacity/translate`; disabled under `prefers-reduced-motion`;
+- Switching `object-fit` triggers no layout re-flow (fit affects painting only), so the three grades swap instantly.
+
+## Real-world examples
+
+- **MDN's official examples and the "preventing jank" guide**: the 16/9 and 1/1 example values and the engineering advice "always give img width/height attributes against CLS" come from the MDN aspect-ratio page and its "See also" guide chain (verified live this session);
+- **16:9 slots on video/embed sites**: reserving a 16:9 stage so the player and iframe never shift the page on load is the most widespread use of ratio (editorial summary — per-site implementations not individually verified; 16:9 itself is the MDN example value);
+- **Feed image cards in social products**: uploads arrive at every ratio, so products normalize the timeline with fixed-ratio slots + `object-fit: cover` to keep the grid tidy (editorial summary — per-product crop strategies not individually verified; the cover + ratio-box pairing follows MDN's examples and the picture fragment convention in research 12 §1).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `ratio` (larger height divisor, e.g. 21/9) | a longer, flatter box; cover crops harder (more top/bottom cut), contain letterboxes wider | a squarer/taller box; 9:16 fills the height on narrow screens, chopping wide content head-to-tail |
+| `fit` → cover | visually full, but information may be cropped — keep key subjects centered (object-position as the remedy) | → contain shows everything but adds letterbox bars; → fill neither crops nor pads, just distorts — only for stretch-tolerant backdrops |
+| `width` | a bigger slot with height scaling in step; max-width caps it at the grid column | height shrinks in step; below ~160px the sample's labels become illegible |
+
+Rules of thumb: let the ratio follow the content (video 16:9, avatars 1:1, article images around 3:2) rather than picking extremes for novelty; for any replaced content, `width/height` attributes + one auto CSS axis is the standard anti-CLS pairing.

@@ -33,6 +33,12 @@
       "name": "fill",
       "format": "oklch",
       "default": "oklch(1 0 0 / 0.15)",
+      "presets": [
+        "oklch(1 0 0 / 0.1)",
+        "oklch(1 0 0 / 0.15)",
+        "oklch(1 0 0 / 0.25)",
+        "oklch(21.4% 0.0322 262.4 / 0.55)"
+      ],
       "cssVar": "--glass-fill",
       "effect": {
         "zh": "玻璃底色(含透明度)。默认 oklch(1 0 0 / 0.15) 等价于生成器配方 rgba(255,255,255,0.15);白色 10–15% alpha 读作『霜面』(superdesign.dev)。",
@@ -44,6 +50,7 @@
       "name": "border",
       "format": "oklch",
       "default": "oklch(1 0 0 / 0.3)",
+      "presets": ["oklch(1 0 0 / 0.2)", "oklch(1 0 0 / 0.3)", "oklch(1 0 0 / 0.45)"],
       "cssVar": "--glass-border",
       "effect": {
         "zh": "1px 描边颜色,承接环境光的细亮边。默认 oklch(1 0 0 / 0.3) 等价于生成器配方 rgba(255,255,255,0.3);玻璃感约一半来自这条亮边。",

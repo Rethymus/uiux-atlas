@@ -1,0 +1,70 @@
+## Structure & DOM
+
+Derivation is a **one-way reference**: zero hex in components, every color derived from a `--brand` variable through functions. Each derived color is one element consuming the variable, with the function living in CSS — not JS:
+
+```html
+<div class="scene" data-space="oklab">
+  <span class="chip base">base</span>
+  <span class="chip hover">hover</span>
+  <span class="chip soft">soft bg</span>
+</div>
+```
+
+```css
+.chip.base  { background: var(--brand); }
+.chip.hover { background: color-mix(in oklab, var(--brand), black 12%); }
+.chip.soft  { background: color-mix(in oklab, var(--brand) 12%, transparent); }
+```
+
+Key points:
+
+- `color-mix(<interpolation>?, <color> <p1>?, <color> <p2>?)` interpolates in **oklab** by default; polar spaces take the `shorter|longer|increasing|decreasing hue` strategy (research 12 §11; research 06 §4);
+- Relative color syntax `rgb(from <color> r g b / alpha)` deconstructs the origin into channel variables for `calc()`; the output space may differ from the input (research 12 §11);
+- Fallback discipline: every derived declaration ships a static color first, overridden inside `@supports (color: color-mix(in oklab, red, blue))` — without support the declaration is invalid, and no fallback means transparent.
+
+## Styling & Parameters
+
+Five params: brand/hoverMix/softBg/borderMix are CSS-variable (consumed straight by the functions via `calc(var(--…))`), space is JS-type (data-space with four explicit rules):
+
+```css
+:root {
+  --brand: oklch(0.62 0.19 250); /* research 12 §11 snippet; measured out of sRGB, clipped ≈ #0088F2 (research 06 §2) */
+  --brand-hover:  color-mix(in oklab, var(--brand), black 12%);
+  --brand-active: color-mix(in oklab, var(--brand), black 24%);
+  --brand-soft-bg: color-mix(in oklab, var(--brand) 12%, transparent);
+  --brand-border: color-mix(in oklab, var(--brand) 40%, transparent);
+  --on-brand:     color-mix(in oklab, var(--brand), white 85%);
+}
+.btn:hover { background: rgb(from var(--brand) calc(r * .85) calc(g * .85) calc(b * .85)); }
+```
+
+Where the numbers come from (verbatim from the research 12 §11 snippet): hover = black 12%, active = black 24%, soft-bg = 12% toward transparent, border = 40% toward transparent, on-brand = white 85%; MDN's space-selection guidance: light simulation → `xyz`/`srgb-linear`, perceptually uniform → `oklab`/`lab`, anti-gray → `oklch`/`lch`, sRGB device match → `srgb`.
+
+**Percentage normalization, three rules** (MDN, research 12 §11): both omitted → 50/50; one omitted → the other completes to 100%; `p1+p2 < 100%` → an alpha multiplier (mixing toward transparent); both 0% → the whole expression is invalid.
+
+**Support**: color-mix() is Baseline 2023-05; relative colors are Baseline "widely available" with "partial support" — Safari 16.4's old syntax requires percentages inside calc() channels, probed via `@supports (color: rgb(from red r g calc(b + 30%)))` (MDN's own example, research 12 §8/§11).
+
+## Motion & Interaction
+
+- The functions are declarative: sliders change CSS variables and the browser recomputes every derived color with no JS involved — **that is this entry's interaction model**;
+- The hover-darkening demo uses a real `:hover` with relative colors `calc(r*.85)…`, transitioning over 0.15s; disabled under `prefers-reduced-motion`;
+- The space lab flips data-space and the three swatches recompute instantly (no transition — the difference between spaces should be seen directly);
+- The relative-color row sits wholly inside an `@supports` probe: unsupported browsers hide the demo and show the explainer, never a dead color.
+
+## Real-world examples
+
+- **Tailwind CSS v4 (2025-01)**: opacity utilities built on `color-mix(in oklab, var(--color-blue-500) 50%, transparent)`, gradients interpolating in OKLAB by default, the whole palette moved to oklch (official announcement, research 06 §4);
+- **GitHub Primer Primitives**: DTCG token alpha transforms (`{ $value: '{base.color.blue.3}', alpha: 0.4 }`) are relative colors at compile time — the same idea landing in a build pipeline (research 06 §10);
+- **Evil Martians' production workflow**: hover derivation written as `oklch(from var(--user-avatar-dominant) calc(l + 0.1) c h)`, fixing L and tuning C/H only (research 06 §2) — relative color syntax on a real site.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hoverMix` | hover/active get deeper; past 30% the pair separates but everything darkens | hover blurs into base; below 5% the pressed state is barely legible |
+| `softBg` | stronger tint, weaker contrast for dark text on it (still must pass 4.5:1 after derivation) | tint approaches transparent and the state presence vanishes; 0% equals not writing it |
+| `borderMix` | firmer border: a semantic border holds 3:1 more safely (SC 1.4.11) | border turns ghostly; below 3:1 it is decoration only |
+| `space` | oklch stays vivid while srgb grays out — sharpest at the blue→green midpoint | (not a size; the contrast: default sRGB's long-hue "dirty gray band", research 06 §4) |
+| `brand` | every derived color moves with it; out-of-gamut values clip and derivatives follow the clipped result (measured status quo) | — |
+
+Working rule: the recipes are starting points, not verdicts — on-brand measured this session at only 3.06:1 on the clipped brand fill (past the UI/large gate, short of body AA); re-run the WCAG gates per use (research 06 §17).

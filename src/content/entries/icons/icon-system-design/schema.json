@@ -1,0 +1,120 @@
+{
+  "name": "Icon System Design",
+  "nameZh": "图标系统设计",
+  "aliases": ["icon grid audit", "图标一致性", "keyline shapes", "键程", "图标命名规范", "icon audit"],
+  "category": "icons",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "把「感觉不齐」变成机器可判的审计:24×24 栅格 + Material 键程(方 18×18/圆 Ø20)+ 1px 安全区 + 统一线宽 + kebab-case 命名,六枚迷你图标在网格/键程/安全区叠加层下跑一致性审计,违规项逐条标红。",
+    "en": "Turning 'feels off' into machine-checkable audits: the 24×24 grid + Material keylines (square 18×18 / circle Ø20) + 1px safe area + one stroke width + kebab-case naming — six mini icons run a consistency audit under grid/keyline/safe-area overlays, with every violation flagged."
+  },
+  "origin": {
+    "zh": "数值主干两源:①Material 官方 24px 栅格(m2.material.io system-icons,07 §2):展示 24×24 dp,live area 20×20(四周 2dp padding),修剪区=完整 24dp 且内容绝不可出;键程:方形 18×18、圆形直径 20、竖/横长方形 16×20/20×16;X/Y 坐标必须整数(禁止小数);圆角默认 2dp、内部转角必须直角。②Lucide 贡献规范(design-principles.md/specification.md 一手,07 §3.2):描边距画布边 ≥1px、相邻元素间隙 ≥2px、模糊法验收视觉重量、不对称图形允许光学偏心;线宽哲学:静态系锚定 2px(Lucide/Feather 源码),Heroicons 例外 1.5px,连续变粗细走 Material Symbols 的 wght 100–700 轴,绝不缩放 SVG 硬改线宽(07 §1)。",
+    "en": "Two numeric backbones: (1) Material's official 24px grid (m2.material.io system-icons, 07 §2): display 24×24 dp, live area 20×20 (2dp padding all around), trim area = the full 24dp with content never escaping; keylines: square 18×18, circle Ø20, vertical/horizontal rectangles 16×20/20×16; X/Y coordinates must be integers (no decimals); corner radius 2dp by default, interior corners square. (2) Lucide's contribution spec (design-principles.md/specification.md first-hand, 07 §3.2): strokes ≥1px from the canvas edge, ≥2px gaps between elements, the blur test for visual weight, optical off-centering allowed for asymmetric shapes. Stroke-width philosophy: static systems anchor at 2px (Lucide/Feather source), Heroicons is the 1.5px exception, continuous weight goes through Material Symbols' wght 100–700 axis — never scale an SVG to fake a stroke width (07 §1)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "stroke",
+      "unit": "px",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "default": 2,
+      "cssVar": "--isd-stroke",
+      "effect": {
+        "zh": "系统标准线宽(CSS 变量,SVG 用户单位)。默认 2px = Lucide/Feather 源码定值(defaultAttributes stroke-width: 2)与 Material 2dp 基准(07 §1.1/§2);Heroicons 24 outline 是 1.5px 例外(实测源文件,07 §1.3)。线宽是 SVG 用户单位:显示放大到 72px 线宽仍按 24 网格的比例走——要更粗/更细应换权重体系(wght 100–700 轴),不是缩放图标(07 §1.5)。审计把 arrow-right 的硬编码 1.5 与本参数对照判违规。",
+        "en": "The system's standard stroke width (CSS variable, in SVG user units). Default 2px = Lucide/Feather's source value (defaultAttributes stroke-width: 2) and Material's 2dp base (07 §1.1/§2); Heroicons' 24 outline is the 1.5px exception (measured from source files, 07 §1.3). Stroke is in SVG user units: scaled up to 72px display, the line still follows the 24-grid proportion — for heavier/lighter weight, switch weight systems (wght 100–700 axis), never scale the icon (07 §1.5). The audit flags arrow-right's hardcoded 1.5 against this parameter."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "overlay",
+      "options": [
+        { "value": "none", "label": { "zh": "无叠加", "en": "No overlay" } },
+        { "value": "grid", "label": { "zh": "像素栅格", "en": "Pixel grid" } },
+        { "value": "keylines", "label": { "zh": "键程 shapes", "en": "Keyline shapes" } },
+        { "value": "safe", "label": { "zh": "安全区/live area", "en": "Safe area / live area" } }
+      ],
+      "default": "keylines",
+      "effect": {
+        "zh": "栅格叠加层(JS 型)。keylines=Material 官方键程形状:方 18×18、圆 Ø20、竖/横长方形 16×20/20×16(07 §2 数值);grid=每 2 单位一条的细栅格,对「坐标必须整数」做视觉核查(07 §2);safe=live area 20×20(2dp padding)+ 1px 安全区边界(Lucide:描边距边 ≥1px,07 §3.2)。none 用于看成品。",
+        "en": "Grid overlay (JS-typed). keylines = Material's official keyline shapes: square 18×18, circle Ø20, vertical/horizontal rectangles 16×20/20×16 (07 §2 values); grid = fine lines every 2 units, a visual check for the integer-coordinate rule (07 §2); safe = the 20×20 live area (2dp padding) plus the 1px safe-area boundary (Lucide: strokes ≥1px from the edge, 07 §3.2). none shows the finished icons."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "audit",
+      "options": [
+        { "value": "pass", "label": { "zh": "合规集", "en": "Compliant set" } },
+        { "value": "violations", "label": { "zh": "注入违规", "en": "Inject violations" } }
+      ],
+      "default": "pass",
+      "effect": {
+        "zh": "审计样本开关(JS 型)。violations 档向六枚图标注入三类真实缺陷:search 手柄端点到 (19.5, 19.5)(违反「X/Y 坐标必须整数」,07 §2)、home 屋顶到 y=1(描边越出修剪区=完整 24dp,07 §2)、arrow-right 硬编码线宽 1.5(违反系统标准线宽一致性,07 §1.3 例外不可混用)。违规元素标红、对应 tile 亮红环、审计表逐条给出出处。",
+        "en": "Audit sample switch (JS-typed). violations injects three real defect classes into the six icons: search's handle endpoint at (19.5, 19.5) (violates the integer-coordinate rule, 07 §2), home's roof at y=1 (the stroke escapes the trim area = the full 24dp, 07 §2), arrow-right's hardcoded 1.5 stroke (violates system-wide width consistency; the 07 §1.3 exception must not be mixed in). Offending elements turn red, their tiles get a red ring, and the audit table cites the source rule for each."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "naming",
+      "options": [
+        { "value": "kebab", "label": { "zh": "kebab-case(合规)", "en": "kebab-case (compliant)" } },
+        { "value": "mixed", "label": { "zh": "混入 Pascal/snake", "en": "Mixed Pascal/snake" } }
+      ],
+      "default": "kebab",
+      "effect": {
+        "zh": "命名规范开关(JS 型)。kebab 档六名全合规(home/search/plus/arrow-right/bell/dot-circle);mixed 档注入 Home、search_icon、arrowRIGHT 三个违例——命名一致性是图标系统最先崩塌的防线(混用大小写/分隔符后,按名检索与 tree-shaking 都会漏)。kebab-case 为社区通行惯例(demo 以此为审计标准;未证实单一权威规范)。",
+        "en": "Naming convention switch (JS-typed). kebab keeps all six names compliant (home/search/plus/arrow-right/bell/dot-circle); mixed injects three offenders — Home, search_icon, arrowRIGHT. Naming consistency is the first line of an icon system to collapse (once case/separators mix, lookup-by-name and tree-shaking both leak). kebab-case is the community convention (the demo's audit standard; no single authoritative spec verified)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 SVG + CSS 变量渲染,全绿;键程/安全区叠加层是演示自绘几何,不依赖任何新特性。stroke-width 作为继承表示属性写在 svg 根上,所有浏览器一致。",
+      "en": "Pure SVG + CSS variable rendering — fully green; the keyline/safe-area overlays are demo-drawn geometry with no dependency on new features. stroke-width sits on the svg root as an inherited presentation style and behaves consistently across browsers."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "无需回退:栅格审计本质是几何约定,不依赖运行时特性。离线/无 CSS 变量环境下 stroke 退回 2px 写死值,审计规则本身(整数坐标/安全区/命名)仍然成立。",
+    "en": "No fallback needed: the grid audit is a geometric convention with no runtime dependency. Without CSS variables, stroke falls back to a hard 2px; the audit rules themselves (integer coordinates / safe area / naming) still hold."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自建图标集的设计验收:逐枚套键程/安全区叠加层,量「圆比方大 2dp」与 18×18 键程(07 §2/§3.1)", "en": "Design acceptance for a homegrown icon set: run each glyph under keyline/safe overlays and measure the circle-beats-square-by-2dp rule and the 18×18 keyline (07 §2/§3.1)" },
+      { "zh": "团队规范落地:把 1px 安全区、2px 元素间距、整数坐标、统一线宽写成可机器判的检查单(Lucide 规范的验收法,07 §3.2)", "en": "Landing team standards: turn 1px safe area, 2px element gaps, integer coordinates and one stroke width into machine-checkable rules (Lucide's acceptance method, 07 §3.2)" },
+      { "zh": "视觉重量仲裁:与 circle/square 并排整体模糊后比灰度——「感觉太重/太轻」变成可复核流程(Lucide 模糊验收法,07 §3.2)", "en": "Visual-weight arbitration: blur the glyph next to circle/square and compare gray levels — turning 'feels too heavy' into a reviewable procedure (Lucide's blur test, 07 §3.2)" },
+      { "zh": "多尺寸体系选型:24 常规档、20 密集档(Material 桌面密集布局),16px 级独立重绘而非缩放(Heroicons micro/mini 先例,07 §1.3/§2)", "en": "Multi-size system choices: 24 regular and 20 dense (Material's desktop dense layout), with 16px-class redraws instead of scaling (the Heroicons micro/mini precedent, 07 §1.3/§2)" }
+    ],
+    "avoid": [
+      { "zh": "靠缩放 SVG 改线宽——线宽是 24 网格的用户单位,连续变粗细应走 wght 轴或换权重文件(07 §1.5)", "en": "Scaling an SVG to change stroke weight — width is a user unit on the 24 grid; continuous weight needs the wght axis or a different weight file (07 §1.5)" },
+      { "zh": "把不同体系的线宽惯例混进一套(2px 系混入 1.5px 的 Heroicons 图标)——审计表第一条就会爆(07 §1.3)", "en": "Mixing line-width conventions from different families (a 1.5px Heroicons glyph inside a 2px system) — the audit's first row explodes (07 §1.3)" },
+      { "zh": "让内容越过修剪区或把关键细节塞进 2dp padding——padding 只允许「加重量」的延伸,不是内容区(07 §2)", "en": "Letting content cross the trim area or putting key detail into the 2dp padding — padding allows weight extension only, it is not content space (07 §2)" },
+      { "zh": "用几何居中硬套不对称图形——Lucide 明文允许小幅光学偏心,几何居中不等于看着居中(07 §3.2)", "en": "Forcing geometric centering on asymmetric shapes — Lucide explicitly allows slight optical off-centering; geometric center is not visual center (07 §3.2)" }
+    ]
+  },
+  "a11y": {
+    "zh": "一致性即无障碍的前置:①细线在低分屏/小尺寸下会被抗锯齿稀释,WCAG 1.4.11 理解文档明确建议避免特别细的线条(07 §3.3)——系统标准线宽 ≥2px 是可读性底线;②图标必须落在键程内才有足够的识别尺寸,密集布局换 20dp 档而非硬缩;③命名一致直接服务检索与维护,间接服务替代文本的准确性(名字对了,写 aria-label 的人才找得到「动作」而不是「形状」);④模糊法顺带筛掉小尺寸下糊成一团的过度细节,保住低视力用户的可辨性(Lucide 密度控制,07 §3.2)。",
+    "en": "Consistency is the prerequisite of accessibility: (1) thin lines get diluted by anti-aliasing on low-DPI/small sizes — WCAG 1.4.11's understanding doc explicitly advises avoiding particularly thin lines (07 §3.3); a system stroke ≥2px is the readability floor; (2) icons inside keylines keep their recognition size; dense layouts switch to the 20dp tier instead of hard scaling; (3) naming consistency serves search and maintenance directly and alt-text accuracy indirectly (when names are right, authors can find the 'action' rather than the 'shape' for aria-label); (4) the blur test also filters out detail that turns to mush at small sizes, protecting legibility for low-vision users (Lucide density control, 07 §3.2)."
+  },
+  "sources": [
+    "https://m2.material.io/design/iconography/system-icons.html",
+    "https://github.com/lucide-icons/lucide",
+    "https://m3.material.io/styles/icons/overview"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "设计一套 24×24 迷你图标系统:统一 2px 线宽与圆头、内容落在 live area(键程方 18×18/圆 Ø20)、坐标整数化、kebab-case 命名,并交付一份键程/安全区叠加的逐枚审计表。",
+      "en": "Design a 24×24 mini icon system: one 2px stroke with round caps, content inside the live area (keylines square 18×18 / circle Ø20), integer coordinates, kebab-case names — plus a per-glyph audit table run under keyline/safe overlays."
+    },
+    "acceptance": [
+      { "zh": "全部图标 24×24 viewBox、统一 stroke=currentColor、线宽取系统标准(默认 2px)且逐枚一致", "en": "All icons on a 24×24 viewBox with stroke=currentColor and the system stroke width (default 2px), consistent glyph by glyph" },
+      { "zh": "内容整体落在 live area 20×20(四周 2dp padding),绝不越出修剪区 24dp", "en": "Content stays inside the 20×20 live area (2dp padding around) and never escapes the 24dp trim area" },
+      { "zh": "X/Y 坐标全为整数;圆比方键程大 2dp(方 18×18、圆 Ø20)", "en": "All X/Y coordinates are integers; the circle keyline beats the square by 2dp (square 18×18, circle Ø20)" },
+      { "zh": "命名全部 kebab-case 且无重复;命名表随图标集交付", "en": "Names are all kebab-case and unique; the naming table ships with the set" },
+      { "zh": "更粗/更细权重通过权重体系解决,不缩放 SVG 改线宽", "en": "Heavier/lighter weights come from a weight system, never from scaling the SVG" }
+    ]
+  }
+}

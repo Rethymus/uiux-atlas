@@ -1,0 +1,67 @@
+## Structure & DOM
+
+The four states are isomorphic, each carrying exactly three semantic variables: **bg** (--st-bg), **border** (--st-border), **text** (--st-fg) — components consume only these three, and switching states swaps variables:
+
+```html
+<div class="alert" role="status" style="--st-bg:…; --st-border:…; --st-fg:…">
+  <span class="icon" aria-hidden="true"></span>
+  <span class="body"><b>Title</b><span>Body</span></span>
+</div>
+```
+
+```css
+.alert {
+  background: var(--st-bg);
+  border: 1px solid var(--st-border); /* carries state semantics → bound by SC 1.4.11's 3:1 */
+  color: var(--st-fg);
+}
+```
+
+Key points:
+
+- All three tokens derive from **that state's own hue** (same h, different L/C); the relation between steps is functional, so the four states are naturally isomorphic (Radix's 12-step structure with separate bands for backgrounds 1–3 / borders 6–8 / text 11–12, research 06 §8);
+- State semantics must be **redundantly coded**: icon + text run parallel to color; red-green colorblind users lean on lightness and shape (colorblind review, research 06 §19);
+- The icon strokes ride `currentColor`, inheriting the text color and passing through the same gate.
+
+## Styling & Parameters
+
+Five params, all JS-type (four hues + a shared text lightness); the demo recomputes the whole set on subscription:
+
+```css
+/* Triple constants (calibrated offline this session; all four states pass) */
+.alert {
+  --st-bg: oklch(0.97 0.04 140);      /* tinted bg: L=0.97 / C=0.04 */
+  --st-border: oklch(0.6 0.17 140);   /* state border: L=0.6 / C=0.17 */
+  --st-fg: oklch(0.45 0.13 140);      /* state text: L=0.45 / C=0.13 */
+}
+```
+
+Where the numbers come from:
+
+- The four default hues take Evil Martians' oklch hue map: red≈20°, yellow≈90°, green≈140°, blue≈220° (research 06 §2);
+- The L/C constants are this session's calibration: bg L=0.97/C=0.04, text L=0.45/C=0.13, border L=0.6/C=0.17 — text/bg measures **6.17–6.97:1** and border/bg **3.20–3.76:1** across all four states; a calibration result, not an official recipe;
+- Official anchors: the M3 error baseline `#B3261E` (research 06 §7, measured this session at 6.54:1 with white text) and M3's error / error-container + on pairing, the same "fill + text" idea;
+- Thresholds: body AA≥4.5:1, AAA≥7:1, large text halved; state borders ≥3:1 (SC 1.4.11, default state only, research 06 §17).
+
+## Motion & Interaction
+
+- Dragging a hue slider moves that state's whole triple (0.2s ease transition); disabled under `prefers-reduced-motion`;
+- **The text-lightness slider is the calibration bench**: pushing L up from 0.45 flips the badges state by state from ✓ to ✗ — threshold behavior (4.499:1 fails, unrounded) becomes visible on the spot;
+- Badge verdicts refresh instantly with no transition — verdict changes should never be smoothed over;
+- Entrance animation moves only `opacity/transform` with 70ms staggers, disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Radix Colors**: the 12-step scale is itself the industrial recipe for status/component colors — backgrounds (1–3), borders (6–8), text (11–12) on separate bands, with steps 11/12 holding APCA Lc60/90 on step-2 backgrounds (official Radix docs, research 06 §8);
+- **Material 3 error roles**: the official error `#B3261E` / error-container baselines give status a solid variant and a container variant (Android developer docs, research 06 §7);
+- **GitHub Primer**: four colorblind themes (light/dark-colorblind, light/dark-tritanopia) remap red/green state information — the colorblind redundancy of a status system, shipped at product scale (research 06 §10/§19).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hueSuccess` & the other hues | shifts hue without touching structure; states crowd each other when they approach (warning→orange, danger→magenta) | same in reverse; check hue spacing when states collide |
+| `textLightness` | lighter text, falling contrast: near 0.5 the ratios hug 4.5:1, past it the ✗ badges arrive in waves | darker text, rising contrast (toward AAA 7:1); too low and the text reads black with the hue fading |
+| (demo constant) bg C=0.04 | a stronger tint drags text contrast down — "the stronger the tint, the harder AA holds" | the bg approaches white, ratios climb, but state presence weakens |
+
+Working rule: calibrate and audit the triple as one unit; any change reruns all eight gates (4×text + 4×border); red and green always get the colorblind pass (lightness difference / icon redundancy, research 06 §19).

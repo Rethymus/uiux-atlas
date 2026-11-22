@@ -1,0 +1,75 @@
+## Structure & DOM
+
+Logical properties change no DOM — only how you describe the box's four directions. The same card written both ways, side by side, is the whole demonstration:
+
+```html
+<div class="scene" dir="rtl">   <!-- one switch: rtl / ltr -->
+  <div class="card card--physical">padding-left…</div>
+  <div class="card card--logical">padding-inline…</div>
+</div>
+```
+
+```css
+.card--physical {            /* physical: pinned to screen directions */
+  padding-left: 24px;
+  border-top-left-radius: 12px;
+}
+.card--logical {             /* logical: pinned to flow directions */
+  padding-inline: 24px;
+  border-start-start-radius: 12px;
+}
+.card .action {
+  margin-inline-start: auto; /* push to the "line end", not the right (research 12 §2 fragment) */
+}
+```
+
+Key points:
+
+- inline runs parallel to the text flow, block perpendicular to it; start/end are relative to the writing direction — "the start of a line is not always the left" (Arabic RTL, vertical CJK) (research 12 §2);
+- The mapping mnemonic: `padding-left→padding-inline-start`, `margin-left→margin-inline-start`, `width→inline-size`, `height→block-size`, `top→inset-block-start`, `border-bottom→border-block-end` (research 12 §2);
+- Each shorthand family carries -start/-end forms: `padding-block/inline`, `margin-block/inline`, `inset`, `inset-block/inline`; the logical corners are `border-start-start-radius` and three siblings (block×inline start/end combinations) (research 12 §2);
+- In the demo the dir attribute sits on the shared ancestor and both cards inherit `direction` — exactly how multilingual sites "change one dir attribute" (research 12 §16-6).
+
+## Styling & Parameters
+
+Four parameters: three CSS-type size variables plus a JS-type dir switch:
+
+```css
+.card--logical {
+  padding-block: var(--lp-pad-block, 16px);   /* default 16px = 12§2 fragment padding-block: 1rem */
+  padding-inline: var(--lp-pad-inline, 24px); /* default 24px = 12§2 fragment padding-inline: 1.5rem */
+  border-start-start-radius: var(--lp-radius, 12px); /* default 12px = same fragment */
+}
+```
+
+Where the numbers come from:
+
+- The three defaults are **converted verbatim from research 12 §2's reusable fragment** (at 1rem=16px); the fragment also carries `margin-inline-start: auto` (the demo's action button) and `aside h2 { writing-mode: vertical-rl }` (homed in the writing-modes entry);
+- Support: the logical core set from Chrome 87 / Firefox 41+ / Safari 14.1 — these versions follow MDN page notes, and research 12 §2 explicitly flags the full matrix as unverified; re-check caniuse before production;
+- ltr/rtl for `dir` are the global HTML attribute / CSS direction standard values.
+
+## Motion & Interaction
+
+The only thing that "moves" is the direction flip — which is precisely the proof of value:
+
+- **dir switch**: the demo subscribes to the panel and rewrites the container's `dir`; the logical card's line-start padding, its start-corner arc, and the button pushed by `margin-inline-start: auto` all mirror across, while the physical card stays frozen;
+- **Readouts are measured**: each step reads `padding-left` and `padding-inline-start` via `getComputedStyle` — under RTL the physical `padding-left` keeps its value while the logical `padding-inline-start` points to the other side; the numeric comparison is the flip, demonstrated;
+- No transition on the flip: a direction switch is a semantic change, and an instant answer is more honest than a tween; the cards' entrance (0.4s fade + rise) animates only `opacity/translate`, dropped under `prefers-reduced-motion`;
+- Writing-mode linkage: `padding-block` becomes a left/right direction under `vertical-rl` automatically — the physical form can never do that (see the writing-modes entry).
+
+## Real-world examples
+
+- **Multilingual-site RTL conversions (research 12 §16-6 signature idea)**: "logical properties site-wide, so RTL costs one dir attribute" — Arabic/Hebrew sites mirror margins, radii and alignment wholesale with zero component-code changes;
+- **Design-system spacing tokens**: naming padding-block/inline directly as main/cross-axis spacing keeps semantics direction-proof; Arabic and English users read the same tokens (editorial summary — specific design-system lists not individually verified);
+- **The MDN logical-properties module and the css-logical spec (research 12 §2 sources)**: the authoritative home of the mapping table (padding-left→padding-inline-start and friends) and the shorthand families; the demo's readouts verify that mapping under RTL by measurement.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `padInline` | wider line-start/end breathing room; the RTL flip becomes visually unmistakable | content hugs the edges; under 8px the card loses its breathing room |
+| `padBlock` | wider block-axis space (top/bottom when horizontal); under vertical writing it becomes left/right — impossible for the physical form | a squashed card; below 8px content sticks to the radius |
+| `radius` | a rounder start corner, making "which corner is the start" legible across flips; 0 erases the difference from the physical card | the start corner converges with its diagonal and the flip demo loses its marker |
+| `dir` → rtl | the logical card mirrors wholesale: padding, start corner, and the auto-pushed action button all swap sides | ltr makes both cards coincide — exactly the baseline check for "logical properties written correctly" |
+
+Rules of thumb: one system per axis (never mix physical and logical declarations on the same axis); directionally semantic icons need manual RTL mirroring; re-check the logical-properties matrix on caniuse before shipping (research 12 §2 carries no full matrix).

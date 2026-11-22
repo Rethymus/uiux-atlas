@@ -1,0 +1,114 @@
+{
+  "name": "Favicon Stack",
+  "nameZh": "Favicon 体系",
+  "aliases": ["favicon", "站点图标", "apple-touch-icon", "maskable icon", "web app manifest icon"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "现代 favicon 链的极小集:**5 图标 + 1 manifest** 覆盖所有需求,不必生成 20+ 张 PNG——ico 32×32 兜底 RSS/旧版、SVG 内嵌 prefers-color-scheme 自动换色、apple-touch 180×180 加内边距、192+512 maskable 走安全区,manifest 仅 PWA 需要。",
+    "en": "The minimal modern favicon chain: **5 icons + 1 manifest** covers every need — no need to generate 20+ PNGs. The 32×32 ico as the RSS/legacy fallback, an SVG with embedded prefers-color-scheme for automatic recoloring, apple-touch at 180×180 with padding, 192+512 maskable inside the safe zone, and the manifest only when you ship a PWA."
+  },
+  "origin": {
+    "zh": "清单出自 Evil Martians《How to Favicon in 2024》(Andrey Sitnik,out/design-study/12-expansion.md §12):favicon.ico 32×32 放根目录(RSS 阅读器只认这个路径;sizes=\"32x32\" 可修 Chrome 忽略 SVG 的 bug)→ icon.svg(现代浏览器,内嵌 <style> + prefers-color-scheme 暗色适配)→ apple-touch-icon.png 180×180(iOS,建议加 20px 内边距与背景色)→ icon-192.png + icon-mask.png 512×512(purpose:\"maskable\",安全区为 409×409 中央圆)+ manifest.webmanifest(仅 PWA)。彩蛋:staging 环境用反色 favicon 按环境切换防混淆。rel=\"shortcut icon\" 从来不是有效写法。",
+    "en": "The checklist comes from Evil Martians' 'How to Favicon in 2024' (Andrey Sitnik, out/design-study/12-expansion.md §12): favicon.ico at 32×32 in the root (RSS readers only know that path; sizes=\"32x32\" fixes Chrome's SVG-ignoring bug) → icon.svg (modern browsers, embedded <style> + prefers-color-scheme dark adaptation) → apple-touch-icon.png at 180×180 (iOS; add ~20px padding and a background color) → icon-192.png + icon-mask.png at 512×512 (purpose:\"maskable\", the safe zone is the central 409×409 circle) + manifest.webmanifest (PWAs only). Easter egg: a per-environment inverted-color favicon stops staging mix-ups. rel=\"shortcut icon\" was never a valid value."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "scheme",
+      "options": [
+        { "value": "light", "label": { "zh": "浅色(默认)", "en": "Light (default)" } },
+        { "value": "dark", "label": { "zh": "深色(prefers-color-scheme)", "en": "Dark (prefers-color-scheme)" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "配色方案开关(JS 型)。icon.svg 内嵌 <style> 的 @media (prefers-color-scheme: dark) 会在系统深色模式自动把字形从 #0f0f0f 翻到 #f0f0f0(12 §12 官方片段定值);demo 以开关模拟 OS 偏好,同时把模拟浏览器 chrome 一起翻暗,还原真实观感。",
+        "en": "Color-scheme switch (JS-typed). The @media (prefers-color-scheme: dark) block embedded in icon.svg's <style> flips the glyph from #0f0f0f to #f0f0f0 automatically under OS dark mode (exact values from the official snippet, 12 §12); the demo simulates the OS preference with this switch and darkens the mock browser chrome along with it, matching the real effect."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#0f0f0f",
+      "cssVar": "--fav-accent",
+      "effect": {
+        "zh": "浅色模式字形色(CSS 型)。默认 #0f0f0f = Evil Martians 片段的基础填充值;深色模式按片段翻为固定 #f0f0f0。改它等于改品牌主色——favicon 是品牌色在浏览器最小触点上的落地。",
+        "en": "Light-mode glyph color (CSS-typed). Default #0f0f0f = the base fill in the Evil Martians snippet; dark mode flips to the snippet's fixed #f0f0f0. Changing it is changing the brand color — the favicon is where brand color lands at the browser's smallest touchpoint."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "padding",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 20,
+      "cssVar": "--fav-padding",
+      "effect": {
+        "zh": "apple-touch-icon 内边距(CSS 型,180 画布上的数值)。默认 20px = Evil Martians 对 iOS 图标的建议(建议加 20px 内边距与背景色);padding=0 时 glyph 顶边,系统一旦套圆角遮罩就有裁切风险。",
+        "en": "apple-touch-icon padding (CSS-typed, in 180-canvas units). Default 20px = Evil Martians' iOS advice (add ~20px padding and a background color); at padding=0 the glyph touches the edges, risking crops the moment the system applies its corner mask."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "maskable",
+      "options": [
+        { "value": "show", "label": { "zh": "显示安全区(409×409)", "en": "Show safe zone (409×409)" } },
+        { "value": "hide", "label": { "zh": "隐藏安全区", "en": "Hide safe zone" } }
+      ],
+      "default": "show",
+      "effect": {
+        "zh": "安全区叠加层开关(JS 型):maskable 图标的 409×409 中央安全区(512 画布,比值 ≈0.8)。show 档画出虚线安全圆并给出圆形裁切预览——glyph 必须整体落在安全圆内;hide 档模拟「没标 purpose:\"maskable\"」的裸图,Android 启动器会按自家遮罩盲裁,四角内容随时被切。",
+        "en": "Safe-zone overlay switch (JS-typed): the maskable icon's 409×409 central safe zone (512 canvas, ratio ≈0.8). show draws the dashed safe circle plus a circular-crop preview — the glyph must fit entirely inside it; hide simulates a bare icon without purpose:\"maskable\", where the Android launcher blind-crops with its own mask and corner content gets cut at any time."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "<link rel=\"icon\" type=\"image/svg+xml\"> 现代浏览器均支持(12 §12);favicon.ico 为旧浏览器与 RSS 阅读器的兜底(根目录 32×32);maskable 语义由支持 Web App Manifest 的 Android 启动器消费。SVG 内嵌 <style> 的媒体查询在 <img>/favicon 上下文同样生效(SVG 独立文档),系统深色模式即触发。",
+      "en": "<link rel=\"icon\" type=\"image/svg+xml\"> is supported by all modern browsers (12 §12); favicon.ico is the fallback for legacy browsers and RSS readers (root, 32×32); the maskable semantics are consumed by Android launchers that support Web App Manifest. Media queries embedded in the SVG's <style> also apply in <img>/favicon context (the SVG is its own document) and trigger with the system dark mode."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "兜底链就是体系本身:现代浏览器取 icon.svg,旧浏览器/RSS 回落根目录 favicon.ico(32×32),iOS 取 apple-touch-icon.png(180×180),Android PWA 取 192/512 maskable。任何一档缺失都有下一档接管——这正是「5+1」清单的排序逻辑;缺 ico 时 RSS 阅读器等只认 /favicon.ico 路径的客户端会拿不到图标。",
+    "en": "The fallback chain IS the system: modern browsers take icon.svg, legacy browsers and RSS fall back to the root favicon.ico (32×32), iOS takes apple-touch-icon.png (180×180), Android PWAs take the 192/512 maskable pair. Each missing tier is covered by the next — that is the ordering logic of the '5+1' list; without the ico, clients that only know the /favicon.ico path (RSS readers) get no icon at all."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "任何新站点/新品牌:一次配齐 5 图标 + 1 manifest,从此不再生成 20+ 张 PNG(Evil Martians 主张)", "en": "Any new site/brand: set up 5 icons + 1 manifest once and stop generating 20+ PNGs (Evil Martians' claim)" },
+      { "zh": "深浅双主题品牌:icon.svg 内嵌 prefers-color-scheme,系统切深色时 favicon 自动反色(12 §12 片段)", "en": "Brands with light/dark themes: embed prefers-color-scheme in icon.svg so the favicon inverts automatically under system dark mode (12 §12 snippet)" },
+      { "zh": "多环境部署:staging 环境用反色 favicon,一眼分辨测试站与生产站(Evil Martians 彩蛋)", "en": "Multi-environment deploys: an inverted-color favicon on staging tells test and production apart at a glance (Evil Martians easter egg)" },
+      { "zh": "PWA/可安装应用:512×512 maskable(purpose:\"maskable\")+ 192 常规,glyph 落在 409×409 安全区内", "en": "PWAs/installable apps: 512×512 maskable (purpose:\"maskable\") plus a regular 192, glyph inside the 409×409 safe zone" }
+    ],
+    "avoid": [
+      { "zh": "给全平台手打 20+ 张尺寸 PNG——现代链路用 5+1 就够,旧尺寸由 ico 兜底", "en": "Hand-generating 20+ PNG sizes for every platform — the modern chain needs 5+1, with the ico covering legacy sizes" },
+      { "zh": "写 rel=\"shortcut icon\"——从来不是有效 rel 值,现代浏览器只认 rel=\"icon\"(12 §12)", "en": "Writing rel=\"shortcut icon\" — it was never a valid rel value; modern browsers only recognize rel=\"icon\" (12 §12)" },
+      { "zh": "apple-touch-icon 顶边贴满:不带 20px 内边距与背景色,iOS 遮罩一裁就破相(12 §12 建议)", "en": "Edge-to-edge apple-touch icons: without ~20px padding and a background color, the iOS mask crops into the artwork (12 §12 advice)" },
+      { "zh": "maskable 图标把关键内容画进四角:Android 启动器遮罩各异,只有 409×409 中央圆是承诺安全区(12 §12)", "en": "Putting key content in a maskable icon's corners: launcher masks vary — only the central 409×409 circle is the promised safe zone (12 §12)" }
+    ]
+  },
+  "a11y": {
+    "zh": "favicon 无障碍常被忽略的三点:①icon.svg 的暗色适配同时惠及深色模式用户与低视力用户——#f0f0f0 字形配深色 chrome 的对比度远好于黑 glyph 融进暗背景;②favicon 本身是装饰性图形,信息不应只由 favicon 传递(读屏器默认不播报站点图标);③staging 反色属于「用颜色区分环境」,务必同时配域名/横幅等非颜色通道,色弱用户不靠 hue 也能分辨(WCAG 1.4.1 颜色不是唯一手段的精神)。",
+    "en": "Three often-missed a11y points for favicons: (1) icon.svg's dark adaptation serves dark-mode users and low-vision users alike — a #f0f0f0 glyph on a dark chrome contrasts far better than a black glyph dissolving into the dark background; (2) the favicon is decorative graphics — information must never ride on it alone (screen readers do not announce site icons by default); (3) staging's inverted color is 'distinguishing by color', so always pair it with domain/banner channels — color-blind users must be able to tell environments apart without hue (the spirit of WCAG 1.4.1, color not the only means)."
+  },
+  "sources": [
+    "https://evilmartians.com/chronicles/how-to-favicon-in-2024-six-files-that-fit-most-needs"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一个站点配齐现代 favicon 链:根目录 32×32 ico、内嵌 prefers-color-scheme 的 icon.svg、180×180 带 20px 内边距与背景色的 apple-touch-icon、192 + 512 maskable 一对与 manifest(仅 PWA),并给出 <head> 接线代码。",
+      "en": "Set up the full modern favicon chain for a site: a root 32×32 ico, an icon.svg with embedded prefers-color-scheme, a 180×180 apple-touch-icon with 20px padding and background color, a 192 + 512 maskable pair, and a manifest (PWAs only), plus the <head> wiring code."
+    },
+    "acceptance": [
+      { "zh": "<head> 恰好四行接线:ico(sizes=\"32x32\")、icon.svg(type=\"image/svg+xml\")、apple-touch-icon、manifest;不出现 rel=\"shortcut icon\"", "en": "Exactly four <head> lines: ico (sizes=\"32x32\"), icon.svg (type=\"image/svg+xml\"), apple-touch-icon, manifest; no rel=\"shortcut icon\"" },
+      { "zh": "icon.svg 内嵌 <style> 的 @media (prefers-color-scheme: dark):字形 #0f0f0f ↔ #f0f0f0 自动翻转", "en": "icon.svg embeds @media (prefers-color-scheme: dark) in <style>: glyph flips #0f0f0f ↔ #f0f0f0 automatically" },
+      { "zh": "apple-touch-icon 180×180,glyph 距边 ≥20px 且有背景色", "en": "apple-touch-icon at 180×180 with the glyph ≥20px from edges and a background color" },
+      { "zh": "maskable 512×512 声明 purpose:\"maskable\",关键内容整体落在 409×409 中央圆内", "en": "The 512×512 maskable declares purpose:\"maskable\" with all key content inside the central 409×409 circle" },
+      { "zh": "ico 固定 32×32 且位于站点根目录 /favicon.ico(RSS 阅读器只认该路径)", "en": "The ico is fixed at 32×32 and sits at the site root /favicon.ico (the only path RSS readers know)" }
+    ]
+  }
+}

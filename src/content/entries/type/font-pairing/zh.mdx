@@ -1,0 +1,72 @@
+## 结构与 DOM
+
+无特殊结构——两族(或一族)声音各就各位:
+
+```html
+<article class="card">
+  <p class="kicker">眉标</p>
+  <h2 class="head">衬线标题</h2>
+  <p class="body">无衬线正文……</p>
+  <blockquote class="quote">引语跟随标题一侧</blockquote>
+</article>
+```
+
+```css
+/* 经典对比:衬线负责调性,无衬线负责阅读 */
+.head, .quote { font-family: Georgia, "Times New Roman", "Songti SC", SimSun, serif; }
+.body         { font-family: system-ui, sans-serif; }
+
+/* 单字族策略(Apple HIG):全站一个字族,层级只动 size / weight / color */
+.head { font-weight: 650; }
+.body { font-weight: 400; }
+```
+
+关键点:
+
+- `font-family` 列表**以泛型 serif/sans-serif 收尾**,逐级回退,绝不依赖单一字体名;
+- 中文衬线覆盖:Georgia 无 CJK 字形,列表中写 `Songti SC`(macOS)/`SimSun`(Windows)再落泛型——具体衬线观感因平台而异;
+- 职责分离:标题字族只用于大字号,正文字族必须经长文阅读测试(通则,未证实)。
+
+## 样式与参数
+
+三个参数:pairing(JS 型)+ 标题字号/字重(CSS 变量型):
+
+```css
+.fp-h2 {
+  font-size: var(--fp-head-size);      /* 34px */
+  font-weight: var(--fp-head-weight);  /* 600 */
+  line-height: 1.15;
+}
+[data-pairing="serif-head"] .fp-h2 { font-family: Georgia, …, serif; }
+[data-pairing="single"]     .fp-h2 { font-family: inherit; } /* 只动字重 */
+```
+
+数值出处与诚实标注:
+
+- Apple HIG Typography:「Minimize the number of typefaces you use」,全站一个字族、层级只动 size/weight/color(调研 01,官网原文已核)——单字族策略的官方出处;
+- Geist 以 Sans/Serif/Mono/Pixel 四族同源发行,OFL 1.1(调研 05§25)——「同家族多字族」的官方实例;
+- 本站 sans + mono 双声部:`--font-sans: Inter Variable, Noto Sans SC…` + `--font-mono: JetBrains Mono…`(源码 `src/styles/global.css:150-152`,spec §2.2「mono 只用于数值/计数/快捷键」);
+- **搭配方法论细则(对比原则、优先同家族多轴、不加第三种字体)为社区实践共识,未证实**——Google Fonts Knowledge「Choosing type」页面 JS 渲染,正文未能核验(调研 12§9 如实记载)。
+
+## 动效与交互
+
+- **策略切换**:pairing 参数经 `data-pairing` 切换三组搭配,衬线/无衬线的换装零过渡成本(font-family 切换是即时重排,不涉动画);
+- **字重实验**:单字族模式拖 `headingWeight` 300→900,由 Inter Variable 的 wght 轴真实驱动(非合成加粗);衬线模式下超出 400/700 的档位会被系统字体钳制或合成——演示如实暴露该失真;
+- **字号对比**:`headingSize` 从 64px 拉到 24px,可直观看到「标题只剩换个字体」的退化——对比不足的搭配就是这样失效的;
+- 无 `prefers-reduced-motion` 分支:演示无动画,全部为即时重排。
+
+## 真实产品案例
+
+- **Apple HIG 与 SF 体系**:官方指引「Minimize the number of typefaces you use」+ 全站 SF 一字族,层级靠尺寸差 + 字重差(Headline 用 Semibold 与同尺寸 Body 区分,调研 01 官网原文已核)——单字族策略最有分量的背书。
+- **Vercel Geist**:以 Sans/Serif/Mono/Pixel 四族同源发行,官方 README 一手核对(调研 05§25)——同一家族谱系提供「衬线标题 × 无衬线正文」之外的另一种成套答案。
+- **本站 uiux-atlas**:sans + mono 双声部分工(sans 管界面与正文、mono 只管数值/计数/快捷键),写进 spec §2.2 并落地在 `--font-sans/--font-mono` 变量(源码 `src/styles/global.css:150-152`)——「职责分离后不再加第三种字体」的工程化版本。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `pairing` | 衬线档换来调性,单字族换来一致性;没有全能档,只有分工差异 | 「不搭配」(沿用系统默认)也有一致性,但放弃了两声部的表现力 |
+| `headingSize` | 对比更强,衬线的气质更明显;过大挤压正文空间 | 低于 ~24px 后标题与正文「换字体」感消失,搭配退化为装饰 |
+| `headingWeight` | 单字族模式下 700+ 与正文 400 拉开层级(真实 wght 轴) | 300 以下浅底可读性下降;衬线档偏离 400/700 会被钳制或合成 |
+
+经验法则:先定职责(谁管调性、谁管阅读),再选字族;最多两种;层级同时动字号(≥1.5×)、字重与色彩。方法论细则按社区共识对待,关键决策用长文阅读测试验证。

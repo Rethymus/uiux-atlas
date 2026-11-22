@@ -1,0 +1,99 @@
+{
+  "name": "Handoff Curves",
+  "nameZh": "曲线接力",
+  "aliases": ["曲线接力", "速度接力", "Velocity handoff", "Gesture-to-spring", "中断接力"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "手势释放的那一刻,把位置和速度一起移交给弹簧:直接操纵段(无缓动)+ 弹簧段(半隐式欧拉积分)拼成一条连续曲线;velocity 不交接,动画就「归零重启」——这是跟手感与玩具感的分水岭。",
+    "en": "At the instant of release, hand both position and velocity to a spring: the direct-manipulation segment (no easing) and the spring segment (semi-implicit Euler) splice into one continuous curve; without the velocity handoff the animation restarts from rest — the line between feels-in-hand and feels-like-a-toy."
+  },
+  "origin": {
+    "zh": "Motion 官方对物理弹簧的核心承诺:「物理弹簧会把既有手势/动画的速度纳入反馈」,velocity 参数缺省即「当前值速度」;对照反例:duration-based spring「从静止开始并忽略速度」(调研 10§7.3);Apple 同源:SwiftUI 文档写明「连续 spring 动画接力时保留速度」(调研 04§1.3);手写积分与速度接力代码范式出自卡槽弹簧的 springSlot——速度存 dataset、可中断续跑(调研 10§2.2)。生产实例:vaul 底部抽屉用释放速度阈值 0.4 + 进度 0.25 判定手势去向(调研 10§5.1)。",
+    "en": "Motion's core promise for physics springs: \"physics-based spring animations incorporate the velocity of any existing gestures or animations\", with velocity defaulting to \"the current value's velocity\"; the counterexample: duration-based springs \"start from rest and ignore velocity\" (research 10 §7.3); Apple concurs: SwiftUI docs state that successive spring animations \"preserve velocity\" across handoffs (research 04 §1.3); the hand-written integrator with velocity relay comes from the slot-spring recipe springSlot — velocity stored on the dataset, interruptible and resumable (research 10 §2.2). A production instance: the vaul bottom sheet routes the gesture by release-velocity threshold 0.4 plus progress 0.25 (research 10 §5.1)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 50,
+      "max": 1000,
+      "step": 10,
+      "default": 300,
+      "effect": {
+        "zh": "弹簧刚度 k(JS 型,demo 订阅后作用于半隐式欧拉积分 a = (−k·x − c·v)/m)。默认 300 取调研 10§2.2 springSlot 代码默认(300/25「中·微弹」档,10§2.3 实算 ζ≈0.722、过冲≈3.8%);k 提高 ω₀=√(k/m) 上升,启动更猛、到位更快(调研 10§6.3)。",
+        "en": "Spring stiffness k (JS-type, subscribed by the demo into the semi-implicit Euler step a = (−k·x − c·v)/m). Default 300 is the springSlot code default in research 10 §2.2 (the 300/25 \"medium, slight bounce\" tier — 10 §2.3 computes ζ≈0.722, overshoot≈3.8%); raising k raises ω₀=√(k/m): harder start, faster arrival (research 10 §6.3)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 5,
+      "max": 100,
+      "step": 1,
+      "default": 25,
+      "effect": {
+        "zh": "阻尼系数 c(JS 型)。默认 25 同出调研 10§2.2;ζ = c/(2√(k·m)) 是手感第一变量——「抖几下」由 ζ 定,「抖多快」由 ω₀ 定(调研 10§4.3/§6.2);demo 实时换算 ζ 与预计过冲百分比。",
+        "en": "Damping coefficient c (JS-type). Default 25 also from research 10 §2.2; ζ = c/(2√(k·m)) is the first variable of feel — \"how many wobbles\" is ζ's job, \"how fast they happen\" is ω₀'s (research 10 §4.3/§6.2); the demo converts ζ and the predicted overshoot percentage live."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "handoff",
+      "options": [
+        { "value": "on", "label": { "zh": "速度接力", "en": "Velocity relay" } },
+        { "value": "off", "label": { "zh": "归零重启(反例)", "en": "Restart from rest (anti-pattern)" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数:释放瞬间是否把量测到的手势速度注入弹簧。on=速度随位置一起交接(Motion/SwiftUI 官方语义,调研 10§7.3/04§1.3);off=速度清零再启动——即 duration-based spring「从静止开始并忽略速度」的反例,快甩后回程明显「没劲」,对照即可体感速度接力的价值。",
+        "en": "JS-type param: whether the measured gesture velocity is injected into the spring at release. on = velocity hands over together with position (Motion/SwiftUI semantics, research 10 §7.3/04 §1.3); off = velocity zeroes before starting — the duration-based spring anti-pattern of \"starting from rest and ignoring velocity\": after a hard flick the return visibly lacks drive, the contrast makes the handoff's value felt."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只依赖 Pointer 事件(Baseline 2020-07,调研 04§5.1)、rAF 与 getBoundingClientRect,全浏览器可用;速度接力是纯 JS 积分,无 API 门槛;库内等价物(Motion 的 velocity 缺省注入、SwiftUI 弹簧接力保速)与平台无关。",
+      "en": "The implementation needs only Pointer Events (Baseline 2020-07, research 04 §5.1), rAF and getBoundingClientRect — available everywhere; the velocity relay is pure JS integration with no API floor; the library equivalents (Motion's default velocity injection, SwiftUI springs preserving velocity across handoffs) are platform-independent."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 时跟手段保留(直接操纵不属于可省略动效),释放段直出:位置直接落回目标、不再积分滑行(与 inertia-gesture 条目同一降级口径);键盘提供固定速度甩动的等效路径,触屏走同一 Pointer 事件流。",
+    "en": "Under prefers-reduced-motion: reduce the drag segment is kept (direct manipulation is not an omissible effect) and release lands directly — position jumps to the target with no integration (the same degradation convention as the inertia-gesture entry); the keyboard offers a fixed-velocity flick equivalent, and touch rides the same Pointer event stream."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "抽屉/底板/侧栏的拖拽释放——vaul 范式:速度阈值决定「放走还是拉回」(调研 10§5.1)", "en": "Drawer/sheet/sidebar drag release — the vaul paradigm: a velocity threshold decides release vs pull-back (research 10 §5.1)" },
+      { "zh": "拖拽排序/看板卡片的落位——松手瞬间卡片带速度滑进槽位(slot-spring 的 layoutId 气泡同理)", "en": "Drag-to-reorder / kanban card drops — the card glides into its slot carrying release velocity (same as slot-spring's layoutId bubble)" },
+      { "zh": "可中断的任何弹簧:中断/重触发时从「当前值 + 当前速度」续跑,永不归零重启(调研 10§7.3)", "en": "Any interruptible spring: interruption/re-trigger resumes from \"current value + current velocity\", never restarting from rest (research 10 §7.3)" }
+    ],
+    "avoid": [
+      { "zh": "拖拽中叠加缓动曲线——跟手段必须是 1:1 直接操纵,缓动会让指针与元素「脱钩」", "en": "Easing during the drag — the tracking segment must be 1:1 direct manipulation; easing decouples pointer from element" },
+      { "zh": "释放后用固定时长缓动(cubic-bezier/duration)接管——它无法吸收释放速度,快甩慢甩一个样(duration-based 反例,调研 10§7.3)", "en": "Taking over with a fixed-duration tween (cubic-bezier/duration) — it cannot absorb release velocity; hard flicks and soft drags look identical (the duration-based anti-pattern, research 10 §7.3)" },
+      { "zh": "把释放速度原样灌进低阻尼弹簧(ζ<0.4)——速度×低阻尼=失控过冲,先算 ζ 再接速度(调研 10§2.3 巧思 3)", "en": "Injecting raw release velocity into an under-damped spring (ζ<0.4) — velocity × low damping = runaway overshoot; compute ζ before the handoff (research 10 §2.3 craft 3)" }
+    ]
+  },
+  "a11y": {
+    "zh": "prefers-reduced-motion: reduce 时跟手保留、释放直出落点(不做积分滑行);拖拽轨道可键盘操作(Enter 触发固定速度甩动),焦点描边清晰;速度读数与 ζ/过冲换算对视觉用户展示,而运动本身不承载任何关键信息——落位结果由最终位置与文本状态确认;触屏与鼠标走同一 Pointer 流,pointercancel(系统手势接管)按释放处理。",
+    "en": "Under prefers-reduced-motion: reduce, tracking is kept and release lands directly (no integration glide); the drag lane is keyboard-operable (Enter triggers a fixed-velocity flick) with a clear focus ring; velocity readouts and ζ/overshoot conversions serve sighted users while motion itself carries no critical information — the outcome is confirmed by final position and text state; touch and mouse share one Pointer stream, and pointercancel (system gesture takeover) is treated as a release."
+  },
+  "sources": [
+    "https://motion.dev/docs/react-transitions",
+    "https://github.com/emilkowalski/vaul/blob/main/src/constants.ts",
+    "https://developer.apple.com/documentation/swiftui/animation/spring(response:dampingfraction:blendduration:)"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一次曲线接力:拖拽段 1:1 直写 transform 跟手;释放瞬间量测手势速度,连同位置一起交给半隐式欧拉弹簧(k/c 取快照,速度可开关)滑回目标;读数显示释放速度、ζ 与预计过冲;提供归零重启的反例对照。",
+      "en": "Replicate a curve handoff: the drag segment writes transform 1:1 to track the pointer; at release the measured gesture velocity is handed to a semi-implicit Euler spring (k/c from the snapshot, velocity switchable) gliding back to target; readouts show release velocity, ζ and predicted overshoot; include the restart-from-rest anti-pattern for contrast."
+    },
+    "acceptance": [
+      { "zh": "跟手段零缓动:pointermove 直写 transform,单步积分器 dt 钳制(≤1/30s)防跳帧", "en": "Zero easing while tracking: pointermove writes transform directly, with the integrator's dt clamped (≤1/30s) against frame jumps" },
+      { "zh": "释放时量测速度(指针采样平滑),handoff=on 时注入弹簧初速,off 时清零重启供对照", "en": "Release measures velocity (smoothed pointer samples); handoff=on injects it as spring initial velocity, off zeroes it for contrast" },
+      { "zh": "弹簧用半隐式欧拉积分(v += a·dt; x += v·dt),rest 走双阈值停机,demo 阈值标注为演示值", "en": "The spring integrates semi-implicit Euler (v += a·dt; x += v·dt) and rests on a dual threshold, with the demo's thresholds labeled as demo values" },
+      { "zh": "读数:释放速度 px/s、ζ = c/(2√(k·m)) 与预计过冲 e^(−πζ/√(1−ζ²))(ζ≥1 时显示 0/过阻尼)", "en": "Readouts: release velocity px/s, ζ = c/(2√(k·m)) and predicted overshoot e^(−πζ/√(1−ζ²)) (ζ≥1 shows 0/over-damped)" },
+      { "zh": "prefers-reduced-motion: reduce 时跟手保留、释放直出落点;轨道可键盘触发固定速度甩动", "en": "Under prefers-reduced-motion: reduce, tracking is kept and release lands directly; the lane supports keyboard-triggered fixed-velocity flicks" }
+    ]
+  }
+}

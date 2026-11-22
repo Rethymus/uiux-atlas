@@ -1,0 +1,78 @@
+## 结构与 DOM
+
+镜面高光是一层覆盖在元素表面的纯装饰光照层:静态版是元素顶缘的一条渐变「天光带」,动态版是随指针移动的光斑。它不参与事件、不承载信息,只回答「光从哪里来」。
+
+```html
+<div class="card">   <!-- 受光元素:position: relative;::before 即高光层 -->
+  <h3>标题</h3>
+  <p>正文</p>
+  <!-- DOM 中不可见:::before 顶缘天光带 / ::after 可选 hairline -->
+</div>
+```
+
+关键点:
+
+- 高光层必须 `border-radius: inherit` 跟随元素外形、`pointer-events: none` 不挡交互;
+- 动态版的位移量写在元素级 CSS 变量上(`--sh-x`/`--sh-y`),逐帧直接写元素 style 而非改复合选择器(每帧写全局类会触发整棵子树样式失效);
+- 光源是全站约定:高光方向(顶缘/左上)应与阴影方向共享同一光源比例,材质才互相自洽(调研 12 §16.5)。
+
+## 样式与参数
+
+三个 CSS 变量型参数(intensity/height/hairline)+ 一个 JS 型开关(lighting):
+
+```css
+.card {
+  /* 同一声明里叠 inset hairline 与外投影 */
+  box-shadow:
+    inset 0 var(--sh-hairline) 0 0 hsl(0 0% 100% / var(--sh-intensity)),  /* 0.5px 顶缘细线 */
+    0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;                                  /* 顶缘 */
+  height: var(--sh-height);                           /* 6px 天光带 */
+  border-radius: inherit;
+  background: linear-gradient(hsl(0 0% 100% / var(--sh-intensity)), transparent); /* 峰值 0.5 */
+  pointer-events: none;
+}
+
+/* 动态版:radial 光斑,中心随指针写入的 --sh-x/--sh-y 移动 */
+[data-lighting="pointer"] .card::before {
+  inset: 0;
+  height: auto;
+  background: radial-gradient(170px circle at var(--sh-x, 50%) var(--sh-y, -30%),
+              hsl(0 0% 100% / var(--sh-intensity)), transparent 75%);
+}
+```
+
+数值出处:
+
+- `height: 6px` + 峰值 `hsl(0 0% 100% / 0.5)` = 调研 12 §7 的顶缘天光带配方(::before `inset: 0 0 auto 0`);
+- hairline `0.5px` = 调研 09 §1.4d 的 web 复刻惯例(叠加同色 hairline 细线)——**推导值,官方未公布**;
+- 校准区间(亮面 `0.25–0.4`、暗面 `0.08–0.15`)= 调研 09 §1.4d 的推导值,**⚠️未证实**:具体内高光强度官方从未公布,量级需按站内背景实测;
+- demo 玻璃卡底色 `rgba(17,25,40,0.55)` = 生产实测深色玻璃配方(superdesign.dev,见 glassmorphism 条目)。
+
+## 动效与交互
+
+- **静态→动态切换**:高光从「顶缘带」变为「随指针光斑」;radial 中心写入元素级变量,指针离开时回位到默认顶光(`50% / -30%`);
+- **指针驱动是输入反馈**:官方对触碰辉光的定性是「从指尖下方点亮,扩散至整个元素乃至邻近玻璃」(WWDC25 219 [725–737s],调研 09 §8.8)——光斑只在指针移动时移动,不做任何自主漂移;`prefers-reduced-motion` 下保留输入驱动、取消入场动画;
+- 高光层自身动效只落在 `background`/`opacity`,不动布局属性;
+- 元素位移时高光必须随之重算(光源不动、元素动)——这是「随位移动态版」的语义。
+
+## 真实产品案例
+
+- **iOS 26 Liquid Glass 控件**:官方把 lensing(「实时弯折、整形并汇聚光线」)定为材质的核心定义(WWDC25 219,调研 09 §1.4d/§8.1);web 复刻以「1px 内侧高光 + 顶缘受光」近似其受光形态(见 liquid-glass 条目的玻璃舱配方);触碰辉光「从指尖下方点亮」对应动态版([725–737s]);
+- **visionOS 注视高亮**:系统为所有可交互元素施加 hover 高亮效果(focus effect)(WWDC25 303 [90–104s],调研 09 §3)——高光作为系统级交互语言的官方案例;
+- **Josh Comeau 博客(joshwcomeau.com)**:顶缘 6px 天光带配方出处,作者以「天光反射」描述这道高光并给出与阴影同光源比例的配对原则(调研 12 §7)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `intensity` | 高光更亮更「湿」;>0.6 在深色面上开始过曝,并挤压文字对比度 | 高光渐隐;\<0.1 材质回到「哑光」,玻璃感只剩模糊 |
+| `height`(静态) | 天光带变宽,像一盏顶灯直接打在卡上;>10px 失去「受光边缘」语义,变成亮顶盖 | 带变窄直至消失;0 = 只剩 hairline 一条锐线 |
+| `hairline` | 细线变粗变实;>1px 读作一道白描边,非光照 | 线渐隐;0 = 只有柔渐变,顶缘少一个「锐利受光点」 |
+| `lighting` → pointer | 光斑随指针游走,材质「活」起来;大幅移动时注意光斑别扫过正文 | 回到静态顶光:最安静、最可控的默认态 |
+
+经验区间:intensity 亮面 0.25–0.4、暗面 0.08–0.15(推导,需实测);height 4–8px;hairline 0.5px 即配方惯例。判断高光是否过头的一条准绳:卡内文字对最亮处的对比仍须守住 4.5:1(WCAG 2.1 SC 1.4.3)。

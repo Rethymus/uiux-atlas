@@ -1,0 +1,104 @@
+{
+  "name": "Small Caps & OpenType Features",
+  "nameZh": "小型大写与开放特性",
+  "aliases": ["小型大写", "smcp", "font-feature-settings", "OpenType features"],
+  "category": "type",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "font-variant-* 高层属性直连 OpenType 特性(smcp/c2sc/liga/zero…),font-feature-settings 是低层兜底:官方明确「能用高层就用高层,不要用它启用小型大写」。",
+    "en": "The font-variant-* high-level properties address OpenType features (smcp/c2sc/liga/zero…); font-feature-settings is the low-level fallback — the official guidance: prefer the high level, 'do not use it to enable small caps'."
+  },
+  "origin": {
+    "zh": "MDN font-feature-settings 官方指引原文:能用高层属性(font-variant-* 简写)就用高层属性,不要用它启用小型大写(调研 12§10,MDN 原文核对);font-variant-caps 各关键字与 OpenType 标签映射(small-caps=smcp、all-small-caps=c2sc+smcp)及「缺小型大写字形时由浏览器从大写字形合成」的行为,为本批次补核 MDN(2026-11-22 抓取)。",
+    "en": "MDN's font-feature-settings guidance verbatim: use the high-level font-variant-* shorthands where possible and do not use it to enable small caps (research 12 §10, verified against MDN). The keyword→OpenType-tag mapping on font-variant-caps (small-caps=smcp, all-small-caps=c2sc+smcp) and the rule that browsers synthesize small caps from uppercase glyphs when the font lacks them were re-verified on MDN in this batch (fetched 2026-11-22)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "caps",
+      "options": [
+        { "value": "normal", "label": { "zh": "普通", "en": "Normal" } },
+        { "value": "small-caps", "label": { "zh": "小型大写(小写→小大写)", "en": "Small caps" } },
+        { "value": "all-small-caps", "label": { "zh": "全部小型大写", "en": "All small caps" } }
+      ],
+      "default": "all-small-caps",
+      "cssVar": "--sc-caps",
+      "effect": {
+        "zh": "font-variant-caps(高层属性)。small-caps 只转换小写字母(OpenType smcp);all-small-caps 连大写一起转(c2sc+smcp),是眉标/标签的常用档。MDN 映射(本批次补核):若字体无 smcp/c2sc 字形,浏览器从普通大写字形合成近似小型大写;无大小写之分的字符(标点)绝不合成。",
+        "en": "font-variant-caps (the high-level property). small-caps converts lowercase only (OpenType smcp); all-small-caps converts everything (c2sc+smcp) — the usual eyebrow/label setting. Per MDN (re-verified this batch): without smcp/c2sc glyphs the browser synthesizes approximate small caps from regular uppercase; caseless characters (punctuation) are never synthesized."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ligatures",
+      "options": [
+        { "value": "common-ligatures", "label": { "zh": "连字开启", "en": "Ligatures on" } },
+        { "value": "no-common-ligatures", "label": { "zh": "连字关闭", "en": "Ligatures off" } }
+      ],
+      "default": "common-ligatures",
+      "cssVar": "--sc-lig",
+      "effect": {
+        "zh": "font-variant-ligatures(高层属性)。common-ligatures 启用 fi/fl/ffi 等标准连字(OpenType liga,默认开);no-common-ligatures 关闭(低层等价:font-feature-settings \"liga\" 0)。代码片段/URL 场景常关连字以逐字符对齐源码。",
+        "en": "font-variant-ligatures (high-level). common-ligatures enables fi/fl/ffi standard ligatures (OpenType liga, on by default); no-common-ligatures disables them (low-level equivalent: font-feature-settings \"liga\" 0). Code snippets and URLs often turn ligatures off for character-exact rendering."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "zero",
+      "options": [
+        { "value": "normal", "label": { "zh": "普通 0", "en": "Plain zero" } },
+        { "value": "slashed-zero", "label": { "zh": "斜杠 0", "en": "Slashed zero" } }
+      ],
+      "default": "normal",
+      "cssVar": "--sc-zero",
+      "effect": {
+        "zh": "font-variant-numeric 的 zero 关键字(高层属性,OpenType zero)。给 0 加斜杠与字母 O 区分;Inter 官方提供 slashed zero 特性(调研 05§24)。",
+        "en": "The zero keyword of font-variant-numeric (high-level, OpenType zero). Slashes the 0 to distinguish it from letter O; Inter ships the slashed-zero feature officially (research 05 §24)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "font-feature-settings Baseline Widely available(自 2016-03,调研 12§10);font-variant-caps Baseline Widely available(自 2020-01,本批次补核 MDN);petite-caps/unicase 等扩展关键字属 CSS Fonts L4 语法,MDN 注明并非所有浏览器实现全部值——用前以 @supports/CSS.supports 实测。",
+      "en": "font-feature-settings is Baseline Widely available (since 2016-03, research 12 §10); font-variant-caps is Baseline Widely available (since 2020-01, re-verified on MDN this batch); extended keywords like petite-caps/unicase belong to the CSS Fonts L4 grammar and MDN notes not every browser implements every value — feature-detect before use."
+    }
+  },
+  "fallback": {
+    "zh": "字体缺特性表时:高层 font-variant-caps 按 MDN 记载回退为「从大写字形合成」;低层 font-feature-settings 只开关字体内已有的特性表,没有该表即无效果(声明无害)。两者都以不破坏文本为底线——特性失效不产生布局错误,只是观感差异。",
+    "en": "When the font lacks the feature tables: the high-level font-variant-caps falls back, per MDN, to synthesizing from uppercase glyphs; the low-level font-feature-settings only toggles tables the font already ships — no table, no effect (the declaration stays harmless). Both bottom out at 'text intact': a missing feature never breaks layout, it only changes the look."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "眉标/章节小标:all-small-caps + 0.08em 字距(本站大写小标纪律同款字距,src/styles/global.css:852-856)", "en": "Eyebrows and section labels: all-small-caps with 0.08em tracking (the same tracking as this site's uppercase-label discipline, src/styles/global.css:852-856)" },
+      { "zh": "法律/学术文本中的缩略语:small-caps 保留原大小写语义", "en": "Abbreviations in legal/academic text: small-caps preserves the original casing semantics" },
+      { "zh": "代码块与 URL:关连字(no-common-ligatures)保 fi/fl 逐字符清晰", "en": "Code blocks and URLs: ligatures off (no-common-ligatures) keeps fi/fl character-exact" },
+      { "zh": "风数百变的高级用法:风格集 ss01–ss20/花体 swsh 只能用低层 font-feature-settings 表达(12§10)", "en": "Advanced stylistic sets: ss01–ss20/swashes are expressible only through low-level font-feature-settings (12 §10)" }
+    ],
+    "avoid": [
+      { "zh": "用 font-feature-settings 启用小型大写——MDN 官方明确禁止此用法,高层 font-variant-caps 才有合成回退与语义(12§10)", "en": "Enabling small caps via font-feature-settings — MDN explicitly rules this out; only font-variant-caps carries synthesis fallback and semantics (12 §10)" },
+      { "zh": "大段正文 all-small-caps——MDN 记载对阅读障碍(如 dyslexia)用户可能难读(本批次补核)", "en": "Long passages in all-small-caps — MDN records that it can be hard to read for users with cognitive concerns such as dyslexia (re-verified this batch)" },
+      { "zh": "中文正文套小型大写——smcp 只作用于拉丁字母;中文字形不受影响,混排时视觉重量需单独核对", "en": "Applying small caps to CJK body text — smcp only affects Latin letters; CJK glyphs are untouched and their visual weight needs separate checking in mixed text" }
+    ]
+  },
+  "a11y": {
+    "zh": "MDN 无障碍提示(本批次补核):大面积 all-small-caps/all-petite-caps 文本对认知障碍(如阅读障碍)用户可能难读——小型大写只用于短标签、眉标与缩略语;小型大写不改变文本语义,读屏仍按原大小写朗读;合成字形与真 smcp 字形的可读性可能不同,关键界面以实测为准。",
+    "en": "MDN's accessibility note (re-verified this batch): large sections of all-small-caps/all-petite-caps text can be hard to read for users with cognitive concerns such as dyslexia — keep small caps to short labels, eyebrows and abbreviations; small caps do not change semantics, screen readers keep announcing the original casing; synthesized glyphs may read differently from true smcp glyphs — verify on the fonts that ship with your UI."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/font-feature-settings",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant-caps"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "排版一组眉标、连字样例与 O/0 对照:小型大写走高层 font-variant-caps,连字与斜杠零走高层 font-variant-ligatures/numeric;低层 font-feature-settings 只以等价标签形式出现在注释里,并用宽度探针如实报告特性是否真的生效。",
+      "en": "Lay out an eyebrow, a ligature specimen and an O/0 pair: small caps via the high-level font-variant-caps, ligatures and slashed zero via the high-level ligatures/numeric properties; the low-level font-feature-settings appears only as equivalent tags in comments, and width probes honestly report whether features actually applied."
+    },
+    "acceptance": [
+      { "zh": "小型大写用 font-variant-caps,不用 font-feature-settings 启用(MDN 官方指引)", "en": "Small caps via font-variant-caps, never enabled through font-feature-settings (MDN guidance)" },
+      { "zh": "低层标签恰好 4 个 ASCII 字符,注释中给出与高层声明等价的 font-feature-settings 字符串", "en": "Low-level tags are exactly 4 ASCII characters; comments show the font-feature-settings equivalent of each high-level declaration" },
+      { "zh": "宽度探针实测开/关两种状态下的渲染宽度差,结论不写死——Δ≈0 时如实标注「当前字体可能缺该特性表」", "en": "Width probes measure rendered width deltas on/off; conclusions never hardcoded — at Δ≈0 honestly note 'the current font likely lacks this feature table'" },
+      { "zh": "小型大写只用于短标签;不出现大段 all-small-caps 正文", "en": "Small caps only on short labels; no long all-small-caps passages" }
+    ]
+  }
+}

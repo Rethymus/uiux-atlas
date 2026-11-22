@@ -1,0 +1,85 @@
+## 结构与 DOM
+
+时间线是「轴线 + 一组事件格」的列表结构:一条纵向细线由容器伪元素绘制,每个事件格里有一枚节点(圆点/图标)、时间戳与内容,节点压在轴线上:
+
+```html
+<ol class="tl-list">
+  <li class="tl-item" data-tone="success">
+    <span class="tl-dot" aria-hidden="true"></span>
+    <span class="tl-mark" aria-hidden="true">✓</span>
+    <div class="tl-body">
+      <div class="tl-time">09:02</div>
+      <div class="tl-title">单元测试通过</div>
+      <div class="tl-desc">214 个用例全部通过</div>
+    </div>
+  </li>
+  <li class="tl-item" data-tone="loading">
+    <span class="tl-dot" aria-hidden="true"></span>
+    <div class="tl-body">
+      <div class="tl-time">09:12</div>
+      <div class="tl-title">部署进行中…</div>
+    </div>
+  </li>
+</ol>
+```
+
+关键点:
+
+- 列表语义用 `ol/li`——事件天然有序,读屏按序播报;节点、勾叉都是装饰(`aria-hidden`),**时间与状态含义必须落在文字里**;
+- 轴线是容器的 `::before` 绝对定位细线,不随条目数量增减而断;节点圆点在每格内对准轴线位置;
+- `mode` 三档(start 左置 / alternate 中轴交替 / end 右置)只改格内网格模板与轴线位置,DOM 不变(antd Timeline mode 语义,补研 12§15);
+- `reverse` 倒序用 `flex-direction: column-reverse` 表达,DOM 顺序与视觉顺序保持一致,读屏顺序不跳变。
+
+## 样式与参数
+
+一个 CSS 变量型参数(accent)+ 两个 JS 型参数(mode / reverse):
+
+```css
+.tl-list::before { width: 2px; background: #f0f0f0; }   /* colorBorderSecondary 轴线 */
+.tl-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--tl-accent, #1677ff);                /* antd Timeline 默认 blue */
+}
+.tl-item[data-tone="success"] .tl-dot { background: #52c41a; }  /* colorSuccess */
+.tl-item[data-tone="error"]   .tl-dot { background: #ff4d4f; }  /* colorError */
+.tl-item[data-tone="loading"] .tl-dot {
+  background: transparent;
+  border: 2px solid var(--tl-accent, #1677ff);
+  border-top-color: transparent;
+  animation: tl-spin 1s linear infinite;
+}
+.tl-time  { font-size: 12px; color: rgba(0, 0, 0, 0.45); font-variant-numeric: tabular-nums; }
+.tl-title { font-size: 14px; font-weight: 500; color: rgba(0, 0, 0, 0.88); }
+.tl-desc  { font-size: 12px; color: rgba(0, 0, 0, 0.65); }
+```
+
+数值出处:
+
+- 节点默认蓝对应 antd Timeline item color 的官方默认 **blue**(补研 12§15),demo 取 antd colorPrimary #1677ff(蓝板第 6 阶,设计调研 06§1.2/§2.2);成功绿 #52c41a、报错红 #ff4d4f = antd colorSuccess/colorError(06§2.2);轴线 #f0f0f0 = colorBorderSecondary(06§2.3⑤);
+- 时间 12px / 标题 14px / 描述 12px = antd 字阶 fontSizeSM / fontSize / fontSizeSM(06§2.3①);时间戳用 `tabular-nums` 等宽数字防跳动(antd 数字排版建议,06§1.3);
+- 文字色 88/65/45% = antd TextPrimary/Secondary/Tertiary 透明度体系(06§2.3⑤);
+- **节点直径 12px、线宽 2px 为社区常见值,未证实**(调研未记载 Timeline 的几何数值),demo 按常见比例绘制;
+- 加载点 1s 匀速旋转为 demo 教学参数(antd item loading 语义见 12§15,具体转速未记载)。
+
+## 动效与交互
+
+- **入场 stagger**:条目依次淡入 + 8px 上移,单条 0.3s(antd motionDurationSlow + motionEaseOut,06§3.1/3.2),相邻条目错峰 60ms;只动 `opacity/translate`(合成器属性);命中 `prefers-reduced-motion` 时全部取消(调研 07§37);
+- **加载点**:1s 匀速旋转的圆环——旋转动画是「过程进行中」的状态语义,`prefers-reduced-motion` 命中时静止为普通圆环,状态改由文字「部署进行中」承载;spinner 适用 2–10s 的操作(NN/g 进度指示器准则,调研 07§19);
+- **mode/reverse 切换**:布局变化即时不带动画——结构性换位加过渡反而拖慢对比;
+- 时间线本身非交互控件,不承载键盘操作;若条目内放链接/按钮,它们保持原生 Tab 顺序即可。
+
+## 真实产品案例
+
+- **GitHub Issue/PR 时间线**:评论、引用、状态变更(关闭/重开)、审核通过作为事件格纵向串起,关键节点(合并、关闭)带图标与语义色——事件流是时间线最典型的生产形态;
+- **电商物流轨迹**:淘宝/京东订单详情的「已下单→揽收→运输中→派送→签收」节点序列,当前节点高亮、已完成节点打勾,用户据此判断包裹进度;
+- **CI/CD 部署日志**:GitHub Actions、Vercel 等把构建步骤按时间纵向铺开,失败步骤标红——本 demo 的流水线场景即取材于此(编辑性对照)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `accent`(色值) | 偏暖或高饱和的强调色让普通节点更抢眼,压过成功/报错节点的语义层级 | 低饱和强调色让语义节点(绿/红)成为唯一视觉焦点,层级更清晰 |
+| `mode` | alternate 每格左右横跳,节奏感强但长文本阅读动线差 | start/end 单侧最稳,信息密度高、扫读最快,是默认形态 |
+| `reverse` | on 倒序把最新事件顶到最上,适合动态流(最新优先) | off 正序符合流程叙事(先发生在上),适合步骤复盘 |
+
+经验区间:单屏 5–10 条;每条标题一行、描述一行;超过约 20 条改分页/虚拟滚动;状态色永远配文字,轴线色永远比节点色浅一档。

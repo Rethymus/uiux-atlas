@@ -1,0 +1,99 @@
+{
+  "name": "FLIP Technique",
+  "nameZh": "FLIP 技术",
+  "aliases": ["FLIP", "FLIP 技术", "First-Last-Invert-Play"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "布局变化的动画范式:First 记录初态矩形 → Last 让 DOM 到达终态再量测 → Invert 用「初态−终态」反向 transform 抵消 → Play 播放归零;昂贵布局一次算清,动画只走合成器。",
+    "en": "The layout-change animation pattern: First records the initial rect, Last commits the DOM and measures again, Invert applies a reversed transform (first − last), Play animates back to zero — expensive layout once, animation compositor-only."
+  },
+  "origin": {
+    "zh": "Paul Lewis(aerotwist)《FLIP your animations》给出四步定义与示例:只动画 transform/opacity,昂贵的布局计算一次性前置,并点出「交互后约 100ms 响应窗口」可做预计算(补研 12§3);Motion 的 layoutId 布局动画是该范式在库内的自动化形态(调研 10§2.1)。",
+    "en": "Paul Lewis' (aerotwist) \"FLIP your animations\" defines the four steps: animate only transform/opacity, front-load the expensive layout work, and use the ~100ms post-interaction response window for pre-computation (12 §3); Motion's layoutId animations are the library-automated form of the same pattern (research 10 §2.1)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "duration",
+      "min": 150,
+      "max": 800,
+      "step": 25,
+      "default": 350,
+      "unit": "ms",
+      "cssVar": "--flip-duration",
+      "effect": {
+        "zh": "Play 段时长,CSS 型参数(经 --flip-duration 注入)。aerotwist 原文未规定数值;350ms 与下方缓动同出自补研 12§3 收录的「aerotwist 示例改写」代码片段(transform .35s cubic-bezier(.2,.7,.3,1)),属示例值而非官方规范值。",
+        "en": "Duration of the Play phase, a CSS-type param (injected via --flip-duration). The original article prescribes no number; 350ms comes from the adapted aerotwist snippet recorded in 12 §3 (transform .35s cubic-bezier(.2,.7,.3,1)) — an example value, not an official spec."
+      }
+    },
+    {
+      "type": "cubicBezier",
+      "name": "easing",
+      "default": [0.2, 0.7, 0.3, 1],
+      "cssVar": "--flip-ease",
+      "effect": {
+        "zh": "Play 段缓动,CSS 型参数(经 --flip-ease 注入)。默认 cubic-bezier(0.2, 0.7, 0.3, 1) 出自补研 12§3 的 aerotwist 示例改写片段;快起缓收的减速形,与布局类位移动画的惯例一致。",
+        "en": "Easing of the Play phase, a CSS-type param (injected via --flip-ease). Default cubic-bezier(0.2, 0.7, 0.3, 1) comes from the adapted aerotwist snippet in 12 §3 — a fast-start, gentle-landing deceleration typical for layout moves."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "auto", "label": { "zh": "完整播放", "en": "Auto play" } },
+        { "value": "step", "label": { "zh": "逐步演示", "en": "Step by step" } }
+      ],
+      "default": "auto",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换演示方式)。auto=First→Last→Invert 同帧完成、只播 Play(生产中的真实形态);step=四阶段手动步进,读数面板实时显示反算的 dx / dy / scale,用于看清每一步。",
+        "en": "JS-type param (the demo subscribes and switches presentation). auto = First→Last→Invert in the same frame, only Play is visible (the production form); step = advance the four phases manually with a readout of the computed dx / dy / scale."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "FLIP 依赖的 getBoundingClientRect / transform / WAAPI 均为 Baseline 广泛可用(补研 12§3);transition 路线用 transitionend 清理,WAAPI 路线用 finish 事件。demo 采用 transition 路线。",
+      "en": "getBoundingClientRect, transform and WAAPI are all Baseline widely available (12 §3); the transition route cleans up on transitionend, the WAAPI route on finish. The demo uses the transition route."
+    },
+    "baseline": "Widely available"
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时跳过 Play:Invert 的反向 transform 直接清零、终态直出(布局功能不受影响——FLIP 是视觉增强);JS 失效时布局变化照常生效,只是没有过渡动画。",
+    "en": "Under prefers-reduced-motion skip Play: clear the inverted transform and land on the final state directly (layout keeps working — FLIP is visual enhancement only); without JS the layout change still applies, just without the tween."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "列表重排/排序切换:项目换位但不重建 DOM,FLIP 补上位移过渡", "en": "List reordering / sort switches: items swap slots without DOM rebuild; FLIP supplies the move tween" },
+      { "zh": "网格卡片 ↔ 放大详情的共享元素过渡(尺寸差即 scale 反算)", "en": "Grid card ↔ expanded detail shared-element transitions (the size delta becomes the scale invert)" },
+      { "zh": "Tab 指示器跨槽位滑动——slot-spring 条目记载的 layoutId 气泡是同一范式的库内自动化", "en": "Tab indicators gliding across slots — the layoutId bubble in the slot-spring entry is the library-automated form" }
+    ],
+    "avoid": [
+      { "zh": "大列表全量 FLIP——每个元素两次 getBoundingClientRect 强制布局,元素越多首帧越贵", "en": "FLIP-ing every item of a huge list — two forced layouts per element, the first frame gets expensive fast" },
+      { "zh": "对含文字的单元做大幅 scale 反算——文字被拉伸形变(aerotwist 原文警告),需调整 DOM 结构分离动画单元(补研 12§3)", "en": "Large scale inverts on text-bearing units — text visibly stretches (aerotwist's own warning); restructure the DOM to separate the animated unit (12 §3)" },
+      { "zh": "高频连续触发(拖拽跟手)——FLIP 是离散布局变化的范式,连续驱动应改直接操纵+弹簧", "en": "High-frequency continuous triggers (drag tracking) — FLIP is for discrete layout changes; continuous driving wants direct manipulation + springs" }
+    ]
+  },
+  "a11y": {
+    "zh": "prefers-reduced-motion: reduce 时跳过 Play 直出终态;DOM 顺序先于动画更新(屏幕阅读器的阅读顺序始终是新顺序);动画期间保持元素可聚焦、焦点不因布局跳变丢失;位移只用 transform,不触发布局抖动。",
+    "en": "Under prefers-reduced-motion: reduce, skip Play and land directly; the DOM order updates before the animation (screen readers always read the new order); elements stay focusable and never lose focus mid-tween; the move animates transform only, causing no layout thrash."
+  },
+  "sources": [
+    "https://aerotwist.com/blog/flip-your-animations/",
+    "https://motion.dev/docs/react-layout-animations"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一次 FLIP 重排:点击某卡片把它移到首位,其余卡片让位;实现按 First(记录初态矩形)→ Last(应用新顺序再量测)→ Invert(反向 translate+scale 抵消,origin top left)→ Play(按快照时长与缓动归零)四步,读数显示反算的 dx/dy/scale。",
+      "en": "Replicate a FLIP reorder: clicking a card moves it to the front while the rest give way; implement First (record initial rects) → Last (commit the new order and measure) → Invert (reverse translate+scale, origin top left) → Play (tween back to zero at the snapshot duration/easing), with a readout of the computed dx/dy/scale."
+    },
+    "acceptance": [
+      { "zh": "四步完整:初态矩形在新顺序生效前记录,终态矩形在 DOM 提交后量测", "en": "All four steps present: initial rects recorded before the new order applies, final rects measured after the DOM commits" },
+      { "zh": "Invert 只写 transform(translate+scale)且 transform-origin: top left,期间 transition: none", "en": "Invert writes transform only (translate+scale) with transform-origin: top left and transition: none" },
+      { "zh": "Play 段时长与缓动取参数快照(--flip-duration / --flip-ease),transitionend 后清理内联样式", "en": "Play uses the snapshot duration and easing (--flip-duration / --flip-ease) and cleans inline styles on transitionend" },
+      { "zh": "动画期间只动 transform,不产生逐帧布局(layout 已在 First/Last 一次性算清)", "en": "Only transform animates; no per-frame layout (layout work is front-loaded into First/Last)" },
+      { "zh": "prefers-reduced-motion: reduce 时跳过 Play 直出终态;卡片为可聚焦按钮,焦点不丢失", "en": "Under prefers-reduced-motion: reduce, skip Play and land directly; cards are focusable buttons and never lose focus" }
+    ]
+  }
+}

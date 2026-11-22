@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+图表动效的第一定律是**分层**:动画只落在数据层(柱/线/点),参考层(轴、网格、刻度)全程静止——「刻度在动」会被读者误读为「数据在动」(与坐标轴与网格条目同一纪律)。
+
+```html
+<svg viewBox="0 0 600 340">
+  <!-- 参考层:网格/轴/刻度,静止(透明度 0.09 = Grafana 公式) -->
+  <g class="grid">…</g><g class="axes">…</g>
+  <!-- 数据层:唯一被动画的层 -->
+  <g class="bars"><!-- 关键帧只写 from,基态 = 终态 -->
+    <rect height="…" … />
+  </g>
+</svg>
+```
+
+关键点:
+
+- 入场三式的分工:**生长**(数据层从零基线 scaleY 长出,Chart.js 默认入场即「从原点起动画」的生长语义)、**淡入**(整组 opacity,最克制)、**扫描**(clip-path inset 从右往左收,数据左→右揭示,适合「随时间推进」的叙事);
+- 关键帧只写 `from`:元素基态就是终态,动画被禁用/不支持时**直出终态**,天然零成本回退;
+- 时长与缓动走 CSS 变量(`--ca-dur` / `--ca-ease`),由参数面板实时驱动,重播通过重挂数据层触发;
+- 适用边界(Wikipedia 条目载的研究结论):动画表达**趋势与运动**;两个时间点之间的精确对比,交给小倍数阵列而不是播一遍扫描。
+
+## 样式与参数
+
+三个参数,默认值全部指向 Chart.js 官方动画文档(补研 12§13 抓取已核):
+
+| 参数 | 类型 | 默认值 | 出处 |
+| --- | --- | --- | --- |
+| `entrance` | JS 型 | **grow** | Chart.js 默认入场从原点起动画(生长语义);fade/sweep 为 demo 的对照档 |
+| `duration` | CSS 变量 `--ca-dur` | **1000ms** | Chart.js 全局 `animation.duration` 默认 1000(官方 docs 逐字) |
+| `easing` | CSS 变量 `--ca-ease` | **easeOutQuart** | Chart.js `easing: 'easeOutQuart'`(官方逐字);cubic-bezier(0.165, 0.84, 0.44, 1) 为社区通行的近似映射——系数官方未发布,标注「社区常见值,未证实」 |
+
+Chart.js 配套默认值(同一文档已核):缓动共 30 种;配置三级覆盖——全局 `defaults` → 类型 `datasets[type]` → 实例 `options`;过渡模式 `active/hide/reset/resize/show`,其中 hover(active)400ms、resize **0**;`options.animation = false` 整体禁用;`onProgress/onComplete` 仅在主 animation 配置下生效。
+
+```css
+.bars {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ca-grow var(--ca-dur, 1000ms) var(--ca-ease, ease-out) both;
+}
+@keyframes ca-grow { from { transform: scaleY(0); } }
+@keyframes ca-fade { from { opacity: 0; } }
+@keyframes ca-sweep { from { clip-path: inset(-8% 100% -8% 0); } }
+@media (prefers-reduced-motion: reduce) { .bars { animation: none; } } /* 直出终态 */
+```
+
+## 动效与交互
+
+- **入场一次,重播受控**:demo 的「重播」按钮通过重挂数据层重触发 CSS 动画;仪表盘真实场景里入场只在首屏发生一次,不做循环;
+- **完成播报**:入场完成经 `aria-live="polite"` 播报(补研 12§13 片段的 `onComplete → ariaLive("图表加载完成")` 模式),读屏用户不看动画也知道数据就绪;
+- **reduce 直出终态**:`prefers-reduced-motion: reduce` 下 `animation: none`——因为关键帧只写 `from`,元素立即呈现终态(Baseline 自 2020-01,MDN 已核);
+- **结构性变化不动画**:resize 过渡 Chart.js 官方写死 duration 0——布局重排即时到位,动效预算留给数据;
+- 时长档位参考:hover 更新 400ms、入场 1000ms、resize 0;ECharts 的 tooltip 过渡 `transitionDuration: 0.4` 秒(源码逐字核验,见图例与提示条目)也是同一量级纪律。
+
+## 真实产品案例
+
+- **Chart.js**(官方动画文档,补研 12§13 已核):默认 `duration: 1000` + `easing: 'easeOutQuart'`,30 种缓动可选;三级配置覆盖(全局→类型→实例);过渡模式 `active` 400ms、`resize` 0;`animation: false` 一键禁用——「入场 1 秒、hover 0.4 秒、重排 0 秒」的完整默认值体系。
+- **Wikipedia「Small multiple」条目**(12§13 已核):地图场景研究结论——动画胜在呈现趋势与运动,小倍数胜在时间点之间的对比;扫描式入场讲「进程」,并排面板讲「对比」,不要互换。
+- **ECharts v5.5.1**(TooltipModel.ts 逐字核验,调研 08§6):tooltip 的 `transitionDuration: 0.4` / `hideDelay: 100` / `showDelay: 0`——图表动效不只是入场,交互层浮动的时长档位同样是库默认值纪律的一部分。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `entrance` | sweep 最具叙事感但传达「进程」,用于对比场景会诱导误读;grow 最能表达「量级从无到有」 | fade 最克制,减少动效用户与弱设备上最稳;三式在 reduce 下都直出终态 |
+| `duration` | 超过 2000ms 读者开始等动画而不是读数据;仪表盘高频刷新场景会叠影 | 低于 300ms 接近直出,入场引导意义减弱;0ms 即直出终态(options.animation=false 等效) |
+| `easing` | 过冲型曲线让柱子越过真实值再回落——一瞬间呈现假数据,数据图禁用 | 线性(linear)显得机械;easeOutQuart 类「快出缓收」是数据入场的通行选择 |
+
+经验区间:入场 800–1200ms(Chart.js 1000 居中)、hover 400ms、resize 0;缓动收敛不过冲;轴/网格永远静止;`prefers-reduced-motion` 直出终态是不可协商项。

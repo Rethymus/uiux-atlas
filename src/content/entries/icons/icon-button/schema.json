@@ -1,0 +1,122 @@
+{
+  "name": "Icon Button",
+  "nameZh": "图标按钮",
+  "aliases": ["icon-only button", "纯图标按钮", "图标工具栏按钮", "Accessible Icon Button"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "纯图标按钮 = 真实 <button>(自带 APG Button 的 Enter/Space 键盘)+ 装饰图标(aria-hidden + focusable=\"false\")+ 写动作的可访问名;名称实现三方案(视觉隐藏文本 / hidden + aria-labelledby / aria-label)逐一对照,命中热区可量化审计(WCAG 2.5.8 ≥24×24,M3 触控 48dp)。",
+    "en": "An icon-only button = a real <button> (native APG Button Enter/Space) + a decorative icon (aria-hidden + focusable=\"false\") + an action-stating accessible name; the three naming implementations (visually hidden text / hidden + aria-labelledby / aria-label) compared one by one, with hit targets audited in numbers (WCAG 2.5.8 ≥24×24, M3 touch 48dp)."
+  },
+  "origin": {
+    "zh": "实现方案对比出自 Sara Soueidan《Accessible Icon Buttons》(out/design-study/12-expansion.md §12):①视觉隐藏文本;②hidden 文本 + aria-labelledby(ARIA 允许引用隐藏元素);③按钮 aria-label。aria-label 的四个缺点:文本不进 DOM、整页翻译工具无法处理、部分语音控制识别困难、不可复制。推荐:图标 aria-hidden=\"true\" + focusable=\"false\"(防 IE 双 Tab 停靠)当装饰,名称由按钮自身提供;有可见文本时 aria-label 必须与之一致(WCAG 2.1 Label in Name);不要把名称只放 SVG 上(Scott O'Hara 跨浏览器/读屏组合测试均有失败)。热区数值:WCAG 2.2 SC 2.5.8 ≥24×24 CSS px(principles/wcag-checklist 条目);M3 target 48dp(research 04 §2.1,fitts-law 条目同源)。",
+    "en": "The implementation comparison comes from Sara Soueidan's 'Accessible Icon Buttons' (out/design-study/12-expansion.md §12): (1) visually hidden text; (2) hidden text + aria-labelledby (ARIA allows referencing hidden elements); (3) aria-label on the button. aria-label's four costs: the text is not in the DOM, full-page translators cannot process it, some voice control struggles, and it cannot be copied. Recommendation: icon aria-hidden=\"true\" + focusable=\"false\" (avoids IE double tab stop) as decoration, with the name provided by the button itself; when visible text exists, aria-label must match it (WCAG 2.1 Label in Name); never put the name only on the SVG (Scott O'Hara's cross-browser/AT matrix shows failures). Hit-target numbers: WCAG 2.2 SC 2.5.8 ≥24×24 CSS px (principles/wcag-checklist entry); M3 target 48dp (research 04 §2.1, same source as the fitts-law entry)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "naming",
+      "options": [
+        { "value": "labelledby", "label": { "zh": "hidden 文本 + aria-labelledby", "en": "hidden text + aria-labelledby" } },
+        { "value": "hidden-text", "label": { "zh": "视觉隐藏文本", "en": "Visually hidden text" } },
+        { "value": "aria-label", "label": { "zh": "aria-label", "en": "aria-label" } },
+        { "value": "svg-only", "label": { "zh": "名只放 SVG 上", "en": "Name on the SVG only" } },
+        { "value": "none", "label": { "zh": "无可访问名", "en": "No accessible name" } }
+      ],
+      "default": "labelledby",
+      "effect": {
+        "zh": "可访问名实现方案(JS 型,默认 labelledby=Sara Soueidan 推荐方案②:ARIA 允许引用 hidden 元素,名在 DOM 里可翻译可复制)。hidden-text=方案①(真实文本,原生机制最稳);aria-label=方案③(可用但四缺点:不进 DOM、翻译工具失效、部分语音控制难识别、不可复制);svg-only 与 none 是失败形态——名只放 SVG 上时 Scott O'Hara 的跨浏览器/读屏矩阵全部存在失败组合,无名为「按钮」读屏播报(12 §12)。",
+        "en": "Accessible-name implementation (JS-typed; default labelledby = Sara Soueidan's recommended option 2: ARIA allows referencing hidden elements, and the name lives in the DOM, translatable and copyable). hidden-text = option 1 (real text, the most robust native mechanism); aria-label = option 3 (usable but four costs: not in the DOM, translators fail, some voice control struggles, not copyable); svg-only and none are failure modes — with the name only on the SVG, Scott O'Hara's cross-browser/AT matrix has failing combinations everywhere; with no name, screen readers announce just 'button' (12 §12)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "hitTarget",
+      "unit": "px",
+      "min": 16,
+      "max": 64,
+      "step": 1,
+      "default": 48,
+      "cssVar": "--icb-target",
+      "effect": {
+        "zh": "按钮命中热区边长(CSS 型,虚线审计框可视化实际可点区)。默认 48px = M3 触控目标规格 target 48dp(research 04 §2.1);下限参照 WCAG 2.2 SC 2.5.8 的 ≥24×24 CSS px 法定底线(2.999 也算失败)。调到 24 以下可直接观察违规状态与相邻按钮抢命中区的问题。",
+        "en": "Edge length of the button's hit target (CSS-typed; the dashed audit frame visualizes the actual clickable area). Default 48px = M3's touch target spec, target 48dp (research 04 §2.1); the floor reference is WCAG 2.2 SC 2.5.8's ≥24×24 CSS px legal minimum (2.999 counts as failure). Drag below 24 to watch the violation state and neighbors competing for hits."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "iconSize",
+      "unit": "px",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "default": 24,
+      "cssVar": "--icb-icon",
+      "effect": {
+        "zh": "图标字形边长(CSS 型)。默认 24px = Material 体系图标展示尺寸(24×24 dp,07 §2)。关键对照:图标可以小、按钮热区必须大——两者解耦是热区工程的核心(视觉 16px 图标 + 48px 热区是常见生产组合;具体组合值随设计系统而异,未证实统一标准)。",
+        "en": "Edge length of the icon glyph (CSS-typed). Default 24px = Material's icon display size (24×24 dp, research 07 §2). Key contrast: the icon may be small while the hit target must be large — decoupling the two is the core of hit-area engineering (a 16px glyph inside a 48px target is a common production combo; no verified universal standard for the pairing)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "expand",
+      "options": [
+        { "value": "padding", "label": { "zh": "padding 撑盒", "en": "Padding box" } },
+        { "value": "pseudo", "label": { "zh": "伪元素扩热区", "en": "Pseudo-element" } }
+      ],
+      "default": "padding",
+      "effect": {
+        "zh": "热区实现策略(JS 型)。padding=热区=按钮盒本身,盒随 hitTarget 变大,布局占位同步变大(最直白、无陷阱);pseudo=视觉尺寸不变、::before 以负 inset 越过可视边界扩热区——布局零占位变大,但要注意与相邻元素的命中重叠(社区常见做法,demo 以虚线审计框呈现实际命中区;未证实单一权威出处)。",
+        "en": "Hit-area strategy (JS-typed). padding = the hit area is the button box itself; the box grows with hitTarget and so does layout space (simplest, no traps). pseudo = visual size unchanged while a ::before with negative insets stretches the hit area past the visual bounds — zero layout growth, but watch for hit overlaps with neighbors (a common community technique; the demo's dashed audit frame shows the real hit area; no single authoritative source verified)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "原生 <button>、aria-label/aria-labelledby、::before 均为 Baseline 广泛可用;读屏器对三种命名方案的播报一致性好(hidden 文本方案为 Sara Soueidan 推荐)。SVG 的 focusable=\"false\" 仅对 IE10/11 的 SVG Tab 停靠问题有意义,现代浏览器忽略之(保留无副作用,12 §12)。",
+      "en": "Native <button>, aria-label/aria-labelledby and ::before are Baseline widely available; screen readers announce the three naming approaches consistently (the hidden-text option is Sara Soueidan's recommendation). focusable=\"false\" on SVG only mattered for IE10/11 SVG tab stops; modern browsers ignore it (keeping it is harmless, 12 §12)."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "极老 AT 可能忽略 ARIA 引用,因此可访问名的最稳来源是**真实文本**(方案①,哪怕是视觉隐藏的);无 ARIA 环境下图标退化为「多读一段无意义内容」而非功能损坏。热区在无 CSS 环境退化为按钮盒本身——所以宁可 padding 撑盒(热区随盒走)也不要只靠伪元素扩热区承载合规底线。",
+    "en": "Very old AT may ignore ARIA references, so the most robust source for the accessible name is **real text** (option 1, even if visually hidden); without ARIA the icon degrades to one extra meaningless utterance rather than broken function. The hit area degrades to the button box in a CSS-less environment — which is why padding-box growth (target follows the box) should carry the compliance floor rather than pseudo-element stretching alone."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "工具栏/顶栏的纯图标操作(收藏、搜索、关闭):真实 <button> + 装饰图标 + 按钮自身拿动作名", "en": "Icon-only actions in toolbars/top bars (favorite, search, close): a real <button> + decorative icon + the action name on the button itself" },
+      { "zh": "移动端底部导航与悬浮操作钮:热区按 48dp 级(M3 target 48dp)拉开,图标可小(07 §2/research 04 §2.1)", "en": "Mobile bottom navs and FABs: 48dp-class hit targets (M3 target 48dp) with icons allowed smaller (07 §2 / research 04 §2.1)" },
+      { "zh": "图标 + 文字按钮:图标 aria-hidden,可见文字即名——aria-label 若存在必须与文字一致(Label in Name,12 §12)", "en": "Icon + text buttons: icon aria-hidden, visible text is the name — any aria-label must match that text (Label in Name, 12 §12)" },
+      { "zh": "紧凑桌面工具栏(空间受限):伪元素扩热区保持视觉紧凑的同时守住 24×24 底线(社区常见做法)", "en": "Compact desktop toolbars (tight space): pseudo-element hit expansion keeps visuals tight while holding the 24×24 floor (common community practice)" }
+    ],
+    "avoid": [
+      { "zh": "把可访问名只放在 SVG(<title> 或 aria-label on svg)上——跨浏览器/读屏组合存在失败案例(Scott O'Hara,12 §12)", "en": "Putting the accessible name only on the SVG (<title> or svg aria-label) — failing combinations exist across the browser/AT matrix (Scott O'Hara, 12 §12)" },
+      { "zh": "热区低于 24×24 CSS px(WCAG 2.5.8 法定底线)或热区互相紧贴抢命中(04 §2.1 间距要求)", "en": "Hit targets under 24×24 CSS px (the WCAG 2.5.8 legal floor) or adjacent targets competing for hits (04 §2.1 spacing)" },
+      { "zh": "用 <span role=\"button\"> 仿按钮而丢掉 Enter/Space——原生 <button> 自带 APG Button 键盘行为,仿写必须补 keydown", "en": "Mimicking a button with <span role=\"button\"> and dropping Enter/Space — a native <button> ships the APG Button keyboard behavior; mimicry must add keydown handling" },
+      { "zh": "aria-label 与可见文字不一致(或整页翻译后不一致)——Label in Name 红线(12 §12)", "en": "aria-label diverging from visible text (or diverging after full-page translation) — the Label in Name red line (12 §12)" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目即无障碍工程本体:①名称写动作不写形状(「搜索」不是「放大镜」,WAI 教程);②图标装饰化(aria-hidden)且永不落在可聚焦元素上,SVG 加 focusable=\"false\";③名称优先 DOM 文本(labelledby/隐藏文本),aria-label 知晓四缺点再用;④热区 ≥24×24 CSS px(WCAG 2.5.8)、生产参照 48dp(M3);⑤键盘行为交给原生 <button>(APG Button:Enter/Space 激活),焦点环 :focus-visible 可见。与 icon-aria-accessible(装饰化×名的四格行为表)、fitts-law(热区尺寸感受)互为补充,本条目聚焦「工程实现三方案 + 热区策略」。",
+    "en": "This entry is accessibility engineering itself: (1) name the action, not the shape ('search', not 'magnifying lens' — WAI tutorial); (2) decorate the icon (aria-hidden) and never on a focusable element, adding focusable=\"false\" to the SVG; (3) prefer DOM text for the name (labelledby / hidden text), using aria-label only with its four costs understood; (4) hit targets ≥24×24 CSS px (WCAG 2.5.8) with 48dp as the production reference (M3); (5) delegate keyboard behavior to the native <button> (APG Button: Enter/Space activation) with a visible :focus-visible ring. Complements icon-aria-accessible (the four-cell decorative × named behavior table) and fitts-law (target-size feel); this entry focuses on the three engineering implementations plus hit-area strategy."
+  },
+  "sources": [
+    "https://www.sarasoueidan.com/blog/accessible-icon-buttons/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+    "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-hidden"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一组无障碍纯图标按钮:原生 <button> 承载 APG Button 键盘行为,装饰图标 aria-hidden + focusable=\"false\",可访问名采用 hidden 文本 + aria-labelledby(或视觉隐藏文本),热区 ≥24×24 且对齐 48dp 生产参照,并附命中区审计说明。",
+      "en": "Build a set of accessible icon-only buttons: native <button> carrying APG Button keyboard behavior, decorative icons with aria-hidden + focusable=\"false\", accessible names via hidden text + aria-labelledby (or visually hidden text), hit targets ≥24×24 aligned to the 48dp production reference, with a hit-area audit note."
+    },
+    "acceptance": [
+      { "zh": "按钮一律原生 <button>,不手写 role=\"button\" + tabindex 模仿", "en": "Buttons are native <button> elements — no hand-rolled role=\"button\" + tabindex mimics" },
+      { "zh": "图标 aria-hidden=\"true\" 且永不落在可聚焦元素或其祖先上;svg 带 focusable=\"false\"", "en": "Icons carry aria-hidden=\"true\" and never sit on a focusable element or ancestor; svg gets focusable=\"false\"" },
+      { "zh": "可访问名写在按钮层,名用动作词;有可见文字时任何 aria-label 与之一致", "en": "The accessible name lives on the button and states the action; any aria-label matches visible text when present" },
+      { "zh": "热区(含视觉小于热区的伪元素扩展)≥24×24 CSS px,生产目标 48px 级", "en": "Hit targets (including pseudo-element expansion beyond smaller visuals) are ≥24×24 CSS px, with 48px-class production targets" },
+      { "zh": "键盘 Enter/Space 激活、:focus-visible 焦点环可见,行为与鼠标点击完全一致", "en": "Enter/Space activate and a :focus-visible ring shows; keyboard behavior is identical to pointer clicks" }
+    ]
+  }
+}

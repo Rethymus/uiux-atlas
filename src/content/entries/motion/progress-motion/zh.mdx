@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+进度卡是「一个状态容器 + 若干互斥形态」的结构,形态由 JS 时间轴切换:
+
+```html
+<div class="card" aria-busy="true">
+  <div class="head">
+    <span aria-live="polite">正在加载 Loading…</span>   <!-- 状态文字:语义的第一载体 -->
+  </div>
+  <!-- 形态互斥,同一时刻只渲染一种 -->
+  <div class="skeleton" aria-hidden="true">…色块…</div>  <!-- 不确定:什么都不知道 -->
+  <div class="track">…循环扫光…</div>                    <!-- 不确定:在加载但不知多久 -->
+  <div class="track" role="progressbar" aria-valuemin="0"
+       aria-valuemax="100" aria-valuenow="42">…</div>    <!-- 确定:知道还剩多少 -->
+  <div class="done">…真实内容…</div>                      <!-- 完成态 -->
+</div>
+```
+
+关键点:
+
+- 状态文字与 aria-busy 是**第一载体**,动画只是陪衬——NN/g 的阈值本来就是按「信息价值」分段的,不是按好看程度;
+- 不确定段**不给 aria-valuenow**:没有真实值,编一个就是撒谎;拿到可量化进度的那一刻才挂 `role="progressbar"` 并逐帧同步数值;
+- 骨架块 `aria-hidden`(纯装饰,布局语义由真实内容在完成态补足)——与 skeleton-loading 条目同一纪律。
+
+## 样式与参数
+
+三个参数对应一条 CSS 变量与两段 JS 时间轴:
+
+```css
+.demo-stage { --prog-pulse: 1200ms; }  /* 不确定段循环周期(社区常见值,未证实) */
+
+/* 骨架脉动:M3「微妙脉动」——扫光层平移,只动 transform */
+.skeleton-block::after {
+  content: "";
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+  animation: pm-sweep var(--prog-pulse) linear infinite;
+}
+/* 循环扫光:40% 宽的渐变段在轨道内往复(NN/g「循环动画」档) */
+.loop { transform: translateX(-100%); animation: pm-loop var(--prog-pulse) cubic-bezier(.4, 0, .6, 1) infinite; }
+/* 确定段:填充条宽度由 JS 逐帧写,配 role=progressbar */
+.fill { background: var(--accent); }
+/* 完成:内容 200ms 快速淡入(M3 short4 + Standard,调研 04§1.4/§2.2) */
+.ready { animation: pm-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
+```
+
+数值出处:
+
+- **形态阈值全部取 NN/g(调研 04§2.2)**:\<1s 用即时状态变化;1s 以上必须给进度指示;循环动画(spinner/looped bar)只适合 2–10s;10s 以上用 percent-done 进度条并附文字说明;>10s 还应给出完成时间估计。demo 的 auto 档按此编排:0–1s 骨架 → 1–3s 循环 → 3s–total 百分比(分段点 1s/3s 为演示编排值,阈值本身是官方的);
+- `total` 默认 10000ms:恰好落在 NN/g「≥10s 用百分比」的阈值上,让 percent 段名正言顺;
+- `pulse` 1200ms:M3 只要求「微妙脉动」未给数值——社区常见值,未证实(与 skeleton-loading 条目同口径);
+- 完成淡入 200ms + `cubic-bezier(0.2, 0, 0, 1)`:M3 skeleton loaders「内容加载完成后快速淡入」+ short4/Standard 令牌(调研 04§1.4/§2.2);
+- 附加证据:NN/g 转述内布拉斯加大学实验——有进度指示时用户满意度更高、平均可等待约 **3 倍**时长(调研 04§2.2)。
+
+## 动效与交互
+
+- **形态即信息**:骨架说「连布局都不知道」、循环说「在加载但不知多久」、百分比说「还剩多少」——形态切换不是炫技,是确定性提升的实况转播;demo 的 phase 参数可把任一形态钉住对照;
+- **目标梯度收尾(补研 12§14)**:越接近目标动力越强;确定段的百分比数字 + 预计剩余就是「终点可见」的实现;阶段式流程可用「人为进度」起步(如预置第一步已完成),但**绝不均匀爬到 90% 卡住**——假进度比循环更伤信任;
+- **数值与动画分离**:百分比/文字/aria-valuenow 由 rAF 逐帧推进(信息),脉动/扫光是装饰层(reduced-motion 下可整体关掉而信息不丢);
+- **完成交接**:内容 200ms 快速淡入覆盖(M3 skeleton loaders 收尾),进度轨道同步消失——终值揭晓类场景的数字动画见 count-up 条目;
+- **reduced-motion**:脉动/扫光/淡入全停,数值照走——「动画可以关,信息不能丢」。
+
+与 skeleton-loading 条目互链:那是骨架形态的专条(扫光方向、占位对齐);与 count-up 互链:完成态的数值揭晓;长任务的完整交互(可取消、后台继续)属组件层话题,不在本条展开。
+
+## 真实产品案例
+
+- **Polar 的骨架屏**:Luke Wroblewski 记载 Polar 用骨架屏消灭了 spinner——注意力落在「内容正在到来」而非「盯着钟看」,是不确定形态替代循环动画的标志性案例(调研 04§2.2);
+- **Google 搜索的页面滑入转场**:把进度指示并入转场(结果页直接滑入)营造即时感——「用形态切换消化等待」的系统级案例(调研 04§2.2);
+- **会员卡预盖章/打车起步进度**:目标梯度效应的教科书应用——会员卡先盖一枚章、行程开始即有「已完成 x 分钟」的起步进度(补研 12§14,Laws of UX);前者是人为进度,后者是真实进度的起步垫高。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `total` | 百分比段更名副其实(≥10s 语义成立);任务越长越要给 ETA | \<10s 时 percent 段已超出 NN/g 的「循环适合区」,演示仍可跑但语义降级;\<4s 走不完三段 |
+| `pulse` | 循环变慢、更「从容」;>2s 后用户可能误读为卡死 | 循环急促、更「焦虑」;过快的高频脉动接近闪烁(HIG 对持续振荡敏感,调研 04§1.6) |
+| `phase` | 钉住某形态 = 隔离观察该形态的情绪成本 | auto 是唯一能演示「确定性→形态」映射的档,也是生产推荐路径 |
+
+选型口诀:先估时长再选形态(\<1s 什么都不用;1–10s 循环;≥10s 百分比 + 文字 + ETA);拿到真实进度立刻从循环切百分比;不确定时诚实循环,不编假进度;动画全部可关,信息全程可读。

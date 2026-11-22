@@ -1,0 +1,102 @@
+{
+  "name": "Timeline",
+  "nameZh": "时间线",
+  "aliases": ["时间轴", "Vertical Timeline", "Activity Feed"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "按时间顺序铺陈事件的垂直轴线:每格一枚节点 + 时间 + 标题,节点色区分语义(默认蓝 / 成功绿 / 报错红 / 加载中旋转点)。",
+    "en": "A vertical axis laying events out in time order: each cell carries a node dot + time + title, with node colors encoding semantics (default blue / success green / error red / spinning loading dot)."
+  },
+  "origin": {
+    "zh": "垂直时间线是「按时间排序或建立视觉连接」的展示组件(补研 12§15);生产参照系是 Ant Design Timeline(补研 12§15 记载 items:{color(blue 默认,支持预设/自定义)、title、content、icon、loading、placement(start|end)},容器 mode: start|alternate|end、orientation: vertical|horizontal、reverse,2026-11-22 抓取 ant.design 现行文档)。",
+    "en": "The vertical timeline is a display component for 'sorting by time or building visual connections' (supplementary study 12 §15); the production reference is Ant Design Timeline (12 §15 records items {color (blue default, presets/custom), title, content, icon, loading, placement (start|end)} and container mode: start|alternate|end, orientation: vertical|horizontal, reverse — captured from current ant.design docs on 2026-11-22)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "hex",
+      "default": "#1677ff",
+      "cssVar": "--tl-accent",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入 .demo-stage)。普通节点的填充色,对应 antd Timeline item 的 color——官方记载默认 blue(补研 12§15);demo 取 antd colorPrimary #1677ff(蓝板第 6 阶,设计调研 06§1.2/§2.2)表达该默认蓝。语义节点不受此参数影响:成功绿 #52c41a、报错红 #ff4d4f = antd colorSuccess/colorError(06§2.2)。",
+        "en": "CSS-var param (injected onto .demo-stage by DemoStage). The fill color of plain nodes, mapping to antd Timeline's item color — officially recorded as defaulting to blue (12 §15); the demo expresses that default blue with antd colorPrimary #1677ff (step 6 of the blue palette, design study 06 §1.2/§2.2). Semantic nodes are unaffected: success green #52c41a and error red #ff4d4f = antd colorSuccess/colorError (06 §2.2)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "start", "label": { "zh": "左置 start", "en": "Start" } },
+        { "value": "alternate", "label": { "zh": "交替 alternate", "en": "Alternate" } },
+        { "value": "end", "label": { "zh": "右置 end", "en": "End" } }
+      ],
+      "default": "start",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切 data-mode,改轴线位置与内容排布)。对应 antd Timeline 的 mode: start|alternate|end(补研 12§15);官方默认值调研未记载,demo 默认 start(单侧左置)为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes and toggles data-mode, moving the axis and content layout). Maps to antd Timeline's mode: start|alternate|end (12 §15); the official default is unrecorded — the demo's start (single left side) default is a community-common value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "reverse",
+      "options": [
+        { "value": "off", "label": { "zh": "正序 off", "en": "Off" } },
+        { "value": "on", "label": { "zh": "倒序 on", "en": "On" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后倒转条目顺序)。对应 antd Timeline 的 reverse(补研 12§15);官方默认值调研未记载,demo 默认 off 为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes to flip the item order). Maps to antd Timeline's reverse (12 §15); the official default is unrecorded — the demo's off default is a community-common value, unverified."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "时间线是纯 DOM/CSS 展示组件(弹性布局 + 绝对定位轴线 + CSS 动画),无平台 API 依赖;加载点的旋转动画用 CSS keyframes,现代浏览器全支持;仅 mode=alternate 的中轴排布在极窄容器下需要降级为单侧。",
+      "en": "The timeline is a pure DOM/CSS display component (flex layout + absolutely positioned rail + CSS animation) with no platform API dependency; the loading dot spins via CSS keyframes, supported everywhere modern; only the centered rail of mode=alternate needs degrading to one side in very narrow containers."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 CSS 动画或命中 prefers-reduced-motion 时,加载点退化为静态圆环、入场动效取消,时间线仍是完整的静态列表;极窄屏(<360px)把 alternate 退化为 start 单侧排布,保证文字不换行挤压。",
+    "en": "Without CSS animation or under prefers-reduced-motion, the loading dot degrades to a static ring and entrance motion is dropped — the timeline remains a complete static list; below 360px degrade alternate to the one-sided start layout so text doesn't squeeze."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "流程/部署日志:构建、审核、发布的每一步带时间戳纵向铺开", "en": "Pipeline/deploy logs: build, review, release steps with timestamps laid out vertically" },
+      { "zh": "订单物流轨迹:揽收→运输→派送的关键节点与状态色", "en": "Shipment tracking: pickup → transit → delivery milestones with status colors" },
+      { "zh": "活动流/动态:Issue、工单、审批记录按时间倒序(最新在上)", "en": "Activity feeds: issues, tickets, approvals newest-first" },
+      { "zh": "版本说明/更新日志:版本节点 + 变更摘要", "en": "Release notes/changelogs: version nodes + change summaries" }
+    ],
+    "avoid": [
+      { "zh": "事件超过约 20 条的无限流——时间线整段渲染代价高,应配合分页或虚拟滚动", "en": "Unbounded feeds past ~20 items — render whole timelines sparingly; paginate or virtualize" },
+      { "zh": "需要精确定量对比的时间序列数据——那是折线图(数据可视化)的职责", "en": "Time-series needing quantitative comparison — that's a line chart's job (dataviz)" },
+      { "zh": "无时间或顺序语义的并列信息——强行加轴线只会制造虚假因果", "en": "Parallel info with no time or order semantics — an imposed axis fakes causality" },
+      { "zh": "alternate 模式塞长文本:左右横跳的阅读动线对长段落不友好", "en": "alternate mode with long copy: the left-right reading zigzag hurts long paragraphs" }
+    ]
+  },
+  "a11y": {
+    "zh": "时间线是展示组件:条目用 ol/li 列表语义组织,时间与状态含义必须落在**文字**里(时间戳、状态词),节点色只作强调不作唯一载体(颜色不能单独传达信息——WCAG 1.4.1 通用法则);节点/勾叉图标 aria-hidden,加载点配可见文字「部署进行中」;入场 stagger 与旋转动画在 prefers-reduced-motion 命中时降级(调研 07§37);倒序(reverse)时保持 DOM 顺序与视觉顺序一致,避免读屏顺序跳变。",
+    "en": "The timeline is a display component: organize items with ol/li list semantics, and keep time and status meaning in **text** (timestamps, status words) — node color emphasizes but never solely carries information (WCAG 1.4.1 general rule); node/check/cross glyphs are aria-hidden; the loading dot pairs with visible text 'Deploying…'; stagger and spin animations degrade under prefers-reduced-motion (research 07 §37); with reverse, keep DOM order matching visual order so screen readers don't jump."
+  },
+  "sources": [
+    "https://ant.design/components/timeline",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条垂直时间线:左侧(或中轴交替/右侧)轴线串起 5 个事件节点,节点带语义色(默认蓝/成功绿/报错红)与一枚旋转加载点,每格含时间戳、标题与描述。",
+      "en": "Replicate a vertical timeline: a left (or centered alternating / right) rail stringing 5 event nodes with semantic colors (default blue / success green / error red) and one spinning loading dot; each cell carries a timestamp, title and description."
+    },
+    "acceptance": [
+      { "zh": "条目语义为 ol/li;时间戳与状态词在可见文字中,节点图标 aria-hidden", "en": "Items use ol/li semantics; timestamps and status words are visible text, node glyphs aria-hidden" },
+      { "zh": "普通节点色严格用参数快照值(--tl-accent,默认 #1677ff);成功 #52c41a、报错 #ff4d4f,状态同时有文字", "en": "Plain node color uses the exact snapshot value (--tl-accent, default #1677ff); success #52c41a, error #ff4d4f, each status also in text" },
+      { "zh": "mode 三档(start/alternate/end)与 reverse 倒序均可用,轴线随档位换位", "en": "All three modes (start/alternate/end) plus reverse work; the rail repositions per mode" },
+      { "zh": "加载点是 1s 匀速旋转的圆环,命中 prefers-reduced-motion 时静止为普通圆环;入场 stagger 只动 opacity/translate", "en": "The loading dot is a 1s linear spinning ring that freezes to a plain ring under prefers-reduced-motion; entrance stagger animates only opacity/translate" },
+      { "zh": "极窄屏(<360px)alternate 退化为 start 单侧,文字不挤压", "en": "Below 360px alternate degrades to one-sided start without text squeezing" }
+    ]
+  }
+}

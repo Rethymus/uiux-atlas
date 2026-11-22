@@ -1,0 +1,85 @@
+## Structure & DOM
+
+A stepper is an "ordered list + node circles + connectors" navigation: each step is one cell (node circle, title, description, state text), connectors string adjacent nodes together, and the four states (wait/process/finish/error) derive from `current`, with explicit error overriding:
+
+```html
+<ol class="st-steps" aria-label="Onboarding steps">
+  <li class="st-item is-done">
+    <button type="button" class="st-head" aria-label="Step 1 Confirm order: done">✓</button>
+    <div class="st-meta">
+      <div class="st-label">Confirm order</div>
+      <div class="st-state">Done</div>
+    </div>
+  </li>
+  <li class="st-item is-process" aria-current="step">
+    <button type="button" class="st-head" aria-label="Step 2 Pay: in progress 50%">
+      <span class="st-ring" aria-hidden="true"></span>2
+    </button>
+    <div class="st-meta">
+      <div class="st-label">Pay</div>
+      <div class="st-state">In progress 50%</div>
+    </div>
+  </li>
+</ol>
+```
+
+Key points:
+
+- The semantic skeleton is an `ol/li` ordered list: steps are inherently ordered; the active header node carries `aria-current="step"` (the APG 30-pattern list has no stepper; this convention is community-common, unverified; research 07 §34);
+- Nodes are **native buttons** (Enter/Space when clickable), with `aria-label` carrying step name + state text — the four states never ride on color alone;
+- Connectors are per-cell pseudo-elements (rightward from the circle center horizontally, down the left rail vertically); completed segments fill with the node color, pending ones stay pale gray;
+- The process step's progress ring is a `conic-gradient` mask ring around the node, driven directly by the percent param (antd percent semantics, supplementary study 12 §15).
+
+## Styling & Parameters
+
+All four params are JS-type (store-subscribed; current is also written back by clicking a step header):
+
+```css
+.st-head {
+  width: 32px; height: 32px; border-radius: 50%;   /* antd control-height 32 step */
+  color: rgba(0, 0, 0, 0.25);                       /* TextQuaternary wait state */
+  box-shadow: inset 0 0 0 1px #d9d9d9;              /* colorBorder outline */
+}
+.st-item.is-done .st-head,
+.st-item.is-process .st-head { background: #1677ff; color: #fff; }
+.st-item.is-error .st-head { color: #ff4d4f; box-shadow: inset 0 0 0 1px #ff4d4f; }
+.st-ring {
+  background: conic-gradient(#1677ff var(--st-percent) , #f0f0f0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;                          /* ring mask */
+}
+.st-item.is-done:not(:last-child)::after { background: #1677ff; }  /* connector fill */
+```
+
+Where the numbers come from:
+
+- The 32px node = antd's controlHeight default step (design study 06 §2.3③, borrowed to align with the control system; antd records no Steps node size); primary #1677ff = colorPrimary, error #ff4d4f = colorError (06 §2.2);
+- wait text rgba(0,0,0,0.25) = TextQuaternary, outline #d9d9d9 = colorBorder, connector base #f0f0f0 = colorBorderSecondary (06 §2.3⑤/§2.2);
+- The derivation rule: with item status unset, finish/process/wait derive from current and explicit error wins (supplementary study 12 §15);
+- **Header paddings and the 2px connector are community-common values, unverified** (the research records no Steps geometry);
+- `responsive (\<532px auto-vertical)`, `maxCount (≥3)`, `percent` and `onChange (clickable when set)` are all officially recorded antd Steps facts (12 §15); the demo lands the responsive semantics in a ≤532px media query.
+
+## Motion & Interaction
+
+- **State switch**: node fill/outline transition over 0.2s (motionDurationMid + motionEaseInOut, 06 §3.1/3.2); glyphs (✓/✕/number) pop in with a 0.2s back-eased scale (the EaseOutBack token, 06 §3.2); all dropped under `prefers-reduced-motion` (research 07 §37);
+- **Connector fill**: completed segments transition 0.2s from pale gray to primary — the lit path is the visual carrier of the goal-gradient effect (drive strengthens as the goal nears, supplementary study 12 §14);
+- **Clickable step headers**: steps become clickable once onChange is set (supplementary study 12 §15) — in the demo a header click runs `store.set("current", i)`, syncing the parameter panel and the derivation; clicking never skips validation — in production, gate the next step behind form checks;
+- **Errors state their step**: the error step shows ✕ glyph + red title + state text together, and the explanation sits next to the failing step (NN/g: errors belong next to where they occur, research 07 §16);
+- The percent ring redraws instantly with the param — a percentage is data, so no decorative tweening on top.
+
+## Real-world examples
+
+- **E-commerce checkout**: JD/Taobao checkout tops the funnel with "confirm → pay → done" indicators, current highlighted and completed checked — the stepper is the standard checkout navigation;
+- **Bank/government onboarding wizards**: identity → face verification → card binding as step-wise forms, with the stepper answering "how much is left"; the goal-gradient effect is used to cut abandonment (supplementary study 12 §14);
+- **CI/CD and deploy panels**: build → test → ship stages as a stepper with a progress indicator on the active stage and red failure states with log links — the demo's review-error state mirrors this pattern (editorial parallel).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `current` | advancing lights more connectors and marks more steps done — a stronger sense of progress | stepping back un-dones the completed visuals — production must keep entered data on retreat (NN/g heuristic: reversibility, research 07 §21③) |
+| `errorAt` | an explicit error overrides derivation, holding a step red even as current advances | back to none the error vanishes entirely — the message must move to copy/inline notices |
+| `percent` | a near-full ring maximizes the "almost there" sprint feeling (goal gradient, 12 §14) | at 0% no ring; the process step degrades to a plain disc |
+| `orientation` | vertical suits long step titles or narrow screens (antd \<532px auto-vertical, 12 §15) | horizontal shows everything at a glance — the default mental model, but titles must stay short |
+
+Working ranges: 3–5 steps is safest (working memory 7±2, leave headroom for titles); titles ≤6 characters, one-line descriptions; steppers belong on linear mains only; retractable wizards must keep entered data when stepping back.

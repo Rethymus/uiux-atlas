@@ -1,0 +1,91 @@
+{
+  "name": "Split View",
+  "nameZh": "分栏视图",
+  "aliases": ["分栏面板", "可拖分栏", "Resizable Panels", "Split Pane"],
+  "category": "layout",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "一条可拖的分隔条把界面分成可调双栏:拖拽与方向键共用同一数值,栏内组件用容器查询随栏宽自适应——IDE、邮件客户端与文档站的骨架。",
+    "en": "A draggable divider splits the UI into two resizable panes: drag and arrow keys drive one shared value, while container queries re-flow pane content — the backbone of IDEs, mail clients and docs sites."
+  },
+  "origin": {
+    "zh": "CSS 无原生可拖拽分栏标准(调研 05§8);生态事实标准是 React 生态的 react-resizable-panels:PanelGroup/Panel 组件分组、拖拽手柄、支持 WAI-ARIA separator 角色的键盘可访问性(方向键调整,README 一手核对)。MDN Cookbook 的「Split navigation」是视觉分隔的导航配方,与桌面式可拖分栏并非同一概念,注意区分(调研 05§8)。本条目 demo 以原生 Pointer Events + role=\"separator\" 复刻同一模式,零第三方库。",
+    "en": "CSS has no native draggable split-pane standard (research 05 §8); the ecosystem de-facto standard is react-resizable-panels in the React world: PanelGroup/Panel grouping, a drag handle, and WAI-ARIA separator-role keyboard support (arrow keys, README verified first-hand). MDN Cookbook's 'Split navigation' is a visually divided nav recipe, not the same concept as desktop-style resizable panes (research 05 §8). This entry's demo recreates the same pattern with native Pointer Events + role=\"separator\", no third-party library."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "startSize",
+      "unit": "%",
+      "min": 20,
+      "max": 80,
+      "step": 1,
+      "default": 40,
+      "cssVar": "--sv-start",
+      "effect": {
+        "zh": "左栏初始宽度占分栏容器百分比(CSS 型 --sv-start,拖拽手柄实时回写 store,滑杆与拖拽双向同步)。默认 40% 为演示基准值,未证实——react-resizable-panels 的 defaultSize 按各产品自定,无统一官方值;双击分隔条回到该值。",
+        "en": "The left pane's initial width as a percentage of the split container (CSS-type --sv-start; the drag handle writes back to the store so slider and drag stay in sync). Default 40% is a demo baseline value, unverified — react-resizable-panels defaultSize is product-specific with no single official value; double-click the divider to restore it."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "minSize",
+      "unit": "%",
+      "min": 5,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--sv-min",
+      "effect": {
+        "zh": "拖拽与方向键的夹紧下限(JS 型,同时写入分隔条的 aria-valuemin)。默认 20% 为演示基准值,未证实;低于该下限的栏内容应折叠而不是被压碎——demo 用容器查询在右栏过窄时把卡片翻成纵排。",
+        "en": "The clamp floor for drag and arrow keys (JS-type; also written to the divider's aria-valuemin). Default 20% is a demo baseline value, unverified; pane content should collapse rather than be crushed below the floor — the demo uses a container query to stack the right card when it gets too narrow."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "本条目 demo 依赖的 Pointer Events、role=\"separator\" 与容器查询均为广泛可用能力;容器查询 Baseline Widely available 自 2023-02(调研 05§6)。分栏本身无 CSS 原生标准——生态方案 react-resizable-panels 的兼容性随 React 走(调研 05§8)。",
+      "en": "What the demo relies on — Pointer Events, role=\"separator\" and container queries — is broadly available; container queries are Baseline Widely available since 2023-02 (research 05 §6). Split panes have no native CSS standard — the ecosystem solution react-resizable-panels inherits React's compatibility surface (research 05 §8)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持拖拽/指针事件的环境(键盘、读屏)必须保留方向键等价操作——role=\"separator\" + tabindex + 方向键是 WAI-ARIA separator 模式的最低配(调研 05§8);极窄视口放弃分栏,改上下堆叠(媒体查询先于分栏生效);容器查询不生效时栏内组件保持默认纵排,不报错。",
+    "en": "Environments without drag/pointer support (keyboard, screen readers) must keep an arrow-key equivalent — role=\"separator\" + tabindex + arrow keys is the WAI-ARIA separator minimum (research 05 §8); on very narrow viewports drop the split and stack vertically (media queries take precedence); where container queries are unsupported, pane content keeps its default stacked layout without errors."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "IDE/编辑器的资源树与编辑区、邮件客户端的列表与阅读 pane", "en": "IDE file trees beside editors, mail clients' list beside the reading pane" },
+      { "zh": "文档站/后台的侧栏导航,用户可按自己的屏幕宽度收窄", "en": "Docs sites and admin sidebars users can narrow to taste" },
+      { "zh": "对比场景:图集编辑器原图与调色结果并排、日志查看器", "en": "Comparison surfaces: image editors side-by-side, log viewers" },
+      { "zh": "栏内组件密度自适应——配合容器查询让卡片随栏宽自行重排(本条目 demo 的联动)", "en": "Density adaptation inside panes — container queries re-flow cards as the pane narrows (this demo's linkage)" }
+    ],
+    "avoid": [
+      { "zh": "手机竖屏主界面——拇指拖拽分隔条误触率高,直接堆叠", "en": "Phone-portrait primary UIs — thumb-dragging a divider is error-prone; just stack" },
+      { "zh": "内容必须完整可见的场景(报表、表单)——分栏挤压会截断关键信息", "en": "Content that must be fully visible (reports, forms) — squeezing panes truncates key info" },
+      { "zh": "把 MDN Cookbook「Split navigation」(导航分组视觉分隔)当成可拖分栏——两者不是同一概念(调研 05§8)", "en": "Mistaking MDN Cookbook's 'Split navigation' (visually divided nav) for resizable panes — different concepts (research 05 §8)" },
+      { "zh": "分隔条只做鼠标目标——无键盘等价操作违反 WCAG 2.1.1(调研 05§8 的 separator 模式正是为此)", "en": "Dividers as mouse-only targets — no keyboard equivalent violates WCAG 2.1.1 (the separator pattern in research 05 §8 exists for exactly this)" }
+    ]
+  },
+  "a11y": {
+    "zh": "分隔条是 WAI-ARIA separator:role=\"separator\"、tabindex=0、aria-orientation=\"vertical\"、aria-valuenow/min/max 实时反映栏宽、方向键调整(调研 05§8 react-resizable-panels README 同款语义);拖拽中 aria-valuenow 同步更新;夹紧下限防止任一栏被压到内容不可达;面板重排只改视觉不改 DOM 顺序(WCAG 1.3.2);焦点环在分隔条上清晰可见;prefers-reduced-motion 下取消面板宽度过渡。",
+    "en": "The divider is a WAI-ARIA separator: role=\"separator\", tabindex=0, aria-orientation=\"vertical\", aria-valuenow/min/max tracking the pane width live, arrow keys to adjust (same semantics as react-resizable-panels' README, research 05 §8); aria-valuenow updates during drag; the clamp floor keeps either pane's content reachable; pane re-flow changes visuals only, never DOM order (WCAG 1.3.2); a visible focus ring sits on the divider; pane-width transitions are dropped under prefers-reduced-motion."
+  },
+  "sources": [
+    "https://github.com/bvaughn/react-resizable-panels",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用原生 Pointer Events + WAI-ARIA separator 模式复刻一个可拖双栏:左栏文件树、右栏预览卡,分隔条可拖拽、可方向键微调、双击复位,右栏内容用容器查询随栏宽翻转横纵排。",
+      "en": "Recreate a draggable two-pane split with native Pointer Events + the WAI-ARIA separator pattern: a file tree left, a preview card right; the divider drags, arrow-keys nudge, double-click resets, and the right pane's content flips row/column via a container query."
+    },
+    "acceptance": [
+      { "zh": "分隔条 role=\"separator\"、tabindex=0、aria-orientation=\"vertical\",aria-valuenow/min/max 随拖拽实时更新", "en": "Divider carries role=\"separator\", tabindex=0, aria-orientation=\"vertical\", with aria-valuenow/min/max live during drag" },
+      { "zh": "拖拽与方向键共用同一夹紧逻辑(minSize 下限),鼠标与键盘结果一致", "en": "Drag and arrow keys share one clamping rule (minSize floor); mouse and keyboard produce identical results" },
+      { "zh": "右栏声明 container-type: inline-size,查询条件为字面量断点,窄栏自动翻成纵排", "en": "The right pane declares container-type: inline-size with a literal breakpoint, stacking the card when narrow" },
+      { "zh": "双击分隔条恢复 startSize 参数值;极窄视口退化为上下堆叠", "en": "Double-clicking the divider restores the startSize parameter; very narrow viewports degrade to stacked layout" },
+      { "zh": "prefers-reduced-motion 下取消宽度过渡动画", "en": "Width transitions are disabled under prefers-reduced-motion" }
+    ]
+  }
+}

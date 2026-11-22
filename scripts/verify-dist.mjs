@@ -13,22 +13,27 @@ const EXPECTED = {
   // (与 scripts/verify-entries.mjs 的 styles 同一清单);
   // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
   styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid", "flat-design", "skeuomorphism", "memphis-design", "swiss-international", "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome", "maximalism", "classic-brutalism", "spatial-ui"],
-  materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api"],
-  // motion 第 8 批 8 个工艺/行为条目 + b14 批(动效补全)6 条 M3/Web 条目,共 25 个
+  // materials 12 条基础 + b21-materials2 批(材质与光影补全)4 条,共 16 个
+  // (与 scripts/verify-entries.mjs 的 materials 同一清单)。
+  materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api", "contact-shadows", "specular-highlight", "dimming-layer", "depth-of-field"],
+  // motion 第 8 批 8 个 + b14 批(动效补全)6 条 + b19 批(微交互补全·二)6 条,共 31 个
   // (与 scripts/verify-entries.mjs 的 motion 同一清单);
   // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
-  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow", "m3-duration-tokens", "easing-pairs", "choreography", "parallax", "haptics-web", "page-transitions"],
-  // color 9 条基础 + b12-color 批(色彩与主题补全)5 条,共 14 个
+  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow", "m3-duration-tokens", "easing-pairs", "choreography", "parallax", "haptics-web", "page-transitions", "flip-technique", "scroll-snap", "magnetic-hover", "kinetic-typography", "progress-motion", "handoff-curves"],
+  // color 9 条基础 + b12-color 批 5 条 + b18-color2 批(色彩与主题二批)5 条,共 19 个
   // (与 scripts/verify-entries.mjs 的 color 同一清单)。
-  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation", "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces", "color-psychology-ui", "theme-transition"],
-  // type 3 条基础 + b11 批(排版补全)6 条,共 9 个
+  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation", "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces", "color-psychology-ui", "theme-transition", "brand-color-system", "dark-mode-patterns", "status-color-system", "color-functions", "multi-theme-tokens"],
+  // type 3 条基础 + b11 批(排版补全)6 条 + b17-type2 批(排版二次补全)6 条,共 15 个
   // (与 scripts/verify-entries.mjs 的 type 同一清单)。
-  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing", "measure-line-length", "wcag-text-spacing", "cjk-typography", "font-display-strategy", "text-wrap-balance", "drop-cap-initial"],
-  // layout container-queries + b10 批(布局补全)8 条,共 9 个
+  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing", "measure-line-length", "wcag-text-spacing", "cjk-typography", "font-display-strategy", "text-wrap-balance", "drop-cap-initial", "tabular-numbers", "baseline-grid", "font-pairing", "small-caps-features", "vertical-rhythm", "display-typography"],
+  // layout container-queries + b10 批(布局补全)8 条 + b16-layout2 批 6 条,共 15 个
   // (与 scripts/verify-entries.mjs 的 layout 同一清单)。
-  layout: ["container-queries", "auto-fit-minmax", "subgrid", "position-sticky", "safe-area", "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning"],
-  // 第七分类 components:24 个 slug(与 scripts/verify-entries.mjs 的 COMPONENT_SLUGS 同一清单,
-  // 六子分组序 basic/form/feedback/data/navigation/other)—— 批产已完成,缺失检查并入常规逐条全检。
+  layout: ["container-queries", "auto-fit-minmax", "subgrid", "position-sticky", "safe-area", "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning", "split-view", "aspect-ratio", "responsive-images", "logical-properties", "writing-modes", "custom-scrollbar"],
+  // 第七分类 components:24 个 slug + 二批 6 条(cascader / collapse-panel / rate-score /
+  // stepper / timeline / upload-states)+ 命令面板条目(command-palette,站点全站
+  // Ctrl+K 的组件本体)共 31 个(与 scripts/verify-entries.mjs 的 COMPONENT_SLUGS
+  // 同一清单,六子分组序 basic/form/feedback/data/navigation/other)——
+  // 缺失检查并入常规逐条全检。
   components: [
     "button", "icon", "tag", "typography",
     "input", "select", "switch", "checkbox", "date-picker",
@@ -36,27 +41,36 @@ const EXPECTED = {
     "table", "avatar", "badge", "card",
     "nav-menu", "tabs", "breadcrumb", "dropdown",
     "empty", "watermark",
+    "cascader", "collapse-panel", "rate-score", "stepper", "timeline", "upload-states",
+    "command-palette",
   ],
-  // 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,8 slug)——
-  // 16 条已落地,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 同一清单;
-  // 条目页检查并入常规逐条全检(与 components 批产收口同动作)。
+  // 第八/第九分类 icons(图标体系,8+4=12 slug)与 dataviz(数据可视化,8+3=11 slug)——
+  // icons 二批 b22(icon-font-vs-svg / icon-button / favicon-stack / icon-system-design)
+  // 并入同一清单,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 保持一致;
+  // 条目页检查并入常规逐条全检。
   icons: [
     "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
     "icon-sprite-symbols", "icon-lucide-set", "icon-color-states", "icon-motion",
+    "icon-font-vs-svg", "icon-button", "favicon-stack", "icon-system-design",
   ],
   dataviz: [
     "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
     "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
     "dataviz-chart-selection", "dataviz-color-ordering",
+    // dataviz 扩编批(b23):small-multiples / chart-animation / chart-accessibility,
+    // 与 scripts/verify-entries.mjs 的 DATAVIZ_SLUGS 保持同一清单。
+    "small-multiples", "chart-animation", "chart-accessibility",
   ],
-  // 第十分类 principles(交互法则与无障碍,15 slug)——15 条已全部落地,
-  // 与 scripts/verify-entries.mjs 的 PRINCIPLES_SLUGS 同一清单,并入常规逐条全检
+  // 第十分类 principles(交互法则与无障碍,15+3=18 slug)——二批 b24
+  // (aesthetic-usability / goal-gradient / pareto-principle)并入同一清单,
+  // 与 scripts/verify-entries.mjs 的 PRINCIPLES_SLUGS 保持一致,并入常规逐条全检
   // (条目页 zh 标记照通用规则 = nameZh ?? name,en = name)。
   principles: [
     "fitts-law", "hick-law", "millers-law", "jakobs-law", "peak-end-rule",
     "doherty-threshold", "teslers-law", "gestalt-proximity", "gestalt-similarity-closure",
     "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
     "prefers-contrast", "keyboard-navigation",
+    "aesthetic-usability", "goal-gradient", "pareto-principle",
   ],
 };
 
@@ -95,9 +109,11 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-// 首页 ×2(含「授人以渔」资源入口行 + 「趋势追踪」入口行的稳定文案)
-checkPage("index.html", ["UI/UX 设计全解图集", "授人以渔", "趋势追踪 →"], "zh home");
-checkPage(join("en", "index.html"), ["UI/UX Design Atlas", "Go beyond", "Design trends →"], "en home");
+// 首页 ×2(含「授人以渔」资源入口行 + 「趋势追踪」入口行的稳定文案;
+// 另检站内搜索钮标记:全站页头搜索钮 data-palette-open + 双语 aria-label,
+// 命令面板条目 components/command-palette 落地后纳入产物核验)
+checkPage("index.html", ["UI/UX 设计全解图集", "授人以渔", "趋势追踪 →", "data-palette-open", "搜索 / Search"], "zh home");
+checkPage(join("en", "index.html"), ["UI/UX Design Atlas", "Go beyond", "Design trends →", "data-palette-open", "Search / 搜索"], "en home");
 
 // 资源页 ×2:标记 = 页面标题 + 五个组名 + 页尾「趋势追踪」互链(稳定文案)
 checkPage(
@@ -124,11 +140,12 @@ checkPage(
   "en trends",
 );
 
-// 分类列表页 ×2 ×9(zh 标记见 CATEGORY_ZH_MARKERS,缺省回退分类 id,与既有分类同法)
+// 分类列表页 ×2 ×9(zh 标记见 CATEGORY_ZH_MARKERS,缺省回退分类 id,与既有分类同法;
+// 每页同时检站内搜索钮标记 data-palette-open——全站页头搜索钮随 Base.astro 全站产出)
 for (const cat of Object.keys(EXPECTED)) {
   const zhMarker = CATEGORY_ZH_MARKERS[cat] ?? cat;
-  checkPage(join(cat, "index.html"), [zhMarker], `zh category ${cat}`);
-  checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
+  checkPage(join(cat, "index.html"), [zhMarker, "data-palette-open"], `zh category ${cat}`);
+  checkPage(join("en", cat, "index.html"), [cat, "data-palette-open"], `en category ${cat}`);
 }
 
 // 条目页 ×2 ×142:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name

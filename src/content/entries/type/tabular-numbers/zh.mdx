@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+无特殊结构——`font-variant-numeric` 是普通 CSS 属性,声明在承载数字的元素上即可:
+
+```html
+<table class="stats">
+  <tr><td>营收</td><td class="num">¥ 12,830,457</td></tr>
+  <tr><td>订单</td><td class="num">9,021</td></tr>
+</table>
+```
+
+```css
+.num {
+  font-variant-numeric: tabular-nums;        /* 核心:等宽数字(OpenType tnum) */
+  font-variant-numeric: tabular-nums slashed-zero; /* 需防 O/0 混淆时叠加斜杠零 */
+}
+```
+
+关键点:
+
+- 数字的「等宽」由**字体文件**里的 OpenType `tnum` 特性表实现,CSS 只是开关——字体不含该表时声明无效但无害(调研 12§9);
+- `font-variant-numeric` 可空格组合:`tabular-nums slashed-zero`、`oldstyle-nums ordinal` 都是合法组合;
+- 与 `font-variant-numeric` 同族的全值清单(MDN 原文,12§9):`lining-nums`/`oldstyle-nums`、`proportional-nums`/`tabular-nums`、`diagonal-fractions`/`stacked-fractions`、`ordinal`、`slashed-zero`。
+
+## 样式与参数
+
+三个参数:一个 CSS 变量型 + 两个 JS 型(斜杠零经 `data-zero` 后缀、计数节奏):
+
+```css
+.tn-num {
+  font-variant-numeric: var(--tn-numeric);           /* tabular-nums(默认) */
+  font-family: var(--font-mono, ui-monospace, monospace); /* 等宽字体是强兜底 */
+}
+.tn-board[data-zero="on"] .tn-num {
+  font-variant-numeric: var(--tn-numeric) slashed-zero;
+}
+```
+
+数值出处:
+
+- `tabular-nums` 的定义「easily aligned like in tables」为 MDN 原文(12§9 一手核对);
+- Baseline Widely available:自 2020-01 起(12§9);
+- 本站 Inter Variable 含 `tnum` 与 slashed zero 特性(Inter 官方仓库规格,调研 05§24)——demo 的宽度探针在本站字体上可测出真实差异;
+- 全站数值执行 mono + tabular-nums 纪律:hero 统计行见源码 `src/styles/global.css:896-914`。
+
+## 动效与交互
+
+数字场景的动效纪律:动文本、不动布局。
+
+- **count-up 计数**:demo 用定时器步进三行 KPI,数值变化只改文本节点;等宽风格下列宽波动恒为 0,比例宽度风格下每一步都在跳——宽度计实时显示抖动幅度;
+- **宽度探针**:同一字体下实测 `1111111111` 与 `1234567890` 两串的渲染宽度差,Δ≈0 即等宽生效——结论来自测量而非写死;
+- **斜杠零开关**:经 `data-zero` 属性切换,展示 `slashed-zero` 对 O/0 混淆的防护;
+- **节奏参数** `countSpeed` 为演示参数(非规范值);`prefers-reduced-motion` 时计数停止,静态数值与探针保留。
+
+## 真实产品案例
+
+- **Inter 字体官方发行**:仓库规格明确列出「表格数字(tabular numbers)」与「slashed zero」两个 OpenType 特性,并被 Figma、GitLab、NASA 采用(调研 05§24)——数据密集产品的 UI 字体供给层直接内置了这套能力。
+- **本站 uiux-atlas**:hero 统计行与全站可数元数据统一执行「mono 字族 + `font-variant-numeric: tabular-nums`」纪律(源码 `src/styles/global.css:896-914`,spec §2.2/§6-16);补研 12§16 把「全站数字列 tabular-nums,仪表盘呼吸不抖动」列为签名巧思之一。
+- **数据密集型仪表盘的通行实践**:表格数字让同一列的数字纵向严格对齐,是财务报表、订单管理类界面的默认选择(实践共识,未证实;效果可用本条 demo 的宽度探针在任意字体上自证)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `numericStyle` | 换 `oldstyle-nums` 时 3/4/5/7/9 带降部,正文行内更融合,但表格列对齐感下降 | `tabular-nums` 是唯一严格等宽档;`proportional-nums` 占位更经济但对齐失效 |
+| `slashedZero` | `on` 时 0 带斜杠,O/0 不再混淆——订单号/验证码场景的防错利器 | `off` 回到普通 0,依赖字体自身数字设计区分 |
+| `countSpeed` | 步进越密,比例宽度下的列抖动越显眼(等宽档始终为 0) | 减速后抖动样本变少,探针读数趋于平静 |
+
+经验区间:数据表/仪表盘一律 `tabular-nums`;正文行内数字保持默认(比例);只在与字母 O 并排的编号串上加 `slashed-zero`。字体是前提——先确认字体含 tnum 表,再谈对齐。

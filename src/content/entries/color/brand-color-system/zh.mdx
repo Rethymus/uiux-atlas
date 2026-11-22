@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+管线是三段式,**顺序不能颠倒**:第 1 段「种子」是一粒品牌色 oklch(L C H);第 2 段「展开」在固定 H/C 下按 tone 阶铺开色带;第 3 段「映射」把 tone 档位指派给语义角色,组件只消费角色。
+
+```html
+<div class="scene">
+  <div class="ramp" role="img" aria-label="品牌色相的 13 档 tone 阶">…</div>
+  <div class="audit-list">…</div>
+</div>
+```
+
+```css
+/* tone 档直接用 oklch() 声明:H/C 固定,只有 L 随 tone 变 */
+.tone-80 { background: oklch(0.8 0.19 250); }
+```
+
+关键点:
+
+- **固定 H 与 C、只变 tone**——这是派生与手挑调色板的分水岭:档位之间的关系是函数关系,不是审美决定(M3 tonal palette 机制,调研 06§5;Radix 12 步同构,调研 06§8);
+- 语义角色映射在独立一层发生(tone 80 → 暗色 accent,tone 90 → container),组件永远看不到 tone 数字;
+- 验证管线对每个「文字/背景」「图形/相邻色」组合分别跑闸,而不是对调色板整体盖章。
+
+## 样式与参数
+
+四个参数均为 JS 型:demo 订阅后用 Oklab 矩阵重算 tone 阶,再用 WCAG 2.1 公式逐组合复核:
+
+```css
+/* 亮色语境:solid accent = 品牌 tone 本身 */
+.accent { background: oklch(0.62 0.19 250); color: #fff; }
+
+/* 暗色语境:accent 跳同色相 tone 80、字取低 tone 深色
+   —— 官方基线同构:M3 dark primary #D0BCFF(≈tone 80)/ on-primary #381E72(调研 06§7) */
+[data-theme="dark"] .accent { background: oklch(0.8 0.19 250); color: oklch(0.2 0.19 250); }
+```
+
+数值出处:
+
+- `oklch(0.62 0.19 250)` 为补研 12§11 派生片段的品牌种子值;本会话实测:该值在 L=0.62/H=250 已越 sRGB 域,浏览器裁剪显示为 **#0088F2**,配白字 **3.62:1**——过 3:1 大字/UI 档,不过正文 AA(Evil Martians 同样警示:仅靠 OKLCH 不能保证可访问性,调研 06§2);
+- 暗侧机制有官方锚点:M3 暗色 primary `#D0BCFF` ≈ tone 80、on-primary `#381E72`(调研 06§7);本会话复测该官方对 **7.71:1**,同色相 tone 80 + tone 20 演示对 **8.81:1**;
+- 色相刻度:红≈20°、黄≈90°、绿≈140°、蓝≈220°、紫≈320°(Evil Martians,调研 06§2);C 实测上限约 0.37(调研 06§2),MDN 理论上限 0.5 且 100%=0.4(调研 06§1)。
+
+## 动效与交互
+
+管线是静态纪律,动效只用于让「派生关系」被看见:
+
+- 参数滑杆驱动 JS 重算:tone 阶色块与验证行带 18ms/60ms 递放入场(只动 `opacity/transform`);`prefers-reduced-motion` 时全部取消;
+- **theme 切换**(亮/暗语境)不重画色带,只挪动角色角标:亮侧角标落在品牌 tone,暗侧跳到 tone 80——让「暗色 accent 提亮」变成看得见的档位移动;
+- 越域色块如实标注:裁剪后的 sRGB 值与对比度复核同源,避免「看到的颜色」和「算出的比值」对不上(Chrome/Safari 现状:直接裁剪 RGB,调研 06§2);
+- 对比度徽标是即时判定,不补动画——判定结果的突变不该被过渡掩盖。
+
+## 真实产品案例
+
+- **Material Theme Builder**(Google 官方工具,Figma 插件/网页版):输入种子色自动生成 tonal palette 与全部语义角色,与 Android 文档配套提供(调研 06§7)——本条管线的官方产品形态;
+- **Android Material You 动态取色**:壁纸 → source color → 每关键色 13 档 tonal palette → 亮/暗主题,系统级跑同一条派生管线(material-color-utilities,调研 06§5/§6);
+- **Radix Colors**:12 步语义色阶把「档位 → 角色」的映射做成工业标准(1–2 背景 / 3–5 组件表面 / 6–8 边框 / 9–10 solid / 11–12 文本),步 11/12 以 APCA Lc60/90 保证文本对比(调研 06§8)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hue` | 角色不变、色相平移;红绿蓝按 Evil Martians 映射对号入座 | 同上——tone 阶结构对色相不敏感,这正是「换品牌色不改组件」的机制基础 |
+| `lightness` | 品牌 tone 靠向亮档,亮侧白字对比更危险(更接近白) | 品牌 tone 靠向暗档,白字对比改善,但 accent 从「前景」滑向「背景」 |
+| `chroma` | 更艳;高 C 在中高 L 段越 sRGB 域,浏览器裁剪导致色相肉眼偏移(实测上限≈0.37) | 趋向中性灰;C=0 时 tone 阶退化为纯明度阶梯 |
+| `theme` | dark:accent 跳 tone 80、配低 tone 深字(官方基线同构) | light:accent 即品牌 tone,白字组合最容易在正文 AA 上翻车 |
+
+经验:亮侧 solid accent 想让白字过正文 AA,把 tone 压向更低档位再复核;任何档位调整后,验证行必须整组重跑——判定不四舍五入,4.499:1 仍是不达标(调研 06§17)。

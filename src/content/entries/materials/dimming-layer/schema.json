@@ -1,0 +1,105 @@
+{
+  "name": "Dimming Layer",
+  "nameZh": "压暗层",
+  "aliases": ["压暗层", "Scrim", "Dimming Layer", "遮罩压暗"],
+  "category": "materials",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "压在下层内容上的半透明遮罩,为前景换回可读性:弹窗遮罩(::backdrop 纯色式)与文字压图(底部梯度式)两式,α 用官方/可核验档位分档。",
+    "en": "A translucent veil pressed over underlying content to buy back legibility for the foreground: the dialog-scrim (::backdrop, solid) and caption-over-photo (bottom gradient) forms, with α stepped through official/verifiable presets."
+  },
+  "origin": {
+    "zh": "web 原生载体是顶层元素的 ::backdrop 伪元素——与 viewport 同尺寸、渲染于顶层元素正下方、LIFO、不继承任何属性(MDN,调研 12 §8);Apple HIG 给出唯一一条官方数值建议:「下层内容偏亮时,考虑添加 35% 不透明度的深色压暗层」,SwiftUI Glass.clear 文档示例为 .black.opacity(0.3)(调研 09 §1.3)。Material Design 的 scrim 规范值(M2 约 32% 黑)未能核验,不采用(调研 12 §8 如实标注)。",
+    "en": "The web-native carrier is the top-layer element's ::backdrop pseudo-element — viewport-sized, rendered directly beneath the top-layer element, LIFO, inheriting nothing (MDN, research 12 §8); Apple's HIG gives the one official numeric recommendation: 'when underlying content is bright, consider adding a 35%-opacity dark dimming layer', and the SwiftUI Glass.clear doc example is .black.opacity(0.3) (research 09 §1.3). Material Design's scrim spec value (M2 ~32% black) could not be verified and is not adopted (research 12 §8, honestly noted)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "solid", "label": { "zh": "纯色遮罩(弹窗)", "en": "Solid (dialog)" } },
+        { "value": "gradient", "label": { "zh": "梯度压暗(文字压图)", "en": "Gradient (caption)" } }
+      ],
+      "default": "solid",
+      "effect": {
+        "zh": "JS 型参数,demo 订阅后切换 data-mode。solid = 全区域均匀压暗(弹窗/对话框 ::backdrop 形态);gradient = 底部向上的梯度压暗(文字压图:图心保留、图注处达到 α 档位峰值)。渐变只保护文字落点——顶部文字不受保护。",
+        "en": "JS-type param; the demo subscribes and toggles data-mode. solid = uniform dimming over the whole area (the dialog ::backdrop form); gradient = a bottom-up dimming ramp (caption-over-photo: the image center stays clear while the caption point reaches the α preset). Gradients only protect where the text sits — text elsewhere is unprotected."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "strength",
+      "options": [
+        { "value": "0.25", "label": { "zh": "25% · MDN ::backdrop 典型", "en": "25% · MDN typical" } },
+        { "value": "0.30", "label": { "zh": "30% · SwiftUI 官方示例", "en": "30% · SwiftUI example" } },
+        { "value": "0.35", "label": { "zh": "35% · HIG 官方建议(默认)", "en": "35% · HIG advice (default)" } },
+        { "value": "0.55", "label": { "zh": "55% · 重遮罩配方", "en": "55% · heavy scrim" } }
+      ],
+      "default": "0.35",
+      "cssVar": "--dim-alpha",
+      "effect": {
+        "zh": "压暗不透明度 α,四档全部为调研记载值:25% = MDN ::backdrop 典型示例(rgb(0 0 0 / 25%),调研 12 §8);30% = SwiftUI Glass.clear 官方文档示例(.black.opacity(0.3),调研 09 §1.3);35% = HIG 官方建议(clear 玻璃下层内容偏亮时加深色压暗层,默认档);55% = 调研 12 §8 的 color-mix 重遮罩配方。Material Design 的 scrim 规范值未证实,未设档。",
+        "en": "Dimming opacity α; all four steps are values recorded in research: 25% = the MDN ::backdrop typical example (rgb(0 0 0 / 25%), research 12 §8); 30% = the SwiftUI Glass.clear doc example (.black.opacity(0.3), research 09 §1.3); 35% = the HIG recommendation (a dark dimming layer when content under clear glass is bright — the default); 55% = the color-mix heavy-scrim recipe in research 12 §8. Material Design's scrim spec value is unverified and gets no step."
+      }
+    },
+    {
+      "type": "color",
+      "name": "color",
+      "format": "hex",
+      "default": "#000000",
+      "presets": ["#000000", "#00000040"],
+      "cssVar": "--dim-color",
+      "effect": {
+        "zh": "压暗基色。纯黑是全部官方示例的基色(HIG「深色压暗层」、SwiftUI .black、MDN rgb(0 0 0 / 25%));调研 12 §8/§16.10 亦演示掺品牌色的做法(color-mix(in oklab, scrim 80%, brand))——掺色后必须复核文字对比度。",
+        "en": "The scrim base color. Pure black is the base in every official example (HIG's 'dark dimming layer', SwiftUI .black, MDN rgb(0 0 0 / 25%)); research 12 §8/§16.10 also demonstrates blending in a brand hue (color-mix(in oklab, scrim 80%, brand)) — after tinting, re-check text contrast."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "::backdrop Baseline 自 2022-03(调研 12 §8);color-mix() Baseline 自 2023-05(Chrome 111+ / Safari 16.2+ / Firefox 113+,调研 12 §11)。::backdrop 不继承任何属性——颜色必须在伪元素上完整声明,这也是旧浏览器上「遮罩消失」的常见原因。",
+      "en": "::backdrop is Baseline since 2022-03 (research 12 §8); color-mix() is Baseline since 2023-05 (Chrome 111+ / Safari 16.2+ / Firefox 113+, research 12 §11). ::backdrop inherits nothing — the color must be declared fully on the pseudo-element, which is also why scrims silently vanish on older engines."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 color-mix() 时用 rgba() 直接写同值透明度;不支持 ::backdrop 的环境(旧浏览器)改为在弹窗元素前插一个真实遮罩 div(全屏 fixed、z-index 次于弹窗)——这也是 ::backdrop Baseline 之前的通行做法。压暗层不承载内容,降级不影响功能。",
+    "en": "Without color-mix(), write the same opacity directly with rgba(); where ::backdrop is unsupported (legacy engines), insert a real scrim div before the dialog (full-screen fixed, z-index below it) — the common practice before ::backdrop reached Baseline. The scrim carries no content, so degradation never affects function."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "模态弹窗/对话框背后的纯色遮罩(::backdrop 形态)——把注意力让给前景并把下层压到可容忍的噪声级", "en": "Solid scrims behind modal dialogs (::backdrop form) — handing attention to the foreground and pushing the layer below to tolerable noise" },
+      { "zh": "照片/视频上的图注与字幕条(梯度式)——只压文字落点,媒体主体保留", "en": "Captions and subtitle bars over photos/videos (gradient form) — dim only where text sits, keep the media subject clear" },
+      { "zh": "iOS 26 sheet 的模态语义:「玻璃轻微后退,配压暗层表达模态」(WWDC25 356,调研 09 §8.9)", "en": "iOS 26 sheet modality: 'the glass recedes slightly, paired with a dimming layer to express modality' (WWDC25 356, research 09 §8.9)" },
+      { "zh": "clear 玻璃控件压在亮色媒体上:官方「下层内容偏亮时加 35% 深色压暗层」的推荐场景", "en": "clear glass controls over bright media: the official 'add a 35% dark dimming layer when content beneath is bright' scenario" }
+    ],
+    "avoid": [
+      { "zh": "α 不足还要硬放文字——下层内容偏亮时 α 低于 30% 常常守不住 4.5:1,先加压暗再谈排版", "en": "Placing text over an under-dimmed backdrop — below 30% α often fails 4.5:1 on bright content; dim first, then typeset" },
+      { "zh": "全屏重遮罩(≥55%)叠在需要保留上下文的界面上——下层几乎不可辨,模态之外的场合不要用", "en": "Heavy full-screen scrims (≥55%) over interfaces that need context — the layer below becomes illegible; reserve for true modality" },
+      { "zh": "梯度式遮罩保护不到的文字位置——渐变只在底部顶点达到 α 峰值,顶部文字等于裸放", "en": "Text outside a gradient scrim's protected zone — the ramp only reaches peak α at the bottom vertex; text elsewhere sits bare" },
+      { "zh": "掺品牌色的遮罩不复核对比度——色相偏离黑/白后,与前景的对比关系全部改变", "en": "Brand-tinted scrims without a contrast re-check — once the hue leaves black/white, every foreground relationship changes" }
+    ]
+  },
+  "a11y": {
+    "zh": "压暗层存在的唯一理由是对比度:遮罩上的前景文字必须按「下层最亮内容」核对 4.5:1(WCAG 2.1 SC 1.4.3);模态形态应配合焦点管理(打开时焦点入弹窗、关闭时归还,WCAG 2.1 SC 2.4.3)与下层滚动隔离(overscroll-behavior: contain);α 档位切换不得作为传达状态的唯一手段;深浅两层背景要分别实测。",
+    "en": "The scrim's only reason to exist is contrast: foreground text over the scrim must hold 4.5:1 against the brightest underlying content (WCAG 2.1 SC 1.4.3); the modal form pairs with focus management (move focus in on open, restore on close, WCAG 2.1 SC 2.4.3) and scroll isolation below (overscroll-behavior: contain); never let an α step be the sole carrier of state; measure against both bright and dark backdrops."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/::backdrop",
+    "https://developer.apple.com/design/human-interface-guidelines/materials",
+    "https://developer.apple.com/documentation/swiftui/glass"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻两种压暗形态:弹窗遮罩(dialog::backdrop 纯色,α 用档位参数)与文字压图(底部向上梯度,图注处达到同档 α);背景可在亮/暗两张照片间切换,验证「下层内容偏亮时加压暗」的官方建议。",
+      "en": "Recreate both dimming forms: the dialog scrim (dialog::backdrop solid, α from the preset param) and caption-over-photo (a bottom-up gradient reaching the same α at the caption); the backdrop switches between bright/dark photos to exercise the official 'dim when content beneath is bright' advice."
+    },
+    "acceptance": [
+      { "zh": "α 严格取四档快照值之一(25/30/35/55%),默认 35%(HIG 建议);不发明中间值", "en": "α uses exactly one of the four snapshot steps (25/30/35/55%), defaulting to 35% (the HIG advice); no invented in-betweens" },
+      { "zh": "弹窗形态用 ::backdrop 承载遮罩(不继承属性,颜色完整声明);梯度形态只保护文字落点并如实标注", "en": "The dialog form carries the scrim on ::backdrop (no inheritance — declare the color fully); the gradient form protects only where text sits, stated honestly" },
+      { "zh": "遮罩淡入约 0.25s opacity(可合成属性);prefers-reduced-motion 时取消", "en": "The scrim fades in over ~0.25s opacity (compositable); disabled under prefers-reduced-motion" },
+      { "zh": "亮/暗两种背景分别核对前景文字 4.5:1;掺品牌色(可选)后必须重测", "en": "Check foreground text at 4.5:1 against both bright and dark backdrops; re-test if a brand hue is blended (optional)" },
+      { "zh": "模态形态配合焦点管理与下层滚动隔离(overscroll-behavior: contain)", "en": "The modal form pairs with focus management and scroll isolation below (overscroll-behavior: contain)" }
+    ]
+  }
+}

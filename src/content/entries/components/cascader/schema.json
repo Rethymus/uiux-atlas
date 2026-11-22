@@ -1,0 +1,103 @@
+{
+  "name": "Cascader",
+  "nameZh": "级联选择",
+  "aliases": ["级联菜单", "Cascade Select", "联动选择"],
+  "category": "components",
+  "subgroup": "form",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "从有层级关联的数据集里逐级下钻选值:展开后是「省→市→区」式的多列菜单,选中上一级即刷新下一级。",
+    "en": "Drill down through a hierarchical dataset: an expanding multi-column menu (province → city → district) where each level's choice refreshes the next."
+  },
+  "origin": {
+    "zh": "级联选择是 Select(listbox 浮层)在树形数据上的变体:APG 把「输入框 + 关联弹出层」归为 combobox 模式,弹出层可为 listbox/tree(调研 07§5);级联选择器定位是「从关联数据集选择,浮层内完成级联」(补研 12§15)。生产参照系是 Ant Design Cascader(补研 12§15 记载 API:options、changeOnSelect 默认 false、expandTrigger click|hover、loadData 懒加载不能与 showSearch 同用、fieldNames、displayRender、showCheckedStrategy SHOW_PARENT|SHOW_CHILD 等,2026-11-22 抓取 ant.design 现行文档)。",
+    "en": "The cascader is Select (a listbox overlay) applied to tree-shaped data: APG classifies 'an input with an associated popup' as the combobox pattern whose popup may be a listbox or tree (research 07 §5); the component is positioned as 'pick from a related dataset, cascading inside the popup' (supplementary study 12 §15). The production reference is Ant Design Cascader (12 §15 records options, changeOnSelect default false, expandTrigger click|hover, loadData lazy-loading that cannot combine with showSearch, fieldNames, displayRender, showCheckedStrategy SHOW_PARENT|SHOW_CHILD — captured from current ant.design docs on 2026-11-22)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "expandTrigger",
+      "options": [
+        { "value": "click", "label": { "zh": "点击 click", "en": "Click" } },
+        { "value": "hover", "label": { "zh": "悬停 hover", "en": "Hover" } }
+      ],
+      "default": "click",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换展开方式)。对应 antd Cascader 的 expandTrigger:取值 click|hover(补研 12§15);官方默认值调研未记载,demo 默认 click 为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes to switch the expansion trigger). Maps to antd Cascader's expandTrigger with values click|hover (12 §15); the official default is not recorded in the research, so the demo default of click is a community-common value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "changeOnSelect",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off(选到叶)", "en": "Off (leaf only)" } },
+        { "value": "on", "label": { "zh": "开 on(任意级)", "en": "On (any level)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后允许任意级确认)。对应 antd Cascader 的 changeOnSelect,默认 **false**——必须选到叶节点才触发 onChange;开启后点中任意一级即完成选择(补研 12§15 记载默认值)。",
+        "en": "JS-type param (demo subscribes to allow committing at any level). Maps to antd Cascader's changeOnSelect, default **false** — onChange fires only on a leaf; when on, picking any level completes the selection (default recorded in 12 §15)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "multiple",
+      "options": [
+        { "value": "off", "label": { "zh": "关 off(单选)", "en": "Off (single)" } },
+        { "value": "on", "label": { "zh": "开 on(多选)", "en": "On (multiple)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后每项前置勾选框,已选叶节点以标签回显)。对应 antd Cascader 的 multiple(补研 12§15);官方默认值调研未记载,demo 默认关为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes to prepend checkboxes and echo picked leaves as tags). Maps to antd Cascader's multiple (12 §15); the official default is unrecorded — the demo default of off is a community-common value, unverified."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "级联菜单是纯 DOM/CSS/JS 自绘:触发器为原生 button(键盘无障碍),多列浮层的方向键导航、aria-activedescendant 与展开状态同步需脚本实现,读屏对自绘多列 listbox 的播报需真机实测(APG 键盘实践:ARIA 组件的键盘支持由作者负责,调研 07§35)。",
+      "en": "The cascading menu is pure DOM/CSS/JS: the trigger is a native button (accessible by default), while arrow-key navigation across columns, aria-activedescendant and open-state syncing must be scripted; screen-reader announcement of a drawn multi-column listbox needs real-device testing (APG keyboard practice: authors own ARIA keyboard support, research 07 §35)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 环境降级为三个串联的原生 <select>(省/市/区),上一级 change 即重建下一级选项;自绘实现保留「点击 + 键盘」双路径,浮层放不下时收窄列宽而不是截断层级。",
+    "en": "In no-JS environments degrade to three chained native <select> elements (province/city/district) where an upper change rebuilds the lower options; drawn implementations keep both click and keyboard paths, and narrow the columns rather than truncating levels when space runs out."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "行政区划选择:省/市/区三级收货地址、开户行省市联选", "en": "Administrative divisions: province/city/district shipping addresses, bank region pickers" },
+      { "zh": "类目树筛选:商品分类、知识库目录、工单分组等固定层级", "en": "Category trees: product taxonomy, doc directories, ticket groups — any fixed hierarchy" },
+      { "zh": "选项总量大但每级可见数量小(每列 5–15 项)的树形数据", "en": "Trees with a large total but small per-level visible sets (5–15 options per column)" },
+      { "zh": "需要看到「路径」的选值:面包屑式回显(省 / 市 / 区)比单个叶名更有信息量", "en": "When the path itself matters: breadcrumb-style echo (province / city / district) beats a bare leaf name" }
+    ],
+    "avoid": [
+      { "zh": "层级只有一层时用普通 Select——级联列是纯开销", "en": "One-level data should be a plain Select — cascade columns are pure overhead" },
+      { "zh": "每级选项很多且需要搜索时,showSearch 与懒加载 loadData 不能同用(补研 12§15),大数据集优先可搜索 combobox", "en": "Large levels needing search: showSearch cannot combine with lazy loadData (12 §15) — prefer a searchable combobox for big datasets" },
+      { "zh": "层级经常变化或由用户任意分组的数据——树形选择器(Tree)更合适", "en": "Data with shifting levels or free-form grouping — a Tree picker fits better" },
+      { "zh": "移动端窄屏放不下多列并排时,改用逐级推入的单一列表(每级一屏)", "en": "On narrow mobile screens multi-column layouts don't fit — push one level per screen instead" }
+    ]
+  },
+  "a11y": {
+    "zh": "触发器用 role=\"combobox\"(aria-expanded/aria-haspopup/aria-controls,高亮项经 aria-activedescendant 播报,焦点留在触发器,浮层不进 Tab 序列,APG combobox,调研 07§5);键盘:Down/Up 在当前列移动高亮,Right/Enter 下钻到子级,Left 收回上一列,Esc 关闭并恢复打开前的值(combobox「探索不丢选择」,调研 07§5);父/叶节点经 aria-label 标注层级;多选勾选框是独立可聚焦控件,Space 切换(WebAIM 键位表,调研 07§36);焦点环不可移除。",
+    "en": "Trigger uses role=\"combobox\" (aria-expanded/aria-haspopup/aria-controls; the highlighted option is announced via aria-activedescendant; focus stays on the trigger and the popup stays out of the Tab order — APG combobox, research 07 §5); keyboard: Down/Up moves the highlight within a column, Right/Enter drills into children, Left collapses a column, Esc closes and restores the pre-open value (combobox 'explore without losing the selection', research 07 §5); parent/leaf options carry level info in aria-label; multiple-mode checkboxes are separately focusable and toggle with Space (WebAIM key table, research 07 §36); never remove the focus ring."
+  },
+  "sources": [
+    "https://ant.design/components/cascader",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个省/市/区三级级联选择器:带路径回显的触发器 + 多列浮层,支持点击或悬停展开下一级、键盘下钻/回退、changeOnSelect 任意级确认与 multiple 多选勾选。",
+      "en": "Replicate a province/city/district cascader: a trigger echoing the selected path plus a multi-column popup, with click or hover to expand the next level, keyboard drill-down/back-out, changeOnSelect commit-at-any-level, and multiple checkboxes."
+    },
+    "acceptance": [
+      { "zh": "触发器 role=\"combobox\" 且 aria-expanded 随展开联动,浮层各列 role=\"listbox\"、选项 role=\"option\",高亮经 aria-activedescendant", "en": "Trigger role=\"combobox\" with aria-expanded synced to open state; each popup column role=\"listbox\" with role=\"option\" items, highlight via aria-activedescendant" },
+      { "zh": "选中上一级立即刷新下一列;changeOnSelect=off 时必须选到叶节点才回填触发器", "en": "Picking a parent immediately refreshes the next column; with changeOnSelect=off only a leaf fills the trigger" },
+      { "zh": "键盘全路径:Down/Up 移动、Right/Enter 下钻、Left 回退、Esc 关闭并恢复原值、点击外部关闭", "en": "Full keyboard path: Down/Up to move, Right/Enter to drill, Left to back out, Esc to close and restore, click-outside to dismiss" },
+      { "zh": "浮层用 antd 浮层主阴影与 6px 圆角、列内 hover 底 rgba(0,0,0,0.04)、选中底 #E6F4FF + 文字 #1677ff,严格用参数快照值", "en": "Overlay uses antd's floating-layer shadow and 6px radius, in-column hover rgba(0,0,0,0.04), selection on #E6F4FF with #1677ff text — exact snapshot values" },
+      { "zh": "多选模式已选项以标签回显,清空标签即时从勾选中移除;展开/收起约 0.2s 且尊重 prefers-reduced-motion", "en": "Multiple mode echoes picks as tags whose removal unchecks instantly; expand/collapse over ~0.2s honoring prefers-reduced-motion" }
+    ]
+  }
+}

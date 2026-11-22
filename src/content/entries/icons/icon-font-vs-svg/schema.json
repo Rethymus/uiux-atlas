@@ -1,0 +1,117 @@
+{
+  "name": "Icon Font vs SVG",
+  "nameZh": "图标字体与 SVG",
+  "aliases": ["icon font", "图标字体", "Inline SVG", "字形图标", "CAGEMATCH"],
+  "category": "icons",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "两种图标交付形态的正面对照:icon font 靠「码位→字体字形→color 染色」,失败面大(加载失败/CORS/PUA 撞 emoji);inline SVG 真矢量、CSS 可控、内嵌文档无怪异失败态——IE9+ 时代起几乎全面胜出。",
+    "en": "The two icon delivery formats head-to-head: icon fonts go codepoint → font glyph → color, with a wide failure surface (load failure / CORS / PUA-vs-emoji collisions); inline SVG is true vector, CSS-controllable, embedded in the document with no weird failure states — winning near-across-the-board since the IE9+ era."
+  },
+  "origin": {
+    "zh": "对照结论出自 CSS-Tricks 经典文《Inline SVG vs Icon Fonts [CAGEMATCH]》(Chris Coyier, 2014, out/design-study/12-expansion.md §12):icon font 的文本反锯齿发虚、line-height/vertical-align 定位难对齐、CORS/字体加载失败/Opera Mini 不支持 @font-face/广告拦截/Unicode 私有区撞 emoji;SVG 更锐、多色分部可控、可配 <title>/<desc>/aria。原文结论:能到 IE9+/Android 3+ 时 inline SVG 几乎全面胜出,IE8 是 icon font 仍占优的场景(评论区补充 SVG 在缓存/DOM 体积上的不足)。",
+    "en": "The head-to-head comes from CSS-Tricks' classic 'Inline SVG vs Icon Fonts [CAGEMATCH]' (Chris Coyier, 2014, out/design-study/12-expansion.md §12): icon fonts suffer text anti-aliasing fuzz, line-height/vertical-align positioning pain, and a wide failure surface (CORS, font-load failure, Opera Mini without @font-face, ad blockers, Unicode PUA vs emoji collisions); SVG is sharper, lets CSS control individual parts of multicolor icons, and pairs with <title>/<desc>/aria. The article's verdict: once you can target IE9+/Android 3+, inline SVG wins nearly across the board; IE8 is where icon fonts still hold an edge (comments add SVG's caching / DOM-size costs)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "delivery",
+      "options": [
+        { "value": "svg", "label": { "zh": "Inline SVG", "en": "Inline SVG" } },
+        { "value": "font", "label": { "zh": "图标字体 Icon Font", "en": "Icon font" } }
+      ],
+      "default": "svg",
+      "effect": {
+        "zh": "交付形态开关(JS 型,标注当前「采用」一侧并切换代码片段)。svg 侧为真实内联矢量(stroke=currentColor);font 侧为 icon font 渲染管线的机制演示——字形区用系统 Unicode 符号字形真实渲染(机制同源:码位→字形→color 染色,受文本反锯齿与 line-height 定位影响),并非加载真实图标字体。CSS-Tricks 结论:现代浏览器下 SVG 几乎全面胜出(12 §12)。",
+        "en": "Delivery switch (JS-typed; marks the 'adopted' lane and swaps the code snippet). The svg lane renders real inline vectors (stroke=currentColor); the font lane demonstrates the icon-font pipeline — glyphs are rendered with real system Unicode symbol glyphs (mechanically kindred: codepoint → glyph → color, subject to text anti-aliasing and line-height positioning), not an actual icon font. CSS-Tricks verdict: on modern browsers SVG wins nearly across the board (12 §12)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "size",
+      "unit": "px",
+      "min": 12,
+      "max": 48,
+      "step": 1,
+      "default": 24,
+      "cssVar": "--icf-size",
+      "effect": {
+        "zh": "图标显示尺寸。默认 24px=全行业共同祖先网格(Lucide/Feather 源码 width/height 24,07 §1.1)。对照点:SVG 的尺寸就是自身 width/height,定位直观;字体字形尺寸=font-size,垂直居中要靠 line-height/vertical-align 微调,是 CSS-Tricks 列举的定位难点(12 §12)。",
+        "en": "Icon display size. Default 24px = the industry-wide ancestral grid (Lucide/Feather source width/height 24, research 07 §1.1). Contrast: SVG's size is its own width/height — positioning is direct; a font glyph's size is font-size and vertical centering needs line-height/vertical-align nudging, one of CSS-Tricks' listed pain points (12 §12)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "color",
+      "format": "hex",
+      "default": "#0f172a",
+      "cssVar": "--icf-color",
+      "effect": {
+        "zh": "图标染色(宿主 color)。两条染色链路同台:SVG 走 stroke=\"currentColor\"(CSS Color 4:currentcolor 取同元素 color 值,07 §5.2);字体字形天生吃 color。对照点:单色字体字形到此为止,SVG 还能用 CSS 控制多色图标的各个部分(12 §12)。",
+        "en": "Icon tint (host color). Both tint chains on stage: SVG via stroke=\"currentColor\" (CSS Color 4: currentcolor takes the same element's color value, research 07 §5.2); font glyphs consume color natively. Contrast: a font glyph stops at monochrome, while SVG lets CSS reach individual parts of multicolor icons (12 §12)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "failure",
+      "options": [
+        { "value": "none", "label": { "zh": "无故障", "en": "No failure" } },
+        { "value": "font-missing", "label": { "zh": "字体加载失败", "en": "Font failed to load" } },
+        { "value": "emoji-crash", "label": { "zh": "码位撞 emoji", "en": "Codepoint vs emoji" } }
+      ],
+      "default": "none",
+      "effect": {
+        "zh": "故障模拟器(JS 型,仅作用于 font 侧;SVG 侧内嵌文档无此类失败态)。font-missing:演示字体未加载时的经典惨状——tofu 方框 + 裸连字文本(CSS-Tricks 失败面清单:字体加载失败/CORS/广告拦截/Opera Mini 无 @font-face,12 §12;此处为仿真呈现)。emoji-crash:真实浏览器行为——同码位挂上 emoji 变体选择符 U+FE0F 后被彩色系统 emoji 字形接管(私有区/码位撞 emoji 的实证,平台相关)。",
+        "en": "Failure simulator (JS-typed, affects the font lane only; the inline SVG lane has no such failure states). font-missing: the classic wreck when the font fails — tofu boxes plus raw ligature text (CSS-Tricks failure list: font-load failure / CORS / ad blockers / Opera Mini without @font-face, 12 §12; shown as a simulation here). emoji-crash: real browser behavior — the same codepoint with the emoji variation selector U+FE0F gets taken over by the color system emoji glyph (hard evidence for PUA/codepoint-vs-emoji collisions; platform-dependent)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "SVG 图标全绿(12 §12);icon font 本身是兼容方案,但支持面即其失败面:依赖 @font-face(Opera Mini 不支持)、跨域字体受 CORS、加载失败即整批图标失效。字形模拟使用的系统符号字形(⌂ ⚙ ★)与 emoji 变体行为因平台字体栈而异,演示已在界面上如实标注。",
+      "en": "SVG icons are fully green (12 §12); icon fonts are the compat option, but their support surface is their failure surface: they depend on @font-face (unsupported in Opera Mini), cross-origin fonts hit CORS, and one load failure wipes out the whole icon set. The system symbol glyphs (⌂ ⚙ ★) used in the simulation and emoji-variant behavior vary by platform font stack — labeled honestly in the demo."
+    },
+    "baseline": "widely available"
+  },
+  "fallback": {
+    "zh": "SVG 路线无需回退(内嵌文档,无外部失败态);若团队仍困于 IE8,icon font 是 CSS-Tricks 承认的仅存优势场景。字体路线的兜底写法:CSS 先给字形容器一个可读的备用形态(tofu 方框占位/裸连字文本),字体加载完成后再展示字形——demo 的 font-missing 档就是字体永远没来的样子。",
+    "en": "The SVG route needs no fallback (embedded in the document, no external failure states); if a team is still stuck on IE8, icon fonts are the one scenario CSS-Tricks concedes. For the font route, the defensive pattern: give the glyph container a readable stand-in (tofu box / raw ligature text) until the font loads — the demo's font-missing option is exactly what 'the font never arrived' looks like."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "现代项目新图标体系:直接选 inline SVG(或其上的 sprite/组件封装),染色统一 currentColor(07 §5.2)", "en": "New icon systems in modern projects: pick inline SVG (or sprite/component layers on top), tint via currentColor (07 §5.2)" },
+      { "zh": "多色图标、需要 CSS 分部控制的图标(悬停只改某一部分)——字体字形做不到,SVG 可以(12 §12)", "en": "Multicolor icons, or icons whose individual parts must respond to CSS (hover changes one part) — impossible with font glyphs, native to SVG (12 §12)" },
+      { "zh": "仍需兼容 IE8 的遗留系统:icon font 是 CSS-Tricks 承认的例外场景(12 §12)", "en": "Legacy systems that must still serve IE8: icon fonts are the exception scenario CSS-Tricks concedes (12 §12)" },
+      { "zh": "字体技术的现代变体:Material Symbols 以可变字体交付图标(连字+四轴),但须 &display=block 防 FOUC、子集化到 1.7KB 级才敢上首屏(07 §1.5)", "en": "The modern variant of the font approach: Material Symbols ships icons as a variable font (ligatures + four axes), but requires &display=block against FOUC and subsetting to ~1.7KB before hitting the first screen (07 §1.5)" }
+    ],
+    "avoid": [
+      { "zh": "拿文本字形当图标还指望像素级对齐——line-height/vertical-align 定位是 CSS-Tricks 点名的老大难(12 §12)", "en": "Using text glyphs as icons and expecting pixel-perfect alignment — line-height/vertical-align positioning is a named pain point in CSS-Tricks (12 §12)" },
+      { "zh": "在用户可能装广告拦截/改字体的环境用 icon font 承载关键功能图标(失败面清单,12 §12)", "en": "Carrying critical functional icons via icon font where ad blockers or user stylesheets may exist (failure list, 12 §12)" },
+      { "zh": "把语义/无障碍寄托在字体字形上——SVG 可配 <title>/<desc>/aria,字体字形需额外小心(12 §12)", "en": "Relying on font glyphs for semantics/a11y — SVG pairs with <title>/<desc>/aria, font glyphs need extra care (12 §12)" },
+      { "zh": "为「省请求」选字体却忽视 DOM 体积/缓存劣势的另一半——评论区对 SVG 的两条批评同样成立(12 §12)", "en": "Choosing fonts 'to save requests' while ignoring the other half — the comments' critiques of SVG (caching, DOM size) stand too (12 §12)" }
+    ]
+  },
+  "a11y": {
+    "zh": "两条路线的无障碍起点不同:SVG 可携带 <title>/<desc> 并接受 aria 属性,装饰化用 aria-hidden(07 §4);字体字形是纯文本节点,必须 aria-hidden=\"true\" 且其所在容器不得可聚焦(可聚焦元素不得 aria-hidden,MDN 红线)。无论哪种形态,纯图标按钮都要另行给可访问名(见 icon-button/icon-aria-accessible)。demo 的 emoji-crash 档提示:码位语义不可控正是字体路线的语义风险之一。",
+    "en": "The two routes start accessibility from different points: SVG can carry <title>/<desc> and take ARIA attributes, and decorates via aria-hidden (07 §4); a font glyph is a plain text node that must get aria-hidden=\"true\" and must never sit inside a focusable container (focusable elements must not be aria-hidden — the MDN red line). Either way, icon-only buttons still need their own accessible names (see icon-button / icon-aria-accessible). The demo's emoji-crash option shows how uncontrollable codepoint semantics are one of the font route's semantic risks."
+  },
+  "sources": [
+    "https://css-tricks.com/icon-fonts-vs-svg/",
+    "https://github.com/lucide-icons/lucide",
+    "https://www.w3.org/TR/css-color-4/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为新项目实现一套图标交付层:以 inline SVG(currentColor 染色)为默认形态,给出与 icon font 的取舍对照表与字体路线失败态(加载失败/CORS/PUA 撞 emoji)的说明。",
+      "en": "Build an icon delivery layer for a new project: inline SVG (currentColor tinting) as the default format, plus a decision table against icon fonts and a rundown of the font route's failure states (load failure / CORS / PUA vs emoji)."
+    },
+    "acceptance": [
+      { "zh": "图标一律内联 SVG,stroke/fill 用 currentColor,宿主只设一处 color", "en": "Icons are inline SVG with stroke/fill on currentColor; the host sets a single color" },
+      { "zh": "不引入图标字体文件;如确需字体路线(IE8 遗留),单独说明失败面与兜底", "en": "No icon font files; if the font route is truly required (IE8 legacy), document its failure surface and fallback separately" },
+      { "zh": "尺寸默认 24px(24 网格),显示尺寸只改 width/height,不改线宽", "en": "Default size 24px (the 24 grid); display size changes only width/height, never stroke width" },
+      { "zh": "装饰图标 aria-hidden=\"true\" 且不在可聚焦容器内;功能图标按钮另配可访问名", "en": "Decorative icons get aria-hidden=\"true\" and never sit in focusable containers; functional icon buttons carry their own accessible names" },
+      { "zh": "多色图标用 SVG 分部染色实现,不用字体近似", "en": "Multicolor icons are implemented with per-part SVG tinting, not approximated with fonts" }
+    ]
+  }
+}

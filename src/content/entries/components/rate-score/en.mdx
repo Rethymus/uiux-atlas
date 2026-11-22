@@ -1,0 +1,70 @@
+## Structure & DOM
+
+Visually a row of layered star glyphs; semantically a **radiogroup**: the container is `role="radiogroup"`, and each star (each half, in half mode) is a `role="radio"` — exactly APG's official Rating Radio Group Example (supplementary study 12 §15):
+
+```html
+<div class="rate-group" role="radiogroup" aria-label="Rate this">
+  <span class="rate-star">
+    <span class="rate-glyph" aria-hidden="true">★</span>   <!-- gray base star -->
+    <span class="rate-fill" aria-hidden="true">★</span>    <!-- gold fill, width-clipped -->
+    <span class="rate-zone" role="radio" aria-checked="true"
+          aria-label="4 stars: great" tabindex="0"></span>  <!-- transparent hit zone -->
+  </span>
+  <p class="rate-out" aria-live="polite">Current: 4 stars · Great</p>
+</div>
+```
+
+Key points:
+
+- The star glyph has two layers: a gray base (border-tone) and a gold fill clipped by `overflow: hidden` width to express halves; both are `aria-hidden` — **the number and meaning live in the radio's `aria-label` and the text echo below**;
+- The hit zones (transparent `role="radio"` elements) stack on top: one per star in whole mode, left/right pairs in half mode (`aria-label` reads "3.5 stars") — roving tabindex keeps exactly one Tab stop for the whole group;
+- Hover preview changes only the visuals, never `aria-checked`; only a click or Space flips checked — focus ≠ selection (research 07 §35);
+- The current value echoes as `aria-live="polite"` text; star meaning always carries copy (tooltips semantics, supplementary study 12 §15).
+
+## Styling & Parameters
+
+Three JS-type params (count / allowHalf / allowClear) plus one CSS-var param (activeColor):
+
+```css
+.rate-star  { width: 24px; height: 24px; transition: scale .15s ease-out; }
+.rate-star:hover { scale: 1.12; }
+.rate-glyph { color: #d9d9d9; }                          /* colorBorder tone */
+.rate-fill  { color: var(--rate-active, #faad14); }      /* gold #FAAD14 */
+.rate-fill > span { display: block; }                    /* half star: width 50% */
+.rate-zone[data-half="left"]  { right: 50%; }
+.rate-zone[data-half="right"] { left: 50%; }
+.rate-zone:focus-visible { outline: 2px solid #1677ff; outline-offset: 2px; }
+```
+
+Where the numbers come from:
+
+- `count` **defaults to 5** and `allowClear` **defaults to true** — both officially recorded for antd Rate (supplementary study 12 §15); `allowHalf`'s default is unrecorded, so the demo's off default is a community-common value, unverified;
+- The active `--rate-active` default #faad14 = antd's gold primary / seed gold #FAAD14 (design study 06 §1.2/§2.2) — antd Rate's official color token is unverified in the research; gold is the community-common choice; the empty-star tone #d9d9d9 = colorBorder (06 §2.2);
+- The focus ring #1677ff = colorPrimary (06 §2.2); the 4px star gap = antd's sizeXXS step (06 §2.3④, borrowed);
+- **The 24px star is a demo teaching size** (community-common 20–24px, unverified; antd records no Rate geometry);
+- Tooltip copy (tooltips[] semantics, 12 §15) appears in the demo as five tier labels "terrible / poor / ok / great / amazing" — demo-authored content.
+
+## Motion & Interaction
+
+- **Hover preview**: entering a half zone previews up to that step in `--rate-active`; leaving the group falls back to the committed value; the caption distinguishes "Preview" from "Current"; touch (no hover) commits directly on tap;
+- **Click to commit / clear**: with `allowClear=on` (the official default) clicking the current value again clears to 0 — "click again to undo" is the interaction that sets rating apart from a plain radio group (supplementary study 12 §15); off keeps the value on repeat clicks;
+- **Keyboard radiogroup**: arrows rove within the group (roving tabindex) and Space/Enter select (APG's Rating Radio Group Example, 12 §15; radio arrows move within the group, research 07 §36); one Tab lands in, one leaves;
+- **Hover scale**: the hovered star grows to 1.12× over 0.15s, animating only `scale` (compositor-friendly); dropped under `prefers-reduced-motion` (research 07 §37);
+- Rating is a low-frequency confirm-style input — no continuous animation; the caption conveys state changes instantly.
+
+## Real-world examples
+
+- **E-commerce / delivery reviews**: Taobao and Meituan default to five stars after order completion with text labels beside the tiers (bad → great); half-star tiers appear in rider/merchant service scores — "stars + copy" is the standard comprehension pair;
+- **App-store ratings**: App Store / Google Play product pages show five stars plus an aggregate average; one tap submits with no form — rating is the "one-hit" input control;
+- **Media/game review platforms**: Doubao-style film/game platforms aggregate user scores into averages where half vs whole tiers affect precision (editorial generalization: a common tier trade-off on aggregating platforms).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `count` | finer expression, but decision time climbs with options (Hick's law, research 07 §23); 10 stars is the practical ceiling | below 3 stars semantics get too coarse (good/mid/bad), losing discrimination |
+| `allowHalf` | on gives 0.5 steps and smoother aggregates, halving each hit zone | off doubles the hit area per star — easier to tap on mobile |
+| `allowClear` | on offers the "mis-tap undo" exit, keeping error cost near zero | off strands users who mis-tapped into a full reset — real frustration |
+| `activeColor` | saturated gold/orange is the rating default; straying far (e.g. blue) weakens the star association | muted active colors lose separation from the gray base and slow scanning |
+
+Working ranges: five stars + text labels as the default; keep each hit zone at least 24px (Fitts' law, research 07 §22); always echo the value as text; enable halves only when user scores get aggregated.

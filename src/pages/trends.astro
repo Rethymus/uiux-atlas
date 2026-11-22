@@ -3,7 +3,7 @@ import Base from "@/layouts/Base.astro";
 import { TRENDS, type Trend } from "@/data/trends";
 import { listEntryMetas } from "@/lib/metas";
 import { t } from "@/i18n/ui";
-import { entryUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
+import { entryUrl, homeUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // 「趋势追踪」页(zh):2023–2026 兴起/退潮时点快照,数据全部来自
 // out/research/03-visual-style-trends.md §二(src/data/trends.ts,逐条注口径与出处)
@@ -32,6 +32,15 @@ const labelOf = (m: { name: string; nameZh?: string }) => m.nameZh ?? m.name;
 
 <Base locale="zh" title={trends.title} description={trends.intro} altUrl={trendsUrl("en")}>
   <div class="resources-page">
+    {/* 返回可供性(清单:非层级页同样接入返回钮):「← 首页」;
+        Base.astro 全站脚本对 [data-back] 接管——有同源站内历史时 history.back(),
+        直链/外站进入时原生 <a href> 兜底回首页 */}
+    <p class="page-back">
+      <a class="back-link" href={homeUrl("zh")} data-back>
+        <span class="back-arrow" aria-hidden="true">←</span>
+        {dict.list.backHome}
+      </a>
+    </p>
     {/* 页头:与资源页同一骨架(.list-head,--step-4 标题 + mono 计数;本页无分类语境,
         ::after 3px 短条取 :root 默认 --cat = --accent,spec §4.4-1 同法) */}
     <header class="list-head">

@@ -87,6 +87,13 @@ export interface ColorParam extends ParamBase {
   type: "color";
   format: "oklch" | "hex";
   default: string;
+  /**
+   * 预设色板(清单 color-no-preset-swatches):面板按参数语义逐条目声明的一排
+   * swatch,点击即 set。oklch 型参数的取值须为 oklch() 串(OklchControl 以
+   * parseOklch 消费);hex 型参数取 #RRGGBB(AA)。缺省时面板按默认值程序化派生
+   * (L 阶/α 阶,站点推导;见 ParamPanel colorPresets)。
+   */
+  presets?: string[];
 }
 
 export interface BezierParam extends ParamBase {
@@ -108,6 +115,8 @@ export interface EnumParam extends ParamBase {
 export interface ShadowParam extends ParamBase {
   type: "shadow";
   default: ShadowLayer[];
+  /** 逐层 color 的预设色板(可选;格式与层内 color 字符串一致,点击整层替换 color) */
+  presets?: string[];
 }
 
 export type Param =

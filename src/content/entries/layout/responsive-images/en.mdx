@@ -1,0 +1,68 @@
+## Structure & DOM
+
+The three tools split the job; DOM structure follows the use case:
+
+```html
+<!-- Resolutions only: official advice is plain img, no picture wrapper (data-saver can downgrade automatically, research 12 §1) -->
+<img src="hero.jpg"
+     srcset="hero.avif 1200w, hero@2x.avif 2400w"
+     sizes="(min-width: 900px) 60vw, 100vw"
+     width="1200" height="675" fetchpriority="high" alt="…" />
+
+<!-- Art direction / format switching: picture for explicit control, img as the safety net -->
+<picture>
+  <source type="image/avif" srcset="hero.avif 1200w, hero@2x.avif 2400w"
+          sizes="(min-width: 900px) 60vw, 100vw" />
+  <source type="image/webp" srcset="hero.webp 1200w" />
+  <img src="hero.jpg" width="1200" height="675" alt="…" />
+</picture>
+```
+
+Key points:
+
+- Each `srcset` item is URL + descriptor: a `1200w` width descriptor or a `2x` density descriptor — **the two cannot be mixed and duplicate values are disallowed**; `sizes` holds "media condition–slot width" pairs and only applies when srcset uses `w` descriptors (research 12 §1);
+- Selection rule: with `sizes`, "**slot width × DPR = ideal width**"; the browser picks the closest candidate before downloading, falling back to `<img src>` when nothing matches (research 12 §1);
+- A `<source>` whose `media` condition fails, or whose `type` MIME is unknown, is skipped for the next one — the fallback img always sits last;
+- `fetchpriority` is a hint, not a command (high/low/auto, default auto); `object-fit`/`object-position` must sit on the child `<img>`, never on `<picture>` (research 12 §1).
+
+## Styling & Parameters
+
+This entry's "parameters" are attribute-level configuration; the demo drives three JS-type params (the browser's selection algorithm takes no custom properties):
+
+```html
+<img srcset="…640w, …1200w, …2400w"
+     sizes="{slot}px"
+     fetchpriority="high" width="1200" height="675" />
+```
+
+Where the numbers come from:
+
+- `60vw`, the `min-width: 900px` breakpoint, the `1200w/2400w` candidates and the `width="1200" height="675"` pairing are **verbatim from research 12 §1's fragment**; the demo's extra 640w grade is a **demo addition, unverified** (so narrow slots get a visible switch too);
+- The viewport presets 390/768/1280px are **common community device anchors, unverified** as spec values (390 CSS px phone-class, 768 iPad portrait, 1280 entry desktop);
+- `<picture>`: Baseline Widely available since 2016-03 (MDN, research 12 §1); fetchpriority: Chrome/Edge 102+, Firefox 132+, Safari 17.2+ (web.dev, research 12 §1).
+
+## Motion & Interaction
+
+What "moves" here is the selection algorithm, not an animation:
+
+- **Switching viewport / slot share**: the demo rewrites the `sizes` attribute — a srcset/sizes change is a "relevant mutation", so the browser re-runs selection and swaps the image live; the demo reads `currentSrc` every step to show the real pick, never a prediction;
+- **DPR joins the math**: the readout shows `slot × DPR = ideal width`, with DPR from the real `devicePixelRatio` (on 2x screens the ideal doubles and bigger candidates win);
+- The art-direction panel's `media` condition is evaluated against the **real browser viewport** (the simulated one cannot move it) — drag the real window width to see the wide/square swap; the demo labels this difference honestly;
+- **fetchpriority** only bites during real network loads: the demo writes the attribute and echoes it; research 12 §1 measured Google Flights dropping LCP 2.6s→1.9s with high on its hero, and Oodle saving 2s with low on non-first carousel slides; a near-viewport `loading="lazy"` image still fetched high should switch to `fetchpriority="low"`;
+- No transition on candidate swaps — an image swap is an instant resource change; a fade would be dishonest.
+
+## Real-world examples
+
+- **Google Flights (measured on web.dev, research 12 §1)**: `fetchpriority="high"` on the LCP hero took LCP from 2.6s to 1.9s — the case study, together with the "switch lazy images still fetched high to low" rule, lives in web.dev's fetch-priority article;
+- **Oodle's carousel (measured on web.dev, research 12 §1)**: `fetchpriority="low"` on non-first slides cut page load by 2s — the origin of the "first slide high, the rest low" recipe;
+- **MDN's `<picture>` three-scenario taxonomy (research 12 §1)**: art direction / format switching / capability-based picks is the official classification, and the AVIF→WebP→jpg source ordering is the documented shape (editorial combination — per-site adoption lists not individually verified).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `viewport` | a wider slot pushes the ideal width up, so bigger candidates win (bytes for sharpness) | a narrower slot picks smaller candidates (sharpness for bytes); the hit label tracks it live |
+| `vwShare` | fills more of the viewport; from 64%→100% each step can cross a candidate boundary | narrows the slot; a 20% slot on a 2x screen still only earns the lower half of the candidate list |
+| `fetchpriority` | high jumps the queue — reserve it for the LCP image; high-on-everything is no hint at all | low politely yields — right for off-screen carousel and below-fold images; auto hands back to the browser |
+
+Rules of thumb: double the candidate sizes (1200w→2400w) rather than spreading evenly; derive `sizes` breakpoints from layout slots, not device model numbers; `width/height` attributes plus a CSS-ratio slot give zero shift before and after load.

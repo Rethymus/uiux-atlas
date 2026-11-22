@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+一套 UI 骨架跑三种策略,骨架不变、**只有 token 表在换**——这正是「暗色不是反转」的结构性证明:反转是「同一张表逐值翻转」,语义暗色是「另一张按角色重挑的表」。
+
+```html
+<div class="scene" data-strategy="dark-semantic">
+  <div class="bar">窗口栏(base 层)</div>
+  <div class="card">卡片(raised 层):标题、正文、按钮、徽标、图块</div>
+</div>
+```
+
+关键点:
+
+- **分层**:深色界面叠深色界面,层级靠「提亮表面」表达——Apple 用 base(更暗,背景后退)/ elevated(更亮,前台前进)两组背景,前台呈现(popover/modal sheet)自动切换(调研 06§13);
+- **层级归表面、不归阴影**:黑底上纯黑阴影不可辨(demo 的 dark-inverted 档可直观看到),层级表达改由表面提亮承载,阴影保留但降权重(调研 06§13 的 Apple 机制;分层阴影工艺见调研 12§7);
+- **饱和度**:高饱和强调色在暗色下提亮降饱和——M3 官方基线就是范例:亮 primary `#6750A4` → 暗 primary `#D0BCFF`(≈tone 80,调研 06§7/§13);
+- **品牌色**:accent 换成提亮降饱和的暗色对,白底图片内容压暗防「发光」(Apple HIG,调研 06§13);一切取色走语义变量,硬编码色是 Android 文档点名的翻车点(调研 06§12)。
+
+## 样式与参数
+
+四个参数:accentLight / accentDark 为 CSS 变量型(hex),strategy / elevation 为 JS 型:
+
+```css
+/* 语义暗色 token 表(表面阶为演示值;官方锚点只有方向与基线色,调研 06§13) */
+[data-strategy="dark-semantic"] {
+  --dp-canvas: oklch(0.17 0.012 297);   /* base */
+  --dp-surface: oklch(0.21 0.014 297);  /* raised:层级=逐档提亮 */
+  --dp-fg: oklch(0.92 0.01 297);        /* ≈ #E5E3EB */
+  --dp-accent: #D0BCFF;                 /* M3 暗色 primary 官方基线(调研 06§7) */
+  --dp-on-accent: #381E72;              /* M3 暗色 on-primary 官方基线 */
+  --dp-shadow: 0 6px 16px rgba(0, 0, 0, 0.32); /* 阴影降权重 */
+}
+
+/* 直接反转(反模式档):亮色值逐通道翻转,accent 原样保留 */
+[data-strategy="dark-inverted"] {
+  --dp-canvas: #000401;                 /* invert(#FFFBFE) */
+  --dp-surface: #000000;                /* invert(#FFFFFF) —— 三档全黑,层级失效 */
+  --dp-fg: #E3E4E0;                     /* invert(#1C1B1F) */
+  --dp-accent: var(--dm-accent-light);  /* 亮色 accent 直接上暗底 */
+}
+```
+
+数值出处:
+
+- `#6750A4` / `#D0BCFF` / `#381E72` / `#B3261E` / `#FFFBFE` / `#1C1B1F` 全部为 M3 官方基线值(Android 开发者文档,调研 06§7);本会话复测 #D0BCFF 配 #381E72 **7.71:1**、#D0BCFF 对暗表面 **11.25:1**;
+- 语义暗色表面阶 L 0.17/0.21/0.25 为**演示阶梯**——官方 elevation overlay 逐档透明度表在调研中未找到(调研 06§13 已如实记录「未找到」),文字对三档实测 **15.09 / 13.97 / 12.64:1**;
+- 纯反转白/黑 **21:1**:超过 AAA 上限的「过冲」,正是「对比过高造成视觉疲劳」(hype4,调研 06§13)的量化呈现。
+
+## 动效与交互
+
+- 策略/层级切换改写 CSS 变量,表面、文字、阴影 0.25s ease 过渡;`prefers-reduced-motion` 时取消;
+- **elevation 档位是证据链**:semantic 档下切 base→raised→overlay,表面逐档提亮、卡片「浮」出来;dark-inverted 档下三档完全一致——层级表达失效,这就是反模式的可玩证明;
+- 徽标与按钮换色即时完成,不补过渡掩盖判定变化;图块的压暗层用 0.25s 淡入;
+- 入场动画只动 `opacity/transform`(合成器属性),`prefers-reduced-motion` 时取消。
+
+## 真实产品案例
+
+- **Apple iOS/iPadOS 系统暗色**:base / elevated 两组背景实装,前台呈现(popover、modal sheet)自动从 base 切到 elevated;系统 semantic colors 随外观自动适配,自定义色要求 Xcode Color Set 提供亮/暗变体(Apple HIG,调研 06§13);
+- **Android Force Dark**:「分析每个 View 自动反色」的官方兜底方案,文档明示要充分测试、按 View 排除——官方亲自给「直接反转」路线标了警示牌(调研 06§12);
+- **GitHub Primer**:dark 与 dark-dimmed 两套暗色主题并存,同一套语义 token 的两张映射表,而非一套色加深(调研 06§10)——「暗色是独立映射表」的工程实证。
+
+## 参数敏感度
+
+| 参数 | 换成… | 会… |
+| --- | --- | --- |
+| `strategy` → dark-inverted | 表面全黑、白字 21:1 过冲、亮 accent 硬上暗底、黑阴影不可辨、白底图发光 | 反模式全家桶:每一条都对得上文档警示(Apple「not necessarily inversions」、hype4 视觉疲劳、Android 翻车清单) |
+| `strategy` → dark-semantic | 表面分层提亮、accent 换 #D0BCFF 对、徽标降饱和、图块压暗 25% | 四模式齐上;文字对比落在 12.6–15.1:1,比过冲舒适且全过 AAA |
+| `elevation` | base→raised→overlay,semantic 档逐档提亮 | inverted 档三档无差异——层级是否成立一眼可辨 |
+| `accentDark` | 更亮更饱和的暗色 accent | 非 UI 文字(accent/表面 3:1 闸)余量变化;过饱和在暗底刺眼(hype4,调研 06§13) |
+
+经验:暗色主题是**重新挑色**不是翻转;每张暗色映射表逐组合重跑对比度(Apple 底线 4.5:1、小字力争 7:1,调研 06§13),层级交给表面提亮,阴影只做辅助。

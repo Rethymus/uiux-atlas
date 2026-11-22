@@ -1,0 +1,74 @@
+## Structure & DOM
+
+An icon-only button splits into three responsibilities: **a real `<button>` carries interaction and keyboard, the icon is purely decorative, and the name lives on the button** — measured against the APG Button pattern, a native `<button>` satisfies its keyboard contract (Enter/Space activation) out of the box, with no need for a hand-rolled `role="button" + tabindex="0"` mimic:
+
+```html
+<!-- Option 2 (Sara Soueidan's recommendation): hidden text + aria-labelledby, name in the DOM -->
+<button aria-labelledby="btn-search" aria-pressed="false">
+  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">…</svg>
+  <span id="btn-search" hidden>Search</span>
+</button>
+
+<!-- Option 3: aria-label straight on the button (usable, but four costs) -->
+<button aria-label="Search">
+  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">…</svg>
+</button>
+```
+
+Four hard rules (first-hand conclusions, 12 §12):
+
+1. **The name goes on the button, not on the SVG** — across Scott O'Hara's browser/screen-reader matrix, the "name only on the SVG" approach has many failing combinations;
+2. **Decorate the icon**: `aria-hidden="true"`, never on a focusable element or its ancestor (focus must not land inside a hidden subtree — the MDN red line); add `focusable="false"` to the SVG to avoid IE double tab stops;
+3. **Name the action, not the shape**: "Search", not "magnifying lens" (WAI tutorial); when visible text exists, `aria-label` must match it (WCAG 2.1 Label in Name);
+4. **Know aria-label's four costs before using it**: the text is not in the DOM, full-page translators cannot process it, some voice control struggles, and it cannot be copied.
+
+## Styling & Parameters
+
+Four parameters turn "name implementation × hit strategy" into an auditable experiment: two CSS variables drive the target and the icon, two JS switches change the naming scheme and the hit implementation:
+
+```css
+.icb-btn {
+  width: var(--icb-target);            /* target edge, default 48px (M3 target 48dp) */
+  height: var(--icb-target);
+}
+.icb-btn svg { width: var(--icb-icon); height: var(--icb-icon); } /* glyph, default 24px */
+
+/* Pseudo-element hit expansion: visuals unchanged, ::before stretches past the bounds */
+.icb-btn[data-expand="pseudo"] { width: calc(var(--icb-icon) + 16px); height: calc(var(--icb-icon) + 16px); }
+.icb-btn[data-expand="pseudo"]::before {
+  content: "";
+  position: absolute;
+  inset: calc((100% - var(--icb-target)) / 2);  /* negative = expands outward to the target size */
+  border-radius: inherit;
+}
+```
+
+Where the numbers come from:
+
+- `hitTarget` default **48px = M3's touch target spec, target 48dp** (research 04 §2.1); the legal floor **≥24×24 CSS px = WCAG 2.2 SC 2.5.8** (same source as the principles/wcag-checklist entry);
+- `iconSize` default **24px = Material's icon display size, 24×24 dp** (07 §2);
+- The common production pairing "16px glyph + 48px target" has no verified universal standard (**community-common value, unverified**), so the demo presets no such combination.
+
+## Motion & Interaction
+
+- **Naming switch** (`naming`) rewrites the real button's DOM structure: labelledby attaches `hidden` text, hidden-text attaches a visually hidden span (the `clip-path: inset(100%)` family), aria-label attaches `aria-label` — the audit panel runs the same rule function to output the screen-reader simulation and verdict (recommended / usable / failing);
+- **Hit audit** (`hitTarget`): the dashed audit frame is concentric with the button and shows the actual clickable area; below 24px it turns red (legal floor breached), with a background ruler comparing the 24/48 marks; with `expand=pseudo` the visual box shrinks while the audit frame stays — "the hit area extends past the visual bounds" made visible;
+- **Keyboard behavior is real behavior**: both buttons are native `<button>` elements — Tab focus, Enter/Space activation, a blue `:focus-visible` ring; the interaction log explicitly tags Enter/Space events ("APG Button"), proving keyboard and pointer behavior are identical;
+- No decorative motion; under `prefers-reduced-motion: reduce` the only transitions cut straight to the end state without removing feedback.
+
+## Real-world examples
+
+- **Sara Soueidan's "Accessible Icon Buttons"**: the origin of the three-option comparison and the recommendation (hidden text + `aria-labelledby`); it also cites Scott O'Hara's browser/AT matrix proving "name only on the SVG" is unreliable (12 §12);
+- **The WAI-ARIA Authoring Practices Button pattern**: the authoritative baseline for button keyboard behavior — Enter/Space activation is the pattern's core keyboard contract; a native `<button>` satisfies it out of the box while hand-rolled mimics must add it (this demo uses native buttons for the comparison);
+- **The TDesign docs site top bar** (research 02, measured): 32×32 icon buttons with 8px gaps and layered hover/active backgrounds — a compact desktop toolbar squeezes the visual box to the 32px class and covers compliance through spacing and hover feedback (measured values from out/design-study/02-tdesign.md).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `naming` | labelledby/hidden-text are the recommended zone: the name lives in the DOM, translatable and copyable | svg-only/none are the failure zone: announcements degrade to just "button" or become unpredictable — screen-reader users lose all action semantics |
+| `hitTarget` | 48px-class targets feel comfortable on touch with low mis-tap rates; layout space grows | under 24px triggers a direct WCAG 2.5.8 violation (the audit frame turns red) and neighbors start competing for hits |
+| `iconSize` | a bigger glyph with the same target — "big icon, small target" inverts the compliance model | 12–16px compact glyphs inside a 48px target are a common production shape (no verified universal standard — community-common value, unverified) |
+| `expand` | the pseudo option adds zero layout footprint, but the hit area crosses visual bounds and may overlap neighbors | the padding option keeps the target on the box with no overlap traps — the default safe choice |
+
+Anchors: the name always states the action on the button layer; the target is always ≥24×24, with 48 as the production reference; keyboard always goes to the native `<button>`; pseudo-element expansion is a compact-scenario technique, never the compliance floor itself.

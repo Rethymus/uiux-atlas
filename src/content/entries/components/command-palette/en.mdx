@@ -1,0 +1,77 @@
+## Structure & DOM
+
+A command palette is a **combobox + listbox pairing** inside a centered overlay (scrim + glass panel), with semantics placed exactly per the WAI-ARIA APG "Combobox with Listbox Popup" pattern (verified live 2026-11-23): the input declares `role="combobox"`, the results declare `role="listbox"`, and every row is a `role="option"`. **Focus stays on the input at all times**; roving selection is announced via `aria-activedescendant` pointing at the current option — the APG prescription for "input + popup list", which reads better in screen readers than shoveling focus into the list.
+
+```html
+<div class="cmdk-overlay"><!-- scrim: click to close -->
+  <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="cmdk-head">
+      <input id="cmdk-input" role="combobox" type="text"
+             aria-expanded="true" aria-haspopup="listbox"
+             aria-controls="cmdk-listbox" aria-autocomplete="list"
+             aria-activedescendant="cmdk-opt-2" />
+    </div>
+    <ul id="cmdk-listbox" role="listbox" aria-label="Entry results">
+      <li id="cmdk-opt-0" role="option" aria-selected="false">Glassmorphism</li>
+      <li id="cmdk-opt-2" role="option" aria-selected="true">Command Palette</li>
+    </ul>
+    <div class="cmdk-foot"><!-- ↑↓ navigate · Enter open · Esc close + count --></div>
+  </div>
+</div>
+```
+
+Key points:
+
+- `aria-expanded="true"` + `aria-controls` + `aria-autocomplete="list"` declare "popup open, contents driven by the input"; with no results, `aria-activedescendant` is dropped;
+- The outer `role="dialog" + aria-modal="true"` carries the focus trap (this site's implementation: the input is the only tab stop, so Tab/Shift+Tab are intercepted) and Esc-to-close; `document.activeElement` is remembered before opening, and closing **returns focus to the invoker** (the header search button);
+- Opening locks body scroll (`overflow: hidden` plus scrollbar-width compensation against layout shift);
+- The header trigger declares the shortcut via `aria-keyshortcuts="Control+K Meta+K"` while the kbd badge itself is `aria-hidden` (display-only); a `data-palette-open` attribute lets the palette island delegate clicks, so the SSR button needs no inline JS.
+
+## Styling & Parameters
+
+The panel material directly reuses this site's §2.8 material layer, **mat-regular tier** (the `.material` utility: `backdrop-filter: blur(20px) saturate(180%)` + color tint + top-edge inner highlight + separator-α hairline + `--shadow-1`); the page scrim is a `color-mix` of `--bg` (55% opaque, the same derivation recipe as v2.1's `--glass-bg`), stacking at `--z-modal`; entrance runs at `--dur-overlay-in × --ease-decel` (only opacity/transform animate — backdrop-filter stays static per the §2.8 red line); the empty state and footer hints use `--text-faint`, and the active row highlights with `--fill-2` (the selected-fill semantic tier).
+
+```css
+.cmdk-overlay {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: clamp(32px, 14vh, 160px) 16px 24px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); /* same-hue scrim */
+}
+.cmdk-panel { width: min(640px, 100%); max-height: min(62vh, 560px);
+  display: flex; flex-direction: column; overflow: hidden; }
+.cmdk-panel.material {
+  background: var(--mat-regular-tint);            /* tint (dark .8 / light .8) */
+  backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  border: 1px solid var(--mat-hairline);          /* separator-α hairline */
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--shadow-1);
+}
+.cmdk-opt[aria-selected="true"] { background: var(--fill-2); color: var(--text); }
+```
+
+Three parameters (all JS-type, subscribed by the demo): `matchMode` switches subsequence/prefix matching; `maxResults` (5-20) clips results per screen with internal list scrolling; `hotkeyDisplay` switches the kbd badge text — **display only**, since the listener always accepts both Ctrl+K and Cmd+K, and the badge is filled client-side via `navigator.platform` detection (Mac = ⌘K), never pre-judged during SSR (it would mismatch hydration). The fuzzy matcher is a hand-written zero-dependency subsequence algorithm: the query hits when every character appears in order, with +3 for word-start hits, +1 per streak step, and a slight boost for shorter remainders; each entry takes the best score across "locale name / other-locale name / all aliases", ranked by score, clipped to the top N.
+
+## Motion & Interaction
+
+- **Summoning**: Ctrl+K / Cmd+K (preventDefault suppresses the browser's same-key semantics) or the header search button; the `⌘K` badge appears only after hydration;
+- **Keyboard**: ↑↓ cycle through options, Home/End jump to the ends, Enter jumps to the selected entry page, Esc closes and returns focus; pointer movement sets the selection (selection follows focus), and touch taps are equivalent to Enter;
+- **Entrance**: the scrim fades while the panel fades in from `translateY(-8px→0)`, 300ms `--ease-decel` (the first activation of the pre-locked `--dur-overlay-in` token); under `prefers-reduced-motion` the animation is skipped outright and the final state renders instantly;
+- **Closing**: Esc / clicking the scrim / pressing Ctrl+K again; closing unlocks body scroll and restores the padding compensation;
+- **Jumping**: this site is an MPA (no ClientRouter), so Enter calls `location.assign` straight to the entry page — from "press the shortcut" to "land on the target page" is two keystrokes.
+
+## Real-world examples
+
+- **VS Code**: the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and Quick Open (`Ctrl+P` / `Cmd+P`) are the prototype-grade reference for this interaction — subsequence fuzzy matching (`gte` finds `gotoEditor`), "recently used" weighting in the list, full `aria-activedescendant` semantics with a highlighted active row, and layered Esc-to-exit;
+- **Linear**: the `Cmd+K` palette unifies issues, views, projects and actions into one searchable list with subsequence matching and grouped results (navigation / actions); picking an action closes the palette without losing context — the productized benchmark of "the palette as a global command line";
+- **Raycast**: summoned by a default hotkey (remappable to something like `Cmd+K`), searching as you type, with extension commands and system actions mixed in one list; the window itself is a material overlay (blur + tint + hairline) — the same thinking as this site's §2.8 mat-regular parameterized recipe;
+- **This site (dogfood)**: the header search button + site-wide Ctrl+K is this entry's own component — all 186+ entries' name/nameZh/aliases/category/star are injected into the index at build time, and this entry's demo embeds the same `PalettePanel` component itself (inline variant).
+
+## Parameter sensitivity
+
+| Parameter | Switch to this side… | Switch to the other side… |
+| --- | --- | --- |
+| `matchMode` | prefix: word starts only — fewer false positives, a "tighter" list; but "gsm" won't find Glassmorphism, noticeably hurting recall for users who half-remember names | subsequence: scrambled abbreviations still hit (the mainstream palette behavior); the cost is short queries (like "o") matching too much, so score ranking carries the discrimination |
+| `maxResults` | 5: a short list that scans fast, but the right answer often falls off — only more typing pushes it into the top 5 | 20: plenty of candidates with less typing burden; scanning cost and list height rise (Hick's law, research 07§23), and the list needs internal scrolling as a floor |
+| `hotkeyDisplay` | ctrl-k: the badge Windows/Linux users see matches their muscle memory | cmd-k: macOS users see ⌘K; production should detect the platform for the badge while the listener always accepts both keys |
+
+Rule-of-thumb ranges: 8-12 results per screen; panel width 560-640px, height ≤62vh; scrim tint at 50-60%; matching runs synchronously (for local indexes under ~100k entries there is no need to debounce).

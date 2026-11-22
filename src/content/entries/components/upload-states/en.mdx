@@ -1,0 +1,82 @@
+## Structure & DOM
+
+The uploader is a two-layer "entry + file state list" structure: the entry is a **visually hidden native `<input type="file">`** (triggered by a button or a dropzone — MUI's label + hidden input pattern, research 07 §1), and each file in the list walks its own state machine uploading → done / error, with deletion removing the row (antd removed semantics, supplementary study 12 §15):
+
+```html
+<button type="button" class="up-drop">
+  Click or drop files here
+  <span class="up-desc">JPG / PNG up to 2 MB each</span>  <!-- Carbon: state the limits -->
+</button>
+<input type="file" class="up-input" multiple hidden-ish />      <!-- visually hidden -->
+<ul class="up-list">
+  <li class="up-row" data-status="uploading">
+    <span class="up-ic-sm is-upload" aria-hidden="true">⟳</span>
+    <span class="up-name" title="quarterly-report-final-v3.pdf">quarterly…</span> <!-- ellipsis + title -->
+    <span class="up-bar"><span class="up-bar-fill" style="width:60%"></span></span>
+    <span class="up-state">60% uploading</span>                    <!-- state as text -->
+    <button class="up-act" aria-label="Delete file">✕ Delete</button>
+  </li>
+  <li class="up-row" data-status="error">
+    <span class="up-ic-sm is-error" aria-hidden="true">✕</span>
+    <span class="up-name">handshake.zip</span>
+    <span class="up-fix">Network hiccup — check and retry <button>Retry</button></span> <!-- Carbon: guidance -->
+  </li>
+</ul>
+```
+
+Key points:
+
+- **The heading describes the zone's purpose; the description states size/format limits** — Carbon's content spec (research 07 §14); the demo's "JPG/PNG ≤ 2MB" line follows it;
+- One row per file, state expressed as "glyph + visible text"; the progress bar is redundant visuals and color never alone carries state;
+- Long filenames ellipsize with a `title` tooltip for the full name (Carbon, research 07 §14); each row's delete is an independent inline button with the filename in its aria-label;
+- The dropzone and the button are two faces of the same input: the dropzone variant covers drag-in, the button variant covers drag-less environments (Carbon's two variants, research 07 §14).
+
+## Styling & Parameters
+
+All three params are JS-type (store-subscribed); status colors come from antd's functional colors:
+
+```css
+.up-drop { border: 1px dashed #d9d9d9; border-radius: 6px; }
+.up-drop.is-drag { border: 2px solid #1677ff; background: #E6F4FF; }  /* drag-in: color + thicken */
+.up-drop:hover { border-color: #1677ff; }
+.up-row:hover { background: rgba(0, 0, 0, 0.04); }        /* FillTertiary row hover */
+.up-ic-sm.is-done   { color: #52c41a; }                    /* colorSuccess */
+.up-ic-sm.is-error  { color: #ff4d4f; }                    /* colorError */
+.up-ic-sm.is-upload { color: #1677ff; animation: up-spin 1s linear infinite; }
+.up-bar     { height: 4px; background: #f0f0f0; }          /* track = colorBgLayout */
+.up-bar-fill{ background: #1677ff; transition: width 0.12s linear; }
+.up-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+```
+
+Where the numbers come from:
+
+- The drag-in highlight "border color + thicken" is Carbon's official wording (research 07 §14); the demo palette: border #1677ff = colorPrimary, fill #E6F4FF = antd's blue palette step 1 (06 §1.2), dashed base #d9d9d9 = colorBorder (06 §2.2);
+- Success green #52c41a / failure red #ff4d4f = antd colorSuccess / colorError (06 §2.2); row hover rgba(0,0,0,0.04) = FillTertiary (06 §2.3⑤);
+- The four status values uploading (progress bar) / done / error / removed are official antd Upload facts (supplementary study 12 §15); Carbon's three in-flight states loading/success/uploaded map one-to-one (research 07 §14);
+- **The 4px-high, 72px-wide bar and the 7px 8px row padding are demo teaching geometry, unverified** (the research records no sizes); the ~1.5s upload is a teaching simulation (150ms × 10 steps);
+- `maxCount` is officially recorded to replace the current file at =1 (supplementary study 12 §15); the demo shows the "refuse extras with a notice" branch; the official default is unrecorded — the demo default of 3 is a teaching value.
+
+## Motion & Interaction
+
+- **Uploading**: an in-row percent bar (width transition, 0.12s per step) plus a spinning glyph — percent-done indicators reduce uncertainty (NN/g, research 07 §19); note NN/g's indicator-choice guidance: 2–10s operations suit a spinner and ≥10s truly needs percent-done — antd's production practice uses a percent bar across file uploads (12 §15 uploading state), and the demo follows antd; the teaching simulation runs ~1.5s;
+- **Drag hover**: dragover repaints the border thicker and colored over a pale-blue fill (Carbon semantics, research 07 §14); dragleave/drop reset it; on touch and drag-less environments the button path fully covers;
+- **Keyboard path**: the entry opens the file dialog with Space/Enter, and focus returns to the trigger after the dialog closes (Carbon keyboard requirements, research 07 §14); row delete/retry buttons are Tab-reachable and activated with Space/Enter (Carbon, 07 §14);
+- **Failure state**: ✕ glyph + red state text + **nearby repair-guidance copy + a retry button** — Carbon requires clear repair guidance on errors (research 07 §14; NN/g errors-belong-nearby, research 07 §16); retry re-enters uploading;
+- **Limit notice**: exceeding maxCount flashes a role="status" notice that auto-dismisses, never blocking already-uploaded files;
+- Under `prefers-reduced-motion`: the spinner freezes, the bar's width transition is dropped, and entry transitions are dropped (research 07 §37).
+
+## Real-world examples
+
+- **Gmail / enterprise mail attachments**: "attach a file" is the button path; dropping files onto the compose area morphs it into a dropzone with in-place chips, per-attachment progress and individual retries — the canonical button + drag dual entry;
+- **Cloud-drive batch uploads** (Google Drive, Baidu Netdisk): drop a whole batch into the list; each file shows progress and its own failure reason with a per-row retry — the full uploading → done/error state machine;
+- **Composer image uploads on social/community platforms** (Weibo, GitHub Issue attachments): paste or drag to upload, placeholder progress while uploading, inline preview when done — the list state machine combined with removed delete semantics (editorial parallel).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `variant` | dropzone centers drag with a big hit area — right for batches; the button form costs the least space | button is steadier in narrow sidebars/mobile, and drag capability disappears with it |
+| `simulate` | fail makes the error row's repair guidance and retry visible — error states only count as designed once exercised | success verifies only the happy path, leaving error visuals and copy untested |
+| `maxCount` | larger lists allow batches, but past ~7 visible rows you need scrolling | =1 replaces the current file on a new pick (official antd semantics, 12 §15) — the avatar-class standard |
+
+Working ranges: limits live in the description (Carbon content spec, research 07 §14); keep row hover always on for scanning; failures need repair guidance + retry, never a bare red cross; no multi-file uploads inside modals (Carbon's explicit warning, research 07 §14).

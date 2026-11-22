@@ -1,0 +1,115 @@
+{
+  "name": "Steps",
+  "nameZh": "步骤条",
+  "aliases": ["步骤导航", "Stepper", "Wizard Steps"],
+  "category": "components",
+  "subgroup": "navigation",
+  "system": "component-lib",
+  "star": 3,
+  "tagline": {
+    "zh": "把复杂任务拆成有顺序的子步骤导航:节点串在连接线上,wait/process/finish/error 四态自动推算,process 步可带进度环。",
+    "en": "Split complex tasks into an ordered sub-step navigation: nodes strung on connectors with wait/process/finish/error derived automatically, and a progress ring on the process step."
+  },
+  "origin": {
+    "zh": "步骤条定位是「任务复杂或有明确子任务顺序时的导航」(补研 12§15);生产参照系是 Ant Design Steps(补研 12§15 记载:item status 取值 wait|process|finish|error 且未配置时由 current 自动推算、API 含 current、orientation(horizontal|vertical)、type(default|dot|inline|navigation|panel)、percent(process 步骤进度环)、responsive(<532px 自动转垂直)、maxCount(≥3)、onChange(设置后可点击)、item disabled,2026-11-22 抓取 ant.design 现行文档)。动机层依据:目标梯度效应——清晰进度指示让人越接近目标动力越强(补研 12§14)。",
+    "en": "The stepper is positioned as 'navigation for complex tasks with ordered sub-steps' (supplementary study 12 §15); the production reference is Ant Design Steps (12 §15 records item status wait|process|finish|error auto-derived from current when unset, plus current, orientation (horizontal|vertical), type (default|dot|inline|navigation|panel), percent (process-step progress ring), responsive (<532px auto-vertical), maxCount (≥3), onChange (clickable when set), item disabled — captured from current ant.design docs on 2026-11-22). The motivational basis is the goal-gradient effect — clear progress indicators strengthen drive as the goal nears (12 §14)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "current",
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后驱动四态推算与连接线填充;点击步骤头亦可设置)。对应 antd Steps 的 current——item status 未配置时由 current 自动推算:之前的步为 finish、当前步为 process、之后为 wait(补研 12§15);默认值调研未记载,demo 默认 1 为演示教学值。",
+        "en": "JS-type param (demo subscribes to drive the four-state derivation and connector fill; clicking a step header also sets it). Maps to antd Steps' current — when item status is unset it derives from current: earlier steps finish, the current one process, later ones wait (12 §15); the default is unrecorded — the demo default of 1 is a demo teaching value."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "errorAt",
+      "options": [
+        { "value": "none", "label": { "zh": "无错误 none", "en": "None" } },
+        { "value": "1", "label": { "zh": "第 2 步(支付)出错", "en": "Step 2 (payment) errors" } },
+        { "value": "2", "label": { "zh": "第 3 步(审核)出错", "en": "Step 3 (review) errors" } }
+      ],
+      "default": "none",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后把指定步强制为 error 态,显式 status 优先于 current 推算)。对应 antd Steps item status 的 error 取值——wait|process|finish|error 四态,显式配置优先(补研 12§15);demo 取 colorError #ff4d4f(设计调研 06§2.2)表达错误态。",
+        "en": "JS-type param (demo subscribes to force the chosen step into error; explicit status wins over current derivation). Maps to antd Steps' item status error value — of wait|process|finish|error, explicit config takes priority (12 §15); the demo renders error with colorError #ff4d4f (design study 06 §2.2)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "percent",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 50,
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后驱动 process 步的进度环百分比)。对应 antd Steps 的 percent(process 步骤进度环,补研 12§15);官方默认值调研未记载,demo 默认 50 为演示教学值;0% 时不画环。",
+        "en": "JS-type param (demo subscribes to drive the process step's progress ring). Maps to antd Steps' percent (process-step progress ring, 12 §15); the official default is unrecorded — the demo default of 50 is a demo teaching value; at 0% no ring is drawn."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "orientation",
+      "options": [
+        { "value": "horizontal", "label": { "zh": "横向 horizontal", "en": "Horizontal" } },
+        { "value": "vertical", "label": { "zh": "纵向 vertical", "en": "Vertical" } }
+      ],
+      "default": "horizontal",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换节点排布与连接线方向)。对应 antd Steps 的 orientation: horizontal|vertical(补研 12§15);官方默认值调研未记载,demo 默认 horizontal 为社区常见值,未证实;antd 另记载 responsive(<532px 自动转垂直)。",
+        "en": "JS-type param (demo subscribes to flip node layout and connector direction). Maps to antd Steps' orientation: horizontal|vertical (12 §15); the official default is unrecorded — the demo's horizontal default is a community-common value, unverified; antd also records responsive (<532px auto-vertical)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "步骤条是纯 DOM/CSS/JS 自绘:语义用有序列表 + aria-current,可点击步骤头是原生 button;进度环用 conic-gradient(现代浏览器支持,旧浏览器退化为纯色圆);四态推算与错误覆盖是纯脚本逻辑,无平台 API 依赖。",
+      "en": "The stepper is pure DOM/CSS/JS: semantics via an ordered list + aria-current, clickable step headers are native buttons; the progress ring uses conic-gradient (modern browsers, degrading to a plain disc on old ones); the four-state derivation and error override are plain scripting with no platform API dependency."
+    }
+  },
+  "fallback": {
+    "zh": "无 CSS conic-gradient 时 process 步退化为纯色圆环(无进度刻度);无 JS 时用静态列表呈现已完成/当前/未完成文本;窄屏(<532px,antd responsive 阈值)自动转纵向排布,标签不再换行挤压。",
+    "en": "Without CSS conic-gradient the process step degrades to a plain solid ring (no progress ticks); without JS present a static list of done/current/upcoming text; below 532px (antd's responsive threshold) switch to vertical so labels stop squeezing."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "结账/下单流程:确认订单→支付→审核→开通,四步内的线性主线", "en": "Checkout/order flows: confirm → pay → review → activate, linear mains within four steps" },
+      { "zh": "注册/开户向导:身份→验证→绑定,步骤条 + 分步表单", "en": "Signup/onboarding wizards: identity → verify → bind, stepper plus per-step forms" },
+      { "zh": "部署/发布进度:构建→测试→发布,process 步带 percent 进度环", "en": "Deploy/release progress: build → test → ship, with a percent ring on the active step" },
+      { "zh": "工单/审批状态回显:只读展示流程走到哪一步、哪一步出错", "en": "Ticket/approval status: read-only display of which step is active or failed" }
+    ],
+    "avoid": [
+      { "zh": "步骤超过约 5–7 个——工作记忆 7±2,超限应分组或拆成两级导航(Miller 定律,调研 07§24)", "en": "More than ~5–7 steps — working memory holds 7±2; group or split into two-level navigation past that (Miller's law, research 07 §24)" },
+      { "zh": "非线性流程(分支/可跳步)硬套步骤条——步骤语义是线性顺序,分支用菜单/树", "en": "Non-linear flows (branches/skips) forced into a stepper — step semantics are linear; branches need menus/trees" },
+      { "zh": "只有 2 步的流程不值得导航——直接一屏完成", "en": "Two-step flows don't deserve navigation — finish on one screen" },
+      { "zh": "把步骤条当进度条用:长时间百分比请用 Progress,步骤条表达的是阶段不是进度(antd percent 进度环除外,补研 12§15)", "en": "Don't use a stepper as a progress bar: long-running percentages need Progress; a stepper expresses stages (except antd's percent ring, 12 §15)" }
+    ]
+  },
+  "a11y": {
+    "zh": "语义骨架:ol/li 有序列表表达步骤顺序,当前步的头节点标 aria-current=\"step\";APG 30 模式清单没有独立的步骤条模式(调研 07§34),aria-current 惯例为社区常见做法,未证实——必须做的是:四态(完成/进行/等待/出错)不能只靠颜色,完成勾与错误叉用可见图形 + 文字(「第 3 步:审核出错」),aria-label 带步骤名与状态;可点击步骤头是原生 button(Enter/Space 激活,WebAIM,调研 07§36);焦点环不可移除;错误态就近配文字说明(NN/g:错误紧贴字段,调研 07§16)。",
+    "en": "Semantic skeleton: an ol/li ordered list for step order with aria-current=\"step\" on the active header; the APG 30-pattern list has no dedicated stepper pattern (research 07 §34) and aria-current is a community convention, unverified — what is mandatory: the four states (done/active/waiting/error) never ride on color alone; check and cross marks are visible glyphs plus text ('Step 3: review failed'), and aria-labels carry step name and state; clickable headers are native buttons (Enter/Space, WebAIM, research 07 §36); never remove the focus ring; pair errors with nearby text (NN/g: errors belong next to the field, research 07 §16)."
+  },
+  "sources": [
+    "https://ant.design/components/steps",
+    "https://lawsofux.com/goal-gradient-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个四步横向步骤条:节点圆(32px 档)串在连接线上,wait/process/finish/error 四态由 current 自动推算且显式 error 可覆盖,process 步带 conic-gradient 进度环,步骤头可点击切换当前步,可切纵向。",
+      "en": "Replicate a four-step horizontal stepper: 32px node circles strung on connectors, wait/process/finish/error derived from current with explicit error override, a conic-gradient ring on the process step, clickable step headers switching current, and a vertical orientation option."
+    },
+    "acceptance": [
+      { "zh": "ol/li 有序列表 + 当前步 aria-current=\"step\";四态用图形(✓/✕/数字)+ 文字,不依赖单色", "en": "ol/li ordered list + aria-current=\"step\" on the active header; four states use glyphs (✓/✕/number) plus text, never color alone" },
+      { "zh": "状态推算:i<current 为 finish,i=current 为 process,i>current 为 wait;errorAt 显式覆盖优先", "en": "Derivation: i<current finish, i=current process, i>current wait; errorAt overrides explicitly" },
+      { "zh": "process 步进度环用 conic-gradient 严格取 percent 参数值(0% 不画环),连接线填充色 #1677ff", "en": "The process ring uses conic-gradient from the exact percent param (no ring at 0%); connector fill #1677ff" },
+      { "zh": "步骤头是原生 button,点击/Enter 设置当前步并同步 aria-current;焦点环可见", "en": "Headers are native buttons; click/Enter sets current and syncs aria-current; focus ring visible" },
+      { "zh": "错误态 #ff4d4f + ✕ 图形 + 文字说明;窄屏(<532px)或 orientation=vertical 时转纵向;动效尊重 prefers-reduced-motion", "en": "Error state #ff4d4f with ✕ glyph and text; vertical below 532px or via orientation=vertical; motion honors prefers-reduced-motion" }
+    ]
+  }
+}

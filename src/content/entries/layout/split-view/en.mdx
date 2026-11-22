@@ -1,0 +1,74 @@
+## Structure & DOM
+
+Split view has no native CSS standard (research 05 §8); the DOM is simply "left pane + divider + right pane" as three siblings, where the divider is a real interactive element, not a decorative line:
+
+```html
+<div class="split">
+  <div class="pane pane-left">File tree…</div>
+  <button
+    type="button"
+    role="separator"
+    aria-orientation="vertical"
+    aria-valuemin="20" aria-valuemax="80" aria-valuenow="40"
+    aria-label="Resize panes"></button>
+  <div class="pane pane-right">Preview card…</div>
+</div>
+```
+
+Key points:
+
+- The divider carries `role="separator"` + `tabindex="0"` + arrow keys — the WAI-ARIA separator minimum, the same semantics react-resizable-panels uses per its README (research 05 §8);
+- The left pane's width is the single state; the right pane flexes to fill; `aria-valuenow` and the visual width share one value;
+- The right pane declares `container-type: inline-size`, so pane content adapts via `@container` — once "split" links up with "container queries", narrowing the pane visibly re-flows the card;
+- MDN Cookbook's "Split navigation" is a visually divided nav recipe, not desktop-style resizable panes (research 05 §8).
+
+## Styling & Parameters
+
+Two parameters — the initial pane width and the clamp floor — injected as `--sv-start` and consumed as JS state for clamping:
+
+```css
+.split { display: flex; }
+.pane-left {
+  width: var(--sv-start, 40%);   /* initial 40%: demo baseline, unverified */
+  min-width: var(--sv-min, 20%); /* clamp floor 20%: demo baseline, unverified */
+  flex: none;
+  transition: width 0.15s ease;  /* smooths the param slider only; drag writes directly */
+}
+.pane-right { flex: 1; min-width: 0; container-type: inline-size; }
+
+/* Pane linkage: the query condition must be a literal (container queries reject custom properties) */
+@container (max-width: 280px) {
+  .pane-right .card { flex-direction: column; }
+}
+```
+
+Where the numbers come from:
+
+- Defaults 40% / 20% are **this entry's demo baseline values, unverified** — react-resizable-panels `defaultSize`/`minSize` are product-specific with no single official value;
+- The divider hit area is ≥10px wide with `touch-action: none` to stop touch-scroll hijacking; the 2px focus ring sits on the divider itself;
+- The 280px container breakpoint is also a demo baseline — in production derive it from the card's own collapse width.
+
+## Motion & Interaction
+
+Dragging is the primary interaction; the keyboard is its equal, both funnelling through one clamp function:
+
+- **Drag**: Pointer Events + `setPointerCapture`; during the drag width updates directly (no transition); `touch-action: none` makes it draggable on touch;
+- **Arrow keys**: ←/→ step ±2% (Shift ×3), Home/End jump to the clamp limits — the step is a demo baseline; `aria-valuenow` updates on every step;
+- **Double-click reset**: back to the `startSize` default, reusing the store's `reset()`;
+- **Width transition**: a 0.15s ease smooths slider-driven changes; dropped under `prefers-reduced-motion`;
+- The **container-query linkage** is layout feedback, not animation: the card flips instantly with no tween — the user controls the width, and animation would only get in the way.
+
+## Real-world examples
+
+- **react-resizable-panels (research 05 §8)**: the origin of the ecosystem's de-facto standard itself — `<PanelGroup>`/`<Panel>` grouping, a drag handle, WAI-ARIA separator keyboard support with gridline enhancement, verified first-hand from the README; most web renditions of the VS Code-style resizable pane are built on it or the same semantics (specific adoption lists not individually verified);
+- **IDE and mail-client two-pane shells**: editor file tree + editing area, mail list + reading pane — the most typical split products, all with draggable dividers and double-click reset (editorial summary — per-product implementation parameters not individually verified);
+- **The MDN Layout Cookbook**: the official recipe closest to this topic is "Split navigation" (visually grouped nav) — research 05 §8 explicitly notes it is not the same concept as resizable panes; don't conflate them when researching.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `startSize` | widens the left pane so file names fit; the right pane hits the 280px container breakpoint sooner and the card stacks | gives the right pane the stage; preview cards spread horizontally; long file names truncate (`overflow: hidden` covers it) |
+| `minSize` | guarantees both panes stay readable but shortens the drag travel; too high and the split loses its point | more freedom to squeeze; below ~15% narrow-pane content gets crushed — the demo's container-query flip is the safety net |
+
+Rules of thumb: set the floor to "the width where the narrow pane is still legible", not a symmetric percentage; prefer a generous divider hit area (≥10px); the panes' DOM order never changes with the drag, so screen-reader order stays stable.

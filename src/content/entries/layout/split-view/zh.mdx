@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+分栏视图没有 CSS 原生标准(调研 05§8),DOM 上就是「左栏 + 分隔条 + 右栏」三兄弟,分隔条是一个真正的可交互元素而不是装饰线:
+
+```html
+<div class="split">
+  <div class="pane pane-left">文件树…</div>
+  <button
+    type="button"
+    role="separator"
+    aria-orientation="vertical"
+    aria-valuemin="20" aria-valuemax="80" aria-valuenow="40"
+    aria-label="调整左右栏宽度"></button>
+  <div class="pane pane-right">预览卡…</div>
+</div>
+```
+
+关键点:
+
+- 分隔条用 `role="separator"` + `tabindex="0"` + 方向键——这是 WAI-ARIA separator 模式的最低配,react-resizable-panels 的 README 也采用同一语义(调研 05§8);
+- 左栏宽度是唯一状态,右栏 `flex: 1` 吃剩余空间;`aria-valuenow` 与视觉宽度共享同一数值;
+- 右栏声明 `container-type: inline-size`,栏内组件用 `@container` 按栏宽自适应——「分栏」与「容器查询」联动后,拖窄栏宽会看到卡片自动翻排;
+- MDN Cookbook 的「Split navigation」是导航分组的视觉分隔,与桌面式可拖分栏并非同一概念(调研 05§8)。
+
+## 样式与参数
+
+两个参数:初始栏宽与夹紧下限,分别经 `--sv-start` 注入、以 JS 状态参与夹紧:
+
+```css
+.split { display: flex; }
+.pane-left {
+  width: var(--sv-start, 40%);   /* 初始 40%:演示基准值,未证实 */
+  min-width: var(--sv-min, 20%); /* 夹紧下限 20%:演示基准值,未证实 */
+  flex: none;
+  transition: width 0.15s ease;  /* 只平滑参数滑杆;拖拽中由 JS 直写,无感知延迟 */
+}
+.pane-right { flex: 1; min-width: 0; container-type: inline-size; }
+
+/* 栏内联动:查询条件必须是字面量(容器查询条件不接受自定义属性) */
+@container (max-width: 280px) {
+  .pane-right .card { flex-direction: column; }
+}
+```
+
+数值出处:
+
+- 参数默认值 40% / 20% 为**本条目演示基准值,未证实**——react-resizable-panels 的 `defaultSize`/`minSize` 由各产品自定,无统一官方值;
+- 分隔条命中区 ≥10px 宽并配 `touch-action: none` 防移动端滚动劫持;焦点环 2px 在分隔条本体上;
+- 容器查询断点 280px 亦为演示基准值,生产上应按卡片内容的折叠宽度决定。
+
+## 动效与交互
+
+拖拽是主交互,键盘是等价交互,二者共用同一夹紧函数:
+
+- **拖拽**:Pointer Events + `setPointerCapture`,拖拽中直接写宽度(无过渡),松手结束;`touch-action: none` 让触屏可拖;
+- **方向键**:←/→ 步进 ±2%(Shift ×3),Home/End 直达夹紧极限——步长为演示基准值;`aria-valuenow` 随每一步更新;
+- **双击复位**:回到 `startSize` 默认值,`reset()` 复用 store 的恢复逻辑;
+- **宽度过渡**:参数滑杆改变时 0.15s ease 平滑;`prefers-reduced-motion` 下取消过渡;
+- **容器查询联动**是布局反馈而非动画:卡片翻排瞬间完成,不做补间——栏宽由用户拖拽控制,动画反而碍事。
+
+## 真实产品案例
+
+- **react-resizable-panels(调研 05§8)**:生态事实标准的出处本身——`<PanelGroup>`/`<Panel>` 分组、拖拽手柄、WAI-ARIA separator 键盘可访问性与 gridline 增强,README 一手核对;VS Code 式可调面板在 Web 端的多数实现基于它或同款语义(具体采用清单未逐一核实);
+- **IDE 与邮件客户端的双栏骨架**:编辑器资源树+编辑区、邮件列表+阅读窗是最典型的分栏产品形态,分隔条均可拖拽且带双击复位(编辑性总结——各家具体实现参数未逐一核实);
+- **MDN Layout Cookbook**:与分栏相关的官方配方是「Split navigation」(导航分组分隔)——调研 05§8 明确指出它与桌面式可拖分栏不是同一概念,查资料时不要混淆。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `startSize` | 左栏更宽,文件树全名可见;右栏更早触发 280px 容器断点、卡片翻纵排 | 右栏主导,预览卡横排舒展;左栏文件名截断(有 `overflow: hidden` 兜底) |
+| `minSize` | 两栏都被保底,拖拽行程变短;过高的下限让分栏失去意义 | 拖拽自由度更大;低于 ~15% 后窄栏内容容易挤压不可读,demo 的容器查询翻排就是兜底 |
+
+经验要点:下限取「窄栏内容刚好还可读」的宽度而不是对称百分比;分隔条命中区宁可偏宽(≥10px);双栏 DOM 顺序不随拖拽改变,读屏顺序保持稳定。

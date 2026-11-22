@@ -1,0 +1,119 @@
+{
+  "name": "Scroll Snap",
+  "nameZh": "滚动吸附",
+  "aliases": ["滚动吸附", "scroll snap", "CSS Scroll Snap", "吸附滚动"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "用「吸附位置」接管滚动停靠:容器 scroll-snap-type 定轴与强度,子项 scroll-snap-align 定对齐点,scroll-padding/scroll-margin 调整 snapport 与 snap area,把轮播/分页交还给原生滚动。",
+    "en": "Let snap positions take over scrolling: the container's scroll-snap-type picks axis and strictness, items' scroll-snap-align picks the alignment, scroll-padding/scroll-margin shape the snapport and snap areas — carousels and pagination handed back to native scrolling."
+  },
+  "origin": {
+    "zh": "MDN CSS Scroll Snap:核心概念是「snap area(子项 + scroll-margin 外扩)对齐 snapport(容器 − scroll-padding 内缩)」;容器 scroll-snap-type × 子项 scroll-snap-align/scroll-snap-stop(调研 10§8.2 + 补研 12§4);Level 2 增加 scrollsnapchange/scrollsnapchanging 事件(补研 12§4)。",
+    "en": "MDN CSS Scroll Snap: the core concept is \"snap areas (items expanded by scroll-margin) aligning with the snapport (container inset by scroll-padding)\"; container scroll-snap-type × item scroll-snap-align/scroll-snap-stop (research 10 §8.2 + 12 §4); Level 2 adds the scrollsnapchange/scrollsnapchanging events (12 §4)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "strictness",
+      "options": [
+        { "value": "mandatory", "label": { "zh": "mandatory 强制", "en": "mandatory" } },
+        { "value": "proximity", "label": { "zh": "proximity 接近", "en": "proximity" } }
+      ],
+      "default": "mandatory",
+      "cssVar": "--snap-strict",
+      "effect": {
+        "zh": "吸附强度,CSS 型参数(scroll-snap-type: x var(--snap-strict))。MDN 原文警告:mandatory 在内容超高/超宽时用户可能永远看不到某段内容——只有「屏上内容量已知」时才用;一般交互用 proximity(浏览器自定吸附距离阈值)。demo 内容量已知,取 mandatory(调研 10§8.2 + 补研 12§4)。",
+        "en": "Snap strictness, a CSS-type param (scroll-snap-type: x var(--snap-strict)). MDN's warning: mandatory can make content unreachable when it overflows — use it only when the amount of visible content is known; proximity lets the browser decide the snapping distance for general use. The demo's content is known, hence mandatory (research 10 §8.2 + 12 §4)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "align",
+      "options": [
+        { "value": "start", "label": { "zh": "start 起始", "en": "start" } },
+        { "value": "center", "label": { "zh": "center 居中", "en": "center" } },
+        { "value": "end", "label": { "zh": "end 末尾", "en": "end" } }
+      ],
+      "default": "start",
+      "cssVar": "--snap-align",
+      "effect": {
+        "zh": "对齐点,CSS 型参数(scroll-snap-align: var(--snap-align))。start/center/end 声明 snap area 与 snapport 的对齐边,双轴可分写(补研 12§4);demo 默认 start(12§4 片段同款)。",
+        "en": "The alignment point, a CSS-type param (scroll-snap-align: var(--snap-align)). start/center/end declares which edge of the snap area aligns with the snapport, per-axis overridable (12 §4); the demo defaults to start (same as the 12 §4 snippet)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "stop",
+      "options": [
+        { "value": "always", "label": { "zh": "always 逐卡停", "en": "always" } },
+        { "value": "normal", "label": { "zh": "normal 允许滑过", "en": "normal" } }
+      ],
+      "default": "always",
+      "cssVar": "--snap-stop",
+      "effect": {
+        "zh": "逐项停靠,CSS 型参数(scroll-snap-stop: var(--snap-stop))。CSS 默认 normal(快甩可越过多个吸附点);调研两处片段(调研 10§8.2、补研 12§4)都用 always「每次只翻一张卡」,轮播取 always 防翻页飞过。",
+        "en": "Per-item stops, a CSS-type param (scroll-snap-stop: var(--snap-stop)). The CSS default is normal (a fast flick may skip several snap points); both research snippets (research 10 §8.2, 12 §4) use always — \"one card per swipe\" — the carousel choice that prevents page-skipping."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "padding",
+      "unit": "px",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "default": 16,
+      "cssVar": "--snap-padding",
+      "effect": {
+        "zh": "scroll-padding-inline,CSS 型参数(容器侧内缩 snapport)。默认 16px 取补研 12§4 片段(scroll-padding-inline: 16px);调研 10§8.4 轮播惯例用 24px。顶部有吸顶导航时必加,给 sticky 头部留位(补研 12§4)。子项侧的外扩走 scroll-margin(单元素微调,见 MDX)。",
+        "en": "scroll-padding-inline, a CSS-type param (container-side snapport inset). Default 16px from the 12 §4 snippet (scroll-padding-inline: 16px); the carousel convention in research 10 §8.4 uses 24px. Mandatory under sticky headers to leave room for them (12 §4). The item-side counterpart is scroll-margin (per-item fine-tuning, see the MDX)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Level 1(type/align/stop/padding/margin)现代浏览器广泛支持;Level 2 的 scrollsnapchange/scrollsnapchanging 事件与 SnapEvent 较新,MDN 提示用 @supports/降级处理(补研 12§4)。demo 对事件做能力检测,不支持时用滚动位置近似计算当前吸附卡片。",
+      "en": "Level 1 (type/align/stop/padding/margin) is widely supported in modern browsers; the Level 2 scrollsnapchange/scrollsnapchanging events and SnapEvent are newer — MDN suggests @supports/feature detection (12 §4). The demo detects the events and falls back to approximating the snapped card from scroll position."
+    },
+    "baseline": "Widely available"
+  },
+  "fallback": {
+    "zh": "不支持 scroll snap 的环境退化为普通可滚动轨道(功能不丢,只是不吸附);scroll-snap-stop 与 Level 2 事件均按属性/事件不存在时静默降级;overscroll-behavior-x: contain 不支持时(iOS Safari 旧版)横滑可能链出页面——见 scroll-overflow 条目。",
+    "en": "Without scroll snap the rail degrades to a plain scrollable track (function survives, just no snapping); scroll-snap-stop and Level 2 events degrade silently when absent; without overscroll-behavior-x: contain (older iOS Safari) horizontal swipes may chain out of the page — see the scroll-overflow entry."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "横向卡片轮播/图库——「每次只翻一张」配 scroll-snap-stop: always(补研 12§4)", "en": "Horizontal card carousels/galleries — \"one card per swipe\" with scroll-snap-stop: always (12 §4)" },
+      { "zh": "整页竖向分页叙事(full-page 分节),内容量已知时用 mandatory", "en": "Full-page vertical section storytelling, with mandatory when the visible content amount is known" },
+      { "zh": "吸顶导航下的锚点定位——scroll-padding 给 sticky 头部留位(补研 12§4)", "en": "Anchor positioning under sticky headers — scroll-padding reserves the header's space (12 §4)" }
+    ],
+    "avoid": [
+      { "zh": "内容超高/超宽的滚动区配 mandatory——MDN:用户可能永远看不到某段内容,一般交互用 proximity(调研 10§8.2)", "en": "mandatory on scrollers with overflowing content — MDN: some content may become unreachable; proximity for general use (research 10 §8.2)" },
+      { "zh": "需要物理惯性长滑行的信息流——吸附会把每次滑动拽回停靠点,打断浏览节奏", "en": "Feeds that want long inertial glides — snapping yanks every swipe back to a stop and breaks browsing rhythm" },
+      { "zh": "把吸附当唯一的空间线索——吸附点不带语义,分页进度仍需视觉指示或读屏文本", "en": "Treating snapping as the only spatial cue — snap points carry no semantics; keep visual progress or SR text for pagination" }
+    ]
+  },
+  "a11y": {
+    "zh": "轨道保持原生滚动(键盘方向键/Tab 聚焦后可滚),并另给上一张/下一张按钮作为可达的等效路径;当前吸附卡片经 aria-live 礼貌区域播报;mandatory 的「内容不可达」风险对键盘用户同样存在,内容量未知时选 proximity;reduced-motion 时程序化滚动改 behavior: auto 直达。",
+    "en": "The rail keeps native scrolling (arrow keys once focused), with prev/next buttons as the reachable equivalent path; the snapped card is announced via a polite aria-live region; mandatory's unreachable-content risk hits keyboard users too — choose proximity when content amount is unknown; under reduced-motion programmatic scrolls use behavior: auto."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll_snap",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll_snap/Basic_concepts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一条吸附卡片轨道:flex 轨道 overflow-x auto,scroll-snap-type 按快照定轴与强度,卡片 scroll-snap-align/scroll-snap-stop 按快照,scroll-padding-inline 取快照值;配上一张/下一张按钮与当前吸附卡片读数。",
+      "en": "Replicate a snapped card rail: a flex track with overflow-x auto, scroll-snap-type per the snapshot (axis and strictness), cards with snapshot scroll-snap-align/scroll-snap-stop, scroll-padding-inline at the snapshot value; plus prev/next buttons and a readout of the currently snapped card."
+    },
+    "acceptance": [
+      { "zh": "容器 scroll-snap-type: x <strictness>,子项 scroll-snap-align: <align>、scroll-snap-stop: <stop>,全部取参数快照", "en": "Container scroll-snap-type: x <strictness>; items scroll-snap-align: <align> and scroll-snap-stop: <stop>, all at snapshot values" },
+      { "zh": "容器挂 scroll-padding-inline: <padding>px 与 overscroll-behavior-x: contain(防链式滚动)", "en": "Container carries scroll-padding-inline: <padding>px and overscroll-behavior-x: contain (no scroll chaining)" },
+      { "zh": "mandatory 的适用前提(内容量已知)与 MDN 警告写入说明", "en": "mandatory's precondition (known content amount) and MDN's warning are documented" },
+      { "zh": "上一张/下一张按钮 + 键盘可达的原生滚动,reduced-motion 时滚动直达不平滑", "en": "Prev/next buttons plus keyboard-reachable native scrolling; reduced-motion scrolls jump without smoothing" },
+      { "zh": "当前吸附卡片读数对读屏以 aria-live 播报;Level 2 事件缺失时以滚动位置兜底", "en": "The snapped-card readout is announced via aria-live; without Level 2 events, scroll position is the fallback" }
+    ]
+  }
+}

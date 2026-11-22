@@ -1,0 +1,102 @@
+{
+  "name": "Tabular Numbers",
+  "nameZh": "表格数字",
+  "aliases": ["等宽数字", "tnum", "tabular figures", "tabular-nums"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "font-variant-numeric: tabular-nums 让每个数字占相同宽度,纵向列对齐、计数动画不抖动——仪表盘与数据表的可信度底座。",
+    "en": "font-variant-numeric: tabular-nums gives every digit the same width so columns align and counting animations stop jittering — the credibility floor of dashboards and data tables."
+  },
+  "origin": {
+    "zh": "MDN 对 tabular-nums 的定义原文:数字等宽、『easily aligned like in tables(像表格一样轻松对齐)』,对应 OpenType 特性 tnum(调研 12§9,MDN 原文核对)。本站 hero 统计行与全站数值均执行 mono + tabular-nums 纪律(源码 src/styles/global.css:896-914,spec §2.2/§6-16)。",
+    "en": "MDN defines tabular-nums as digits of equal width, 'easily aligned like in tables', backed by the OpenType feature tnum (research 12 §9, verified against MDN). This site's hero stat row and all numeric readouts follow a mono + tabular-nums discipline (src/styles/global.css:896-914, spec §2.2/§6-16)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "numericStyle",
+      "options": [
+        { "value": "tabular-nums", "label": { "zh": "等宽(表格)", "en": "Tabular" } },
+        { "value": "proportional-nums", "label": { "zh": "比例宽度", "en": "Proportional" } },
+        { "value": "lining-nums", "label": { "zh": "等高数字", "en": "Lining" } },
+        { "value": "oldstyle-nums", "label": { "zh": "老式数字", "en": "Oldstyle" } }
+      ],
+      "default": "tabular-nums",
+      "cssVar": "--tn-numeric",
+      "effect": {
+        "zh": "font-variant-numeric 数字风格。tabular-nums(tnum)=全等宽,列对齐与计数不抖;proportional-nums(pnum)=按字形比例占宽,散文更紧凑但对齐失效;lining-nums(lnum)=全高数字;oldstyle-nums(onum)=3/4/5/7/9 带降部,适合行内正文。全部 OpenType 特性标签(MDN 原文,调研 12§9)。",
+        "en": "font-variant-numeric figure style. tabular-nums (tnum) = equal widths for column alignment and steady counters; proportional-nums (pnum) = glyph-proportional widths, tighter in prose but no alignment; lining-nums (lnum) = full-height digits; oldstyle-nums (onum) = 3/4/5/7/9 with descenders for inline prose. All are OpenType tags (MDN, research 12 §9)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "slashedZero",
+      "options": [
+        { "value": "off", "label": { "zh": "普通 0", "en": "Plain zero" } },
+        { "value": "on", "label": { "zh": "斜杠 0", "en": "Slashed zero" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 加 data-zero 后缀 slashed-zero)。slashed-zero(zero)给 0 加斜杠,防止与字母 O 混淆;Inter 官方仓库明确提供 slashed zero 与表格数字特性(调研 05§24)。",
+        "en": "JS-type param (demo appends slashed-zero via data-zero). slashed-zero (zero) puts a slash through 0 to keep it distinct from letter O; the Inter repo explicitly ships slashed zero and tabular figures (research 05 §24)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "countSpeed",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "计数动画每秒步进次数(演示参数,非规范值)。数字每变一次,比例宽度列的单元格宽度都在跳——这正是等宽表格数字存在的理由;prefers-reduced-motion 时停止计数,只保留静态宽度探针。",
+        "en": "Counter steps per second (demo param, not a spec value). Every digit change shifts proportional-width cells — exactly why tabular figures exist. Under prefers-reduced-motion the counting stops and only the static width probe remains."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "font-variant-numeric Baseline Widely available(自 2020-01 起,调研 12§9);特性生效前提是字体本身包含对应 OpenType 特性表(tnum/onum/zero 等),不含表的字体声明无效但无害。",
+      "en": "font-variant-numeric is Baseline Widely available (since 2020-01, research 12 §9); the feature only takes effect if the font itself ships the OpenType tables (tnum/onum/zero…) — a missing table makes the declaration inert but harmless."
+    }
+  },
+  "fallback": {
+    "zh": "不支持该属性的旧浏览器忽略声明,数字回退比例宽度——表格仍可用,只是列不再严格对齐;字体缺 tnum 表时同样回退,可用 ui-monospace/等宽字体栈作为强兜底(等宽字体天然数字等宽)。",
+    "en": "Legacy browsers ignore the declaration and fall back to proportional digits — tables still work, columns just stop aligning strictly; a font without the tnum table degrades the same way. A ui-monospace stack is the strong fallback (monospaced fonts have equal-width digits by construction)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "财务/统计表格的数字列——同行数字纵向对齐才可比", "en": "Numeric columns in financial/statistical tables — comparison requires vertical alignment" },
+      { "zh": "仪表盘 KPI 与 count-up 计数动画——等宽让跳动不抖列", "en": "Dashboard KPIs and count-up animations — equal widths keep columns from jittering" },
+      { "zh": "价格、订单号、验证码等易误读数字串(配 slashed-zero 防 O/0 混淆)", "en": "Prices, order numbers, OTP codes (pair with slashed-zero to prevent O/0 confusion)" },
+      { "zh": "时间码、倒计时等每秒都在变化的数值", "en": "Timecodes and countdowns — values that change every second" }
+    ],
+    "avoid": [
+      { "zh": "长文正文的行内数字——比例宽度占位更经济,且不需要列对齐(实践共识,未证实)", "en": "Inline numerals in long-form prose — proportional widths are more economical and need no alignment (community practice, unverified)" },
+      { "zh": "装饰性大字海报数字——老式数字(onum)或字型自带的数字设计往往更有味道", "en": "Decorative poster numerals — oldstyle (onum) or the typeface's own digit design usually has more character" }
+    ]
+  },
+  "a11y": {
+    "zh": "tabular-nums 不改变文本语义,读屏照常朗读数值;列对齐提升的是低视力用户扫读效率。slashed-zero 降低 O/0 误读率,对抄录订单号的用户是实打实的防错。数字密集时保持足够对比度与 ≥1.5 行高(WCAG 1.4.12,见 wcag-text-spacing 条目)。onum 老式数字在小字号下辨识度需实测。",
+    "en": "tabular-nums does not change semantics — screen readers announce the same value; column alignment mainly helps low-vision scanning. slashed-zero cuts O/0 misreads, a real error-saver for transcribing order numbers. Keep contrast and ≥1.5 line height on dense numerals (WCAG 1.4.12, see wcag-text-spacing). Verify oldstyle (onum) legibility at small sizes."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/font-variant-numeric",
+    "https://github.com/rsms/inter",
+    "https://rsms.me/inter/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一个三行 KPI 统计面板:数值持续自增,数字列全程纵向对齐、列宽不抖动;并提供 O/0 对照与静态宽度探针证明等宽生效。",
+      "en": "Build a three-row KPI panel whose values keep incrementing while the numeric column stays aligned and jitter-free; include an O/0 comparison and a static width probe proving the tabular effect."
+    },
+    "acceptance": [
+      { "zh": "数字元素声明 font-variant-numeric: tabular-nums(如需再拼 slashed-zero)", "en": "Numeric elements declare font-variant-numeric: tabular-nums (composing slashed-zero when needed)" },
+      { "zh": "字体必须含 tnum OpenType 表(如 Inter);缺表字体的声明无效,兜底用等宽字体栈", "en": "The font must ship the tnum OpenType table (e.g. Inter); otherwise the declaration is inert — fall back to a monospace stack" },
+      { "zh": "计数动画只驱动文本节点,不改布局属性;prefers-reduced-motion 时停止计数", "en": "The counter animates text nodes only, never layout properties; stops under prefers-reduced-motion" },
+      { "zh": "宽度探针用同一文本在两种数字风格下的实测宽度差展示效果,不写死结论", "en": "The width probe reports measured width deltas between figure styles instead of hardcoded conclusions" }
+    ]
+  }
+}

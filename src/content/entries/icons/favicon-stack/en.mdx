@@ -1,0 +1,69 @@
+## Structure & DOM
+
+The whole favicon system lives in four `<head>` lines, with only **5 icons + 1 manifest** as files (the Evil Martians checklist, 12 §12):
+
+```html
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+```
+
+Who does what:
+
+- **favicon.ico at 32×32, in the root**: the fallback for legacy browsers and RSS readers — they only know the `/favicon.ico` path; `sizes="32x32"` also fixes Chrome's SVG-ignoring bug;
+- **icon.svg**: the modern-browser pick; an SVG is its own document, so it can embed a `<style>` with `@media (prefers-color-scheme: dark)` for automatic recoloring;
+- **apple-touch-icon.png at 180×180**: the iOS home screen; keep the glyph ≥20px from edges on a background color to survive the system mask;
+- **icon-192.png + icon-mask.png at 512×512**: the latter declares `purpose:"maskable"`, content inside the central 409×409 safe circle;
+- **manifest.webmanifest**: PWAs only.
+
+Key points: `rel="shortcut icon"` was never a valid value; the ico must sit in the root; recoloring belongs to the SVG tier only — bitmap tiers have no media-query capability.
+
+## Styling & Parameters
+
+Four parameters cover the three storylines — recoloring, padding, safe zone:
+
+```css
+/* icon.svg recoloring (the demo simulates the OS preference with the scheme switch;
+   the real file is driven by the system preference) */
+/* light: glyph fill = var(--fav-accent, #0f0f0f) */
+/* dark: flips to the Evil Martians snippet's fixed #f0f0f0, browser chrome darkens too */
+
+/* apple-touch padding: 180 canvas shown at 96px, scaled proportionally */
+.fav-touch-pad { inset: calc(var(--fav-padding, 20px) * 96 / 180); }
+
+/* maskable safe zone: the 409×409 central circle on a 512 canvas, ratio ≈0.8 */
+.fav-safe { width: calc(96px * 409 / 512); height: calc(96px * 409 / 512); border-radius: 50%; }
+```
+
+Where the numbers come from (all first-hand, 12 §12):
+
+- `accent` default **#0f0f0f**, dark flip **#f0f0f0** = the Evil Martians snippet's exact values;
+- `padding` default **20px** = the recommended apple-touch-icon padding;
+- safe zone **409×409** (on the 512 canvas) = the maskable spec's central circle;
+- apple-touch canvas **180×180**, ico **32×32**, maskable **512×512/192×192** are all checklist values.
+
+## Motion & Interaction
+
+- **Scheme switch** (JS-typed): simulates OS dark mode — the `icon.svg` glyph flips between `#0f0f0f` and `#f0f0f0`, and the mock browser chrome (tab strip / page area) darkens in sync, reproducing "the system flips, the favicon follows"; the 0.25s background transition cuts straight to the end state under `prefers-reduced-motion: reduce`;
+- **The staging tab** stays permanently inverted relative to production (light glyph on dark chip in light mode, and vice versa) — Evil Martians' environment-mix-up easter egg;
+- **Padding drag** (CSS variable): the dashed frame in the apple-touch panel scales along; below 12px a crop-risk warning appears (recommended value 20px);
+- **Maskable toggle** (JS-typed): adds/removes the dashed 409×409 safe circle on the 512 canvas; the circular-crop preview's caption alternates between "declared maskable" and "bare icon, blind-cropped";
+- The tab strip and panels are presentational only, with no nested interactive controls.
+
+## Real-world examples
+
+- **Evil Martians' own practice**: the 5+1 checklist from Andrey Sitnik's "How to Favicon in 2024" runs on evilmartians.com itself — the article also documents the per-environment inverted favicon for staging (12 §12);
+- **Chrome's SVG favicon bug**: `sizes="32x32"` fixing Chrome's ignoring of `type="image/svg+xml"` icons is the checklist's "one attribute fixes one browser defect" case (12 §12);
+- **RSS clients' path hard-constraint**: RSS-reader clients request only the root `/favicon.ico` and never parse `<head>` — the real reason the ico must stay in the root (12 §12).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `scheme` | the dark tier flips the glyph to #f0f0f0 and darkens the chrome — the real dark-mode experience, with better contrast | light is the default; on a dark chrome a black glyph dissolves into the background — exactly why the embedded media query exists |
+| `accent` | changes the brand color; the apple-touch panel's background and the maskable tint follow in sync | a light accent loses contrast on the light chrome; the dark tier's fixed #f0f0f0 is unaffected |
+| `padding` | >20px leaves the icon airy on the iOS home screen; safe but wasteful | \<12px raises the crop warning; at 0 the glyph touches the edges and the first mask crop disfigures it |
+| `maskable` | show keeps the safe circle visible — design with a hard boundary | hide regresses to the "no purpose:\"maskable\"" bare icon — launchers blind-crop and corner content gets cut at any time |
+
+Anchors: four lines + five files is the minimal set — generate no more, drop no fallback; recoloring lives only in the SVG tier; keep 20px on apple-touch; everything maskable lives inside the 409×409 circle.

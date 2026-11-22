@@ -1,0 +1,85 @@
+## 结构与 DOM
+
+步骤条是「有序列表 + 节点圆 + 连接线」的导航结构:每步一格(节点圆、标题、描述、状态文字),连接线把相邻节点串起来,四态(wait/process/finish/error)由 `current` 自动推算,显式 error 覆盖推算:
+
+```html
+<ol class="st-steps" aria-label="开通流程">
+  <li class="st-item is-done">
+    <button type="button" class="st-head" aria-label="第 1 步 确认订单:已完成">✓</button>
+    <div class="st-meta">
+      <div class="st-label">确认订单</div>
+      <div class="st-state">已完成 Done</div>
+    </div>
+  </li>
+  <li class="st-item is-process" aria-current="step">
+    <button type="button" class="st-head" aria-label="第 2 步 支付费用:进行中 50%">
+      <span class="st-ring" aria-hidden="true"></span>2
+    </button>
+    <div class="st-meta">
+      <div class="st-label">支付费用</div>
+      <div class="st-state">进行中 50%</div>
+    </div>
+  </li>
+</ol>
+```
+
+关键点:
+
+- 语义骨架是 `ol/li` 有序列表:步骤天然有序;当前步的头节点标 `aria-current="step"`(APG 30 模式清单无步骤条,该惯例为社区常见做法,未证实;调研 07§34);
+- 节点是**原生 button**(可点击步骤时 Enter/Space 激活),`aria-label` 带步骤名 + 状态文字——四态不能只靠颜色传达;
+- 连接线是每格的伪元素(横排从圆心向右,纵排沿左轨);已完成段的填充色与节点同色,未完成段为浅灰;
+- process 步的进度环是节点外圈的 `conic-gradient` 蒙版环,percent 参数直接驱动角度(antd percent 语义,补研 12§15)。
+
+## 样式与参数
+
+四个参数都是 JS 型(经 store 订阅,current 可被点击步骤头反向写入):
+
+```css
+.st-head {
+  width: 32px; height: 32px; border-radius: 50%;   /* antd 控件高度 32 档 */
+  color: rgba(0, 0, 0, 0.25);                       /* TextQuaternary wait 态 */
+  box-shadow: inset 0 0 0 1px #d9d9d9;              /* colorBorder 描边 */
+}
+.st-item.is-done .st-head,
+.st-item.is-process .st-head { background: #1677ff; color: #fff; }
+.st-item.is-error .st-head { color: #ff4d4f; box-shadow: inset 0 0 0 1px #ff4d4f; }
+.st-ring {
+  background: conic-gradient(#1677ff var(--st-percent) , #f0f0f0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;                          /* 环形蒙版 */
+}
+.st-item.is-done:not(:last-child)::after { background: #1677ff; }  /* 连接线填充 */
+```
+
+数值出处:
+
+- 节点 32px = antd controlHeight 默认档(设计调研 06§2.3③,借档对齐控件体系;antd 未记载 Steps 节点尺寸);主色 #1677ff = colorPrimary、错误 #ff4d4f = colorError(06§2.2);
+- wait 文字 rgba(0,0,0,0.25) = TextQuaternary、描边 #d9d9d9 = colorBorder、连接线底 #f0f0f0 = colorBorderSecondary(06§2.3⑤/§2.2);
+- 状态推算规则:未配置时由 current 自动推算 finish/process/wait,显式 error 优先(补研 12§15 记载);
+- **标题 padding、连接线 2px 为社区常见值,未证实**(调研未记载 Steps 几何数值);
+- `responsive(\<532px 自动转垂直)`、`maxCount(≥3)`、`percent`、`onChange(设置后可点击)` 均为 antd Steps 官方记载(补研 12§15);demo 在 ≤532px 媒体查询中落地 responsive 语义。
+
+## 动效与交互
+
+- **状态切换**:节点底色/描边 0.2s 过渡(motionDurationMid + motionEaseInOut,06§3.1/3.2);图形(✓/✕/数字)换内容时 0.2s 回弹缩放入场(EaseOutBack 回弹进场 token,06§3.2);命中 `prefers-reduced-motion` 时全部取消(调研 07§37);
+- **连接线填充**:已完成的线段 0.2s 从浅灰过渡到主色——「走过」的路径被点亮,是目标梯度效应的视觉载体(越接近目标动力越强,补研 12§14);
+- **可点击步骤头**:设置 onChange 后步骤可点击(补研 12§15)——demo 中点击头节点即 `store.set("current", i)` 联动参数面板与四态推算;点击不跳过校验,生产中应配表单校验拦截(填完才能下一步);
+- **错误态就近说明**:error 步的 ✕ 图形 + 红色标题 + 状态文字三者同现,错误说明紧贴出错步骤(NN/g:错误紧贴出错位置,调研 07§16);
+- percent 进度环随参数即时重绘,不做补间动画——百分比本身是数据,不叠加装饰性过渡。
+
+## 真实产品案例
+
+- **电商结账流程**:京东/淘宝结算页顶部「确认订单→付款→完成」步骤指示,当前步高亮、走过步打勾——步骤条是结账漏斗的标准导航;
+- **银行/政务 App 开户向导**:身份信息→人脸核身→绑定银行卡的分步表单,步骤条告诉用户「还要几步」;目标梯度效应被用来降低中途放弃率(补研 12§14);
+- **CI/CD 与部署面板**:构建→测试→发布各阶段串成步骤条,进行中阶段带进度指示,失败阶段标红并提供日志入口——本 demo 的审核出错态即对应此类(编辑性对照)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `current` | 后移让更多连接线点亮、更多步骤变成「已完成」,页面成就感更强 | 前移回退会撤销已完成视觉——生产中回退须保留已填数据(NN/g 启发式:可撤销,调研 07§21③) |
+| `errorAt` | 显式 error 覆盖推算,当前步即使推进也被标红拦住 | 回 none 后错误提示完全消失——错误必须换由文案/页内通知承载 |
+| `percent` | 进度环接近满环时「快完成」的冲刺感最强(目标梯度,补研 12§14) | 0% 时不画环,process 步退化为普通实心圆 |
+| `orientation` | vertical 适合步骤标题长、或窄屏(antd \<532px 自动转垂直,补研 12§15) | horizontal 一屏尽收,是默认心智,但标题必须短 |
+
+经验区间:3–5 步最稳(工作记忆 7±2,留余量给标题);标题 ≤6 字、描述一行;只在线性主线上用步骤条;可回退的向导必须在回退时保留已填数据。

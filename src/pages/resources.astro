@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import { RESOURCES, RESOURCE_GROUPS } from "@/data/resources";
 import { t } from "@/i18n/ui";
-import { resourcesUrl, trendsUrl } from "@/lib/urls";
+import { homeUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // 「授人以渔」资源页(zh):五组 × 资源卡;数据全部来自已有调研(src/data/resources.ts)
 const dict = t("zh");
@@ -17,6 +17,15 @@ const res = dict.resources;
   activeNav="resources"
 >
   <div class="resources-page">
+    {/* 返回可供性(清单:非层级页同样接入返回钮):「← 首页」;
+        Base.astro 全站脚本对 [data-back] 接管——有同源站内历史时 history.back(),
+        直链/外站进入时原生 <a href> 兜底回首页 */}
+    <p class="page-back">
+      <a class="back-link" href={homeUrl("zh")} data-back>
+        <span class="back-arrow" aria-hidden="true">←</span>
+        {dict.list.backHome}
+      </a>
+    </p>
     {/* 页头:与列表页同一骨架(.list-head,--step-4 标题 + mono 计数) */}
     <header class="list-head">
       <h1 class="list-title">{res.title}</h1>

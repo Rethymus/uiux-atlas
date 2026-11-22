@@ -50,6 +50,15 @@ export class ParamStore {
     this.emit();
   }
 
+  /** 复位单个参数到官方默认值(清单 no-per-param-reset;与 reset() 同路径,纯新增方法,
+      不改既有 set/reset 行为——撤销一个参数不再连带丢失其余已调参数) */
+  resetParam(name: string): void {
+    const p = this.param(name);
+    this.values.set(name, structuredClone(p.default) as ParamValue);
+    this.applyParam(name);
+    this.emit();
+  }
+
   /** 由 DemoStage 挂载时调用:CSS 变量的宿主元素 */
   setRoot(el: HTMLElement | null): void {
     this.root = el;

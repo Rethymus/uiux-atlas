@@ -1,0 +1,99 @@
+{
+  "name": "Aesthetic-Usability Effect",
+  "nameZh": "审美可用性效应",
+  "aliases": ["美学可用性效应", "Aesthetic-Usability"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "用户认为美观的设计更好用:美观度与「感知易用性」的相关性强于与「实际易用性」的相关性。美观带来容忍,也可能遮蔽可用性问题。",
+    "en": "Users judge beautiful designs as more usable: aesthetics correlates with *perceived* ease of use more strongly than with *actual* ease of use. Beauty buys tolerance — and can mask real problems."
+  },
+  "origin": {
+    "zh": "1995 年 Kurosu & Kashimura(日立设计中心):26 种 ATM 界面变体 × 252 名参与者,美观评分与感知易用性的相关性强于与实际易用性的相关性(out/design-study/12-expansion.md §14;lawsofux aesthetic-usability-effect 页)。",
+    "en": "Kurosu & Kashimura (Hitachi Design Center, 1995): 26 ATM interface layouts × 252 participants; aesthetics correlated with perceived usability more strongly than with actual usability (out/design-study/12-expansion.md §14; the lawsofux aesthetic-usability-effect page)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "beauty",
+      "options": [
+        { "value": "plain", "label": { "zh": "素坯(对照)", "en": "Plain (control)" } },
+        { "value": "refined", "label": { "zh": "精修", "en": "Refined" } },
+        { "value": "premium", "label": { "zh": "高定", "en": "Premium" } }
+      ],
+      "default": "refined",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换右侧卡片 data-beauty):右侧卡的完成度档位。plain=与左侧素坯完全一致(退化为 A/A 自对照);refined=圆角 14px+柔和阴影+accent 主色;premium=在精修上叠渐变头部、18px 大圆角与更大留白。只改装饰层,两侧功能按钮的布局与数量完全一致。",
+        "en": "JS-type param (demo subscribes and toggles the right card's data-beauty): the right card's finish level. plain = identical to the left plain card (degenerates into an A/A self-control); refined = 14px radius + soft shadow + accent color; premium = refined plus a gradient header, 18px radius and more whitespace. Only the decoration layer changes — button layout and count stay identical on both sides."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "handicap",
+      "options": [
+        { "value": "none", "label": { "zh": "无缺陷", "en": "None" } },
+        { "value": "small-target", "label": { "zh": "过小热区", "en": "Tiny targets" } },
+        { "value": "slow-response", "label": { "zh": "迟缓反馈", "en": "Slow response" } }
+      ],
+      "default": "none",
+      "effect": {
+        "zh": "JS 型参数:向两侧等量注入同一真实可用性缺陷(受控变量)。small-target=菜单按钮压到 18px 高;slow-response=成功反馈延迟 900ms(处理中状态)。设计意图:同一缺陷下,精修一侧的感知评分跌幅更小——这就是「美观带来容忍」。两个数值均为演示缺陷值(非定律数值,schema 如实标注)。",
+        "en": "JS-type param: injects the same real usability defect into BOTH sides equally (controlled variable). small-target = menu buttons squashed to 18px tall; slow-response = success feedback delayed 900ms with a 'processing' state. Intent: under an identical defect the refined side's perceived rating drops less — beauty buying tolerance. Both values are demo defect values, not law constants (stated as such)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accent",
+      "format": "oklch",
+      "default": "oklch(0.62 0.16 250)",
+      "cssVar": "--au-accent",
+      "effect": {
+        "zh": "CSS 变量型参数:精修/高定卡的主色(头部下划线、按钮 hover、成功态)。换主色即可观察「仅配色变化」对完成度观感的影响;素坯档不消费此变量。文字保持固定深色,不随主色变化。",
+        "en": "CSS-var param: the accent color of the refined/premium cards (header underline, button hover, success state). Swap it to watch a color-only change move the perceived finish; the plain tier ignores this variable. Text stays a fixed dark color regardless of the accent."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示全部使用原生 DOM/CSS/JS(按钮、range 滑块、transition),无新特性依赖,现代浏览器均可运行。",
+      "en": "The demo uses only native DOM/CSS/JS (buttons, range sliders, transitions) — no cutting-edge features; any modern browser runs it."
+    }
+  },
+  "fallback": {
+    "zh": "定律的工程出口:美观不是可降级的 CSS 特性,而是产出流程——把「完成度」作为独立验收项;同时把「美观遮蔽可用性」写进测试规程:可用性测试首轮用未抛光的线框稿,或在抛光版本上强制测量任务用时与错误率,别让好评代替指标。accent 色不支持 oklch 时由浏览器回退到最近可解析色。",
+    "en": "The engineering exit: aesthetics is not a degradable CSS feature but a production process — treat 'finish level' as its own acceptance item; and bake 'beauty masks usability' into the test protocol: run the first usability round on unpolished wireframes, or force-measure task time and error rate on the polished build, never letting praise stand in for metrics. If oklch is unsupported the accent falls back to the nearest parseable color."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "首屏、注册、支付等信任敏感场景:审美完成度直接决定第一印象与感知品质", "en": "Trust-sensitive surfaces (landing, sign-up, payment): finish level drives first impressions and perceived quality" },
+      { "zh": "功能与竞品打平时,用审美完成度建立感知优势", "en": "When features are at parity with competitors, finish level builds a perceived edge" },
+      { "zh": "遗留系统/内部工具改版:先补美观,能低成本买到用户对旧问题的容忍", "en": "Legacy or internal-tool redesigns: aesthetics first — it cheaply buys tolerance of the old warts" }
+    ],
+    "avoid": [
+      { "zh": "用美观掩盖未解决的可用性缺陷(性能、错误率、可达性)", "en": "Using beauty to bury unresolved usability defects (performance, error rates, accessibility)" },
+      { "zh": "可用性测试只测抛光版本——好评会替代真实指标", "en": "Testing only the polished build — praise substitutes for real metrics" },
+      { "zh": "为了好看牺牲可读性:NN/g 已批评 Liquid Glass 全屏化伤害可读性(调研 03§2)", "en": "Sacrificing readability for looks: NN/g criticized Liquid Glass' full-screen use for hurting readability (research 03 §2)" }
+    ]
+  },
+  "a11y": {
+    "zh": "审美升级不得破坏对比度与可达性(WCAG 2.1 SC 1.4.3 4.5:1):本 demo 的 accent 仅用于装饰性下划线、hover 与成功态,文字保持固定深色不随主色漂移;双卡对照不依赖颜色区分——左右各有标题与语义结构;评分用原生 input[type=range] + label,任务状态用文本呈现并 aria-live 播报,不靠动画或颜色传达。",
+    "en": "An aesthetic upgrade must not break contrast or accessibility (WCAG 2.1 SC 1.4.3, 4.5:1): in this demo the accent is decorative only (underline, hover, success) and text keeps a fixed dark color; the A/B sides are distinguished by headings and structure, never by color alone; ratings use native input[type=range] + label, task state is presented as text and announced via aria-live — never conveyed by animation or color alone."
+  },
+  "sources": [
+    "https://lawsofux.com/aesthetic-usability-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个「同一功能、两种完成度」的 A/B 自测演示:左右两张 ATM 风格卡片各含 4 个功能按钮,任务是完成「查询余额」;每侧记录用时与误点,任务后用 1–7 滑块给该侧打感知易用性分;底部对照条展示感知分差与实测差异,复现「感知比实测更偏心美观」的审美红利。",
+      "en": "Build an A/B self-experiment demo: two ATM-style cards with the same 4 menu buttons, task = run a balance check; each side records time and misclicks, then the user rates perceived usability 1–7 on a slider; a compare strip shows the perceived-rating gap vs the measured gap, reproducing the aesthetic dividend — perception favors the pretty one more than performance does."
+    },
+    "acceptance": [
+      { "zh": "beauty/handicap 为 JS 型参数经 store 订阅驱动;accent 为 CSS 变量型(--au-accent)由 DemoStage 注入", "en": "beauty/handicap are JS-type params consumed via store subscription; accent is CSS-var type (--au-accent) injected by DemoStage" },
+      { "zh": "handicap 对两侧等量注入:small-target=按钮 18px、slow-response=900ms,均为演示缺陷值并如实标注", "en": "handicap injects equally into both sides: small-target = 18px buttons, slow-response = 900ms delay — demo defect values, labeled as such" },
+      { "zh": "两侧功能按钮布局与数量完全一致,完成度只改装饰层(圆角/阴影/渐变/留白)", "en": "Both sides keep identical button layout and count; finish level changes only the decoration layer (radius/shadow/gradient/whitespace)" },
+      { "zh": "评分用原生 range 滑块 + label,数值文本同步;用时/误点以文本呈现,不只靠颜色", "en": "Ratings use native range sliders + labels with synced numeric text; time/misclicks appear as text, never color-only" },
+      { "zh": "prefers-reduced-motion 下成功反馈只变色不动效;对照条数值在两侧完成后才出现,未完成时如实显示占位", "en": "Under prefers-reduced-motion the success feedback changes color only; the compare strip only appears after both sides finish, with an honest placeholder otherwise" }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+UI/UX 设计全解图集 / UI/UX Design Atlas — 双许可说明
+======================================================
+
+本仓库内容按两部分分别许可:
+
+1. demo 代码(Source code / demos)— MIT License
+   适用范围:src/、scripts/、mcp/ 下的源代码,以及各条目 demo/Demo.tsx
+   演示代码、registry 发布件(public/registry/)。
+
+   MIT License
+
+   Copyright (c) 2026 uiux-atlas contributors
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+2. 正文内容(Text content)— CC BY-NC 4.0
+   适用范围:src/content/ 下的条目正文(zh.mdx / en.mdx)、schema 叙述字段、
+   站点文案与文档(docs/)。
+   许可全文:https://creativecommons.org/licenses/by-nc/4.0/legalcode
+   人读摘要:https://creativecommons.org/licenses/by-nc/4.0/deed.zh
+   你可自由共享与演绎,须署名、非商业性使用。
+
+3. 照片素材(public/photos/)仅作条目演示背景使用,版权归各自权利人,
+   不随本许可再授权;第三方移植请自行替换素材。
+
+站点页脚与本文件互为载体:页脚「MIT」链接指向站点随构建发布的
+/LICENSE(public/LICENSE 即本文件的发布副本),「CC BY-NC 4.0」
+链接指向 Creative Commons 官方许可页。

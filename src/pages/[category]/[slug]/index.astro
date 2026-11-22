@@ -3,28 +3,51 @@ import EntryDetail from "@/components/EntryDetail.astro";
 import { getCollection } from "astro:content";
 import { CATEGORIES } from "@/lib/types";
 import type { EntrySchema } from "@/lib/types";
+import { listEntryMetas } from "@/lib/metas";
+import type { EntryMeta } from "@/lib/types";
 
 interface Props {
   entryId: string;
   schema: EntrySchema;
+  /** 同分类上一条/下一条(按分类列表页同一顺序;清单 entry-prev-next-pager) */
+  prevMeta?: EntryMeta;
+  nextMeta?: EntryMeta;
 }
 
 // entryId 形如 "styles/glassmorphism";category 段必须落在 CATEGORIES 封闭列表内
 export async function getStaticPaths() {
+  // 与分类列表页同一数据源与顺序(listEntryMetas → getCollection("entries")),
+  // 保证分页器顺序 = 分类页卡片顺序
+  const metas = await listEntryMetas();
+  const byCategory = new Map<string, EntryMeta[]>();
+  for (const m of metas) {
+    const cat = m.slug.split("/")[0];
+    const list = byCategory.get(cat) ?? [];
+    list.push(m);
+    byCategory.set(cat, list);
+  }
+
   const entries = await getCollection("entries");
   return entries.flatMap((entry) => {
     const [category, slug] = entry.id.split("/");
     if (!slug || !CATEGORIES.some((c) => c.id === category)) return [];
+    const list = byCategory.get(category) ?? [];
+    const idx = list.findIndex((m) => m.slug === entry.id);
     return [
       {
         params: { category, slug },
-        props: { entryId: entry.id, schema: entry.data as unknown as EntrySchema },
+        props: {
+          entryId: entry.id,
+          schema: entry.data as unknown as EntrySchema,
+          prevMeta: idx > 0 ? list[idx - 1] : undefined,
+          nextMeta: idx >= 0 && idx < list.length - 1 ? list[idx + 1] : undefined,
+        },
       },
     ];
   });
 }
 
-const { entryId, schema } = Astro.props;
+const { entryId, schema, prevMeta, nextMeta } = Astro.props;
 ---
 
-<EntryDetail entryId={entryId} schema={schema} locale="zh" />
+<EntryDetail entryId={entryId} schema={schema} locale="zh" prevMeta={prevMeta} nextMeta={nextMeta} />

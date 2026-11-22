@@ -1,0 +1,82 @@
+## 结构与 DOM
+
+上传是「入口 + 文件状态列表」两层结构:入口是**视觉隐藏的原生 `<input type="file">`**(由按钮或拖拽区触发,MUI 的 label + 隐藏 input 模式,调研 07§1),列表里每个文件走自己的状态机 uploading → done / error,删除即移除(antd removed 语义,补研 12§15):
+
+```html
+<button type="button" class="up-drop">
+  点击或拖拽文件到此处
+  <span class="up-desc">支持 JPG / PNG,单个不超过 2 MB</span>  <!-- Carbon:描述写明限制 -->
+</button>
+<input type="file" class="up-input" multiple hidden-ish />      <!-- 视觉隐藏 -->
+<ul class="up-list">
+  <li class="up-row" data-status="uploading">
+    <span class="up-ic-sm is-upload" aria-hidden="true">⟳</span>
+    <span class="up-name" title="季度对账-final-v3-最新版(1).pdf">季度对账…</span> <!-- 省略号+title -->
+    <span class="up-bar"><span class="up-bar-fill" style="width:60%"></span></span>
+    <span class="up-state">60% 上传中</span>                    <!-- 状态有文字 -->
+    <button class="up-act" aria-label="删除文件">✕ 删除</button>
+  </li>
+  <li class="up-row" data-status="error">
+    <span class="up-ic-sm is-error" aria-hidden="true">✕</span>
+    <span class="up-name">握手包.zip</span>
+    <span class="up-fix">网络中断,请检查连接后重试 <button>重试</button></span> <!-- Carbon:修复指引 -->
+  </li>
+</ul>
+```
+
+关键点:
+
+- **标题描述上传区用途、描述写明大小/格式限制**——Carbon 内容规范(调研 07§14),demo 的「支持 JPG/PNG ≤2MB」即按此排布;
+- 每行一个文件,状态由「图标 + 可见文字」双表达;进度条只是冗余视觉,不依赖颜色单独传达状态;
+- 长文件名省略号截断 + `title` 提示全名(Carbon 要求,调研 07§14);删除按钮是行内独立 button,aria-label 带文件名;
+- 拖拽区与按钮是同一 input 的两个触发面:dropzone 变体覆盖拖入,button 变体兜底无拖拽环境(Carbon 两变体,调研 07§14)。
+
+## 样式与参数
+
+三个参数都是 JS 型(经 store 订阅),状态色取 antd 功能色:
+
+```css
+.up-drop { border: 1px dashed #d9d9d9; border-radius: 6px; }
+.up-drop.is-drag { border: 2px solid #1677ff; background: #E6F4FF; }  /* 拖入:变色加粗 */
+.up-drop:hover { border-color: #1677ff; }
+.up-row:hover { background: rgba(0, 0, 0, 0.04); }        /* FillTertiary 行 hover */
+.up-ic-sm.is-done   { color: #52c41a; }                    /* colorSuccess */
+.up-ic-sm.is-error  { color: #ff4d4f; }                    /* colorError */
+.up-ic-sm.is-upload { color: #1677ff; animation: up-spin 1s linear infinite; }
+.up-bar     { height: 4px; background: #f0f0f0; }          /* 轨道 colorBgLayout */
+.up-bar-fill{ background: #1677ff; transition: width 0.12s linear; }
+.up-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+```
+
+数值出处:
+
+- 拖入高亮语义「边框变色加粗」= Carbon 官方记载(调研 07§14);demo 配色:边框 #1677ff = colorPrimary、底 #E6F4FF = antd 蓝板第 1 阶(06§1.2)、虚线底 #d9d9d9 = colorBorder(06§2.2);
+- 成功绿 #52c41a / 失败红 #ff4d4f = antd colorSuccess / colorError(06§2.2);行 hover rgba(0,0,0,0.04) = FillTertiary(06§2.3⑤);
+- 状态四值 uploading(进度条)/done/error/removed 为 antd Upload 官方记载(补研 12§15);Carbon 上传中三态 loading/success/uploaded 与之一一映射(调研 07§14);
+- **进度条 4px 高、72px 宽、行 padding 7px 8px 为 demo 教学几何,未证实**(调研未记载尺寸);上传时长约 1.5s 为教学模拟(150ms × 10 步);
+- `maxCount` 官方记载 =1 时替换当前文件(补研 12§15);demo 演示「超出上限提示且不添加」的分支;官方默认值调研未记载,demo 默认 3 为教学值。
+
+## 动效与交互
+
+- **上传中**:行内百分比进度条(width 过渡 0.12s/步)+ 旋转图标——percent-done 进度条降低不确定感(NN/g,调研 07§19);注意 NN/g 的指示器选择准则:2–10s 的操作更宜 spinner,≥10s 才必须 percent-done——文件上传的 antd 生产实践统一用百分比进度条(补研 12§15 uploading 态),demo 遵循 antd;教学模拟约 1.5s;
+- **拖入悬停**:dragover 时边框变色加粗 + 底色变浅蓝(Carbon 语义,调研 07§14),dragleave/drop 复位;触屏与无拖拽环境下按钮路径完整可用;
+- **键盘路径**:入口 Space/Enter 打开文件选择框,对话框关闭后焦点回触发元素(Carbon 键盘要求,调研 07§14);行内删除/重试按钮可 Tab 到达、Space/Enter 激活(Carbon,调研 07§14);
+- **失败态**:✕ 图标 + 红字状态 + **就近修复指引文案 + 重试按钮**——Carbon 要求错误态给清晰修复指引(调研 07§14;NN/g 错误就近原则,调研 07§16);重试重新入列 uploading;
+- **上限提示**:超出 maxCount 时 role="status" 短提示后自动消失,不阻断已上传文件;
+- `prefers-reduced-motion` 命中时:旋转图标静止、进度条 width 过渡取消、入口过渡取消(调研 07§37)。
+
+## 真实产品案例
+
+- **Gmail / 企业邮箱附件**:点击「添加附件」走按钮路径,拖文件进正文区即就地变出入片,上传中带进度条、失败可单附件重试——按钮 + 拖拽双入口的标准样本;
+- **云盘/网盘批量上传**(Google Drive、百度网盘):拖整批文件入列表,逐文件展示进度与失败原因,失败行单独重试,完整走「上传中→成功/失败」状态机;
+- **社交/社区发布器配图**(微博、GitHub Issue 附件):粘贴或拖拽即传,上传中显示占位进度,完成后行内预览——列表型状态机 + removed 删除语义的组合(编辑性对照)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant` | dropzone 拖拽为主、命中区大,适合批量;按钮形态最省空间 | button 变体在窄侧栏/移动端更稳,拖拽能力随变体消失 |
+| `simulate` | fail 档让 error 行的修复指引与重试可见——错误态必须演练过才算设计过 | success 档只验证 happy path,错误视觉与文案成为未测区 |
+| `maxCount` | 更大的列表允许批量,但单屏行数超约 7 行后应出现滚动 | =1 时新选替换当前文件(antd 官方语义,补研 12§15),头像类场景标准配置 |
+
+经验区间:限制写在描述里(Carbon 内容规范,调研 07§14);行 hover 恒开辅助扫读;失败必须给修复指引 + 重试,不要只画红叉;模态框里别放多文件上传(Carbon 明确警告,调研 07§14)。

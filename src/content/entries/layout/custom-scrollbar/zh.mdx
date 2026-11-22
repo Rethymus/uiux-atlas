@@ -1,0 +1,81 @@
+## 结构与 DOM
+
+滚动条样式挂在**滚动容器**上;两套实现的声明可以同时写在样式表里,由互操作事实自动分流:
+
+```html
+<div class="list" tabindex="0" role="region" aria-label="消息列表">
+  <div class="row">…</div>
+</div>
+```
+
+```css
+.list {
+  overflow: auto;
+  scrollbar-gutter: stable;              /* 预留槽位,内容变长不再跳布局(MDN 用例) */
+}
+/* 标准路线:css-scrollbars */
+.list {
+  scrollbar-width: thin;                 /* auto | thin | none */
+  scrollbar-color: var(--brand, #6a5cff) transparent;  /* thumb / track(调研 11§9 片段) */
+}
+/* WebKit 路线:非标伪元素,Blink/WebKit 家族可用,Firefox 不实现 */
+.list::-webkit-scrollbar { width: 12px; height: 12px; }
+.list::-webkit-scrollbar-thumb { background: var(--brand, #6a5cff); border-radius: 6px; }
+.list::-webkit-scrollbar-track { background: transparent; }
+```
+
+关键点:
+
+- **互操作事实(MDN 原文,调研 10§8.3)**:一旦元素 computed `scrollbar-width ≠ auto`,`::-webkit-scrollbar` 家族即被忽略,写回 `auto` 恢复——demo 的 standard 档正是靠这条让 webkit 样式自动失效;
+- `scrollbar-width` 的目的是**省空间不是审美**;root 上设置的值应用到 viewport(调研 10§8.3);
+- `scrollbar-color: <thumb> <track>` 两值缺一不可;`scrollbar-gutter` 造的槽在 border 内缘与 padding 外缘之间,无滚动条时画成 padding 延伸(本次会话直连 MDN 核对);
+- overlay 滚动条(macOS 默认)悬浮在内容上不占槽——`scrollbar-gutter` 对它无效果(本次核对)。
+
+## 样式与参数
+
+五个参数:双实现开关、宽度、滑块/轨道配色与槽位策略:
+
+```css
+[data-engine="standard"] .list {       /* JS 型开关切档 */
+  scrollbar-width: var(--sb-width, thin);
+  scrollbar-color: var(--sb-thumb, #6a5cff) var(--sb-track, #00000000);
+}
+[data-engine="webkit"] .list::-webkit-scrollbar { width: 12px; }  /* 演示基准值,未证实 */
+[data-engine="webkit"] .list::-webkit-scrollbar-thumb { background: var(--sb-thumb, #6a5cff); }
+[data-engine="webkit"] .list::-webkit-scrollbar-track { background: var(--sb-track, #00000000); }
+.list { scrollbar-gutter: var(--sb-gutter, auto); }
+```
+
+数值出处:
+
+- `#6a5cff` 与 `transparent` 轨道**逐字出自调研 11§9 片段** `html { scrollbar-color: var(--brand, #6a5cff) transparent }`;demo 以 8 位 hex `#00000000` 表达同一透明轨道;
+- `thin` 默认呼应 round2 报告记载的全站细滚动条惯例(`scrollbar-width: thin` + `scrollbar-color` 挂根继承)与调研 10§8.4 片段;
+- 支持矩阵(BCD,调研 11§9):scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2(Android WebView 暂未支持);scrollbar-width Baseline 2024-12(调研 10§8.3);scrollbar-gutter Baseline 2024 Newly available 自 2024-12(本次核对);Safari 26.2 起 WebKit 官方建议弃用 ::-webkit-scrollbar(调研 11§9);
+- webkit 档的 12px 宽为**演示基准值,未证实**——伪元素取值全凭作者,无规范默认。
+
+## 动效与交互
+
+滚动条本身不产生动效,demo 的交互围绕「切档与守门」:
+
+- **engine 切档**:standard 档写标准属性(webkit 伪元素被互操作事实自动屏蔽);webkit 档不写标准属性、computed 保持 `auto`,激活伪元素——切档即看见两套实现的接棒;
+- **width 三档**:thin 是全站细条惯例;auto 回系统默认;none 隐藏滚动条时 demo 亮出红框警告——MDN 明确它影响可及性/WCAG 2.1.1 键盘滚动(调研 10§8.3);
+- **支持检测读数**:页面载入跑 `CSS.supports('scrollbar-width'/'scrollbar-color'/'scrollbar-gutter')`,standard 档在本引擎(如 Safari < 26.2)无效果时如实亮牌;
+- **gutter 对比**:auto↔stable 切换,观察右缘槽位在内容不溢出时是否保留;滚动区已设 `tabindex=0`,键盘方向键可滚;
+- 容器入场 0.4s 淡入上移只动 `opacity/translate`,`prefers-reduced-motion` 下取消;滚动条样式变化无过渡——伪元素不参与 transition。
+
+## 真实产品案例
+
+- **全站控件一键换肤(调研 11§10-8 签名巧思)**:`accent-color` + `color-scheme` + `scrollbar-color` 全部接品牌变量,暗色模式自动反色——滚动条成为主题系统的一等公民(片段出处调研 11§9);
+- **代码块/密集数据区细滚动条**:文档站与 IDE 风 Web 应用普遍给代码面板 `scrollbar-width: thin`(round2 报告记载的全站惯例同款),省空间不抢注意力(调研 10§8.3「目的是省空间不是审美」);
+- **MDN scrollbar-gutter 用例(本次会话直连核对)**:官方三例——`stable` 防内容增减跳布局、`stable both-edges` 两侧对称留白、相邻滚动/不滚动容器对齐——demo 的 gutter 参数即按该用例实现。
+
+## 参数敏感度
+
+| 参数 | 调大(切档)会… | 调小(回默认)会… |
+| --- | --- | --- |
+| `engine` → webkit | Blink/WebKit 拿到像素级控制(圆角胶囊滑块);Firefox 用户看不到任何变化 | standard 档跨引擎一致(Chrome 121+/Firefox 64+/Safari 26.2+),但形状只能 thin/auto |
+| `width` → none | 滚动条消失、内容更宽——可及性警告亮起,键盘滚动线索被撤 | thin 是装饰与可用的平衡点;auto 完全交还系统 |
+| `thumb` | 饱和度过高时滑块抢注意力,还得守住与轨道/内容的 WCAG 1.4.11 对比 | 透明滑块等于隐藏——同 none 的问题 |
+| `gutter` → stable | 内容不溢出也留槽,布局稳定但右缘多一条空白 | auto 槽位随内容涨落,列表高度变化时整行左右横跳 |
+
+经验要点:标准属性优先、webkit 伪元素双写兜底;none 只用于有替代滚动指示的场景;配色接品牌变量让主题切换自动覆盖。

@@ -1,0 +1,74 @@
+## 结构与 DOM
+
+FLIP 不引入任何新结构——它是「布局已确定、动画后补」的时序范式,DOM 就是普通列表/网格:
+
+```html
+<div class="grid">              <!-- 布局容器:CSS Grid/Flex,DOM 顺序即最终顺序 -->
+  <button class="tile">A</button>
+  <button class="tile">B</button>
+  <button class="tile">C</button>
+</div>
+```
+
+关键点:
+
+- **状态先行**:重排时先更新数据/DOM 顺序,让浏览器一次性算出新布局;动画是事后补的视觉层,不参与布局计算;
+- 四步对应两段量测:**First** 在布局变化前量 `getBoundingClientRect()`,**Last** 在变化后量一次;两次差值就是 Invert 的反向 transform(补研 12§3);
+- 动画单元与内容单元最好分离——scale 反算会拉伸文字(aerotwist 原文警告),需要时调整 DOM 结构把动画层与文字层拆开;
+- 量测用的是视口坐标,`transform: translate(dx, dy)` 天然对应,不需换算。
+
+## 样式与参数
+
+三个参数对应两条 CSS 变量与一个演示开关:
+
+```css
+.demo-stage {
+  --flip-duration: 350ms;                     /* Play 段时长 */
+  --flip-ease: cubic-bezier(0.2, 0.7, 0.3, 1);/* Play 段缓动 */
+}
+
+/* Invert:反向 transform + 关过渡——视觉原地不动,布局已在终点 */
+.tile { transform-origin: top left; }
+.tile.inverted {
+  transition: none;
+  transform: translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-s));
+}
+/* Play:移除反向 transform,让过渡把它带回 0 */
+.tile.playing {
+  transition: transform var(--flip-duration) var(--flip-ease);
+  transform: none;
+}
+```
+
+数值出处:
+
+- 四步流程、`transform-origin: top left`、「只动画 transform/opacity(合成器路径,无重绘)」、交互后约 **100ms 响应窗口**做预计算——全部出自 aerotwist 原文(补研 12§3);
+- `350ms + cubic-bezier(0.2, 0.7, 0.3, 1)` 出自补研 12§3 收录的「aerotwist 示例改写」片段,是示例值而非官方规范值;
+- transition 路线用 `transitionend` 清理,WAAPI 路线(`el.animate([...])`)用 `finish` 事件;也可用 GSAP FLIP 插件(补研 12§3);
+- 依赖的 `getBoundingClientRect` / transform / WAAPI 均 Baseline 广泛可用。
+
+## 动效与交互
+
+- **昂贵的事情只做一次**:布局重算集中在 First/Last 两次量测,Play 段只动 transform——这正是 FLIP 存在的理由(逐帧改 left/top/width 代价高昂,补研 12§3);
+- **auto 即生产形态**:demo 的 auto 模式里 First→Last→Invert 在同一帧内完成,用户只看到 Play 的滑动;step 模式把四步拆开给人看,读数实时显示反算的 dx / dy / scale;
+- **可中断性**:再次触发时先清旧过渡再走新流程;连续驱动(拖拽跟手)不要用 FLIP——那是直接操纵+弹簧的领域(见 handoff-curves);
+- **reduced-motion**:跳过 Play,Invert 直接清零、终态直出;重排功能本身不依赖动画;
+- 与 slot-spring 的关系:BuildUI AnimatedTabs 的单一 `layoutId` 气泡,就是 Motion 在库内自动做的 FLIP(调研 10§2.1)——手写 FLIP 理解原理,库版省掉样板代码。
+
+与浏览器原生方案对照见 view-transitions 条目(同源跨文档过渡);性能底线(只动 transform/opacity)见 smooth-craft 条目。
+
+## 真实产品案例
+
+- **Motion 的 layoutId 布局动画**:同一元素在槽位间移动时,库自动执行「记录旧位置→布局→反向 transform→动画归位」的 FLIP 流程——调研 10§2.1 逐字核验的 BuildUI AnimatedTabs 即该能力(生产范式);
+- **GSAP FLIP 插件**:aerotwist 原文点名的现成实现(补研 12§3),把四步封装成 `gsap Flip.getState()/from()`,列表重排是官方主场景;
+- **View Transitions API**:浏览器把「先拍新旧快照、再对快照做动画」内建为原语(调研 04§3.1/§3.2 记载支持矩阵)——思路与 FLIP 同源,把手动量测换成了浏览器快照。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `duration` | 位移更从容;>500ms 的重排会让人感觉「界面在拖延操作」 | 位移一带而过;\<150ms 时肉眼只能看到「闪一下」,FLIP 的连续性叙事丢失 |
+| `easing` | y 前高后低的减速形更「落定」;换线性会显得机械 | 过强的 overshoot(y₂>1)会让卡片「冲过头再回来」,重排场景显得浮躁 |
+| `mode` | step:教学视角,能看清每一步与反算值 | auto:生产形态,First→Last→Invert 同帧完成,体验最顺 |
+
+选型口诀:时长跟位移体量走(小位移 250ms 内、跨半屏 350–500ms);带文字的单元避免大幅 scale 反算,拆层或只用 translate;能用库的 layoutId/FLIP 插件就不手写量测样板。

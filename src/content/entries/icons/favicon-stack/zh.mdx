@@ -1,0 +1,68 @@
+## 结构与 DOM
+
+favicon 体系的全部结构都在 `<head>` 的四行接线里,文件本体只有 **5 图标 + 1 manifest**(Evil Martians 清单,12 §12):
+
+```html
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+```
+
+五件套分工:
+
+- **favicon.ico 32×32,根目录**:旧浏览器与 RSS 阅读器的兜底——RSS 阅读器只认 `/favicon.ico` 这个路径;`sizes="32x32"` 还顺带修 Chrome 忽略 SVG 的 bug;
+- **icon.svg**:现代浏览器的首选;SVG 是独立文档,可以内嵌 `<style>` 写 `@media (prefers-color-scheme: dark)` 自动换色;
+- **apple-touch-icon.png 180×180**:iOS 主屏;glyph 距边建议 ≥20px 并铺背景色,防系统遮罩裁切;
+- **icon-192.png + icon-mask.png 512×512**:后者声明 `purpose:"maskable"`,内容落在 409×409 中央安全圆内;
+- **manifest.webmanifest**:仅 PWA 需要。
+
+关键点:`rel="shortcut icon"` 从来不是有效写法;ico 必须在根目录;换色机制只属于 SVG 档——位图档没有媒体查询能力。
+
+## 样式与参数
+
+四个参数覆盖「换色 / 内边距 / 安全区」三条主线:
+
+```css
+/* icon.svg 换色(演示以 scheme 开关模拟 OS 偏好;真实文件由系统偏好驱动) */
+/* 浅色:glyph fill = var(--fav-accent, #0f0f0f) */
+/* 深色:按 Evil Martians 片段翻为固定 #f0f0f0,浏览器 chrome 一起变暗 */
+
+/* apple-touch 内边距:180 画布、显示 96px,同比缩放 */
+.fav-touch-pad { inset: calc(var(--fav-padding, 20px) * 96 / 180); }
+
+/* maskable 安全区:512 画布上 409×409 中央圆,比值 ≈0.8 */
+.fav-safe { width: calc(96px * 409 / 512); height: calc(96px * 409 / 512); border-radius: 50%; }
+```
+
+数值出处(全部 12 §12 一手):
+
+- `accent` 默认 **#0f0f0f**、深色翻 **#f0f0f0** = Evil Martians 片段定值;
+- `padding` 默认 **20px** = apple-touch-icon 的官方建议内边距;
+- 安全区 **409×409**(512 画布)= maskable 规范给定的中央圆;
+- apple-touch 画布 **180×180**、ico **32×32**、maskable **512×512/192×192** 均为清单定值。
+
+## 动效与交互
+
+- **scheme 切换**(JS 型参数):模拟系统深色模式——`icon.svg` 字形在 `#0f0f0f` ↔ `#f0f0f0` 之间翻转,模拟浏览器 chrome(标签条/页面区)同步翻暗,还原「系统一切、favicon 跟着变」的真实观感;0.25s 的背景过渡在 `prefers-reduced-motion: reduce` 下直切;
+- **staging 反色标签**恒定与生产相反(浅色模式亮 glyph 暗底、深色模式反之)——Evil Martians 的环境防混淆彩蛋;
+- **padding 拖动**(CSS 变量):apple-touch 面板内的虚线框随之缩放,低于 12px 给出裁切风险警告(建议值 20px);
+- **maskable 开关**(JS 型):512 画布上叠加/移除 409×409 虚线安全圆,右侧圆形裁切预览的说明在「已标 maskable / 裸图盲裁」之间切换;
+- 标签条与面板均为纯展示结构,无嵌套交互控件。
+
+## 真实产品案例
+
+- **Evil Martians 官网实践**:《How to Favicon in 2024》作者 Andrey Sitnik 给出的 5+1 清单本身就运行在 evilmartians.com 上——文章同时给出 staging 反色 favicon 的环境切换实践(12 §12);
+- **Chrome 的 SVG favicon bug**:`sizes="32x32"` 修 Chrome 忽略 `type="image/svg+xml"` 图标的问题,是清单里「一行属性修一个浏览器缺陷」的真实案例(12 §12);
+- **RSS 客户端的路径硬约束**:RSS 阅读器类客户端只请求根目录 `/favicon.ico`,不解析 `<head>`——这是 ico 必须留在根目录的真实原因(12 §12)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `scheme` | dark 档字形翻 #f0f0f0、chrome 变暗——深色系统用户的真实观感,对比度反而更好 | light 档是默认态;深色 chrome 下黑 glyph 会融进背景,这正是内嵌媒体查询存在的理由 |
+| `accent` | 改品牌主色;apple-touch 面板的背景与 maskable 面板的底色同步跟随 | 亮色 accent 在浅色 chrome 里对比度下降,深色档的固定 #f0f0f0 不受影响 |
+| `padding` | >20px 图标在 iOS 主屏上显得空;安全但浪费画面 | \<12px 触发裁切警告;0 时 glyph 顶边,系统遮罩一裁就破相 |
+| `maskable` | show 档安全圆可见,设计有明确边界 | hide 档退回「没标 purpose:\"maskable\"」的裸图——各启动器遮罩盲裁,四角内容随时被切 |
+
+锚点:四行接线 + 五件套是极小集,不多生成也不漏兜底;换色只属于 SVG 档;apple-touch 留 20px;padding 之外的 maskable 内容一律住进 409×409 圆。

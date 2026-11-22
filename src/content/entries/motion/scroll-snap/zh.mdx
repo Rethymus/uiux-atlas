@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+吸附滚动是「一个滚动容器 + 一组吸附子项」的两层结构,全部语义写在 CSS 上,不引入 JS:
+
+```html
+<div class="rail" tabindex="0">      <!-- 容器:overflow-x auto + scroll-snap-type -->
+  <div class="card">…</div>          <!-- 子项:scroll-snap-align / scroll-snap-stop -->
+  <div class="card">…</div>
+</div>
+```
+
+关键点:
+
+- 核心概念(MDN):子项经 **scroll-margin** 外扩后成为 *snap area*,容器经 **scroll-padding** 内缩后成为 *snapport*,「吸附」就是让二者对齐(补研 12§4);
+- `scroll-padding` 写在容器上(顶部有吸顶导航时必加,给 sticky 头部留位),`scroll-margin` 写在子项上(单元素微调)——两者职责不同,不要混用;
+- 容器同时挂 `overscroll-behavior-x: contain`,防止横滑到头把整页链走(与 scroll-overflow 条目同一条纪律);
+- 轨道保持原生滚动:键盘聚焦后方向键即可滚,吸附不改变滚动事件的语义。
+
+## 样式与参数
+
+四个参数全部是 CSS 型,经变量注入容器/子项:
+
+```css
+.rail {
+  display: flex;
+  gap: 16px;                                  /* 补研 12§4 片段同款槽距 */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;              /* ← 轴 × strictness(mandatory/proximity) */
+  scroll-padding-inline: 16px;                /* ← padding:内缩 snapport */
+  overscroll-behavior-x: contain;
+}
+.card {
+  scroll-snap-align: start;                   /* ← align:start/center/end,双轴可分写 */
+  scroll-snap-stop: always;                   /* ← stop:always 禁止一次甩过多张(CSS 默认 normal) */
+}
+```
+
+数值出处:
+
+- `gap 16px / scroll-padding-inline 16px / align start / stop always` 逐项取自补研 12§4 的官方概念片段;调研 10§8.4 的轮播惯例是 `scroll-padding: 0 24px` + `x proximity`——两处都是一手来源,按需取用;
+- **mandatory 的适用前提**(MDN 原文):只有当「屏上内容量已知」时才用 mandatory;内容超高/超宽时用户可能永远看不到某段内容,一般交互用 proximity(调研 10§8.2);
+- Level 2 的 `scrollsnapchange` / `scrollsnapchanging` 事件与 `SnapEvent`(snapTargetBlock/snapTargetInline)较新,MDN 提示 `@supports`/降级(补研 12§4)——demo 做了能力检测,不支持时用滚动位置按步距近似。
+
+## 动效与交互
+
+- **吸附即动效**:滚动停靠由浏览器接管,吸附定位是原生滚动的一部分——没有自研缓动、不掉帧、触屏/滚轮/键盘行为一致,这是「把轮播交还给原生滚动」的核心理由;
+- **stop: always vs normal**:always 每次手势只翻一张(轮播标配);normal 允许快甩越过多个吸附点(长列表浏览更快)——按内容密度选;
+- **程序化翻页**:prev/next 按钮以「卡宽 + 槽距」为步距 `scrollBy`;reduced-motion 时改 `behavior: auto` 直达;
+- **当前吸附卡片读数**:支持 Level 2 事件时监听 `scrollsnapchange`,否则 scroll + rAF 按步距近似;读数进 aria-live 礼貌区域播报给读屏;
+- 手势释放后的惯性滑行与「甩多远停在哪」的物理,见 inertia-gesture 条目;滚动进度驱动动画(scroll 时间轴)见 scroll-driven-animations 条目。
+
+## 真实产品案例
+
+- **MDN 官方吸附概念页**:本条的直接母本——容器/子项/snap area/snapport 的全套概念与示例即出自该页(调研 10§8.2、补研 12§4 的一手来源);
+- **iOS 主屏与系统横滑卡片流**:「一滑一停」的 mandatory 分页是这一交互的系统级原型(公知交互行为,未逐帧核验);Web 对位即 mandatory + scroll-snap-stop: always;
+- **吸顶导航的文档站锚点定位**:MDN 明确记载 scroll-padding 用于「顶部有吸顶导航」的定位修正(补研 12§4)——锚点跳转落在标题而非被头部遮住,是 scroll-padding 最常见的生产用途。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `strictness` | proximity→mandatory:每次滚动必停,分页感最强;内容量未知时产生「内容不可达」风险 | mandatory→proximity:只在接近吸附点时轻拉一下,长列表浏览更顺;分页感减弱 |
+| `align` | center 让「当前卡」居中(画廓式聚焦构图);end 适合右对齐时间线 | start 是列表/轮播默认:卡与容器左缘对齐,阅读起点稳定 |
+| `stop` | always:快甩也被逐卡拦下,翻页节奏受控但长列表变慢 | normal:快甩可连翻多卡,长列表效率高;轮播会「飞页」 |
+| `padding` | snapport 内缩更多,停靠时两侧留白更大;过大时首尾卡片可能到不了对齐点 | 留白消失,卡片贴边;0 时回到无 padding 的原始吸附,吸顶头部会遮住停靠内容 |
+
+选型口诀:内容量已知(轮播/分节)→ mandatory + always + align start;内容量未知(信息流)→ proximity + normal;有吸顶头部必配 scroll-padding;容器永远同时挂 overscroll-behavior: contain。

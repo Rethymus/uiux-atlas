@@ -5,6 +5,10 @@
 - 地位:本文件是本站设计决策的**单一事实来源**;与它冲突的样式/组件实现以本文件为准,改动先改本文件。
 - 用法:agent 与人读同一份。所有 token 给具体值;所有决策给理由;未核验处如实标注。
 
+**v2.6 增补(2026-11-23 · 参数面板升级;决策记录,详见 §3)**
+
+1. §3 参数面板六项:① **预设色板**——color 型参数(含 shadow 逐层 color)控件底部渲染一排 swatch(交互语义复用 enum-seg 的 aria-pressed;透明色以 checkerboard 井格衬底),点击即 set;色板两级来源:schema 逐条目声明 `presets`(语义优先——glassmorphism fill/border 霜面 α 阶与深色玻璃 `oklch(21.4% 0.0322 262.4 / 0.55)` = 条目自载配方 rgba(17,25,40,0.55) 的换算、dimming-layer/scrollbar-track 的 25% scrim 阶、spatial-ui shadow 取 §2.5 阶梯),未声明时按参数默认值程序化派生(站点推导,如实标注:L 阶 −0.15/+0.10 或 α 阶 ×0.5/×2 封顶 1,极端不透明如实为空,不引入新色相)。② **oklch 预览 + 原生取色器桥接**——四滑杆头部加合成色预览块(CSS 原生渲染 oklch())与取色器(hex 经 `lib/color.ts` `parseColorInput`/`srgbToOklch` 反解回 L/C/H,保留当前 α 不静默丢失);hex 参数增 #RGB/#RRGGBB/#RRGGBBAA 文本输入(8 位 hex 的 alpha 不再被取色器静默裁剪)。③ **单参数复位**——dirty 时名称行出现 ↺ 小钮(hover 显示/焦点常显/触屏恒显,44px 热区),回该参数默认,不再连带 Reset All。④ **数值输入契约**——提交值与显示文本立即一致(吸附+截断后马上回写,`--warn` 边 600ms 单发警示),非法输入 `data-invalid`+`aria-invalid`,未确认文本 `data-pending` accent 边,Enter=确认,头部值 `aria-live="polite"`;滑杆/scrub/键入三条改值路径统一 step 吸附。⑤ **分组折叠**——几何/色彩/动效/阴影各为原生 `<details>`,默认全展开(首屏双要素 §5 不受损),展合瞬时、chevron `--dur-2` 旋转;原「不做折叠面板本身」修订为「分组可折叠,面板整体仍常驻」。⑥ **Bezier 预设扩充**——新增 default(=param.default)与 §2.6 站点 token:standard/decel/accel/spring。工程与验收:`lib/color.ts` 增 `srgbToOklch`/`rgb01ToHex`(Oklab 同源逆矩阵,往返最大通道误差 1.61e-7 本次实测);store 增 `resetParam`(纯新增方法,既有 set/reset 逻辑零改动);`astro check` 0 errors / 0 warnings;86 个 MDX 正文未动,「复制复刻 Prompt」/「Copy replication prompt」文案逐字未动。
+
 **v2.5 → v2.6 变更摘要(材质层)**
 
 1. §2.1 新增 **Apple 中性阶梯 token**(两主题各一套):iOS `systemGray` 六阶 + `systemBackground`/`systemGroupedBackground` 三阶 + `separator` α 族(`--ios-*` 前缀;官方值溯源 09 §2,深色 separator 基色 (84,84,88)@0.6 已按 09 勘误)。工作台四级背景**并存不替换**——12 对 AA 对比度配对不受影响(`check:contrast` 复跑 12/12)。
@@ -390,9 +394,9 @@
 
 **参数面板「仪表台」化(ParamPanel 改造方向)**
 - 结构:三段式——①头部(标题 + Reset 胶囊钮)②控件区(逐参数行:名称行 [参数名 600 mono 13px] + [实时值 mono `--accent` tabular-nums] → 控件 → effect 说明 12px `--text-faint`)③Prompt 导出区(btn-primary 复制 + btn-ghost 查看 + `role="status"` 回执)。定位对齐 02 §7.6 TDesign theme-generator 的「token 即产品」:本面板就是访客手上的主题/配方编辑器。
-- 仪表台细节:参数行之间 1px 分隔线;数值右侧对齐;滑杆按 §3「滑杆解剖」执行(8px 轨道 + 18px 拇指 + 44px 命中区 + 32px 数值输入框);行头增加迷你刻度条(当前值在 min–max 间的位置指示,纯 CSS 渐变背景实现);分组标题(几何/色彩/动效/阴影,`--step--1` 大写 + letter-spacing 0.08em,同 `.section-title`)。Oklch 四轴 L/C/H/α、Bezier SVG 编辑器、逐层 Shadow 全部保留。
-- 状态:控件五态之外增加 dragging(拖拽中数值标签 `--fill-3` 底)与 dirty(参数偏离默认时值旁出现 2px 圆点,Reset 变 `--accent` 边)。
-- 不做:不做折叠面板本身(面板整体常驻,渐进披露发生在它收纳的内容里);不加装饰动画(高频交互区,HIG 禁)。
+- 仪表台细节:参数行之间 1px 分隔线;数值右侧对齐;滑杆按 §3「滑杆解剖」执行(8px 轨道 + 18px 拇指 + 44px 命中区 + 32px 数值输入框);行头增加迷你刻度条(当前值在 min–max 间的位置指示,纯 CSS 渐变背景实现);分组标题(几何/色彩/动效/阴影,`--step--1` 大写 + letter-spacing 0.08em,同 `.section-title`)。Oklch 四轴 L/C/H/α、Bezier SVG 编辑器(预设含 default 与站点 token 四系,见顶部摘要⑥)、逐层 Shadow 全部保留;色彩参数控件底部一排预设色板 swatch、oklch 行头部合成预览块 + 原生取色器桥接、hex 行文本输入(v2.6 增补,顶部摘要①②)。
+- 状态:控件五态之外增加 dragging(拖拽中数值标签 `--fill-3` 底)与 dirty(参数偏离默认时值旁出现 2px 圆点,Reset 变 `--accent` 边,名称行出现 ↺ 单参数复位小钮——hover 显示、焦点常显、触屏恒显);数值输入框另有 pending/invalid/flash 三态(`data-*` 属性驱动,顶部摘要④)。
+- 不做:不做面板级抽屉/浮层(面板整体常驻,渐进披露发生在它收纳的内容里);分组可折叠(v2.6 增补修订:原生 `<details>`、默认全展开、展合瞬时,§3 Accordion 同法);不加装饰动画(高频交互区,HIG 禁)。
 
 **Slider(滑杆解剖,v2.2 新增;实现 = `global.css` `input[type="range"]` 体系)**
 

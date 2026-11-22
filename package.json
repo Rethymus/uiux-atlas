@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT AND CC-BY-NC-4.0",
   "description": "现代前端 UI/UX 设计全解图集 — 可交互实例 + 代码拆解 + 参数实时调节 + 一键复刻 prompt",
   "scripts": {
     "dev": "astro dev",

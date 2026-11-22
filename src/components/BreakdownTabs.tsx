@@ -35,6 +35,13 @@ export default function BreakdownTabs({ sourceId, label }: BreakdownTabsProps) {
     const source = document.getElementById(sourceId);
     if (!source || source.dataset.bdTabs === "on") return;
 
+    /* ── 高度塌缩补偿(清单 scroll-restore-unmanaged):分组会把非首节面板
+         hidden,文档高度在水合后塌缩;若浏览器恢复/前进导航落点高于塌缩后
+         的可滚动范围,恢复位置会被钳到底部之外。分组前记录 scrollY,
+         分组完成后一次校正到新文档的合法范围(仅在越界时触发,不干扰
+         正常位置的恢复;锚点/前进导航的精确落点仍由浏览器 auto 承担) ── */
+    const preY = window.scrollY;
+
     /* ── 按 h2 分组:h2 之前的散落内容归入 preamble(原位保留) ── */
     const sections: Section[] = [];
     const preamble: ChildNode[] = [];
@@ -176,6 +183,10 @@ export default function BreakdownTabs({ sourceId, label }: BreakdownTabsProps) {
 
     panels[0].classList.add("bd-in");
     placeThumb(false);
+
+    /* 分组完成:按塌缩后的文档高度一次校正恢复落点(见上方注释) */
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (preY > maxScroll) window.scrollTo(0, maxScroll);
 
     return () => {
       ro?.disconnect();

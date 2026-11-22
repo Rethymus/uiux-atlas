@@ -1,0 +1,105 @@
+{
+  "name": "Progress Motion",
+  "nameZh": "进度反馈动效",
+  "aliases": ["进度反馈动效", "进度动效", "Progress indicator", "不确定进度", "Determinate progress"],
+  "category": "motion",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "进度形态随「确定性」变:骨架块(什么都不知道)→ 循环扫光(知道在加载)→ 百分比条(知道还剩多少)→ 完成快速淡入;形态切换按 NN/g 时长阈值演进,越接近终点动力越强(目标梯度)。",
+    "en": "Progress form follows certainty: skeleton blocks (nothing known) → looping sweep (loading, but not how long) → percent bar (exactly how much is left) → fast fade-in completion; the form switches at NN/g duration thresholds, and momentum builds toward the end (goal-gradient)."
+  },
+  "origin": {
+    "zh": "NN/g《Progress Indicators》的选型阈值:<1s 用即时状态变化、1s 以上必须给进度指示、循环动画适合 2–10s、10s 以上用 percent-done 进度条并附文字说明、>10s 还应给完成时间估计;有进度指示时用户平均可等待约 3 倍时长(内布拉斯加大学实验转述)(调研 04§2.2);骨架脉动/完成后快速淡入出自 M3 skeleton loaders(调研 04§2.2);目标梯度效应(越接近目标动力越强、人为进度)出自 Laws of UX(补研 12§14)。",
+    "en": "NN/g's \"Progress Indicators\" selection thresholds: instant state change under 1s, an indicator is mandatory past 1s, looped animation suits 2–10s, 10s+ wants a percent-done bar with descriptive text and — beyond 10s — an ETA; with an indicator users tolerate about 3× the wait (Nebraska study relayed by NN/g) (research 04 §2.2); the skeleton pulse and fast completion fade come from M3 skeleton loaders (research 04 §2.2); the goal-gradient effect (effort grows near the goal; artificial progress) from Laws of UX (12 §14)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "total",
+      "min": 4000,
+      "max": 20000,
+      "step": 500,
+      "default": 10000,
+      "unit": "ms",
+      "effect": {
+        "zh": "模拟任务总时长(JS 型,demo 以 rAF 时间轴驱动)。默认 10000ms 恰好落在 NN/g「10s 以上用 percent-done 进度条 + 文字说明」的阈值上,演示的 percent 段因此成立;≥4s 才能完整走完骨架→循环→百分比三段。",
+        "en": "Simulated task duration (JS-type, driven by the demo's rAF timeline). The default 10000ms sits exactly on NN/g's \"10s+ wants a percent-done bar with descriptive text\" threshold, which is what makes the percent phase legitimate; 4s+ is needed to walk skeleton→loop→percent in full."
+      }
+    },
+    {
+      "type": "number",
+      "name": "pulse",
+      "min": 600,
+      "max": 3000,
+      "step": 50,
+      "default": 1200,
+      "unit": "ms",
+      "cssVar": "--prog-pulse",
+      "effect": {
+        "zh": "不确定段的循环周期(骨架脉动与扫光共用),CSS 型参数。M3 只要求「微妙脉动」,未记载数值——1200ms 为社区常见值,未证实(与 skeleton-loading 条目同一口径)。",
+        "en": "Loop period of the indeterminate phase (shared by the skeleton pulse and the sweep), a CSS-type param. M3 only requires a \"subtle pulse\" with no recorded number — 1200ms is a common community value, unverified (same convention as the skeleton-loading entry)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "phase",
+      "options": [
+        { "value": "auto", "label": { "zh": "自动演进", "en": "Auto timeline" } },
+        { "value": "skeleton", "label": { "zh": "骨架(不确定)", "en": "Skeleton" } },
+        { "value": "indeterminate", "label": { "zh": "循环扫光", "en": "Looped bar" } },
+        { "value": "percent", "label": { "zh": "百分比条", "en": "Percent bar" } }
+      ],
+      "default": "auto",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换时间轴):auto 按 NN/g 阈值自动演进(0–1s 骨架 → 1–3s 循环扫光 → 3s–total 百分比 → 完成);其余档强制固定在某一种形态供对照(percent 档跑完仍会完成)。形态切换本身即本条目的主题:不确定性下降时,进度形态跟着换。",
+        "en": "JS-type param (the demo subscribes and switches the timeline): auto evolves through NN/g thresholds (0–1s skeleton → 1–3s looped bar → 3s–total percent → done); the other tiers pin one form for comparison (the percent tier still completes). The form switching itself is the entry's theme: as uncertainty falls, the progress form follows."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 CSS 渐变/transform 动画 + rAF 时间轴 + data 属性切换,全浏览器可用,无新特性依赖;不支持时进度退化为文本状态(「正在加载…」),语义不受影响。",
+      "en": "Pure CSS gradient/transform animation, an rAF timeline and data-attribute switching — available everywhere with no modern-feature dependency; without it progress degrades to textual status (\"Loading…\"), semantics intact."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 时停用脉动/扫光(色块与轨道保持静态)与形态切换的过渡(直切),百分比数值仍按时间轴推进——数值更新是信息不是装饰;完成态不做淡入直接呈现。「正在加载」的语义不得只靠动画传达:aria-busy + 可见状态文字全程兜底;确定段用 role=progressbar + aria-valuenow 同步。",
+    "en": "Under prefers-reduced-motion: reduce the pulse/sweep is disabled (blocks and track stay static) and form switches jump instead of tweening, while the percent value still advances on the timeline — numeric updates are information, not decoration; the done state appears without fading. The loading semantics must never ride on motion alone: aria-busy + visible status text carry it throughout; the determinate phase syncs role=progressbar + aria-valuenow."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "预期 ≥10s 的长任务(导出、上传、批量处理)——percent-done + 文字说明 + 完成时间估计(NN/g 阈值)", "en": "Long tasks expected at 10s+ (export, upload, batch processing) — percent-done + descriptive text + ETA (NN/g thresholds)" },
+      { "zh": "「先不确定、后确定」的真实任务:先骨架/循环,拿到可量化进度后切百分比条", "en": "Truly \"uncertain first, certain later\" tasks: skeleton/loop first, switch to the percent bar once quantifiable progress exists" },
+      { "zh": "多阶段流程的总进度(阶段本身是人为进度——预盖章式的起步进度,目标梯度效应,补研 12§14)", "en": "Multi-stage overall progress (the seeded stage is artificial progress — the goal-gradient effect, 12 §14)" }
+    ],
+    "avoid": [
+      { "zh": "预期 <1s 的请求——NN/g:用即时状态变化即可,进度指示反而制造等待感", "en": "Requests expected under 1s — NN/g: instant state change suffices; an indicator manufactures waiting" },
+      { "zh": "把循环动画挂在 >10s 的任务上——无终点的旋转让人「盯着钟看」,尽早升级为百分比", "en": "Looped animation on a 10s+ task — an endless spinner makes people watch the clock; upgrade to percent as early as possible" },
+      { "zh": "假装的百分比(均匀爬到 90% 卡住)——比循环动画更伤信任;没有真实进度就诚实用循环形态", "en": "Fake percentages (evenly creeping to 90% then stalling) — worse for trust than a loop; without real progress, honestly stay looped" }
+    ]
+  },
+  "a11y": {
+    "zh": "加载语义全程经 aria-busy + 可见状态文字传达,不依赖任何动画;不确定段不提供 aria-valuenow(没有真实值,编一个就是撒谎);确定段用 role=progressbar(aria-valuemin/max/now 逐帧同步)并在文字里给出百分比与预计剩余;完成态 aria-busy 置 false 并播报;reduced-motion 下动画停、数值照走。",
+    "en": "Loading semantics ride on aria-busy + visible status text throughout, never on motion alone; the indeterminate phase provides no aria-valuenow (no real value exists — inventing one is lying); the determinate phase uses role=progressbar (aria-valuemin/max/now synced per frame) with percentage and ETA in text; the done state flips aria-busy off and is announced; under reduced-motion the animation stops while values keep updating."
+  },
+  "sources": [
+    "https://www.nngroup.com/articles/progress-indicators/",
+    "https://m3.material.io/styles/motion/transitions/transition-patterns",
+    "https://www.lukew.com/ff/entry.asp?1797",
+    "https://lawsofux.com/goal-gradient-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张「不确定→确定」的进度卡:0–1s 骨架块脉动 → 1–3s 循环扫光条 → 3s 到 total 挂 role=progressbar 的百分比条(附百分比文字与预计剩余)→ 完成后内容 200ms 快速淡入;形态切换直切或微过渡,aria-busy 与状态文字全程同步。",
+      "en": "Replicate an uncertain→certain progress card: 0–1s pulsing skeleton blocks → 1–3s looping sweep bar → from 3s to total a percent bar with role=progressbar (percentage text and ETA) → content fades in fast at 200ms on completion; form switches cut directly or tween subtly, with aria-busy and status text synced throughout."
+    },
+    "acceptance": [
+      { "zh": "形态按时长阈值演进:骨架(<1s 段)→ 循环(2–10s 区间语义)→ 百分比(≥10s 语义)+ 文字说明与完成时间估计", "en": "Forms evolve by duration thresholds: skeleton (the <1s zone) → loop (the 2–10s semantics) → percent (the ≥10s semantics) + descriptive text and ETA" },
+      { "zh": "脉动/扫光周期取参数快照 --prog-pulse,只动 transform(合成器路径)", "en": "Pulse/sweep period follows the snapshot --prog-pulse, animating only transform (compositor path)" },
+      { "zh": "确定段 role=progressbar 同步 aria-valuenow,不确定段不提供数值(不编造进度)", "en": "The determinate phase syncs aria-valuenow on role=progressbar; the indeterminate phase provides no value (no invented progress)" },
+      { "zh": "完成态内容以 200ms cubic-bezier(0.2, 0, 0, 1)(M3 short4 + Standard)快速淡入", "en": "Done-state content fades in fast at 200ms cubic-bezier(0.2, 0, 0, 1) (M3 short4 + Standard)" },
+      { "zh": "prefers-reduced-motion: reduce 时停用脉动/扫光/淡入,数值与状态文字照常更新", "en": "Under prefers-reduced-motion: reduce, pulse/sweep/fade are disabled while values and status text keep updating" }
+    ]
+  }
+}

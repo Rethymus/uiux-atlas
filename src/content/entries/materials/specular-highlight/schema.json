@@ -1,0 +1,117 @@
+{
+  "name": "Specular Highlight",
+  "nameZh": "镜面高光",
+  "aliases": ["镜面高光", "Specular Highlight", "Top-edge Highlight", "顶缘天光"],
+  "category": "materials",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "覆盖在元素顶缘的一道渐变「天光反射」:静态版是 inset 顶缘高光带 + 同色 hairline,动态版的光斑随元素/指针位移移动——光滑材质「镜面反射」的 web 近似。",
+    "en": "A gradient 'sky-light reflection' laid over the element's top edge: the static form is an inset top highlight band plus a matching hairline, while the dynamic form moves the light spot as the element/pointer shifts — a web approximation of specular reflection on glossy materials."
+  },
+  "origin": {
+    "zh": "顶缘天光带的 CSS 配方(::before 渐变,高 6px、峰值 alpha 0.5)来自 Josh Comeau《Designing Shadows》(out/design-study/12-expansion.md §7);Apple 把「环境光源照在材质上、实时弯折并汇聚光线(lensing)」定为 Liquid Glass 材质的核心定义,但内高光强度/顶缘受光数值官方从未公布——web 复刻惯例的亮/暗面校准区间为推导值(out/design-study/09-apple-materials.md §1.4d,⚠️未证实)。",
+    "en": "The top-edge band recipe (::before gradient, 6px tall, peak alpha 0.5) comes from Josh Comeau's Designing Shadows (out/design-study/12-expansion.md §7); Apple defines the core of Liquid Glass as light from the environment bending and converging in real time (lensing), yet never publishes highlight-intensity numbers — the web-practice light/dark calibration ranges are derived values (out/design-study/09-apple-materials.md §1.4d, ⚠️unverified)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "intensity",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.5,
+      "cssVar": "--sh-intensity",
+      "effect": {
+        "zh": "高光峰值不透明度(白色天光的 alpha)。默认 0.5 取调研 12 §7 配方 linear-gradient(hsl(0 0% 100% / 0.5), transparent);按背景校准的推导区间(非官方数值,调研 09 §1.4d ⚠️):亮面 0.25–0.4、暗面 0.08–0.15——demo 用深色玻璃卡,校准时参考暗面区间。",
+        "en": "Peak highlight opacity (alpha of the white sky-light). Default 0.5 is the research 12 §7 recipe linear-gradient(hsl(0 0% 100% / 0.5), transparent); the calibrated ranges are derived, not official (research 09 §1.4d ⚠️): 0.25–0.4 on light surfaces, 0.08–0.15 on dark ones — the demo's dark glass card should be calibrated against the dark range."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "height",
+      "unit": "px",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "default": 6,
+      "cssVar": "--sh-height",
+      "effect": {
+        "zh": "顶缘天光带的高度(仅静态版消费)。默认 6px 取调研 12 §7 配方(::before inset: 0 0 auto 0; height: 6px)——一条窄带模拟顶缘受光,过宽就变成「亮顶盖」而非高光。",
+        "en": "Height of the top-edge band (static form only). Default 6px is the research 12 §7 recipe (::before with inset: 0 0 auto 0; height: 6px) — a narrow band mimicking the lit top rim; too wide turns into a bright cap rather than a highlight."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "hairline",
+      "unit": "px",
+      "min": 0,
+      "max": 2,
+      "step": 0.5,
+      "default": 0.5,
+      "cssVar": "--sh-hairline",
+      "effect": {
+        "zh": "顶缘同色 hairline 细线宽(inset box-shadow,叠在天光带之上)。0.5px 取调研 09 §1.4d 的 web 复刻惯例(推导,非官方);0 = 关闭。细线给顶缘一个「锐利受光边缘」,与渐变带的柔形成对比。",
+        "en": "Width of the matching hairline on the top rim (inset box-shadow stacked on the band). 0.5px is the web-practice value from research 09 §1.4d (derived, not official); 0 = off. The crisp line gives the rim a sharp lit edge contrasting with the soft gradient band."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "lighting",
+      "options": [
+        { "value": "static", "label": { "zh": "静态 inset 高光", "en": "Static inset" } },
+        { "value": "pointer", "label": { "zh": "随位移动态", "en": "Pointer-driven" } }
+      ],
+      "default": "static",
+      "effect": {
+        "zh": "JS 型参数,demo 订阅后切换 data-lighting。static = 顶缘固定天光带 + hairline(光源假想为正上方);pointer = 光斑随指针移动(radial 渐变中心跟随指针,离开时回位到顶光)——对应官方「从指尖下方点亮,扩散至整个元素」的触碰辉光定性(WWDC25 219 [725–737s],调研 09 §8.8),实现为演示近似,官方无对应数值。",
+        "en": "JS-type param; the demo subscribes and toggles data-lighting. static = a fixed top band + hairline (implied light straight above); pointer = the light spot tracks the pointer (radial-gradient center follows, resetting to top light on leave) — echoing the official 'lights up from beneath the fingertip and spreads across the element' touch-glow description (WWDC25 219 [725–737s], research 09 §8.8), implemented as a demo approximation with no official numbers."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "用到的能力均为 Baseline 广泛可用(调研 12 §7):渐变/伪元素/box-shadow 无版本门槛,CSS 变量、pointer 事件与 hsl 斜杠透明度属现代基线。无任何需要前缀或能力门控的属性。",
+      "en": "Everything used is Baseline widely available (research 12 §7): gradients/pseudo-elements/box-shadow have no version floor, and CSS variables, pointer events and slash-alpha hsl are modern baseline. Nothing needs a prefix or capability gate."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 CSS 变量的极老环境退回写死的静态配方(6px / 0.5);不支持 ::before 的环境(几乎不存在)可改为真实覆盖层元素。高光层 pointer-events: none 且纯装饰,任何降级都不影响交互与可读性。",
+    "en": "On very old engines without CSS variables, fall back to the hard-coded static recipe (6px / 0.5); where ::before is unavailable (nearly nowhere), use a real overlay element instead. The highlight layer is pointer-events: none and purely decorative — no degradation affects interaction or readability."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "玻璃/亚克力/深色浮层卡片的顶缘受光——与 backdrop-filter 搭配构成完整「材质感」", "en": "Lit top rims on glass/acrylic/dark overlay cards — pairing with backdrop-filter for a complete material feel" },
+      { "zh": "按钮与控件的 1px 内侧高光,给平面 UI 一道「受光边缘」", "en": "1px inner highlights on buttons and controls, giving flat UI a lit edge" },
+      { "zh": "指针跟随的光斑:大尺寸玻璃面板、游戏化面板等需要「活体材质」的场景", "en": "Pointer-tracked light spots: large glass panels and gamified surfaces that need a living material" },
+      { "zh": "深浅两套主题的高光校准:亮面 0.25–0.4、暗面 0.08–0.15(推导区间,按背景实测)", "en": "Calibrating highlights across themes: 0.25–0.4 on light, 0.08–0.15 on dark (derived ranges — measure against the real backdrop)" }
+    ],
+    "avoid": [
+      { "zh": "正文与密集数据区的高光——顶缘亮带会干扰行阅读的扫视路径", "en": "Highlights over body text and dense data — the lit band interferes with reading saccades" },
+      { "zh": "高光叠高光的多层材质嵌套——反射互相打架,材质发浑", "en": "Highlights stacked on highlights in nested materials — reflections fight and the material turns muddy" },
+      { "zh": "把高光当状态指示(如选中态)——它是光照语义,不是交互语义", "en": "Using highlights as state indicators (e.g. selection) — they encode lighting, not interaction semantics" },
+      { "zh": "无光源一致性的随手加高光——全站应共享同一光源方向,否则材质互相矛盾", "en": "Ad-hoc highlights without a consistent light — a product shares one light direction or the materials contradict each other" }
+    ]
+  },
+  "a11y": {
+    "zh": "高光是纯装饰光照线索:不传达状态、不承载信息,decorative 层必须 pointer-events: none 且对读屏不可见;高光不得把文字对比度拉到 4.5:1 以下(WCAG 2.1 SC 1.4.3)——深色表面上尤其要核对暗面校准区间;控件边界与焦点指示仍由常规机制表达(WCAG 2.1 SC 2.4.7)。指针光斑属输入驱动反馈,`prefers-reduced-motion` 下保留、但不做任何自主运动。",
+    "en": "Highlights are decorative lighting cues: they carry no state or information and must be pointer-events: none and invisible to screen readers; a highlight must never drag text contrast below 4.5:1 (WCAG 2.1 SC 1.4.3) — check the dark-surface range especially on dark themes; control boundaries and focus remain the job of standard indicators (WCAG 2.1 SC 2.4.7). The pointer light spot is input-driven feedback — kept under prefers-reduced-motion, with no autonomous motion of its own."
+  },
+  "sources": [
+    "https://www.joshwcomeau.com/css/designing-shadows/",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一块深色玻璃浮层卡:静态版顶缘有 6px 渐变天光带 + 0.5px 同色 hairline,动态版高光变成跟随指针的 radial 光斑;背景用彩色渐变,高光层不参与事件。",
+      "en": "Recreate a dark glass overlay card: statically a 6px gradient sky-light band plus a 0.5px matching hairline on the top rim; dynamically the highlight becomes a radial light spot tracking the pointer; colorful gradient backdrop, highlight layer non-interactive."
+    },
+    "acceptance": [
+      { "zh": "静态高光 = ::before 顶缘带(height=6px)+ inset hairline(0.5px),border-radius: inherit、pointer-events: none", "en": "Static highlight = a ::before top band (height=6px) + inset hairline (0.5px), with border-radius: inherit and pointer-events: none" },
+      { "zh": "强度默认 0.5(调研配方),快照值直接驱动渐变与 hairline 的 alpha;不要自行加乘系数", "en": "Intensity defaults to 0.5 (the research recipe) and the snapshot value drives both gradient and hairline alpha; do not add ad-hoc multipliers" },
+      { "zh": "动态版光斑随指针移动:radial 渐变中心写入元素级 CSS 变量,指针离开回位顶光;指针驱动为输入反馈,无自主动画", "en": "The dynamic spot tracks the pointer: the radial center is written to element-level CSS variables and resets to top light on leave; pointer-driven is input feedback with no autonomous animation" },
+      { "zh": "深色玻璃卡上的强度按暗面校准区间复核(0.08–0.15 为推导值,需实测)", "en": "On the dark glass card, re-check intensity against the dark-surface range (0.08–0.15, derived — measure it)" },
+      { "zh": "高光不干扰文字对比:卡内文字对最亮高光仍保持 4.5:1", "en": "The highlight never hurts text contrast: card text keeps 4.5:1 against the brightest highlight" }
+    ]
+  }
+}

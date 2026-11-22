@@ -1,0 +1,36 @@
+---
+import Base from "@/layouts/Base.astro";
+import { CATEGORIES } from "@/lib/types";
+import { t } from "@/i18n/ui";
+import { categoryUrl, homeUrl } from "@/lib/urls";
+
+// 404 页(zh 单页,清单 missing-404-page):静态构建产出 dist/404.html,
+// 错误 URL 不再落到托管平台默认页。设计语言内:Base 布局 + 语义 token,
+// 「回首页」主操作 + 全部分类快捷链接;无 JS 时内容直出(渐进增强同全站纪律)。
+const dict = t("zh");
+const nf = dict.notFound;
+---
+
+<Base locale="zh" title={nf.title} description={nf.message} altUrl="/">
+  <div class="notfound-page">
+    <p class="nf-code" aria-hidden="true">404</p>
+    <h1 class="list-title">{nf.title}</h1>
+    <p class="res-intro">{nf.message}</p>
+    <p class="nf-actions">
+      <a class="btn-primary nf-home" href={homeUrl("zh")} data-back>
+        <span class="back-arrow" aria-hidden="true">←</span>
+        {dict.list.backHome}
+      </a>
+    </p>
+    {/* 分类快捷链接(可点 Chip 体系,spec §3 Chip):从全部一级分类重新出发 */}
+    <nav class="nf-cats" aria-label={dict.nav.atlas}>
+      {
+        CATEGORIES.map((c) => (
+          <a class="fchip" href={categoryUrl("zh", c.id)}>
+            {c.zh}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</Base>

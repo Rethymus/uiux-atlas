@@ -1,0 +1,79 @@
+## Structure & DOM
+
+The three layers **only reference downward**, and re-theming happens at layer 1: one primitive row per theme, a theme-independent semantic layer, zero hex in components:
+
+```html
+<div class="scene" data-theme="crimson">
+  <div class="card">
+    <button class="btn">Primary action</button>
+    <span class="chip">soft semantic bg</span>
+  </div>
+</div>
+```
+
+```css
+/* Layer 1 primitive: re-theming swaps exactly this row (data-theme remount) */
+[data-theme="blue"]    { --tk-brand: oklch(0.62 0.19 250); }
+[data-theme="crimson"] { --tk-brand: oklch(0.58 0.2 20); }
+[data-theme="forest"]  { --tk-brand: oklch(0.6 0.15 150); }
+
+/* Layer 2 semantic: theme-independent, color-mix derives live */
+.tk-scene {
+  --tk-primary:      var(--tk-brand);
+  --tk-primary-soft: color-mix(in oklab, var(--tk-brand) 12%, transparent);
+  --tk-on-primary:   color-mix(in oklab, var(--tk-brand), white 85%);
+}
+
+/* Layer 3 component: consumes semantic variables only */
+.tk-btn { background: var(--tk-primary); color: var(--tk-on-primary); }
+```
+
+Key points:
+
+- One-way chain: component → semantic → primitive; a component reaching the primitive is the anti-pattern the Android docs call out (research 06 §10);
+- **Re-theming = remounting one primitive sheet**: theme count = sheet count, independent of component count — Primer carries 9 themes on the same architecture (research 06 §10);
+- Semantic names must be role words (primary / on-primary / soft); appearance words (--light-blue-500) die on the first swap (research 06 §10).
+
+## Styling & Parameters
+
+theme is JS-type (writes only data-theme on subscription); softBg/borderMix/hoverMix are CSS-variable params entering the semantic layer's color-mix via `calc(var(--…))`:
+
+```css
+/* Semantic derivation recipes (research 12 §11 snippet) */
+.tk-scene {
+  --tk-primary-hover: color-mix(in oklab, var(--tk-brand), black calc(var(--tk-hover-mix))); /* 12% */
+  --tk-border:        color-mix(in oklab, var(--tk-brand) calc(var(--tk-border-mix)), transparent); /* 40% */
+}
+```
+
+Where the numbers come from:
+
+- The three primitive values are verbatim from the research 12 §11 snippet: `oklch(0.62 0.19 250)` / `oklch(0.58 0.2 20)` / `oklch(0.6 0.15 150)`; converted to sRGB this session: **#0088F2** (blue, out-of-gamut clipped, research 06 §2) / **#D73246** (crimson) / **#25984D** (forest);
+- The derivation recipes come from the same snippet: hover = black 12%, soft = 12% toward transparent, border = 40% toward transparent, on-brand = white 85%;
+- Layering and naming mirror Primer: `base.color.*`-style primitives, `bgColor-default`-style role words, the W3C DTCG `$value/$type` format (research 06 §10);
+- Fallback: the whole semantic pipeline sits inside `@supports (color: color-mix(in oklab, red, blue))`; unsupported browsers get neutral-gray tokens plus an explainer (honestly not pretending to be derivatives).
+
+## Motion & Interaction
+
+- A theme switch rewrites data-theme: the primitive variable remounts, **the semantic derivation recomputes synchronously in the browser**, and components cross-fade over 0.25s ease; disabled under `prefers-reduced-motion`;
+- The softBg/borderMix/hoverMix sliders move semantic-layer parameters — a theme swap never touches them, which is the playable proof of layer responsibility;
+- The three-layer definition panel always shows the current theme's primitive value, semantic derivation and component consumption — the layer boundary is visible;
+- Contrast badges recompute the instant the theme changes (no transition): a swap means the whole audit reruns, verdicts never carry across themes.
+
+## Real-world examples
+
+- **GitHub.com**: all 9 Primer themes (light/dark × high-contrast × colorblind) ride semantic-layer sheet swaps over one component CSS; users switch at settings/appearance (research 06 §10/§19);
+- **Android Dynamic Color**: the official docs' words — design tokens "assign color roles semantically, not concrete values" — with wallpaper-derived dynamic color and light/dark themes sharing one token set (research 06 §10 corroboration), the mobile twin of the same architecture;
+- **Tailwind CSS v4**: `@theme` custom colors are oklch values written straight into the primitive layer, utilities reference them semantically via `var(--color-*)`, and re-theming swaps only the `@theme` sheet (official announcement, research 06 §4).
+
+## Parameter Sensitivity
+
+| Parameter | Switch to… | And… |
+| --- | --- | --- |
+| `theme` → crimson | the brand fill turns red, every derivative follows; white text passes AA at 4.74:1 | the only theme of the three whose white text passes body AA — same recipe, different verdict, audit per theme |
+| `theme` → forest | the brand fill turns green; white text fails AA at 3.70:1 | soft/border/on-brand all re-derive while components stand still |
+| `softBg` | stronger tint, weaker contrast for dark text on it (the measured 15.0:1-class margin narrows) | the tint approaches white and the state presence fades |
+| `hoverMix` | hover separates further from base | hover blurs into base; below 5% the pressed state is illegible |
+| `borderMix` | the semantic border firms up and holds 3:1 more safely | the border turns ghostly; below 3:1 it is decoration only |
+
+Working rule: re-theming is not recoloring — it is swapping a primitive sheet and rerunning the verification pipeline; every theme's derived pairings are audited individually (WCAG, research 06 §17), and the component and semantic layers never participate in a swap.

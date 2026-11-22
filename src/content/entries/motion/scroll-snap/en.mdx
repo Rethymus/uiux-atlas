@@ -1,0 +1,67 @@
+## Structure & DOM
+
+Snap scrolling is a two-layer structure — one scroll container plus a set of snap children — with all the semantics in CSS and zero JS:
+
+```html
+<div class="rail" tabindex="0">      <!-- container: overflow-x auto + scroll-snap-type -->
+  <div class="card">…</div>          <!-- items: scroll-snap-align / scroll-snap-stop -->
+  <div class="card">…</div>
+</div>
+```
+
+Key points:
+
+- The core concept (MDN): items expanded by **scroll-margin** become *snap areas*, the container inset by **scroll-padding** becomes the *snapport*, and "snapping" means aligning the two (12 §4);
+- `scroll-padding` lives on the container (mandatory under sticky headers, to reserve the header's space), `scroll-margin` lives on items (per-item fine-tuning) — different jobs, do not conflate them;
+- The container also carries `overscroll-behavior-x: contain` so a swipe at the edge does not chain the whole page (the same rule as the scroll-overflow entry);
+- The rail keeps native scrolling: arrow keys work once focused, and snapping never changes scroll-event semantics.
+
+## Styling & Parameters
+
+All four parameters are CSS-type, injected onto container/items via variables:
+
+```css
+.rail {
+  display: flex;
+  gap: 16px;                                  /* same 16px gap as the 12 §4 snippet */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;              /* ← axis × strictness (mandatory/proximity) */
+  scroll-padding-inline: 16px;                /* ← padding: insets the snapport */
+  overscroll-behavior-x: contain;
+}
+.card {
+  scroll-snap-align: start;                   /* ← align: start/center/end, per-axis overridable */
+  scroll-snap-stop: always;                   /* ← stop: always forbids skipping cards (CSS default normal) */
+}
+```
+
+Where the numbers come from:
+
+- `gap 16px / scroll-padding-inline 16px / align start / stop always` are taken item-by-item from the official concepts snippet in 12 §4; the carousel convention in research 10 §8.4 uses `scroll-padding: 0 24px` + `x proximity` — both are first-hand sources, pick per need;
+- **mandatory's precondition** (MDN verbatim): use mandatory only when "the amount of visible content is known"; with overflowing content the user may never reach some of it — proximity for general use (research 10 §8.2);
+- The Level 2 `scrollsnapchange` / `scrollsnapchanging` events and `SnapEvent` (snapTargetBlock/snapTargetInline) are newer; MDN suggests `@supports`/fallbacks (12 §4) — the demo feature-detects and approximates the snapped card from scroll position otherwise.
+
+## Motion & Interaction
+
+- **Snapping is the motion**: the browser owns the docking, so snap positioning rides native scrolling — no hand-rolled easing, no dropped frames, identical behavior for touch/wheel/keyboard. That is the core argument for handing carousels back to native scrolling;
+- **stop: always vs normal**: always stops one card per gesture (the carousel standard); normal lets a fast flick skip several snap points (faster browsing in long lists) — choose by content density;
+- **Programmatic paging**: prev/next buttons `scrollBy` one step of "card width + gap"; under reduced-motion they use `behavior: auto`;
+- **Snapped-card readout**: listen to `scrollsnapchange` when Level 2 events exist, otherwise approximate from scroll position with rAF; the readout is announced through a polite aria-live region;
+- For the physics of release inertia and "how far a flick travels", see the inertia-gesture entry; for scroll-progress-driven animation see scroll-driven-animations.
+
+## Real-world examples
+
+- **MDN's official snap concepts page**: the direct source of this entry — the full container/item/snap-area/snapport concept set and examples come from that page (first-hand source in research 10 §8.2 and 12 §4);
+- **The iOS home screen and system horizontal card streams**: "one swipe, one stop" mandatory paging is the system-level prototype of this interaction (publicly known behavior, not frame-verified); the Web counterpart is mandatory + scroll-snap-stop: always;
+- **Anchor positioning under sticky headers on docs sites**: MDN explicitly documents scroll-padding for the "sticky header at the top" case (12 §4) — anchors landing on the heading instead of hiding beneath the header is scroll-padding's most common production use.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `strictness` | proximity→mandatory: every scroll must dock, the strongest paging feel; with unknown content amounts it risks unreachable content | mandatory→proximity: only a gentle pull near snap points, long lists browse smoother; paging feel fades |
+| `align` | center puts the "current card" mid-viewport (gallery focus framing); end suits right-aligned timelines | start is the list/carousel default: cards align with the container edge, reading origin stays stable |
+| `stop` | always: even fast flicks stop card by card, controlled pacing but slower in long lists | normal: flicks may skip several cards, efficient for long lists; carousels start "flying pages" |
+| `padding` | more snapport inset, more breathing room at rest; too much and the first/last cards may never reach alignment | the breathing room vanishes and cards touch the edges; 0 restores raw snapping where sticky headers cover docked content |
+
+Rule of thumb: known content amount (carousels/sections) → mandatory + always + align start; unknown amounts (feeds) → proximity + normal; sticky headers always pair with scroll-padding; the container always carries overscroll-behavior: contain.

@@ -1,0 +1,81 @@
+## Structure & DOM
+
+Scrollbar styling goes on the **scroll container**; both implementations can live in the same stylesheet, splitting automatically by the interop fact:
+
+```html
+<div class="list" tabindex="0" role="region" aria-label="Messages">
+  <div class="row">…</div>
+</div>
+```
+
+```css
+.list {
+  overflow: auto;
+  scrollbar-gutter: stable;              /* reserve the slot; growing content stops jumping the layout (MDN use case) */
+}
+/* Standard route: css-scrollbars */
+.list {
+  scrollbar-width: thin;                 /* auto | thin | none */
+  scrollbar-color: var(--brand, #6a5cff) transparent;  /* thumb / track (research 11 §9 fragment) */
+}
+/* WebKit route: non-standard pseudos, Blink/WebKit only, unimplemented in Firefox */
+.list::-webkit-scrollbar { width: 12px; height: 12px; }
+.list::-webkit-scrollbar-thumb { background: var(--brand, #6a5cff); border-radius: 6px; }
+.list::-webkit-scrollbar-track { background: transparent; }
+```
+
+Key points:
+
+- **The interop fact (MDN verbatim, research 10 §8.3)**: once an element's computed `scrollbar-width ≠ auto`, the `::-webkit-scrollbar` family is ignored; writing back `auto` restores it — the demo's standard grade uses exactly this to retire the webkit styles;
+- The purpose of `scrollbar-width` is **saving space, not aesthetics**; a value set on root applies to the viewport (research 10 §8.3);
+- `scrollbar-color: <thumb> <track>` needs both values; the gutter made by `scrollbar-gutter` sits between the inner border edge and the outer padding edge, painted as a padding extension when no scrollbar shows (verified on MDN this session);
+- Overlay scrollbars (macOS default) float over content and take no slot — `scrollbar-gutter` has no effect on them (verified this session).
+
+## Styling & Parameters
+
+Five parameters: the dual-engine switch, the width, thumb/track colors and the gutter policy:
+
+```css
+[data-engine="standard"] .list {       /* JS-type switch */
+  scrollbar-width: var(--sb-width, thin);
+  scrollbar-color: var(--sb-thumb, #6a5cff) var(--sb-track, #00000000);
+}
+[data-engine="webkit"] .list::-webkit-scrollbar { width: 12px; }  /* demo baseline, unverified */
+[data-engine="webkit"] .list::-webkit-scrollbar-thumb { background: var(--sb-thumb, #6a5cff); }
+[data-engine="webkit"] .list::-webkit-scrollbar-track { background: var(--sb-track, #00000000); }
+.list { scrollbar-gutter: var(--sb-gutter, auto); }
+```
+
+Where the numbers come from:
+
+- `#6a5cff` and the `transparent` track are **verbatim from research 11 §9's fragment** `html { scrollbar-color: var(--brand, #6a5cff) transparent }`; the demo expresses the same hollow track as 8-digit hex `#00000000`;
+- The `thin` default echoes the site-wide thin-scrollbar convention recorded in the round-2 report (`scrollbar-width: thin` + `scrollbar-color` inherited at root) and the research 10 §8.4 fragment;
+- Support matrix (BCD, research 11 §9): scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2 (Android WebView not yet); scrollbar-width Baseline 2024-12 (research 10 §8.3); scrollbar-gutter Baseline 2024 Newly available since 2024-12 (verified this session); WebKit officially advises dropping ::-webkit-scrollbar from Safari 26.2 (research 11 §9);
+- The webkit grade's 12px width is a **demo baseline, unverified** — pseudo-element values are author-chosen with no spec default.
+
+## Motion & Interaction
+
+Scrollbars produce no motion themselves; the demo's interaction is about switching grades and guarding the cliff:
+
+- **engine switch**: standard writes the standard properties (the webkit pseudos are retired automatically by the interop fact); the webkit grade deliberately leaves them unwritten so computed stays `auto` and the pseudos wake up — the handoff between the two implementations is visible on switch;
+- **width grades**: thin is the site-wide convention; auto returns to the system; none hides the bar and the demo raises a warning box — MDN is explicit that it harms accessibility/WCAG 2.1.1 keyboard scrolling (research 10 §8.3);
+- **Support readouts**: `CSS.supports('scrollbar-width'/'scrollbar-color'/'scrollbar-gutter')` runs on mount; when the standard grade can't work on this engine (e.g. Safari < 26.2), the demo says so plainly;
+- **gutter comparison**: auto↔stable shows whether the right edge keeps its slot even without overflow; the scroll region carries `tabindex=0` for arrow-key scrolling;
+- The container's entrance (0.4s fade + rise) animates only `opacity/translate`, dropped under `prefers-reduced-motion`; no transitions on scrollbar styling — pseudo-elements don't participate in transitions.
+
+## Real-world examples
+
+- **Site-wide control re-skinning (research 11 §10-8 signature idea)**: `accent-color` + `color-scheme` + `scrollbar-color` all fed by brand variables, auto-flipping in dark mode — scrollbars as first-class citizens of the theme system (fragment origin in research 11 §9);
+- **Thin scrollbars in code blocks and dense data areas**: doc sites and IDE-style web apps commonly give code panels `scrollbar-width: thin` (the same site-wide convention recorded in the round-2 report) — space saved, attention undisturbed (research 10 §8.3: "the purpose is saving space, not aesthetics");
+- **The MDN scrollbar-gutter use cases (verified this session)**: the official three — `stable` against layout jumps as content grows, `stable both-edges` for symmetric spacing, aligning adjacent scrolling/non-scrolling containers — the demo's gutter parameter implements exactly these.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up (switching)… | Back to default… |
+| --- | --- | --- |
+| `engine` → webkit | Blink/WebKit gets pixel-level control (capsule thumbs); Firefox users see nothing change | the standard grade is cross-engine consistent (Chrome 121+/Firefox 64+/Safari 26.2+) but shapes are limited to thin/auto |
+| `width` → none | the bar vanishes and content widens — the accessibility warning lights up and the keyboard-scroll affordance is gone | thin is the balance point between decoration and usability; auto hands everything back to the system |
+| `thumb` | saturated colors steal attention and must still hold WCAG 1.4.11 contrast against track and content | a transparent thumb equals hiding — the same problem as none |
+| `gutter` → stable | the slot stays even without overflow — stable layout, one blank strip on the right | auto lets the slot grow and shrink, jittering whole rows as list height changes |
+
+Rules of thumb: standard properties first, webkit pseudos as the double-write fallback; none only with an alternative scroll indicator; wire colors through brand variables so theme switches cover them automatically.

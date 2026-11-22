@@ -1,0 +1,134 @@
+{
+  "name": "Color Functions (color-mix & relative color)",
+  "nameZh": "颜色函数族",
+  "aliases": ["color-mix", "relative color syntax", "相对颜色语法"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "CSS 内建混色:color-mix() 在指定色彩空间插值(默认 oklab),相对颜色语法 rgb(from …) 把原色解构成通道变量做 calc 运算——派生色全部声明式,零硬编码 hex。",
+    "en": "CSS-native mixing: color-mix() interpolates in a chosen space (oklab by default), and relative color syntax rgb(from …) deconstructs a color into channel variables for calc() — every derived color declarative, zero hard-coded hex."
+  },
+  "origin": {
+    "zh": "color-mix() 与相对颜色语法定义于 CSS Color 5;color-mix() 自 2023-05 起 Baseline 广泛可用,相对颜色语法 Baseline「广泛可用」但「部分支持程度不一」、Safari 16.4 起支持但旧语法要求 calc 内通道用百分比(MDN,补研 12§8/§11);百分比归一化规则与空间选型指引出自 MDN color-mix 参考页(补研 12§11);派生配方(hover=black 12%、soft-bg=12% 掺 transparent、border=40% 掺 transparent、on-brand=white 85%)取自补研 12§11 可复用片段。",
+    "en": "color-mix() and relative color syntax are defined in CSS Color 5; color-mix() is Baseline widely available since 2023-05, relative colors are Baseline 'widely available' yet 'partial support' with Safari 16.4+ accepting only the old syntax where calc() channels carry percentages (MDN, research 12 §8/§11); percentage normalization and space-selection guidance come from MDN's color-mix reference (research 12 §11); the derived recipes (hover = black 12%, soft bg = 12% toward transparent, border = 40% toward transparent, on-brand = white 85%) come from the research 12 §11 snippet."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "brand",
+      "format": "oklch",
+      "default": "oklch(0.62 0.19 250)",
+      "cssVar": "--cf-brand",
+      "effect": {
+        "zh": "派生源品牌色。默认 oklch(0.62 0.19 250) 取自补研 12§11 片段;本会话实测该值越 sRGB 域、浏览器裁剪为 #0088F2(裁剪行为为调研 06§2 记载的现状)——所有派生色跟着这个底色走。",
+        "en": "The derivation source. Default oklch(0.62 0.19 250) from the research 12 §11 snippet; measured this session: outside sRGB, clipped by browsers to #0088F2 (the clipping status quo recorded in research 06 §2) — every derived color follows this base."
+      }
+    },
+    {
+      "type": "number",
+      "name": "hoverMix",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--cf-hover-mix",
+      "effect": {
+        "zh": "hover 档向 black 混入的百分比。默认 12% 取自补研 12§11 片段(--brand-hover: color-mix(in oklab, var(--brand), black 12%));active 档取其 2 倍(24%,片段同款)。参数经 CSS 变量注入,demo 内 calc(var(--cf-hover-mix)) 直接进 color-mix()。",
+        "en": "The percentage mixed toward black for hover. Default 12% from the research 12 §11 snippet (--brand-hover: color-mix(in oklab, var(--brand), black 12%)); active takes double (24%, same snippet). Injected as a CSS variable and consumed straight inside color-mix() via calc(var(--cf-hover-mix))."
+      }
+    },
+    {
+      "type": "number",
+      "name": "softBg",
+      "unit": "%",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--cf-soft-bg",
+      "effect": {
+        "zh": "柔和底色:品牌色掺 transparent 的百分比。默认 12% 取自补研 12§11 片段(--brand-soft-bg: color-mix(in oklab, var(--brand) 12%, transparent));注意与 transparent 混合只能降不透明度,要提升/运算 alpha 得用相对颜色(补研 12§11)。",
+        "en": "Soft background: the percentage of brand mixed toward transparent. Default 12% from the research 12 §11 snippet (--brand-soft-bg: color-mix(in oklab, var(--brand) 12%, transparent)); mixing with transparent only ever lowers opacity — raising or computing alpha needs relative colors (research 12 §11)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "borderMix",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 40,
+      "cssVar": "--cf-border-mix",
+      "effect": {
+        "zh": "品牌描边:品牌色掺 transparent 的百分比。默认 40% 取自补研 12§11 片段(--brand-border: color-mix(in oklab, var(--brand) 40%, transparent));阈值参照:传达语义的边框按 SC 1.4.11 对相邻色 ≥3:1 复核(调研 06§17)。",
+        "en": "Brand border: the percentage of brand mixed toward transparent. Default 40% from the research 12 §11 snippet (--brand-border: color-mix(in oklab, var(--brand) 40%, transparent)); threshold reference: a border carrying semantics is audited at ≥3:1 against adjacent colors per SC 1.4.11 (research 06 §17)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "space",
+      "options": [
+        { "value": "oklab", "label": { "zh": "oklab(感知均匀)", "en": "oklab (perceptual)" } },
+        { "value": "srgb", "label": { "zh": "srgb(设备匹配)", "en": "srgb (device match)" } },
+        { "value": "oklch", "label": { "zh": "oklch(避免变灰)", "en": "oklch (anti-gray)" } },
+        { "value": "srgb-linear", "label": { "zh": "srgb-linear(模拟色光)", "en": "srgb-linear (light sim)" } }
+      ],
+      "default": "oklab",
+      "effect": {
+        "zh": "JS 型参数:空间实验室行的插值空间(demo 写 data-space,CSS 四档显式规则)。选型指引出自 MDN(补研 12§11):模拟色光→xyz/srgb-linear;感知均匀插值→oklab/lab;避免变灰→oklch/lch;匹配 sRGB 设备→srgb。不写 in 时默认在 sRGB 插值。",
+        "en": "JS-type param: the interpolation space for the space-lab row (the demo writes data-space; four explicit CSS rules). MDN's selection guidance (research 12 §11): light simulation → xyz/srgb-linear; perceptually uniform → oklab/lab; avoid graying → oklch/lch; match sRGB devices → srgb. Omitting in defaults to sRGB interpolation."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "color-mix():Baseline 2023-05;相对颜色语法:Baseline 广泛可用但部分支持程度不一,Safari 16.4+ 走旧语法(calc 内通道需百分比),用 @supports (color: rgb(from red r g calc(b + 30%))) 分支探测(MDN 原文示例,补研 12§8/§11)。demo 对两族函数均有 @supports 回退。",
+      "en": "color-mix(): Baseline 2023-05. Relative colors: Baseline widely available with uneven support; Safari 16.4+ takes the old syntax (calc() channels need percentages), probed via @supports (color: rgb(from red r g calc(b + 30%))) — MDN's own example (research 12 §8/§11). The demo ships @supports fallbacks for both families.",
+      "baseline": "2023-05"
+    }
+  },
+  "fallback": {
+    "zh": "不支持 color-mix() 时声明按无效处理回落:每条派生色都先写一条静态 hex 兜底声明,再在 @supports (color: color-mix(in oklab, red, blue)) 内覆写;相对颜色行整体包在 @supports 探测内,不支持的浏览器隐藏该行并显示说明。",
+    "en": "Without color-mix() the declarations are invalid and fall back: every derived color ships a static hex declaration first, overridden inside @supports (color: color-mix(in oklab, red, blue)); the relative-color rows sit wholly inside an @supports probe — unsupported browsers hide them and show the explainer instead."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "从一个品牌变量派生全套交互态:hover/active/soft-bg/border/on-brand 全部 color-mix() 声明,换品牌只改一个变量(补研 12§11 配方)", "en": "Deriving every interactive state from one brand variable: hover/active/soft-bg/border/on-brand all declared with color-mix(); re-branding changes one variable (the research 12 §11 recipes)" },
+      { "zh": "半透明状态色:color-mix(… , transparent) 造淡底/淡边;Tailwind v4 的透明度工具即此路线(调研 06§4)", "en": "Translucent status colors: color-mix(…, transparent) for tints; Tailwind v4's opacity utilities take this route (research 06 §4)" },
+      { "zh": "hover 加深/提亮不用手挑色:相对颜色 rgb(from var(--c) calc(r*.85) …) 与 Evil Martians 的 oklch calc(l + 0.1) 同思路(调研 06§2/补研 12§11)", "en": "Hover darkening/lightening without hand-picking: relative colors rgb(from var(--c) calc(r*.85) …), the same idea as Evil Martians' oklch calc(l + 0.1) (research 06 §2 / research 12 §11)" },
+      { "zh": "渐变/混色发灰时换插值空间:sRGB 长距离色相过渡的「脏灰带」换 oklch/lab 解决(调研 06§4/补研 12§11)", "en": "When mixing or gradients turn gray: switch the interpolation space — sRGB's long-hue 'dirty gray band' resolves in oklch/lab (research 06 §4 / research 12 §11)" }
+    ],
+    "avoid": [
+      { "zh": "指望 color-mix(…, transparent) 提升不透明度——它只能降;要升要算用相对颜色 alpha 通道(补研 12§11)", "en": "Expecting color-mix(…, transparent) to raise opacity — it only lowers; raising or computing alpha is relative-color territory (research 12 §11)" },
+      { "zh": "在相对颜色 calc 里给 rgb 通道加百分比——rgb 通道解析为 0–255 数字,calc(g + 25) 合法、calc(g + 25%) 无效(补研 12§11);Safari 16.4 旧语法恰相反,用 @supports 分支(补研 12§8)", "en": "Adding percentages to rgb channels inside relative-color calc() — channels resolve to 0–255 numbers: calc(g + 25) is legal, calc(g + 25%) is invalid (research 12 §11); Safari 16.4's old syntax is the opposite, so branch with @supports (research 12 §8)" },
+      { "zh": "两份百分比合计 0% ——整个表达式无效(补研 12§11);p1+p2<100% 是 alpha 乘数,不是错误,但别误当实色用", "en": "Two percentages summing to 0% — the whole expression is invalid (research 12 §11); p1+p2<100% is an alpha multiplier, not an error, but never mistake the translucent result for a solid" },
+      { "zh": "不写 in 就默认 sRGB 插值还抱怨混色发灰——长距离色相过渡这是默认行为,明示 in oklch/in oklab(调研 06§4)", "en": "Omitting in (defaulting to sRGB interpolation) and complaining about gray mixes — that's the default for long hue travel; write in oklch / in oklab explicitly (research 06 §4)" }
+    ]
+  },
+  "a11y": {
+    "zh": "派生不是免检:color-mix 的产物照样按用途过 WCAG 闸——on-brand 文字对品牌底 ≥4.5:1(正文)/3:1(大字与 UI),状态边框对相邻色 ≥3:1(SC 1.4.11,调研 06§17)。本会话实测默认配方:on-brand(white 85%)对裁剪后品牌底 #0088F2 仅 **3.06:1**——过 UI/大字档、不过正文 AA;这正是「派生后必须复核」的实证,阈值判定不四舍五入。",
+    "en": "Derivation is not an audit exemption: color-mix products still gate by用途 — on-brand text vs the brand fill at ≥4.5:1 (body) / 3:1 (large & UI), state borders vs adjacent colors ≥3:1 (SC 1.4.11, research 06 §17). Measured this session at the default recipes: on-brand (white 85%) on the clipped brand fill #0088F2 reads only **3.06:1** — past the UI/large gate, short of body AA; exactly why derived colors must be re-audited, unrounded."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb",
+    "https://tailwindcss.com/blog/tailwindcss-v4",
+    "https://evilmartians.com/chronicles/oklch-in-css-a-utility-for-perceptually-uniform-color-systems"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 color-mix() 与相对颜色语法实现零硬编码的品牌派生:一个 --brand 变量派生 hover/active/soft-bg/border/on-brand,附空间对比行与百分比归一化演示,全部带 @supports 回退。",
+      "en": "Achieve hard-code-free brand derivation with color-mix() and relative colors: one --brand variable derives hover/active/soft-bg/border/on-brand, with a space-comparison row and a percentage-normalization demo, all behind @supports fallbacks."
+    },
+    "acceptance": [
+      { "zh": "组件内零 hex:一切颜色来自 var(--brand) 经 color-mix()/相对颜色派生", "en": "Zero hex in components: every color derives from var(--brand) via color-mix()/relative colors" },
+      { "zh": "每条派生声明先写静态兜底色,再在 @supports (color: color-mix(in oklab, red, blue)) 内覆写", "en": "Each derived declaration ships a static fallback color first, overridden inside @supports (color: color-mix(in oklab, red, blue))" },
+      { "zh": "相对颜色行用 @supports (color: rgb(from red r g calc(b + 30%))) 探测,不支持时隐藏并说明", "en": "Relative-color rows probe with @supports (color: rgb(from red r g calc(b + 30%))) and hide with an explainer when unsupported" },
+      { "zh": "派生色的文字组合逐个过 WCAG 闸(4.5:1/3:1),不因「来自品牌色」而豁免", "en": "Derived colors' text pairings each pass WCAG gates (4.5:1/3:1) — no exemption for being brand-derived" },
+      { "zh": "混色显式声明插值空间,长距离色相过渡不用默认 sRGB", "en": "Every mix declares its interpolation space explicitly; long hue travel never rides default sRGB" }
+    ]
+  }
+}

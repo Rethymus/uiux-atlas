@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+无特殊结构——大字标题就是普通标题元素,纪律在字号/字距/行高/字重的联动上:
+
+```html
+<h1 class="display">Display 展示级排版</h1>
+```
+
+```css
+.display {
+  font-size: clamp(35px, 29.913px + 1.413vw, 48px); /* 流式大字(本站 --step-5 同款) */
+  font-weight: 600;                                  /* 可变字重档 */
+  line-height: 1.12;                                 /* 字号越大行高比越低 */
+  letter-spacing: -0.02em;                           /* 大字号专属的负字距 */
+}
+```
+
+关键点:
+
+- 三个联动量:**字距随字号收紧**(SF Pro 官方曲线:6→17pt 渐紧、17→28pt 回松、28→80pt 渐收、80pt+ 归零,调研 01§2.2);**行高比随字号降低**(apple.com 实测 56px→1.0714、40px→1.10、28px→1.1429,01§2.3);**字重档位固定**(断点只动 size+letter-spacing,01§2.3 铁律三);
+- 负字距是**标题专属**:本站规范「中文正文字距 0,负字距只用于 ≥21px 标题」(源码 `src/styles/global.css:156`);
+- 生产上大字号应流式化:clamp() Baseline 2020-07(调研 05§12),本站 `--step-5` 即 Utopia 法产物(global.css:163)。
+
+## 样式与参数
+
+四个参数:size/weight/manualTracking(CSS 变量型)+ trackingMode(JS 型):
+
+```css
+.display {
+  font-size: var(--dt-size);      /* 48px */
+  font-weight: var(--dt-weight);  /* 600 → Inter Variable wght 轴 */
+  letter-spacing: var(--dt-tracking); /* manual 档:−0.02em */
+}
+[data-mode="auto"] .display { letter-spacing: var(--dt-auto); } /* SF 曲线插值 */
+```
+
+数值出处:
+
+- 字距曲线:SF Pro tracking 全曲线 66 行实抓(01§2.2),锚点 17pt = −26‱(全曲线最紧)、28pt = +14‱(局部最松)、80pt+ = 0;demo 以分段线性插值近似(pt 档按 1x 折算,教学感知用);
+- 行高比锚点:apple.com 网页 CSS 实抓(01§2.3)——56px/1.0714、48px/1.0835、40px/1.10、28px/1.1429、19px/1.2105、12px/1.3334;
+- 字重 600:apple.com 展示级档(01§2.3);Inter Variable wght 100–900 真实轴(调研 05§24),非合成加粗;
+- **原生曲线与网页实践的分歧如实并列**:SF 曲线 56pt 处 +6‱,而 apple.com 网页 56px 标题 −0.005em、本站 hero 48px −0.02em——两套数值并存,不许互相冒充。
+
+## 动效与交互
+
+- **曲线游标**:拖 `size`,曲线小图上的游标沿 SF 官方锚点折线滑动(0.15s 过渡,`prefers-reduced-motion` 时关闭),auto 模式下样张字距同步插值;
+- **auto/manual 对照**:auto 展示「字号驱动字距」的原生逻辑;manual 直接应用 em 值,可对比 −0.005(apple.com)与 −0.02(本站)的手感差;
+- **字重轴**:拖 `weight` 100→900,Inter Variable 连续取档,无重排、无合成加粗(GRAD 轴「改变视觉密度不改变占位」的可变字体特性见调研 12§6);
+- 样张本身无动画;`prefers-reduced-motion` 只需照顾游标过渡。
+
+## 真实产品案例
+
+- **apple.com 产品页**:超大标题实测 56px / 1.0714 / 600 / **−0.005em**,三档断点(1068/734px)只动 size + letter-spacing;≥19px 用 SF Pro Display、≤17px 换 SF Pro Text 且字距转负(−0.022em)(调研 01§2.3,overview.built.css 一手抓取)——展示级排版三铁律的原始出处。
+- **本站 uiux-atlas hero**:`--step-5: clamp(35px, 29.913px + 1.413vw, 48px)` + `line-height: 1.12` + `letter-spacing: -0.02em`(源码 `src/styles/global.css:163、883-888`)——与苹果同构的「大字号紧字距低行高比」手法在 Utopia 流式体系上的落地;全站流式字阶(行高 1.12→1.65 随字号放宽)写在 `--step-*` 注释(154-163)。
+- **Inter 的双光学设计**:opsz 14–32 轴,小光学字号配高 x-height 提升可读性、大字号走 text/display 双光学(调研 05§24,官网规格已核)——展示级排版在字体供给层的对应物;无可变 opsz 的字体大字号可读性靠行高与字距补偿。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `size` | SF 曲线进入渐收段(28→80pt 字距回落),行高比建议值降至 ~1.07;注意容器溢出 | 游标滑向 17pt 最紧点(−0.026em);跌破 ~21px 进入本站「负字距禁区」 |
+| `weight` | 600+ 的展示级权威感(apple.com 档);Inter wght 轴连续取档 | 250–350 轻档在浅底对比度告急;无 wght 轴字体在此段失真最重 |
+| `trackingMode` | auto 让字距随字号自动联动(原生曲线逻辑) | manual 固定 em 值,便于对齐 apple.com/本站的具体档位 |
+| `manualTracking` | 正值放松(28pt 局部最松 +0.014em 的手感) | 负值收紧;≤ −0.03em 后西文字母开始粘连,中文字形受挤压 |
+
+经验区间:hero 档 48px/600/−0.02em/1.12(本站);标题档 56px/600/−0.005em/1.07(apple.com);行高比永远随字号降低;负字距不进正文、不进中文小字号。

@@ -10,9 +10,12 @@ interface DemoProps {
 
 type Backdrop = "alps" | "nebula";
 
-const BACKDROPS: { id: Backdrop; zh: string; en: string }[] = [
-  { id: "alps", zh: "雪山", en: "Alps photo" },
-  { id: "nebula", zh: "星空", en: "Nebula photo" },
+const BACKDROPS: { id: Backdrop; zh: string; en: string; w: number; h: number }[] = [
+  // w/h = 照片内在尺寸(JPEG SOFn 实测:alps 1600×1067、nebula 1600×1520),
+  // 随 <img width/height> 声明(清单 photo-alt-nits:CSS absolute/inset 定尺寸
+  // 之外补内在尺寸声明);alt 携带当前背景名,背景切换时读屏可感知样本变化。
+  { id: "alps", zh: "雪山", en: "Alps photo", w: 1600, h: 1067 },
+  { id: "nebula", zh: "星空", en: "Nebula photo", w: 1600, h: 1520 },
 ];
 
 const TILES = [
@@ -28,6 +31,9 @@ const TILES = [
     fn: "blur(var(--ff-blur)) brightness(var(--ff-brightness)) contrast(var(--ff-contrast)) hue-rotate(var(--ff-hue))",
   },
 ] as const;
+
+/* 组合瓦片角标的链序参数名(schema 既有参数;组合 = 四者按规范链序叠加) */
+const PARAM_ORDER = ["blur", "brightness", "contrast", "hue-rotate"];
 
 const css = `
 .demo-stage {
@@ -62,7 +68,7 @@ const css = `
   padding: 4px 10px; font-size: 11px; color: #fff;
   background: rgb(0 0 0 / 0.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
 }
-.ff-tile figcaption code { font-size: 10.5px; opacity: 0.85; }
+.ff-tile figcaption code { font-size: 10.5px; opacity: 0.85; min-width: 0; flex: 1; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ff-tile:nth-child(1) { animation-delay: 0s; } .ff-tile:nth-child(2) { animation-delay: 0.05s; }
 .ff-tile:nth-child(3) { animation-delay: 0.1s; } .ff-tile:nth-child(4) { animation-delay: 0.15s; }
 .ff-tile:nth-child(5) { animation-delay: 0.2s; } .ff-tile:nth-child(6) { animation-delay: 0.25s; }
@@ -118,15 +124,31 @@ export default function Demo({ entryId, schema }: DemoProps) {
           </div>
         </div>
         <div className="ff-grid">
-          {TILES.map((tile) => (
-            <figure key={tile.id} className="ff-tile" data-fn={tile.id}>
-              <img src={`/photos/glass-${backdrop}.jpg`} alt={`${tile.en} 滤镜示例 filtered sample`} />
-              <figcaption>
-                <span>{tile.zh} {tile.en}</span>
-                <code>{tile.fn ? fmt(tile.id === "hue" ? "hue-rotate" : tile.id) : "—"}</code>
-              </figcaption>
-            </figure>
-          ))}
+          {TILES.map((tile) => {
+            const bd = BACKDROPS.find((b) => b.id === backdrop)!;
+            return (
+              <figure key={tile.id} className="ff-tile" data-fn={tile.id}>
+                <img
+                  src={`/photos/glass-${backdrop}.jpg`}
+                  alt={`${bd.zh}/${bd.en} · ${tile.en} 滤镜示例 filtered sample`}
+                  width={bd.w}
+                  height={bd.h}
+                />
+                <figcaption>
+                  <span>{tile.zh} {tile.en}</span>
+                  <code>
+                    {tile.fn
+                      ? tile.id === "combo"
+                        ? /* 组合瓦片 = 链序四参数实时值(FIXME 历史:此前查 store.param("combo")
+                             抛 Unknown param 使整个 demo 岛屿水合即崩,舞台全空) */
+                          PARAM_ORDER.map(fmt).join("+")
+                        : fmt(tile.id === "hue" ? "hue-rotate" : tile.id)
+                      : "—"}
+                  </code>
+                </figcaption>
+              </figure>
+            );
+          })}
         </div>
       </div>
       <style>{css}</style>

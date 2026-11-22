@@ -1,0 +1,77 @@
+## 结构与 DOM
+
+命令面板 = 一个居中浮层(遮罩 + 玻璃面板)里的 **combobox + listbox 组合**,语义完全按 WAI-ARIA APG「Combobox with Listbox Popup」模式(2026-11-23 实抓核验)落位:输入框声明 `role="combobox"`,结果列表声明 `role="listbox"`,每一行是 `role="option"`;**焦点恒留在输入框**,漫游选中用 `aria-activedescendant` 指向当前项,读屏据此播报——这是 APG 对「输入框 + 弹层列表」的标准处方,比把焦点搬进列表的写法对读屏更友好。
+
+```html
+<div class="cmdk-overlay"><!-- 遮罩:点击关闭 -->
+  <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="命令面板">
+    <div class="cmdk-head">
+      <input id="cmdk-input" role="combobox" type="text"
+             aria-expanded="true" aria-haspopup="listbox"
+             aria-controls="cmdk-listbox" aria-autocomplete="list"
+             aria-activedescendant="cmdk-opt-2" />
+    </div>
+    <ul id="cmdk-listbox" role="listbox" aria-label="条目结果">
+      <li id="cmdk-opt-0" role="option" aria-selected="false">玻璃拟态</li>
+      <li id="cmdk-opt-2" role="option" aria-selected="true">命令面板</li>
+    </ul>
+    <div class="cmdk-foot"><!-- ↑↓ 选择 · Enter 打开 · Esc 关闭 + 计数 --></div>
+  </div>
+</div>
+```
+
+关键点:
+
+- `aria-expanded="true"` + `aria-controls` + `aria-autocomplete="list"` 三件套声明「弹层常开、内容由输入驱动」;无结果时 `aria-activedescendant` 置空;
+- 外层 `role="dialog" + aria-modal="true"` 承载 focus trap(本站实现:面板内唯一 tab 停靠点是输入框,Tab/Shift+Tab 被拦下)与 Esc 关闭;开面板前记住 `document.activeElement`,关闭时把焦点**归还唤起者**(页头搜索钮);
+- 开面板锁 body 滚动(`overflow: hidden` + 补偿滚动条宽度防布局跳动);
+- 页头触发钮用 `aria-keyshortcuts="Control+K Meta+K"` 声明快捷键,kbd 徽标本身 `aria-hidden`(纯视觉);`data-palette-open` 属性交给面板岛做事件委托,SSR 按钮无需内联 JS。
+
+## 样式与参数
+
+面板材质直接复用本站 §2.8 材质层的 **mat-regular 档**(`.material` 工具类:`backdrop-filter: blur(20px) saturate(180%)` + 叠色 tint + 顶缘内高光 + separator α 细边 + `--shadow-1`),页面遮罩取 `--bg` 的 `color-mix`(55% 不透明,与 v2.1 `--glass-bg` 同一派生处方),层级 `--z-modal`;入场 `--dur-overlay-in × --ease-decel`(只动 opacity/transform,backdrop-filter 静态不参与过渡,§2.8 红线);无结果空态与页脚提示用 `--text-faint`,当前项高亮用 `--fill-2`(选中底语义档)。
+
+```css
+.cmdk-overlay {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: clamp(32px, 14vh, 160px) 16px 24px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); /* 同 hue 遮罩 */
+}
+.cmdk-panel { width: min(640px, 100%); max-height: min(62vh, 560px);
+  display: flex; flex-direction: column; overflow: hidden; }
+.cmdk-panel.material {
+  background: var(--mat-regular-tint);            /* 叠色 tint(深 .8 / 浅 .8) */
+  backdrop-filter: blur(var(--mat-regular-blur)) saturate(var(--mat-saturate));
+  border: 1px solid var(--mat-hairline);          /* separator α hairline */
+  box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--shadow-1);
+}
+.cmdk-opt[aria-selected="true"] { background: var(--fill-2); color: var(--text); }
+```
+
+三个参数(全部 JS 型,demo 订阅):`matchMode` 切子序列/前缀匹配;`maxResults`(5-20)裁剪同屏结果数,列表内部滚动;`hotkeyDisplay` 切 kbd 徽标文案——**只是展示档**,实际监听同时收 Ctrl+K 与 Cmd+K,徽标按 `navigator.platform` 探测(Mac=⌘K)在客户端填充,不在 SSR 预判平台(会与水合结果不一致)。模糊匹配是自写的零依赖子序列算法:query 逐字符按序命中目标即命中,词首命中 +3、连击逐次 +1、残余更短微加权;每条目取「本语种名 / 另一语种名 / 全部别名」各字段最高分,评分排序后截前 N 条。
+
+## 动效与交互
+
+- **唤起**:Ctrl+K / Cmd+K(preventDefault 压掉浏览器同键语义)或点页头搜索钮;`⌘K` 徽标水合后才出现;
+- **键盘**:↑↓ 循环漫游、Home/End 到首尾、Enter 跳转选中条目页、Esc 关闭并归还焦点;鼠标 move 即置选中(选中随焦点),触屏点击与 Enter 等价;
+- **入场**:遮罩淡入 + 面板 `translateY(-8px→0)` 淡入下落,300ms `--ease-decel`(= `--dur-overlay-in` 预锁 token 的首次启用);`prefers-reduced-motion` 时 animation 直接免除,终态直出;
+- **关闭**:Esc / 点遮罩 / 再按一次 Ctrl+K;关闭即解锁 body 滚动并还原内边距补偿;
+- **跳转**:本站是 MPA(无 ClientRouter),Enter 直接 `location.assign` 到条目页——键盘用户从「按快捷键」到「落在目标页」只隔两次击键。
+
+## 真实产品案例
+
+- **VS Code**:命令面板(`Ctrl+Shift+P` / `Cmd+Shift+P`)与快速打开(`Ctrl+P` / `Cmd+P`)是这套交互的原型级范本——子序列模糊匹配(`gte` 能搜到 `gotoEditor`),列表带「最近使用」加权,当前项高亮 + `aria-activedescendant` 语义完整,Esc 逐层退出;
+- **Linear**:`Cmd+K` 面板把 issue、视图、项目与动作统一进一个可搜索列表,子序列匹配 + 分组结果(跳转类 / 动作类),选中动作后面板即关、上下文不丢——「面板即全局命令行」的产品化标杆;
+- **Raycast**:默认快捷键(可改为 `Cmd+K` 类单键)唤起,即输即搜,扩展命令与系统动作同列表混排;其窗口本身就是一层材质浮层(模糊 + 叠色 + 细边),与本站 §2.8 mat-regular 档的参数化配方同一思路;
+- **本站(吃狗粮)**:页头搜索钮 + 全站 Ctrl+K 即本条目组件本体——186+ 条目的 name/nameZh/别名/分类/星级在构建时注入索引,本条目 demo 亦直接内嵌同一 `PalettePanel` 组件(inline 变体)。
+
+## 参数敏感度
+
+| 参数 | 切到这一侧会… | 切到另一侧会… |
+| --- | --- | --- |
+| `matchMode` | prefix:只认词首,误报更少、列表更「准」;但「gsm」搜不到 Glassmorphism,对记不全名字的用户召回率明显下降 | subsequence:乱序缩写也能命中(现代命令面板主流口径);代价是短 query(如「o」)命中面变大,评分排序承担分辨力 |
+| `maxResults` | 5:列表短、扫视快,但正确答案容易落选——只能靠继续键入把答案顶进前 5 | 20:一次给足候选,键入负担小;扫视成本与列表高度上升(Hick 定律,调研 07§23),列表需内部滚动兜底 |
+| `hotkeyDisplay` | ctrl-k:Windows/Linux 用户看到的徽标与其肌肉记忆一致 | cmd-k:macOS 用户看到 ⌘K;生产实现应按平台探测切换徽标,而监听恒收两个键 |
+
+经验区间:同屏结果 8-12 条;面板宽 560-640px、高 ≤62vh;遮罩 50-60% 叠色;匹配响应应同步(本地索引在 10 万条以内时同步匹配即可,不必防抖)。

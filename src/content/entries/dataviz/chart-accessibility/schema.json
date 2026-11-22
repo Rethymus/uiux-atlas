@@ -1,0 +1,103 @@
+{
+  "name": "Chart Accessibility",
+  "nameZh": "图表无障碍",
+  "aliases": ["Complex Images", "Chart alt text", "Data sonification", "aria.decal"],
+  "category": "dataviz",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "复杂图像的「两段式替代文本」:短 alt/svg aria-label 写类型+概要,页面内长描述给趋势/比例尺/颜色顺序;载体首选 figure role=group + figcaption(对所有人可见),aria-describedby 只喂纯文本;再叠直标与贴花纹理两个非色通道。",
+    "en": "Two-tier alternative text for complex images: a short alt/svg aria-label naming type + summary, an in-page long description carrying trends/scale/color order; the carrier of choice is figure role=group + figcaption (visible to everyone), while aria-describedby takes plain text only — plus two non-color channels: direct labels and decal patterns."
+  },
+  "origin": {
+    "zh": "W3C WAI 复杂图像教程(补研 12§13 抓取已核):alt 写「图表类型+内容概要」、长描述给趋势结论/比例尺/颜色顺序/相对高度、首选 figure role=group + figcaption、aria-describedby 仅适合纯文本(结构化表格会被读成连续段落)、正文先一句话概括;ECharts v5.5.1 aria.ts 源码核验(调研 08§3.4):aria.label.enabled 默认 true(自动图形摘要)、aria.decal.show 默认 false(贴花纹理须显式开启,参数见 util/decal.ts);「图上直标优于远处对色图例」原话出自 jfly CUD 页(08§1.1 已核)。",
+    "en": "The W3C WAI complex-images tutorial (supplement 12 §13, fetched and verified): alt names \"chart type + content summary\", the long description carries trend conclusions/scale/color order/relative heights, figure role=group + figcaption is preferred, aria-describedby takes plain text only (structured tables get read as run-on paragraphs), and body text leads with a one-sentence summary; ECharts v5.5.1 aria.ts source-verified (research 08 §3.4): aria.label.enabled defaults true (auto graphic summary), aria.decal.show defaults false (decals need explicit enabling, params in util/decal.ts); \"on-graph labels beat remote color keys\" is jfly's CUD page verbatim (08 §1.1 verified)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "decal",
+      "options": [
+        { "value": "off", "label": { "zh": "关闭(官方默认)", "en": "Off (official default)" } },
+        { "value": "on", "label": { "zh": "贴花纹理", "en": "Decal pattern" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后叠加纹理)。柱面叠加斜线贴花 = 色相之外的第二视觉编码。ECharts aria.decal.show 官方默认 false(aria.ts 逐字核验)——贴花是色盲安全的最后兜底,但库默认关着,必须显式开启;ECharts 的 decal 由 util/decal.ts 定义(dashArrayX/dashArrayY/rotation 等参数,demo 用 SVG pattern 等效示意)。",
+        "en": "JS-type param (the demo subscribes and overlays a pattern). A diagonal decal on bars = a second visual channel beyond hue. ECharts' aria.decal.show officially defaults to false (aria.ts verified verbatim) — decals are the colorblind safety net of last resort, and the library ships them off: you must turn them on; ECharts decals are defined in util/decal.ts (dashArrayX/dashArrayY/rotation etc., the demo uses an equivalent SVG pattern)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "directLabel",
+      "options": [
+        { "value": "on", "label": { "zh": "直标数值(默认)", "en": "Direct labels (default)" } },
+        { "value": "off", "label": { "zh": "仅靠轴刻度", "en": "Axis ticks only" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数。每根柱顶直标数值。jfly 原话:「在图上直标,而不是做远处对色的图例,远距离同色匹配极难」(08§1.1 页面已核)——直标同时服务低视力、色盲与读屏路径;关闭后退化为「仅轴刻度」,读值精度受损。",
+        "en": "JS-type param. Every bar carries its value on top. jfly verbatim: \"label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult\" (08 §1.1 page verified) — direct labels serve low-vision, colorblind and screen-reader paths at once; switching off degrades to axis ticks only, hurting read precision."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "longDesc",
+      "options": [
+        { "value": "table", "label": { "zh": "数据表(figcaption)", "en": "Data table (figcaption)" } },
+        { "value": "text", "label": { "zh": "文字描述(figcaption)", "en": "Text description (figcaption)" } }
+      ],
+      "default": "table",
+      "effect": {
+        "zh": "JS 型参数(经 ARIA tablist 切换,参数面板与 demo 双向同步)。长描述载体对照:WAI 教程首选 figure role=group + figcaption——长描述对所有人可见,惠及低视力与学习障碍用户;aria-describedby 只适合喂纯文本,结构化表格挂上去会被读屏读成连续段落(WAI 原文)。两档都要写齐 WAI 清单:趋势结论/比例尺/颜色顺序/相对高度。",
+        "en": "JS-type param (switched via an ARIA tablist; the panel and demo stay in sync). The long-description carrier contrast: the WAI tutorial prefers figure role=group + figcaption — the description stays visible to everyone, benefiting low-vision and learning-disabled users; aria-describedby suits plain text only, and structured tables hung on it get read as run-on paragraphs (WAI verbatim). Both tiers must carry the WAI checklist: trend conclusions/scale/color order/relative heights."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "SVG title/desc、ARIA role/aria-selected/aria-live 与 figure/figcaption 均为成熟特性,全现代浏览器可用;WebAudio(demo 的 sonification 示意)广泛可用,但 AudioContext 须在用户手势后创建(自动播放策略;各浏览器策略细节本轮未逐项核验)。",
+      "en": "SVG title/desc, ARIA role/aria-selected/aria-live and figure/figcaption are mature features available in all modern browsers; WebAudio (the demo's sonification sketch) is widely available, but AudioContext must be created after a user gesture (autoplay policies; per-browser policy details not audited this round)."
+    }
+  },
+  "fallback": {
+    "zh": "读屏不支持 SVG title/desc 时,figcaption 长描述仍然可见(不依赖任何 ARIA 支持);数据表是图表的天然回退——图表挂了、CSS 塌了、读屏环境里,表格都能独立传达全部数值;decal 依赖 SVG pattern,极老环境回退为纯色柱(此时直标数值成为唯一非色通道,保持 directLabel 开启)。",
+    "en": "If a screen reader lacks SVG title/desc support, the figcaption long description remains visible (no ARIA dependency); the data table is the chart's natural fallback — through broken charts, collapsed CSS and screen-reader contexts, the table still conveys every value on its own; decals rely on SVG pattern and fall back to solid bars on very old environments (keep directLabel on there, as labels become the only non-color channel)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "任何承载结论的统计图——alt 一句话 + 页面内长描述两段式,读屏与低视力都拿得到结论", "en": "Any chart carrying a conclusion — the two-tier alt + in-page long description so screen-reader and low-vision users get the takeaway" },
+      { "zh": "多系列分类图——开贴花纹理(ECharts aria.decal,默认 false 须显式开)+ 直标,色相不再是唯一编码", "en": "Multi-series categorical charts — enable decals (ECharts aria.decal, default false, must be turned on) + direct labels so hue is never the only encoding" },
+      { "zh": "合规/审计场景——figcaption 数据表让数值可复制、可校对,对所有人可见", "en": "Compliance/audit contexts — a figcaption data table keeps values copyable and checkable, visible to everyone" },
+      { "zh": "盲用数据探索的增强通道——sonification(数值映射音高)作为触觉/听觉补充,demo 内置自研示意", "en": "An enhanced channel for blind data exploration — sonification (values mapped to pitch) as an auditory supplement, sketched in the demo" }
+    ],
+    "avoid": [
+      { "zh": "alt 只写「图表」或「柱状图」——WAI 要求写明类型+内容概要,空 alt 等于放弃", "en": "alt that only says \"chart\" or \"bar chart\" — WAI requires type + content summary; an empty alt is a forfeit" },
+      { "zh": "结构化数据表挂 aria-describedby——读屏会把它读成连续段落(WAI 原文),表格请放 figcaption", "en": "Hanging a structured table on aria-describedby — screen readers read it as a run-on paragraph (WAI verbatim); put tables in figcaption instead" },
+      { "zh": "只换颜色区分系列而不给第二通道——色盲用户(NEI 口径约 1/12 男性)直接丢失系列信息", "en": "Distinguishing series by color alone with no second channel — colorblind users (NEI: about 1 in 12 men) lose the series entirely" },
+      { "zh": "把长描述藏进 tooltip/折叠面板——WAI 首选它对所有人可见,藏起来就只剩读屏一条窄路", "en": "Hiding the long description in a tooltip/collapsed panel — WAI prefers it visible to everyone; hiding it leaves screen readers as the only narrow path" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目即无障碍本体:svg role=\"img\" + aria-label(类型+概要)+ title/desc 兜底;长描述用 figure role=group + figcaption 承载,写齐趋势/比例尺/颜色顺序/相对高度;tablist 遵循 roving tabindex(方向键切换);sonification 状态经 aria-live 播报;交互 tooltip 须同时满足 WCAG 2.1 SC 1.4.13 三件套(Esc 可关/可悬停/常驻,W3C 理解页已核,详见图例与提示条目)。",
+    "en": "This entry is accessibility itself: svg role=\"img\" + aria-label (type + summary) with title/desc as backstop; the long description rides figure role=group + figcaption with trend/scale/color-order/relative-heights filled in; the tablist follows roving tabindex (arrow keys); sonification status announces via aria-live; interactive tooltips must also meet the WCAG 2.1 SC 1.4.13 trio (Esc-dismissible/hoverable/persistent, W3C understanding page verified — see the Tooltip & Legend entry)."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/tutorials/images/complex/",
+    "https://raw.githubusercontent.com/apache/echarts/5.5.1/src/visual/aria.ts",
+    "https://jfly.uni-koeln.de/color/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一张带完整无障碍配套的 SVG 柱状图:svg role=img + aria-label(类型+概要)+ title/desc;figure role=group + figcaption 承载可切换的长描述(数据表/文字描述,tablist 切换);柱顶直标数值;可选贴花纹理作第二视觉编码;附自研 sonification 示意(数值→音高)。",
+      "en": "Implement an SVG bar chart with the full accessibility kit: svg role=img + aria-label (type + summary) + title/desc; figure role=group + figcaption carrying a switchable long description (data table / text description via tablist); direct value labels on bars; an optional decal pattern as a second visual channel; plus an original sonification sketch (values → pitch)."
+    },
+    "acceptance": [
+      { "zh": "alt/svg aria-label 写明图表类型+内容概要(WAI 格式),不是空 alt 或「图表」二字", "en": "alt/svg aria-label names chart type + content summary (WAI format) — never an empty alt or the bare word \"chart\"" },
+      { "zh": "长描述放 figcaption(figure role=group)且对所有人可见;aria-describedby 只用于纯文本描述", "en": "The long description sits in figcaption (figure role=group) visible to everyone; aria-describedby is reserved for plain text" },
+      { "zh": "长描述写齐 WAI 清单:趋势结论、比例尺、颜色顺序、相对高度", "en": "The long description carries the full WAI checklist: trend conclusion, scale, color order, relative heights" },
+      { "zh": "贴花纹理默认关闭(ECharts aria.decal.show 默认 false 逐字),开启后色相之外有第二视觉编码;柱顶直标数值(jfly 原则)", "en": "Decals default off (ECharts aria.decal.show default false, verbatim); when on, a second visual channel exists beyond hue; bars carry direct value labels (jfly principle)" },
+      { "zh": "tablist 用方向键漫游;sonification 为自研示意并在文案中注明产品级实现未经本轮调研核验", "en": "The tablist roves with arrow keys; sonification is an original sketch, with copy noting product-level implementations were not verified this round" }
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+## Structure & DOM
+
+The cascader is a two-layer "trigger + multi-column popup" structure inside one relatively positioned container; picking a parent immediately rebuilds the next column:
+
+```html
+<div class="cs-wrap">
+  <button type="button" class="cs-trigger" role="combobox"
+          aria-haspopup="listbox" aria-expanded="true" aria-controls="cs-popup">
+    Guangdong / Shenzhen / Nanshan <span class="arrow" aria-hidden="true">▾</span>
+  </button>
+  <div class="cs-popup" id="cs-popup" role="listbox">
+    <ul class="cs-col" role="group" aria-label="Level 1">
+      <li class="cs-opt" role="option" aria-selected="true" aria-label="Guangdong">Guangdong ▸</li>
+      <li class="cs-opt" role="option" aria-selected="false" aria-label="Shanghai">Shanghai ▸</li>
+    </ul>
+    <ul class="cs-col" role="group" aria-label="Level 2">
+      <li class="cs-opt" role="option" aria-label="Guangdong / Shenzhen">Shenzhen ▸</li>
+    </ul>
+    <ul class="cs-col" role="group" aria-label="Level 3">
+      <li class="cs-opt" role="option" aria-label="Guangdong / Shenzhen / Nanshan">Nanshan</li>
+    </ul>
+  </div>
+</div>
+```
+
+Key points:
+
+- The trigger is a **native button** (Tab and Enter/Space for free); the combobox role reports popup state through `aria-expanded` / `aria-activedescendant` (APG classifies "an input with an associated popup" as the combobox pattern, research 07 §5);
+- Each option's `aria-label` carries the **full path** ("Guangdong / Shenzhen") — screen-reader users hear which level they're on without column context;
+- The multi-column popup stays out of the Tab sequence and focus remains on the trigger (APG: popups and their descendants are excluded from the page Tab order, research 07 §5);
+- Multiple mode prepends a check mark to each item and echoes picks as tags; a tag's × is an independent button.
+
+## Styling & Parameters
+
+All three parameters are JS-type (store-subscribed, driving behavior); the visual values share the Select family's tokens:
+
+```css
+.cs-trigger { border: 1px solid #d9d9d9; border-radius: 6px; min-height: 32px;
+              color: rgba(0, 0, 0, 0.88); font-size: 14px; }
+.cs-placeholder { color: rgba(0, 0, 0, 0.25); }        /* colorTextQuaternary */
+.cs-popup { background: #fff; border-radius: 6px;
+            box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12),
+                        0 9px 28px 8px rgba(0,0,0,0.05); }   /* antd overlay shadow */
+.cs-col  { max-height: 256px; overflow: auto; border-left: 1px solid #f0f0f0; }
+.cs-opt:hover, .cs-opt.is-active { background: rgba(0, 0, 0, 0.04); } /* FillTertiary */
+.cs-opt[aria-selected="true"] { color: #1677ff; font-weight: 500; }
+.cs-box[data-checked="true"] { background: #1677ff; border-color: #1677ff; color: #fff; }
+```
+
+Where the numbers come from:
+
+- Control height 32, radius 6, font 14 = antd controlHeight / borderRadius / fontSize defaults (design study 06 §2.2/§2.3②③); placeholder rgba(0,0,0,0.25) = TextQuaternary, hover fill rgba(0,0,0,0.04) = FillTertiary (06 §2.3⑤);
+- The overlay shadow is antd's floating-layer boxShadow verbatim; the column divider #f0f0f0 = colorBorderSecondary (06 §2.3⑥⑤); selected text #1677ff = colorPrimary, step 6 of the blue palette (06 §1.2/§2.2);
+- Per-column max-height 256px aligns with antd Select's listHeight default (06 §4.6) — the Cascader docs don't list this value separately; it's borrowed from the same family as a teaching baseline;
+- `expandTrigger` values click|hover, `changeOnSelect` default false and `multiple` semantics come from antd Cascader's current docs (supplementary study 12 §15); the official defaults of `expandTrigger`/`multiple` are unrecorded — the demo's click/off defaults are community-common values, unverified.
+
+## Motion & Interaction
+
+- **Expand**: the popup fades in with a 4px rise over 0.2s (antd motionDurationMid + motionEaseInOut, 06 §3.1/3.2); a new column slides in 4px from the left; everything appears instantly under `prefers-reduced-motion`;
+- **Hover expansion**: with `expandTrigger=hover` hovering a parent pushes in the next column (antd expandTrigger semantics, 12 §15); hover means nothing on touch, so keep the click path;
+- **Full keyboard path**: Down/Up moves the highlight within a column, Right/Enter drills into children (committing when the node is a leaf, or any node when `changeOnSelect=on`), Left collapses a column, Esc closes and restores the pre-open value (combobox "explore without losing the selection", research 07 §5), Tab dismisses;
+- **changeOnSelect=off** requires a leaf to fill the trigger — clicking a parent only drills; when on, picking any level completes the selection and closes (antd changeOnSelect semantics, 12 §15);
+- **Multiple**: Space toggles the highlighted check (WebAIM: checkbox Space, research 07 §36); a tag's × unchecks instantly;
+- **Click outside closes**: a document-level pointerdown listener dismisses when the target leaves the container.
+
+## Real-world examples
+
+- **E-commerce shipping addresses**: checkout pages pick province/city/district (sometimes down to subdistrict) level by level; choosing a province loads its cities — the user never memorizes administrative codes, and the echoed path "Guangdong / Shenzhen / Nanshan" doubles as an address preview;
+- **City → business-district filters in local-life apps** (Meituan/Dianping style): pick a city, then a district; the two columns compress thousands of nationwide neighborhoods into a scannable ~10 items per column;
+- **Back-office category assignment**: content/commerce consoles attach a category (L1 → L2 → L3) to articles or SKUs; the cascader turns tree data into a linear path and saves space over expanding the whole tree (editorial generalization: a common way to consume tree data in narrow containers).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `expandTrigger` | hover makes "glance and drill" faster but multiplies accidental drills, and is inert on touch | click makes every step an explicit intent — fewer mistakes, one extra click per level |
+| `changeOnSelect` | on allows "rough is fine" picks (province only), speeding forms through | off forces a leaf for data consistency but strands users who only wanted a province |
+| `multiple` | on grows a tag strip; the placeholder yields to "N selected" | off keeps a single crisp path — the canonical cascader form |
+
+Working ranges: 5–15 visible options per level feels best; at ≥4 levels or when levels need search, consider a tree picker or a searchable combobox (lazy `loadData` cannot combine with `showSearch`, 12 §15); always echo the full path in the trigger, never just the leaf name.

@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+小倍数(small multiples)是「同标度、同轴的相似小图并排」:每个面板只讲一个系列,跨面板对比之所以成立,靠的是**全部面板共用同一把尺**。又称 trellis / lattice / grid / panel chart;由 Edward Tufte 推广——《Envisioning Information》(1990, p.67):「定量推理的核心是一句话:和什么比?」
+
+```html
+<div class="multiples"> <!-- display:grid; gap: var(--sm-gap) -->
+  <svg role="img" aria-label="华东:1-12月指数,标度 0-100">…一条折线…</svg>
+  <svg role="img" aria-label="华南:1-12月指数,标度 0-100">…</svg>
+  <svg role="img" aria-label="华北:1-12月指数,标度 0-100">…</svg>
+  <svg role="img" aria-label="西部:1-12月指数,标度 0-100">…</svg>
+</div>
+```
+
+关键点:
+
+- **同标度是定义性要求**:四个面板共用同一 y 域(本条 demo 为 0–100),线高/柱高才能跨面板直接读大小;
+- 小面板只留**基线 + 上限刻度 + 直标**,不搬整排网格与图例(参考层纪律见坐标轴与网格条目);面板标题直接写系列名与最新值——jfly 原话:「在图上直标,而不是做远处对色的图例,远距离同色匹配极难」;
+- 地图场景的研究结论(Wikipedia 条目载):**动画胜在呈现趋势与运动,小倍数胜在时间点之间的对比**——两种形态是分工而非替代;
+- 反面教材是**双轴混杂**:把多系列塞进一张图、两组各配一根轴,每个系列被自己的轴拉伸,交叉点不再构成任何比较。
+
+## 样式与参数
+
+三个参数,默认值逐字可查:
+
+| 参数 | 类型 | 默认值 | 出处(逐字核验) |
+| --- | --- | --- | --- |
+| `layout` | JS 型 | **multiples** | 小倍数定义形态(Wikipedia 条目;Tufte 1990) |
+| `scaleMode` | JS 型 | **shared** | 同标度 = 定义性要求;independent 为 Wikipedia 记载的「强调相对变化」变体 |
+| `panelGap` | CSS 变量 `--sm-gap` | **8px** | Grafana `GRID_CELL_VMARGIN = 8`(`public/app/core/constants.ts`) |
+
+配套常量(Grafana 同文件源码核验):网格 `GRID_COLUMN_COUNT = 24` 列、行高单元 `GRID_CELL_HEIGHT = 30`、最小面板高 `MIN_PANEL_HEIGHT = 90`(3 格)——仪表盘面板阵列就是小倍数的工程化落地。demo 面板内参考线写死 9% 透明度,与坐标轴条目的 Grafana 公式同源(`getGridColor()`:暗 `rgba(240,250,255,.09)` / 亮 `rgba(0,10,23,.09)`);系列色取 Okabe-Ito 固化 hex(#0072B2 / #E69F00 / #009E73 / #D55E00,R grDevices 固化值,调研 08§1.1)。
+
+```css
+.multiples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sm-gap, 8px);          /* 面板间距:Grafana GRID_CELL_VMARGIN */
+}
+.multiples svg { color: var(--text); }  /* 参考线 stroke: currentColor + opacity .09 */
+```
+
+## 动效与交互
+
+小倍数是**静态阵列**,动效需求天然少:
+
+- 切换 `layout` / `scaleMode`:面板即时重算重绘,无过渡——标度变化若做动画,读者会把「尺子在动」误读为「数据在动」(与坐标轴条目同一纪律);
+- `panelGap` 走 CSS 变量,滑杆拖动即时生效、零 JS 重排;
+- hover 数据点显示原生 `<title>`(系列 · 月份 · 值);面板切换仅保留 0.2s 的 opacity 微过渡,`prefers-reduced-motion` 时取消;
+- 若确需按时间播放各面板(时间切片动画),地图研究结论提醒:动画表达「运动/趋势」,逐时间点的精确对比仍交还给并排面板。
+
+## 真实产品案例
+
+- **Wikipedia「Small multiple」条目**:小倍数的定义、trellis/lattice/grid/panel chart 别名、「刻意不同标度强调相对变化」的独立标度变体,以及地图场景「动画胜趋势/运动、小倍数胜时间点对比」的研究结论(补研 12§13 页面已核)——独立标度变体成立的前提是逐面板标注刻度上限。
+- **Grafana 仪表盘网格**:`public/app/core/constants.ts` 写死 `GRID_COLUMN_COUNT = 24`、`GRID_CELL_HEIGHT = 30`、`GRID_CELL_VMARGIN = 8`、`MIN_PANEL_HEIGHT = 90`(08§4.1 源码核验)——面板阵列的间距/最小尺寸有源码级默认值,官方文档只给档位名不给像素(已核),照抄源码常量即可。
+- **jfly / Okabe-Ito CUD 指南**:「图上直标优于远处对色图例」原文(08§1.1 页面已核)——小面板没有图例的生存空间,系列名+最新值直标在面板标题上是该原则的直接落地。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `layout` | dual-axis 模式让华北(0–70 轴)与华东(0–100 轴)的线互相穿插,视觉上「华北更高」纯属右轴拉伸——交叉点无意义 | multiples 保持四面板一把尺;面板继续增多时行列数随之增加,单面板尺寸变小 |
+| `scaleMode` | independent 把每个系列各自顶满面板:形状差异被放大(Wikipedia 变体的用途),但跨面板量级比较失效且必须逐面板标上限 | shared 恢复「线高即大小」;代价是低幅系列(西部 22–47)在线高上显得平淡 |
+| `panelGap` | 超过 24px 阵列散架,面板之间留白吃掉数据面积;栅格感消失 | 低于 4px 相邻面板开始粘连,可能被读成一个整体;0px 无分组感 |
+
+经验区间:面板间距 8–16px(Grafana 8px 居下限)、每面板 1 条线 1 个直标、同标度是默认,独立标度必须带刻度上限注记;「双轴混杂」在任何单位相同的场景都不应作为替代方案。

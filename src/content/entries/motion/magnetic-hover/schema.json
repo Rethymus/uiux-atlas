@@ -1,0 +1,99 @@
+{
+  "name": "Magnetic Hover",
+  "nameZh": "磁吸交互",
+  "aliases": ["磁吸交互", "磁吸按钮", "Magnetic button", "Magnetic hover", "Cursor magnetism"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "指针进入吸引半径后,按钮被「吸」向指针按比例偏移,离开即回位;逐帧用 lerp 线性插值逼近目标,触屏与 prefers-reduced-motion 下直出普通 hover。",
+    "en": "Inside the attraction radius the button is pulled toward the pointer proportionally and snaps back on exit; each frame lerps toward the target, while touch and prefers-reduced-motion get the plain hover."
+  },
+  "origin": {
+    "zh": "磁吸模式 = 距离判定(dist 阈值)+ lerp 逐帧插值 + rAF 循环,GSAP 官方把「鼠标跟随与磁吸按钮」列为 quickTo(3.10.0+)的示例场景(补研 12§5);Codrops 磁吸教程 URL 因搜索结果污染未能核验,调研明确以 GSAP 文档与标准 lerp 数学为准(补研 12§5 未证实记录)。",
+    "en": "The magnetic pattern = distance test (a dist radius) + per-frame lerp + an rAF loop; GSAP officially lists \"mouse followers and magnetic buttons\" as the quickTo (3.10.0+) showcase (12 §5); the Codrops tutorial URL could not be verified due to polluted search results, so the research grounds the pattern on GSAP docs and standard lerp math (12 §5, unverified note)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "radius",
+      "min": 0.1,
+      "max": 0.8,
+      "step": 0.05,
+      "default": 0.45,
+      "effect": {
+        "zh": "吸引强度系数(JS 型,demo 订阅驱动):偏移 = 指针偏移 × radius,即按钮最多走到指针偏移的 45%。默认 0.45 取补研 12§5 实现片段默认值;判定半径常用「盒边界内缩/外扩 25%~50%」的带宽(补研 12§5),该区间为社区常见值。",
+        "en": "Attraction strength (JS-type, demo-subscribed): offset = pointer offset × radius, so the button travels at most 45% of the pointer's offset. Default 0.45 is the snippet default in 12 §5; the catch band of \"inset/expand the box by 25%–50%\" is also from 12 §5 — a common community range."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lerp",
+      "min": 0.02,
+      "max": 0.5,
+      "step": 0.01,
+      "default": 0.15,
+      "effect": {
+        "zh": "逐帧插值系数(JS 型):每帧 current += (target − current) × lerp,即 lerp(a,b,n) 的加权逼近。默认 0.15 取补研 12§5 片段默认;该页记载常用区间 0.05~0.2——越大跟手越硬,越小越「稠」。",
+        "en": "Per-frame lerp factor (JS-type): current += (target − current) × lerp each frame — the lerp(a,b,n) weighted approach. Default 0.15 is the snippet default in 12 §5; that page records 0.05–0.2 as the common band — higher feels snappier, lower feels denser."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "magnet", "label": { "zh": "磁吸", "en": "Magnet" } },
+        { "value": "plain", "label": { "zh": "普通 hover(降级形态)", "en": "Plain hover (degraded)" } }
+      ],
+      "default": "magnet",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后开关磁吸循环):plain 直出降级后的形态——即 (hover: none) 触屏与 prefers-reduced-motion 用户实际看到的普通按钮(补研 12§5 的降级纪律:大位移缩放/平移是前庭障碍典型触发源,应换成温和溶解或直接关闭磁吸)。",
+        "en": "JS-type param (the demo subscribes and toggles the magnet loop): plain renders the degraded form — the plain button that (hover: none) touch and prefers-reduced-motion users actually see (12 §5's degradation rule: large displacement scale/pan is a classic vestibular trigger; replace with a gentle fade or switch magnetism off)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实现只依赖 Pointer 事件、rAF 与 getBoundingClientRect,全浏览器可用;prefers-reduced-motion Baseline 自 2020-01 广泛可用(补研 12§5);@media (hover: none) 用于触屏判定。GSAP quickTo 需 GSAP 3.10.0+(补研 12§5);demo 为零依赖手写 lerp 版,无此门槛。",
+      "en": "The implementation needs only pointer events, rAF and getBoundingClientRect — available everywhere; prefers-reduced-motion is Baseline widely available since 2020-01 (12 §5); @media (hover: none) detects touch. GSAP quickTo requires GSAP 3.10.0+ (12 §5); the demo is the dependency-free hand-rolled lerp version with no such floor."
+    },
+    "baseline": "Widely available"
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 或 (hover: none)(触屏无 hover 语义)时整体关闭磁吸——按钮直出普通 hover/按压态,位移归零;CSS 侧再挂 @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } 双保险(补研 12§5);键盘聚焦永远走 focus-visible 描边,不产生位移。",
+    "en": "Under prefers-reduced-motion: reduce or (hover: none) (touch has no hover semantics), magnetism switches off entirely — the button falls back to plain hover/pressed states with zero displacement; the CSS adds the @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } belt-and-suspenders (12 §5); keyboard focus always uses the focus-visible outline and never moves the button."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "营销落地页的主 CTA——磁吸把「可点」预告给指针,GGSAP 官方示例场景即磁吸按钮(补研 12§5)", "en": "Primary CTAs on marketing pages — magnetism advertises clickability; GSAP's own showcase scenario is the magnetic button (12 §5)" },
+      { "zh": "桌面端小面积圆形控件(图标按钮、播放键)——吸引半径相对控件大,磁感清晰", "en": "Small round desktop controls (icon buttons, play keys) — the attraction radius dominates the control, so the pull reads clearly" },
+      { "zh": "拖拽手柄/悬浮工具球的「预告性位移」,暗示可抓取", "en": "Grab handles / floating tool orbs where the anticipatory pull hints at draggability" }
+    ],
+    "avoid": [
+      { "zh": "触屏端——(hover: none) 下没有 hover 语义,磁吸无法成立,直接降级(补研 12§5)", "en": "Touch screens — under (hover: none) there is no hover semantics; magnetism cannot exist, degrade directly (12 §5)" },
+      { "zh": "prefers-reduced-motion 用户——大位移平移/缩放是前庭障碍的典型触发源,必须直出普通态(补研 12§5)", "en": "prefers-reduced-motion users — large displacement pan/scale is a classic vestibular trigger; the plain state is mandatory (12 §5)" },
+      { "zh": "高频操作按钮(提交、删除)与密集表单区——预判性位移拖慢瞄准,HIG「高频交互避免加动效」", "en": "High-frequency buttons (submit, delete) and dense form areas — the anticipatory pull slows targeting; HIG: avoid motion on frequent interactions" }
+    ]
+  },
+  "a11y": {
+    "zh": "磁吸是纯装饰性预告:按钮的可点性不得只靠位移传达(颜色/描边/文字承担语义);触屏与 reduced-motion 用户直出普通 hover,位移为零;键盘走 focus-visible 描边,不跟随指针;demo 实时显示 (hover: none) 与 prefers-reduced-motion 的检测结果,降级路径可见可验证。",
+    "en": "Magnetism is purely decorative anticipation: clickability must never ride on displacement alone (color/outline/label carry the semantics); touch and reduced-motion users get the plain hover with zero displacement; keyboard uses the focus-visible outline and never follows the pointer; the demo shows live (hover: none) and prefers-reduced-motion detection so the degradation is visible and verifiable."
+  },
+  "sources": [
+    "https://gsap.com/docs/v3/GSAP/gsap.quickTo()",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一颗磁吸按钮:指针进入吸引半径后按钮按 radius 比例被吸向指针,离开半径回位;位移逐帧 lerp 平滑并直写 translate;触屏与 prefers-reduced-motion 下自动降级为普通 hover。",
+      "en": "Replicate a magnetic button: inside the attraction radius the button is pulled toward the pointer proportionally to radius, snapping back on exit; the offset is smoothed per-frame with lerp and written directly to translate; touch and prefers-reduced-motion automatically degrade to plain hover."
+    },
+    "acceptance": [
+      { "zh": "距离判定:reach = max(宽, 高)/2 ÷ (1 − radius),半径内目标 = 指针偏移 × radius,半径外目标归零", "en": "Distance test: reach = max(w,h)/2 ÷ (1 − radius); inside it target = pointer offset × radius, outside it target returns to zero" },
+      { "zh": "逐帧插值 current += (target − current) × lerp(默认 0.15),配 rAF 循环,位移直写 el.style.translate", "en": "Per-frame lerp current += (target − current) × lerp (default 0.15) in an rAF loop, written straight to el.style.translate" },
+      { "zh": "触屏(e.pointerType === touch / (hover: none))与 prefers-reduced-motion 下磁吸整体关闭,直出普通 hover", "en": "Touch (e.pointerType === touch / (hover: none)) and prefers-reduced-motion switch magnetism off entirely, falling back to plain hover" },
+      { "zh": "CSS 挂 @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } 双保险", "en": "CSS carries the @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } belt-and-suspenders" },
+      { "zh": "按钮可键盘聚焦,focus-visible 描边不产生位移;磁吸语义同时由颜色/文字承担", "en": "The button is keyboard-focusable with a focus-visible outline and zero displacement; clickability also rides on color/label" }
+    ]
+  }
+}

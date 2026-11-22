@@ -1,0 +1,86 @@
+{
+  "name": "Goal-Gradient Effect",
+  "nameZh": "目标梯度效应",
+  "aliases": ["目标梯度", "Goal-Gradient"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "越接近目标,奔向目标的行动力越强。给清晰的进度指示、在起点预置「人为进度」,把资源投在收尾冲刺段——离目标越近,每一步的动机越足。",
+    "en": "Effort toward a goal intensifies as the goal gets closer. Give clear progress indicators, pre-seed 'artificial progress' at the start, and invest in the final stretch — the nearer the goal, the stronger each step's pull."
+  },
+  "origin": {
+    "zh": "Clark Hull 1932 年提出假说,1934 年大鼠奔食实验证实「越接近食物跑得越快」;人类证据来自 Kivetz/Urminsky/Zheng 关于购买加速与虚幻进度(artificial progress)的研究(out/design-study/12-expansion.md §14;lawsofux goal-gradient-effect 页)。",
+    "en": "Clark Hull proposed the hypothesis in 1932 and his 1934 food-race rat experiments confirmed it — rats speed up as food nears; the human evidence comes from Kivetz, Urminsky & Zheng on purchase acceleration and artificial progress (out/design-study/12-expansion.md §14; the lawsofux goal-gradient-effect page)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "steps",
+      "unit": "章",
+      "min": 6,
+      "max": 12,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "JS 型参数:集章卡总章数(demo 教学参数,定律本身不规定数值)。默认 10 章是一张典型集章卡的规模;改小会让「收尾冲刺」来得更快,改大则中途动力低谷更明显。",
+        "en": "JS-type param: total stamps on the punch card (demo teaching param; the law itself sets no number). The default 10 matches a typical reward card; shrinking it brings the final sprint sooner, growing it makes the mid-journey motivation dip more visible."
+      }
+    },
+    {
+      "type": "number",
+      "name": "headStart",
+      "unit": "章",
+      "min": 0,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "effect": {
+        "zh": "JS 型参数:起点预盖的「人为进度」(artificial progress)章数。默认 1 取「步骤条/会员卡预盖一枚已完成章」的签名巧思(12 补研 §16-9);调 0 即无预盖对照——对比开局第一下的间隔,就能看到虚幻进度对开局的拉动。",
+        "en": "JS-type param: 'artificial progress' stamps pre-punched at the start. The default 1 comes from the signature trick 'pre-stamp one completed slot on steppers/reward cards' (supplement research 12 §16-9); set 0 for the no-head-start control — comparing the very first interval shows the pull of illusory progress on the opening step."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示全部使用原生 DOM/CSS/JS(div 集章格、button、transition),无新特性依赖,现代浏览器均可运行。",
+      "en": "The demo uses only native DOM/CSS/JS (div stamp slots, buttons, transitions) — no cutting-edge features; any modern browser runs it."
+    }
+  },
+  "fallback": {
+    "zh": "定律的工程出口:进度必须「清晰 + 真实 + 可见收尾」。可降级路径:无 CSS 特性依赖;若业务拿不到真实进度数据,可按 Kivetz 等的「人为进度」思路预置已完成步骤(必须如实验明,不得虚报剩余量);没有进度指示的界面,至少给出「还差几步」的文本。注意 NN/g 分层:>1s 才用指示器,≥10s 必须用 percent-done(调研 07§20)。",
+    "en": "The engineering exit: progress must be 'clear + honest + with a visible finish'. Degradation path: no CSS feature to fall back on; when real progress data is unavailable, pre-seed completed steps per Kivetz et al.'s artificial progress (always disclosed, never misstate what remains); on surfaces with no progress indicator at all, at least state 'N steps left' as text. Mind NN/g's layering: indicators only past 1s, percent-done mandatory past 10s (research 07 §20)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "会员卡/集章/积分体系:起点预盖一枚章(人为进度),收尾阶段集中投放激励", "en": "Loyalty cards, stamp collecting, points systems: pre-stamp one slot (artificial progress) and concentrate rewards on the final stretch" },
+      { "zh": "多步流程(注册/结账/引导):清晰的步骤条 + 百分比,让「还差两步」可见", "en": "Multi-step flows (sign-up/checkout/onboarding): a clear stepper + percentage makes 'two steps left' visible" },
+      { "zh": "加载等待:≥10s 的操作给 percent-done 进度条(NN/g,调研 07§20),进度线本身就是目标梯度的载体", "en": "Waiting: percent-done progress bars for ≥10s operations (NN/g, research 07 §20) — the progress line is itself a goal-gradient carrier" }
+    ],
+    "avoid": [
+      { "zh": "虚报进度:预盖章必须如实标注为「人为进度」,把剩余量谎报为已完成是欺骗(虚幻进度研究的伦理边界)", "en": "Misreporting progress: pre-stamped slots must be disclosed as artificial progress; passing remaining work off as done is deception (the ethical edge of illusory-progress research)" },
+      { "zh": "把进度藏在最后一屏才揭晓——梯度需要「越来越近」的持续感知", "en": "Hiding progress until a final reveal — the gradient needs a continuously felt 'getting closer'" },
+      { "zh": "目标过大且无中间里程碑(如 0→100% 只有一根空进度条):没有近目标,就没有加速", "en": "One huge goal with no milestones (e.g. an empty 0→100% bar): no near goal, no acceleration" }
+    ]
+  },
+  "a11y": {
+    "zh": "进度信息必须双通道:集章格之外,「已集 n/N · 百分比 · 还差 m 章」与每次打卡间隔都以文本呈现并经 aria-live 播报;集章格不靠颜色单独区分(已集格带 ✓ 字符);间隔柱状图有逐柱数值文本;prefers-reduced-motion 下集章动画与进度条过渡全部取消,数值即时更新。",
+    "en": "Progress must be dual-channel: beyond the stamp slots, 'n/N collected · percent · m stamps left' and every punch interval appear as text and are announced via aria-live; stamps are never color-only (collected slots carry a ✓ glyph); each interval bar has its numeric value; under prefers-reduced-motion the stamp animation and bar transitions drop and numbers update instantly."
+  },
+  "sources": [
+    "https://lawsofux.com/goal-gradient-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一张可玩的咖啡集章卡:总章数与起点预盖章数可调;点击「打卡集章」逐格盖章,演示实时记录每次打卡的间隔(距上一章的毫秒数)并画成逐章柱状序列——让用户亲眼看到自己越接近目标点得越快;到达终点给达标庆祝与「再来一轮」。",
+      "en": "Build a playable coffee punch card: adjustable total stamps and pre-punched head start; each 'punch' click fills a slot while the demo records the real interval since the previous stamp, drawn as a per-stamp bar sequence — letting users watch themselves accelerate toward the goal; reaching the end triggers a finish celebration and 'another round'."
+    },
+    "acceptance": [
+      { "zh": "steps/headStart 为 JS 型参数经 store 订阅;改动即重开一轮,headStart 预盖格必须带「预盖」视觉标记且如实标注人为进度", "en": "steps/headStart are JS-type params consumed via store subscription; changing them restarts the round, and head-start slots carry a visible 'pre-stamped' mark honestly labeled as artificial progress" },
+      { "zh": "间隔=距上一章的真实毫秒数(第 1 章相对本轮起点),逐章柱状呈现 + 最近/最短/最长文本,不只靠读图", "en": "Interval = real milliseconds since the previous stamp (stamp 1 measured from round start), shown per-stamp as bars plus latest/min/max text — never chart-only" },
+      { "zh": "「已集 n/N · 百分比 · 还差 m 章」三组文本实时同步并 aria-live 播报;已集格带 ✓ 字符,不靠颜色单独区分", "en": "'n/N · percent · m left' text stays in sync and is announced via aria-live; collected slots carry a ✓ glyph, never color-only" },
+      { "zh": "达标后按钮转为「再来一轮」,庆祝态为一次性动画;prefers-reduced-motion 下全部动画取消、数值即时更新", "en": "On completion the button becomes 'another round'; the celebration is a one-shot animation; under prefers-reduced-motion all animation drops and numbers update instantly" },
+      { "zh": "标注 Hull 1932/1934 与 Kivetz/Urminsky/Zheng 出处;steps/headStart 标注为 demo 教学参数,定律本身不规定数值", "en": "Cite Hull 1932/1934 and Kivetz/Urminsky/Zheng; label steps/headStart as demo teaching params — the law itself sets no numbers" }
+    ]
+  }
+}

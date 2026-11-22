@@ -1,0 +1,111 @@
+{
+  "name": "Aspect Ratio",
+  "nameZh": "宽高比",
+  "aliases": ["宽高比例", "aspect-ratio 属性", "固定比例盒"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "一行声明锁定盒子的宽高比:宽度变了高度自动跟上,配合 object-fit 决定图片在比例盒内裁切、留边还是拉伸——视频位、头像与防 CLS 卡片的地基。",
+    "en": "One declaration locks a box's width-to-height ratio: change the width and the height follows; pair it with object-fit to decide whether images crop, letterbox or stretch inside — the foundation of video slots, avatars and CLS-proof cards."
+  },
+  "origin": {
+    "zh": "出自 CSS Box Sizing Module Level 4 的 aspect-ratio 属性:语法 aspect-ratio = auto || <ratio>,<ratio> = <number [0,∞]> [ / <number [0,∞]> ]?;斜杠后省略高度时按 1 处理;盒子的宽高至少一边为 auto 时比例才生效;replaced 元素(如 img)写 auto <ratio> 时,内容加载后回退到内在比例。MDN 标注 Baseline Widely available,2021-09 起各浏览器可用(本次会话直连 MDN aspect-ratio 页核对)。",
+    "en": "From the aspect-ratio property in CSS Box Sizing Module Level 4: syntax aspect-ratio = auto || <ratio>, <ratio> = <number [0,∞]> [ / <number [0,∞]> ]?; omitting the height after the slash treats it as 1; the ratio only applies when at least one of the box's sizes is auto; on replaced elements (like img) written as auto <ratio>, the intrinsic ratio takes over once content loads. MDN marks it Baseline Widely available, available across browsers since 2021-09 (verified against the MDN aspect-ratio page this session)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "ratio",
+      "options": [
+        { "value": "1 / 1", "label": { "zh": "1:1 方形", "en": "1:1 square" } },
+        { "value": "4 / 3", "label": { "zh": "4:3 经典", "en": "4:3 classic" } },
+        { "value": "3 / 2", "label": { "zh": "3:2 照片", "en": "3:2 photo" } },
+        { "value": "16 / 9", "label": { "zh": "16:9 宽屏", "en": "16:9 widescreen" } },
+        { "value": "21 / 9", "label": { "zh": "21:9 带幕", "en": "21:9 ultrawide" } },
+        { "value": "9 / 16", "label": { "zh": "9:16 竖屏", "en": "9:16 vertical" } }
+      ],
+      "default": "16 / 9",
+      "cssVar": "--ar-ratio",
+      "effect": {
+        "zh": "盒子的首选宽高比(CSS 型 --ar-ratio,注入 aspect-ratio)。默认 16 / 9 为 MDN 官方示例值;1/1、4/3、3/2、21/9、9/16 为社区常见内容比例(头像方形、胶片 3:2、高清视频 16:9、带幕/竖屏短视频),未证实为任何规范推荐——按内容形态自选。",
+        "en": "The box's preferred width/height ratio (CSS-type --ar-ratio feeding aspect-ratio). The 16 / 9 default is an MDN official example value; 1/1, 4/3, 3/2, 21/9 and 9/16 are common content ratios in the community (square avatars, 3:2 film, 16:9 HD video, ultrawide/vertical shorts), unverified as any spec recommendation — pick by content shape."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "fit",
+      "options": [
+        { "value": "cover", "label": { "zh": "cover 裁切填满", "en": "cover (crop to fill)" } },
+        { "value": "contain", "label": { "zh": "contain 完整留边", "en": "contain (fit + letterbox)" } },
+        { "value": "fill", "label": { "zh": "fill 拉伸变形", "en": "fill (stretch)" } }
+      ],
+      "default": "cover",
+      "cssVar": "--ar-fit",
+      "effect": {
+        "zh": "子 img 的 object-fit(CSS 型 --ar-fit;object-fit 必须写在图片元素上,不是容器上——调研 12§1)。demo 的样图内在比例为 4:3,与默认 16:9 比例盒不同,三档差异一目了然:cover 裁切、contain 留边、fill 压扁。",
+        "en": "The child img's object-fit (CSS-type --ar-fit; object-fit must sit on the image element, not the container — research 12 §1). The demo's sample image has an intrinsic 4:3 ratio, deliberately different from the default 16:9 box, so the three grades are unmistakable: cover crops, contain letterboxes, fill squashes."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "width",
+      "unit": "px",
+      "min": 160,
+      "max": 560,
+      "step": 8,
+      "default": 320,
+      "cssVar": "--ar-width",
+      "effect": {
+        "zh": "比例盒的宽度(CSS 型 --ar-width;高度留 auto 由比例推导——至少一边为 auto 比例才生效,MDN)。默认 320px 为演示基准值,未证实;MDN 官方示例用固定 width 100px + height auto 演示同一机制。拖动观察实测高度读数如何跟随比例换算。",
+        "en": "The ratio box's width (CSS-type --ar-width; height stays auto and is derived from the ratio — the ratio only applies with at least one auto size, per MDN). Default 320px is a demo baseline, unverified; MDN's official example uses a fixed 100px width + auto height for the same mechanism. Drag it and watch the measured height track the ratio math."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "aspect-ratio 为 Baseline Widely available,2021-09 起各浏览器可用(Chrome 88 / Firefox 89 / Safari 15 量级,本次会话直连 MDN 页核对到 Baseline 日期;逐家版本号 MDN 页正文未列,以 caniuse 为准)。object-fit 为更早的广泛可用能力(调研 12§1 记其在 picture 子 img 上的配合约束)。",
+      "en": "aspect-ratio is Baseline Widely available, working across browsers since 2021-09 (Chrome 88 / Firefox 89 / Safari 15 ballpark — the Baseline date verified on the MDN page this session; per-browser version numbers are not listed in the MDN body, defer to caniuse). object-fit is an older, widely available capability (research 12 §1 records its pairing constraint on picture's child img)."
+    },
+    "baseline": "Baseline Widely available (2021-09)"
+  },
+  "fallback": {
+    "zh": "老浏览器的等价写法是 padding-top 百分比技巧(伪元素或 ::before 用 padding-top: 56.25% 撑出 16:9,内容绝对定位其上)——社区通用做法,未证实为官方推荐;现代写法失败时盒子退化为内容自然高度,布局不破。img 永远补 width/height 属性:加载前就占位,这本身即 CLS 防线(MDN「preventing jank」指南主题)。",
+    "en": "The legacy equivalent is the padding-top percentage hack (a pseudo-element with padding-top: 56.25% creates 16:9, content absolutely positioned over it) — a common community practice, unverified as an official recommendation; if the modern property is unsupported the box degrades to natural content height without breaking layout. Always add width/height attributes to img so space is reserved before load — itself a CLS defense (the topic of MDN's 'preventing jank' guide)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "视频/嵌入位:16:9 槽位先占住,iframe 加载完不跳版", "en": "Video/embed slots: reserve a 16:9 stage so iframes never shift the page" },
+      { "zh": "头像与缩略图:1:1 比例盒 + object-fit: cover 裁齐任何上传图", "en": "Avatars and thumbnails: a 1:1 box + object-fit: cover normalizes any upload" },
+      { "zh": "瀑布流/卡片栅格的占位:加载前按目标比例撑高,消灭 CLS", "en": "Grid/masonry placeholders: pre-load sizing in the target ratio kills CLS" },
+      { "zh": "响应式图片配合:img 写 width/height 属性 + CSS 约束一边,浏览器按内在比例推导另一边(调研 12§1 片段的 width=1200 height=675)", "en": "Paired with responsive images: img width/height attributes + CSS constraining one axis, the browser derives the other from the intrinsic ratio (the width=1200 height=675 pair in research 12 §1)" }
+    ],
+    "avoid": [
+      { "zh": "盒子的宽高都写死——比例无 auto 边可作用,声明被忽略(MDN 明确条件)", "en": "Hard-coding both width and height — no auto axis means the ratio is ignored (explicit MDN condition)" },
+      { "zh": "用比例盒装不定长文本——文本溢出比例框;比例适合 replaced 内容,正文让自然高度说话", "en": "Ratio boxes around variable-length text — text overflows the frame; ratios suit replaced content, let body copy keep natural height" },
+      { "zh": "对 img 只写 CSS 比例不写 width/height 属性——加载前无法占位,CLS 回来", "en": "CSS ratio on img without width/height attributes — nothing reserves space pre-load, CLS returns" },
+      { "zh": "21:9 一类极端比例放正文插图——移动端高度过小,内容不可读", "en": "Extreme ratios like 21:9 for body illustrations — too short on mobile to read" }
+    ]
+  },
+  "a11y": {
+    "zh": "比例盒只锁几何不锁内容:object-fit: cover 裁掉的边缘可能包含关键图像信息,重要图配足 alt 并优先 contain 或调整 ratio;img 的 width/height 属性防止加载跳版(WCAG 布局可预期性);装饰性样图 alt=\"\";demo 读数为实时真实测量,不依赖颜色传达状态。",
+    "en": "A ratio box locks geometry, not content: edges cropped away by object-fit: cover may carry key image information — pair important images with sufficient alt text and prefer contain or a different ratio; img width/height attributes prevent load-time layout jumps (predictable layout per WCAG); decorative samples get alt=\"\"; the demo's readouts are live, real measurements, never color-only signals."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio",
+    "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一个比例锁定卡位:宽度随栅格流动、高度由 aspect-ratio 推导,内置图片用 object-fit: cover 裁切填满,加载前后零布局偏移。",
+      "en": "Replicate a ratio-locked card slot: width flows with the grid, height derived by aspect-ratio, the embedded image fills via object-fit: cover, zero layout shift before and after load."
+    },
+    "acceptance": [
+      { "zh": "aspect-ratio 值严格使用参数快照(如 16 / 9);宽度参数照抄,高度保持 auto", "en": "The aspect-ratio value uses the exact parameter snapshot (e.g. 16 / 9); the width parameter verbatim, height left auto" },
+      { "zh": "object-fit 写在内层 img 元素上,不是容器上", "en": "object-fit sits on the inner img element, not the container" },
+      { "zh": "img 同时携带 width/height 属性占位,防加载 CLS", "en": "The img carries width/height attributes so pre-load space is reserved (no CLS)" },
+      { "zh": "比例盒宽度至少一边为 auto——不得把宽高同时写死", "en": "At least one of the ratio box's axes stays auto — never hard-code both width and height" },
+      { "zh": "栅格变化时高度随比例自动换算,不出现跳变或溢出", "en": "As the grid changes, height tracks the ratio automatically with no jumps or overflow" }
+    ]
+  }
+}

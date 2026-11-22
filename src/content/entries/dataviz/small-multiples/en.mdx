@@ -1,0 +1,65 @@
+## Structure & DOM
+
+Small multiples are "similar small charts juxtaposed at one shared scale and axes": each panel tells a single series, and cross-panel comparison works only because **every panel shares the same ruler**. Also known as trellis / lattice / grid / panel charts; popularized by Edward Tufte — *Envisioning Information* (1990, p.67): "the core of quantitative reasoning is one sentence: compared to what?"
+
+```html
+<div class="multiples"> <!-- display:grid; gap: var(--sm-gap) -->
+  <svg role="img" aria-label="East: Jan-Dec index, scale 0-100">…one line…</svg>
+  <svg role="img" aria-label="South: Jan-Dec index, scale 0-100">…</svg>
+  <svg role="img" aria-label="North: Jan-Dec index, scale 0-100">…</svg>
+  <svg role="img" aria-label="West: Jan-Dec index, scale 0-100">…</svg>
+</div>
+```
+
+Key points:
+
+- **The shared scale is the defining requirement**: all four panels span the same y domain (0–100 in this demo) so line/bar heights read as magnitudes across panels;
+- A mini keeps only the **baseline + ceiling tick + direct label** — no full grid or legend furniture (reference-layer discipline lives in the Chart Axes entry); the panel title carries the series name and the latest value — jfly's own words: "label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult";
+- The map-domain research conclusion (Wikipedia article): **animation wins at presenting trend and motion; small multiples win at comparison between time points** — the two forms divide labor rather than replace each other;
+- The anti-pattern is the **dual-axis mashup**: many series in one chart, two axes split among them — every series is stretched by its own axis and crossings no longer constitute any comparison.
+
+## Styling & Parameters
+
+Three parameters, defaults verifiable verbatim:
+
+| Parameter | Type | Default | Source (verified verbatim) |
+| --- | --- | --- | --- |
+| `layout` | JS-type | **multiples** | the defining form (Wikipedia article; Tufte 1990) |
+| `scaleMode` | JS-type | **shared** | shared scale = defining requirement; independent is the Wikipedia-documented "stress relative change" variant |
+| `panelGap` | CSS var `--sm-gap` | **8px** | Grafana `GRID_CELL_VMARGIN = 8` (`public/app/core/constants.ts`) |
+
+Companion constants (same Grafana file, source-verified): `GRID_COLUMN_COUNT = 24` columns, `GRID_CELL_HEIGHT = 30` row unit, `MIN_PANEL_HEIGHT = 90` (3 cells) — a dashboard panel grid is small multiples engineered. The demo's in-panel reference lines are hard-coded at 9% opacity, same lineage as the Chart Axes entry's Grafana formula (`getGridColor()`: dark `rgba(240,250,255,.09)` / light `rgba(0,10,23,.09)`); series colors use fixed Okabe-Ito hex (#0072B2 / #E69F00 / #009E73 / #D55E00, as fixed in R grDevices, research 08 §1.1).
+
+```css
+.multiples {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sm-gap, 8px);          /* panel gap: Grafana GRID_CELL_VMARGIN */
+}
+.multiples svg { color: var(--text); }  /* reference lines: currentColor + opacity .09 */
+```
+
+## Motion & Interaction
+
+Small multiples are a **static array** — they barely need motion:
+
+- Switching `layout` / `scaleMode` redraws instantly with no transition — if scale changes animated, readers would misread "the ruler moving" as "the data moving" (same discipline as the Chart Axes entry);
+- `panelGap` rides a CSS variable: the slider applies with zero JS reflow;
+- Hovering a point shows a native `<title>` (series · month · value); panel switches keep only a 0.2s opacity micro-transition, removed under `prefers-reduced-motion`;
+- If you do play panels over time (time-slice animation), the map research warns: animation expresses motion/trend, while precise between-timepoint comparison still belongs to side-by-side panels.
+
+## Real-world examples
+
+- **Wikipedia's "Small multiple" article**: the definition, the trellis/lattice/grid/panel aliases, the independent-scale "deliberately different scales to stress relative change" variant, and the map-domain conclusion "animation for trend/motion, small multiples for between-timepoint comparison" (supplement 12 §13, page verified) — the variant is legitimate only when each panel labels its own scale ceiling.
+- **Grafana dashboard grid**: `public/app/core/constants.ts` hard-codes `GRID_COLUMN_COUNT = 24`, `GRID_CELL_HEIGHT = 30`, `GRID_CELL_VMARGIN = 8`, `MIN_PANEL_HEIGHT = 90` (research 08 §4.1, source-verified) — panel arrays ship with source-level spacing/minimum defaults; the official docs give tier names but no pixels (verified), so copy the source constants.
+- **jfly / Okabe-Ito CUD guide**: the original "on-graph labels beat remote color keys" wording (research 08 §1.1, page verified) — minis have no room for legends, so series name + latest value in the panel title is that principle applied directly.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `layout` | dual-axis mode interleaves North (0–70 axis) with East (0–100 axis); "North looks higher" is pure right-axis stretching — crossings mean nothing | multiples keeps one ruler across four panels; more series means more rows/columns and smaller minis |
+| `scaleMode` | independent tops out every series in its own panel: shape differences get amplified (the Wikipedia variant's purpose) while cross-panel magnitude comparison dies, and every panel needs a ceiling label | shared restores "height = magnitude"; the cost is low-range series (West 22–47) reading as flat |
+| `panelGap` | past 24px the array falls apart and whitespace eats the data area; the grid feel disappears | below 4px adjacent panels start gluing together and may read as one chart; 0px removes all grouping |
+
+Working range: panel gap 8–16px (Grafana's 8px sits at the low end), one line + one direct label per panel, shared scale as the default and labeled ceilings whenever independent; the dual-axis mashup should never substitute for a multiples array when units match.

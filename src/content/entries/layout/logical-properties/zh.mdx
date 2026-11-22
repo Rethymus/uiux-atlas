@@ -1,0 +1,75 @@
+## 结构与 DOM
+
+逻辑属性不改变 DOM,只改变「你如何描述盒模型的四个方向」——同一张卡片,物理写法与逻辑写法并排即可对照:
+
+```html
+<div class="scene" dir="rtl">   <!-- 一键切换:rtl / ltr -->
+  <div class="card card--physical">padding-left…</div>
+  <div class="card card--logical">padding-inline…</div>
+</div>
+```
+
+```css
+.card--physical {            /* 物理写法:锚死屏幕方向 */
+  padding-left: 24px;
+  border-top-left-radius: 12px;
+}
+.card--logical {             /* 逻辑写法:锚死流方向 */
+  padding-inline: 24px;
+  border-start-start-radius: 12px;
+}
+.card .action {
+  margin-inline-start: auto; /* 推到「行末侧」而非右侧(调研 12§2 片段) */
+}
+```
+
+关键点:
+
+- inline 平行于文本行流动,block 垂直于它;start/end 相对书写方向——「一行的开头不总是左侧」(阿语 RTL、中文竖排)(调研 12§2);
+- 映射记忆法:`padding-left→padding-inline-start`、`margin-left→margin-inline-start`、`width→inline-size`、`height→block-size`、`top→inset-block-start`、`border-bottom→border-block-end`(调研 12§2);
+- 简写族各含 -start/-end:`padding-block/inline`、`margin-block/inline`、`inset` 及 `inset-block/inline`;圆角逻辑版是 `border-start-start-radius` 等 4 只角(block×inline 起止组合)(调研 12§2);
+- demo 里 dir 属性挂在共同祖先上,两张卡同时继承 `direction`——这正是多语言站点「只改一个 dir 属性」的落地形态(调研 12§16-6)。
+
+## 样式与参数
+
+四个参数:三个 CSS 型尺寸变量 + 一个 JS 型 dir 开关:
+
+```css
+.card--logical {
+  padding-block: var(--lp-pad-block, 16px);   /* 默认 16px = 12§2 片段 padding-block: 1rem */
+  padding-inline: var(--lp-pad-inline, 24px); /* 默认 24px = 12§2 片段 padding-inline: 1.5rem */
+  border-start-start-radius: var(--lp-radius, 12px); /* 默认 12px = 同片段 */
+}
+```
+
+数值出处:
+
+- 三项默认值 **逐字换算自调研 12§2 可复用片段**(1rem=16px); 片段还含 `margin-inline-start: auto`(demo 的操作按钮)与 `aside h2 { writing-mode: vertical-rl }`(归 writing-modes 条目);
+- 支持版本:逻辑属性核心集 Chrome 87 / Firefox 41+ / Safari 14.1 起——该版本号为 MDN 页面备注口径,调研 12§2 明确注明完整矩阵未核验,生产前以 caniuse 复核;
+- `dir` 的 ltr/rtl 为 HTML 全局属性/CSS direction 标准取值。
+
+## 动效与交互
+
+「动」的只有方向翻转,这正是逻辑属性的价值证明:
+
+- **dir 切换**:demo 订阅参数面板改写容器 `dir`;逻辑卡的行首内边距、起角圆弧、`margin-inline-start: auto` 推过去的按钮全部镜像到对侧,物理卡原地不动;
+- **读数为实测**:每帧用 `getComputedStyle` 读 `padding-left` 与 `padding-inline-start`——RTL 档下物理 `padding-left` 数值不变,逻辑 `padding-inline-start` 指向另一侧,数值对照即翻转证明;
+- 无过渡动画:方向翻转是语义切换,瞬时应答比补间诚实;卡片入场 0.4s 淡入上移只动 `opacity/translate`,`prefers-reduced-motion` 下取消;
+- 与书写模式联动:`padding-block` 在 `vertical-rl` 下自动从「上下」变成「左右」——物理写法永远做不到(见 writing-modes 条目)。
+
+## 真实产品案例
+
+- **多语言站点 RTL 改造(调研 12§16-6 签名巧思)**:「逻辑属性全站化——多语言 RTL 只改一个 dir 属性」,阿拉伯语/希伯来语站点的边距、圆角、对齐全套镜像,组件代码零改动;
+- **设计系统的间距 token**:把 padding-block/inline 直接命名为主轴/次轴间距,语义不随方向漂移;阿语用户与英语用户读到的是同一套 token(编辑性总结——具体设计系统清单未逐一核实);
+- **MDN 逻辑属性模块页与 css-logical 规范(调研 12§2 来源)**:映射表(padding-left→padding-inline-start 等)与简写族的权威出处,demo 的读数即按该映射在 RTL 下实测验证。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `padInline` | 行首/行末留白变宽,卡片更「透气」;RTL 翻转幅度在视觉上更明显 | 内容贴边,行首图标与文字挤在一起;8px 以下失去卡片呼吸感 |
+| `padBlock` | 块轴上下(横排时)留白变宽;切竖排后它转为左右——物理写法无此能力 | 卡片扁塌;低于 8px 圆角与内容粘连 |
+| `radius` | 起角更圆,翻转后「哪只是起角」一目了然;0 时与物理卡无差异 | 起角与对角趋同,翻转演示失去辨识度 |
+| `dir` → rtl | 逻辑卡整体镜像:内边距、起角、auto 推挤的操作按钮全部换侧 | ltr 档两卡完全重合——这正是「写对逻辑属性」的基线检查 |
+
+经验要点:一轴一制(同轴不混物理与逻辑声明);图标方向语义 RTL 需手动镜像;上生产前用 caniuse 复核逻辑属性矩阵(调研 12§2 未给完整矩阵)。

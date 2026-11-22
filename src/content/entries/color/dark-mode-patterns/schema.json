@@ -1,0 +1,115 @@
+{
+  "name": "Dark Mode Patterns",
+  "nameZh": "暗色设计模式",
+  "aliases": ["暗色四模式", "dark mode 不是反转", "dark theme patterns"],
+  "category": "color",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "暗色不是浅色的反转:Apple 原文「not necessarily inversions」。四个模式——分层(base/elevated 靠提亮)、饱和度(accent 提亮降饱和)、阴影(层级让位给表面)、品牌色(accent 换对、图片压暗)。",
+    "en": "Dark mode is not the light palette inverted — Apple's own words: 'not necessarily inversions'. Four patterns: layering (base/elevated lift), saturation (accent brightens & desaturates), shadows (surface lift takes over), brand color (swap the accent pair, dim imagery)."
+  },
+  "origin": {
+    "zh": "Apple HIG Dark Mode 原文:暗色调色板「不一定是浅色的简单反转」、系统提供随外观自动适配的 semantic colors、前台呈现自动切 elevated 背景(调研 06§12/§13);Android 文档以 DayNight+主题属性为正路、Force Dark 自动反色为需充分测试的兜底反例(调研 06§12);暗色 accent 基线 #6750A4→#D0BCFF 出自 M3 官方值(调研 06§7)。",
+    "en": "Apple HIG Dark Mode states the dark palette is 'not necessarily inversions' of light, that the system ships appearance-adaptive semantic colors, and that foreground presentation switches to elevated backgrounds automatically (research 06 §12/§13); the Android docs treat DayNight + theme attributes as the right road and Force Dark's auto-inversion as a test-heavy fallback counterexample (research 06 §12); the accent baseline #6750A4→#D0BCFF comes from official M3 values (research 06 §7)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "strategy",
+      "options": [
+        { "value": "light", "label": { "zh": "浅色参照", "en": "Light reference" } },
+        { "value": "dark-inverted", "label": { "zh": "暗色·直接反转", "en": "Dark · naive inversion" } },
+        { "value": "dark-semantic", "label": { "zh": "暗色·语义四模式", "en": "Dark · semantic (4 patterns)" } }
+      ],
+      "default": "dark-semantic",
+      "effect": {
+        "zh": "JS 型参数:三档对照。light=M3 亮色基线参照(surface #FFFBFE/on-surface #1C1B1F/primary #6750A4,调研 06§7);dark-inverted=把亮色 L 直接翻转、accent 原样保留、阴影原样保留——教学用反模式;dark-semantic=四模式齐上:表面分层提亮、accent 换 #D0BCFF 对、饱和徽标降饱和、白底图压暗。",
+        "en": "JS-type param: a three-way control. light = M3 light baseline reference (surface #FFFBFE / on-surface #1C1B1F / primary #6750A4, research 06 §7); dark-inverted = flips light lightness values in place, keeps the accent and shadows untouched — the teaching anti-pattern; dark-semantic = all four patterns: layered surfaces, the #D0BCFF accent pair, desaturated badges, dimmed imagery."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accentLight",
+      "format": "hex",
+      "default": "#6750A4",
+      "cssVar": "--dm-accent-light",
+      "effect": {
+        "zh": "亮色语境 accent。默认 #6750A4 = M3 亮色主题 primary 官方基线(Android 开发者文档,调研 06§7);直接反转策略下它会被原样搬到暗底上,对照出「品牌色也要换对」这一模式。",
+        "en": "Light-context accent. Default #6750A4 = the official M3 light-theme primary baseline (Android developer docs, research 06 §7); under naive inversion it is carried onto the dark surface as-is, which is what exposes the 'the brand pair must be swapped' pattern."
+      }
+    },
+    {
+      "type": "color",
+      "name": "accentDark",
+      "format": "hex",
+      "default": "#D0BCFF",
+      "cssVar": "--dm-accent-dark",
+      "effect": {
+        "zh": "暗色语境 accent。默认 #D0BCFF = M3 暗色主题 primary 官方基线(调研 06§7),比亮色更亮更低饱和,体现「暗色 accent 提亮降饱和」惯例(调研 06§13);本会话实测它对暗表面的对比 11.25:1。",
+        "en": "Dark-context accent. Default #D0BCFF = the official M3 dark-theme primary baseline (research 06 §7), brighter and less saturated than its light twin per the 'dark accents brighten and desaturate' convention (research 06 §13); measured this session at 11.25:1 against the dark surface."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "elevation",
+      "options": [
+        { "value": "base", "label": { "zh": "基面 base", "en": "Base" } },
+        { "value": "raised", "label": { "zh": "抬升层 raised", "en": "Raised" } },
+        { "value": "overlay", "label": { "zh": "浮层 overlay", "en": "Overlay" } }
+      ],
+      "default": "raised",
+      "effect": {
+        "zh": "JS 型参数:卡片所在的层级档。语义暗色下层级靠「提亮表面」表达(Apple base 更暗让背景后退、elevated 更亮让前台前进,前台呈现自动切换,调研 06§13);三档表面亮度为演示阶梯(官方 elevation overlay 逐档透明度表调研未找到,调研 06§13 已如实记录);直接反转档下三档表面无差异——层级表达失效,正是反模式的证据。",
+        "en": "JS-type param: which tier the card sits at. Semantic dark conveys tiers by lifting the surface (Apple: base is darker so the background recedes, elevated is brighter so the foreground advances, and foreground presentation switches automatically — research 06 §13); the three surface values are a demo ladder (the official elevation-overlay opacity table was not found during research, as recorded in research 06 §13); under naive inversion the three tiers render identically — tiering breaks, which is the anti-pattern's evidence."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "模式本身是配色纪律,无新 API 依赖:demo 用 CSS 自定义属性 + prefers-color-scheme 语义(Baseline 2020-01,调研 06§11);对比度复核为 JS 内联 WCAG 公式,与浏览器支持无关。oklch() 色值需 Baseline 2023-05(调研 06§1),hex 参数值不受影响。",
+      "en": "The patterns are color discipline, not new APIs: the demo uses custom properties + prefers-color-scheme semantics (Baseline 2020-01, research 06 §11); the contrast audit is inline WCAG math, independent of browser support. oklch() values need Baseline 2023-05 (research 06 §1); the hex params are unaffected."
+    }
+  },
+  "fallback": {
+    "zh": "三档策略切换由 JS 完成,无浏览器兼容分叉;老浏览器若不支持 oklch() 兜底色,演示字色会回退为继承色——参数默认值全部为 hex,主路径不受影响。语义暗色的工程回退是 @media (prefers-color-scheme: dark) 翻转变量(调研 06§11 记载的传统策略)。",
+    "en": "The three-way strategy switch is pure JS with no compatibility fork; if a legacy browser drops oklch() fallback colors, demo text inherits instead — all param defaults are hex and the main path is unaffected. The engineering fallback for semantic dark is flipping variables under @media (prefers-color-scheme: dark) (the traditional strategy recorded in research 06 §11)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "为既有浅色产品补暗色主题:先决定「不反转」的四模式清单,再逐层换语义变量", "en": "Adding dark mode to an existing light product: decide the 'no inversion' four-pattern list first, then swap semantic variables layer by layer" },
+      { "zh": "深色界面上叠深色界面(卡片/抽屉/模态):层级用表面提亮表达(Apple base/elevated,调研 06§13)", "en": "Dark-on-dark stacking (cards, drawers, modals): convey tiers by lifting surfaces (Apple base/elevated, research 06 §13)" },
+      { "zh": "品牌色直接上暗底发闷或刺眼时:按 M3 惯例准备提亮降饱和的暗色对(#6750A4→#D0BCFF,调研 06§7)", "en": "When a brand color turns muddy or harsh on dark: prepare a brightened, desaturated dark pair per the M3 convention (#6750A4→#D0BCFF, research 06 §7)" },
+      { "zh": "暗色下白底截图/插图「发光」:给图片内容压暗处理(Apple HIG 建议,调研 06§13)", "en": "White-background screenshots or illustrations glowing in dark mode: dim the image content (Apple HIG's advice, research 06 §13)" }
+    ],
+    "avoid": [
+      { "zh": "把浅色调色板 L 值逐个翻转当暗色主题——Apple 原文否定(not necessarily inversions,调研 06§12);demo 的 dark-inverted 档即此反模式", "en": "Flipping each light-palette lightness value and calling it a dark theme — Apple's own wording rejects it ('not necessarily inversions', research 06 §12); the demo's dark-inverted tier is exactly this anti-pattern" },
+      { "zh": "硬编码文字色/背景色/图标色不随主题翻转——Android 文档点名的暗色翻车点(调研 06§12)", "en": "Hard-coded text/background/icon colors that never flip — the dark-mode failure list the Android docs call out (research 06 §12)" },
+      { "zh": "暗色下继续用亮色那套高饱和强调色——对比过高造成视觉疲劳(hype4,调研 06§13)", "en": "Reusing the light theme's high-saturation accents on dark — excessive contrast causes visual fatigue (hype4, research 06 §13)" },
+      { "zh": "做 app 级手动外观开关与系统设置打架——Apple HIG 不建议(调研 06§12);需要时改写 color-scheme 而非另写一套硬编码色", "en": "An app-level manual appearance toggle that fights the OS setting — discouraged by Apple HIG (research 06 §12); rewrite color-scheme instead of maintaining a second hard-coded palette" }
+    ]
+  },
+  "a11y": {
+    "zh": "暗色不是免检通道:文字对比仍按 WCAG 正文 AA≥4.5:1、AAA≥7:1、大字与 UI≥3:1 复核(调研 06§17);Apple 要求底线 4.5:1、小字力争 7:1(调研 06§13)。本会话实测:语义暗色表面阶(演示值)上正文 12.64–15.09:1(全过 AAA),纯反转白/黑 21:1——超过 AAA 上限的「过冲」正是 hype4 所说视觉疲劳的来源(调研 06§13);直接反转把 #6750A4 原样搬上暗底,#D0BCFF 对暗表面 11.25:1 而前者明显更低。",
+    "en": "Dark mode is not an audit exemption: text still gates at body AA≥4.5:1, AAA≥7:1, large text & UI≥3:1 (research 06 §17); Apple requires a 4.5:1 floor and aims for 7:1 on small text (research 06 §13). Measured this session: body text on the semantic dark surface ladder (demo values) reads 12.64–15.09:1 (all AAA), while pure inverted white-on-black reads 21:1 — the overshoot beyond AAA is the visual fatigue source hype4 describes (research 06 §13); naive inversion also carries #6750A4 onto dark as-is, versus #D0BCFF's measured 11.25:1."
+  },
+  "sources": [
+    "https://developer.apple.com/design/human-interface-guidelines/dark-mode",
+    "https://developer.android.com/develop/ui/views/theming/darktheme",
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors",
+    "https://github.com/primer/primitives"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一段亮色 UI 实现语义暗色主题:表面按层级提亮、accent 换成提亮降饱和的暗色对、高饱和徽标降饱和、白底图压暗;并提供「直接反转」对照档展示反模式,逐组合跑 WCAG 对比度。",
+      "en": "Implement a semantic dark theme for a light UI: lift surfaces per tier, swap the accent to a brightened/desaturated dark pair, desaturate vivid badges, dim white-background imagery; include a 'naive inversion' control tier exposing the anti-pattern, and run WCAG contrast on every pairing."
+    },
+    "acceptance": [
+      { "zh": "暗色表面按层级提亮(base→overlay 逐档更亮),不是纯黑底+纯白字", "en": "Dark surfaces lift with tier (base → overlay progressively brighter), not pure black + pure white" },
+      { "zh": "暗色 accent 用提亮降饱和的对色(#D0BCFF 级),亮色 accent(#6750A4 级)不上暗底", "en": "The dark accent uses a brightened/desaturated pair (#D0BCFF class); the light accent (#6750A4 class) never lands on dark as-is" },
+      { "zh": "高饱和状态徽标在暗色下降饱和,层级表达不再依赖纯黑阴影", "en": "Vivid status badges desaturate in dark; tiering no longer leans on pure-black shadows" },
+      { "zh": "白底图片内容在暗色下压暗,避免「发光」块", "en": "White-background imagery dims in dark so no block 'glows'" },
+      { "zh": "文字/表面、accent/表面逐组合给出对比度与 AA/AAA 判定,判定不四舍五入", "en": "Text/surface and accent/surface pairings each report ratio and AA/AAA verdicts, judged unrounded" }
+    ]
+  }
+}

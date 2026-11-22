@@ -1,0 +1,62 @@
+## Structure & DOM
+
+The two formats have completely different DOM shapes: **an icon font glyph is a text node** (a codepoint pointing into a font), while **inline SVG is a real vector graphics element**:
+
+```html
+<!-- icon font: codepoint/ligature → font glyph, tinted by color -->
+<i class="icon icon-home" aria-hidden="true"></i>
+
+<!-- inline SVG: true vector, tinted via stroke=currentColor (24 grid, 2px round) -->
+<svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+     stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <path d="…" />
+</svg>
+```
+
+Key points:
+
+- The font route renders through "codepoint → font file → glyph → `color`", and every link can fail: `@font-face` load failure, cross-origin fonts blocked by CORS, Opera Mini without `@font-face`, ad blockers or user styles removing the font file (the CSS-Tricks CAGEMATCH failure list, 12 §12);
+- The SVG route is embedded in the document and has **no external failure states** — as long as the page renders, the icon renders;
+- A font glyph is plain text: its size is `font-size`, and vertical centering takes `line-height`/`vertical-align` nudging; SVG's size is just `width`/`height` — positioning is direct.
+
+## Styling & Parameters
+
+Four parameters form one controlled experiment: two CSS variables (`--icf-size` / `--icf-color`) drive both rendering chains at once, while two JS switches change the delivery format and the failure simulation:
+
+```css
+.icf-glyphs { color: var(--icf-color); }          /* host color: shared by both chains */
+.icf-glyph   { font-size: var(--icf-size); }      /* font glyph: size = font-size */
+.icf-glyph svg { width: var(--icf-size); height: var(--icf-size); } /* SVG: size = width/height */
+```
+
+Where the numbers come from:
+
+- The default **24px** size is the industry-wide ancestral grid (Lucide/Feather source `width: 24, height: 24`, Heroicons 24 outline, Material's 24 design base, research 07 §0/§1);
+- The tint chain: `stroke="currentColor"` comes from Lucide's `defaultAttributes.ts` source values (07 §1.1); "currentcolor takes the same element's color property" is CSS Color 4 §6.4 verbatim (07 §5.2);
+- The failure list (font missing → tofu + raw ligature; codepoint + U+FE0F → color emoji takeover): the former simulates CSS-Tricks' failure surface, the latter is real browser behavior (platform-dependent).
+
+## Motion & Interaction
+
+This entry's "motion" is instant feedback for format and failure switching — a restrained 0.2s transition is enough:
+
+- **Delivery switch** (`delivery`): the adopted lane lights up with a blue border and an "adopted" badge, and the code snippet below swaps to the real SVG or font usage;
+- **Failure simulation** (`failure`) touches the font lane only: `font-missing` swaps the three glyphs for tofu boxes plus raw ligature text; `emoji-crash` appends U+FE0F to ⚙ so it really renders as a color emoji — the SVG lane never flinches, which is the visual proof of "embedded, no weird failure states";
+- Transitions only touch `border-color/box-shadow/opacity`; under `prefers-reduced-motion: reduce` they cut straight to the end state (`transition: none`) without removing the feedback itself;
+- Font glyphs go through **text anti-aliasing** (fuzzy at small sizes) while SVG uses shape anti-aliasing — put them side by side across sizes and the sharpness gap shows (12 §12).
+
+## Real-world examples
+
+- **CSS-Tricks "Inline SVG vs Icon Fonts [CAGEMATCH]"** (Chris Coyier, 2014): its verdict — from IE9+/Android 3+ inline SVG wins nearly across the board, IE8 is where icon fonts keep an edge — is still the citation origin for every format-selection writeup (12 §12);
+- **Lucide / Feather**: modern open-source icon sets dropped the font route entirely; their delivery format is SVG files plus an official sprite (Feather's external `feather-sprite.svg` usage is the only one documented in a README among the five sets), with a family-wide `currentColor` contract (07 §1.1/§1.2/§5);
+- **Material Symbols**: the modern variant of the font technology — Google ships icons as a **variable font** (ligature `arrow_forward` + `opsz/wght/GRAD/FILL` axes), yet the official guide still demands `&display=block` against FOUC and `icon_names` subsetting down to ~1.7KB before touching the first screen: even inside the font route, failure-surface management remains the main topic (07 §1.5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `delivery` | switching to font exposes line-height positioning and the failure surface; the font route holds no compensating advantage on modern browsers | switching to svg gives embedded vectors + currentColor — the default winner in the CSS-Tricks verdict |
+| `size` | SVG and glyphs scale together; the text-AA fuzz of font glyphs stays visible at large sizes | at small sizes (≤16px) font glyphs blur further under text AA while SVG strokes keep their shape |
+| `color` | both chains tint in sync: glyphs eat `color`, SVG follows `currentColor` — a tie within the monochrome domain | no special effect; but per-part multicolor control is SVG-only (12 §12) |
+| `failure` | the `font-missing`/`emoji-crash` options walk the font route's whole failure spectrum (tofu / ligature / emoji takeover) | the `none` option makes the font lane "look fine" — the failure surface is scary precisely because it appears randomly in production |
+
+Anchors: default to inline SVG + `currentColor` in modern projects; keep the font route only for IE8 legacy and the variable-font special case (Material Symbols); whenever a font glyph is used, decide first what the page looks like when the font never arrives.

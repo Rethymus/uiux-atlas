@@ -1,0 +1,80 @@
+## Structure & DOM
+
+The DOM cost of kinetic type is just "split spans + one clipping wrapper" — the split happens in JS and the semantics are patched in attributes:
+
+```html
+<h2 class="headline" aria-label="Weight you can feel">  <!-- the sentence goes to screen readers -->
+  <span aria-hidden="true" class="word">                <!-- the split tree is hidden as a whole -->
+    <span class="mask"><span class="char">W</span></span>
+    <span class="mask"><span class="char">e</span></span>
+    …
+  </span>
+</h2>
+```
+
+Key points:
+
+- Splitting (the semantics of GSAP SplitText's `type: "words, chars"`, 12 §6): group by word to prevent mid-word line breaks, assign stagger indices per character (or word);
+- Every **mask** is an inline block with `overflow: hidden` — as the character rises from `translateY(110%)`, everything not yet revealed is clipped; that is exactly SplitText's `mask` option;
+- **Semantic integrity is a hard constraint**: the full sentence goes in the container's `aria-label`, every split span is `aria-hidden` — screen readers hear the sentence, never letter fragments (what SplitText's `aria: "auto"` does);
+- Axis animation needs no DOM changes at all: `font-variation-settings` consumes the registered variable directly.
+
+## Styling & Parameters
+
+Four parameters map to one CSS variable, one registered variable, and two JS inline styles:
+
+```css
+@property --k-wght { syntax: "<number>"; inherits: true; initial-value: 400; }
+
+.demo-stage {
+  --kinetic-rise: 600ms;   /* per-character rise duration */
+  --k-wght: 400;           /* weight-axis target (written by the param panel) */
+  transition: --k-wght 0.5s;  /* axis transition from the 12 §6 snippet */
+}
+.headline {
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-variation-settings: "wght" var(--k-wght);
+}
+.char {
+  display: inline-block;
+  animation: kt-rise var(--kinetic-rise) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+/* JS inline: animation-delay = i × stagger */
+@keyframes kt-rise {
+  from { transform: translateY(110%); opacity: 0; }
+}
+```
+
+Where the numbers come from:
+
+- Registered axis ranges: wght **1–1000** ↔ font-weight, wdth percentages ↔ font-stretch, custom axes uppercase (like GRAD — changes visual density without changing metrics, animatable without reflow) (MDN, 12 §6); the demo font Inter Variable actually spans wght 100–900 and the panel clamps to that;
+- `font-variation-settings` is the low-level syntax: changing one value requires restating the whole declaration — bypass it with a CSS variable so the variable is the only input (12 §6);
+- Reveal parameters: `rise .6s cubic-bezier(.2,.7,.3,1)` and the hand-split `animation-delay: i × 40ms` come from the no-library fallback snippet in 12 §6; the GSAP SplitText official example uses `stagger: 0.05` (50ms) and `duration: 1` — two reference values on the same dimensions;
+- Axis transition: `transition --wght .5s` from the 12 §6 snippet; interpolation depends on @property registration (Baseline widely available, research 09 §1.2) — without it, weights jump instead of interpolating.
+
+## Motion & Interaction
+
+- **Axis animation is "one variable" motion**: hover/params change only `--k-wght`, triggering no reflow (the premise: a metric-neutral axis like GRAD, or small-range wght slides on non-wrapping headlines) — that is variable-font motion's performance promise (12 §6 / craft 8);
+- **The reveal is "stagger" motion**: characters rise inside masks at delay = i × stagger; total spread = stagger × (chars − 1) + rise, so longer headlines need smaller staggers;
+- **Trigger timing**: a headline reveal plays once (load or section transition); scroll-driven replays belong to long-scroll marketing narratives; the replay button exists to compare parameters;
+- **Font loading re-splits**: SplitText's `autoSplit` (re-split on font load / width change) exists precisely for this — the hand-rolled version should at least wait for `document.fonts.ready` before splitting, or widths go wrong after the font swap;
+- **reduced-motion**: characters render directly and the axis transition switches off (the 12 §6 CSS snippet's `animation: none`); the text's information is unaffected.
+
+Relation to the variable-fonts entry: that is the foundation entry for the axis system and @font-face range descriptors; stagger-orchestration / choreography share the same stagger math; title relays can nest inside page-transitions container transitions.
+
+## Real-world examples
+
+- **The GSAP SplitText official example**: `SplitText.create(".headline", { type: "words, chars", mask: "chars" })` + `from(chars, { yPercent: 100, stagger: 0.05 })` is the official standard form of the char reveal (12 §6, first-hand gsap.com docs; the v3.13+ rewrite halved its size and made it loadable standalone from the core);
+- **Type foundry specimen pages** (variable-font showcase pages): wght/wdth axis sliders with live preview are the category's standard form (a common community shape, not site-by-site verified in this research) — the demo's axis slider is the same interaction;
+- **Marketing hero word relays**: "headline words rising one by one, body following with a fade" is a common arrangement on product-launch pages (common community practice, not site-by-site verified); production implementations mostly land on splitting plugins like SplitText, and the split/mask/aria trio is non-negotiable.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stagger` | a more theatrical spread; beware long headlines — total time = stagger×(n−1)+rise can easily exceed the 1s attention window | the sentence appears almost at once and the relay feel vanishes; 0 degenerates into a plain fade |
+| `rise` | calmer climbs; past 800ms per-character motion starts to drag | the pop becomes a jump; under 250ms the masked rise is unreadable |
+| `wght` | visual weight and width grow together (wght changes metrics; wide slides can re-wrap the line) | lighter weight; the 100–300 thin end loses legibility on dark surfaces |
+| `reveal` | words: faster, semantically complete blocks, better for long headlines | chars: the finest grain and strongest relay, the headline default; forbidden in body copy |
+
+Rule of thumb: prefer metric-neutral axes for axis animation, or short wght slides on headlines; keep total reveal under 1s (stagger × chars + rise); split text always pairs a mask with a sentence-level aria-label; wait for `document.fonts.ready` before splitting.

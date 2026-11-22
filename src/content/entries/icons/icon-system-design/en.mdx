@@ -1,0 +1,62 @@
+## Structure & DOM
+
+A mini icon system = **a family of SVG files sharing one geometric contract**: each icon is its own 24×24 viewBox document, but grid, stroke, caps and naming all answer to a single spec:
+
+```html
+<!-- One file per icon; the root element hard-codes the shared contract
+     (isomorphic to Lucide's defaultAttributes) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 11L12 4L20 11"/>  <!-- all-integer X/Y; content inside the trim area -->
+  <path d="M6 10V20H18V10"/>
+</svg>
+```
+
+The system's four contract layers, outside in:
+
+1. **Naming**: kebab-case, lowercase, no duplicates — naming is the first line to collapse; once `search_icon`/`arrowRIGHT` creep in, lookup-by-name and tree-shaking both fail;
+2. **Grid**: the 24×24 grid with integer-only X/Y coordinates (the official Material rule, 07 §2); keyline shapes set the baseline — square 18×18, circle Ø20, vertical 16×20 / horizontal 20×16, and "the circle beats the square by 2dp" is the official optical law (07 §2/§3.1);
+3. **Safe area**: the live area 20×20 (2dp padding all around), the trim area = the full 24dp with content never escaping; Lucide adds: strokes ≥1px from the canvas edge, ≥2px gaps between elements (07 §2/§3.2);
+4. **Stroke**: one system standard (default 2px = Lucide/Feather's source value); Heroicons' 1.5px is a separate family that must not be mixed in; continuous weight goes through Material Symbols' `wght` 100–700 axis — never scale the SVG (07 §1).
+
+## Styling & Parameters
+
+Four parameters build the audit bench: one CSS variable plus three JS switches:
+
+```css
+/* The system's standard stroke: an SVG user unit, written once, inherited by every icon */
+.isd-tile svg { stroke-width: var(--isd-stroke, 2px); }
+```
+
+- **overlay** — all three overlay geometries are research-driven numbers: the keylines option draws square 18×18 / circle Ø20 / both rectangles; the grid option draws a line every 2 units specifically to check integer coordinates; the safe option draws the green live-area frame 20×20 and the orange 1px safe-area boundary;
+- **audit** injects three real defect classes: search's handle endpoint at `(19.5, 19.5)` (integer-coordinate rule), home's roof at `y=1` (the trim-area red line), arrow-right's hardcoded 1.5px (width consistency) — offending elements turn red, tiles get a red ring, and the table issues verdicts;
+- **naming** injects the three naming offenders `Home` / `search_icon` / `arrowRIGHT`, flagged in red;
+- The audit table's four rows (naming / grid / stroke / safe area) each state the standard and its source, machine-checkable.
+
+Where the numbers come from: 2px stroke (Lucide's `defaultAttributes.ts` source + Material's 2dp), the four keyline values plus 2dp padding / integer coordinates (m2.material.io system-icons), the 1px safe area and 2px element gaps (Lucide's contribution spec), the wght 100–700 axis (Material Symbols README) — all first-hand from research 07.
+
+## Motion & Interaction
+
+- **Overlay switch** (JS-typed): all six tiles swap their overlay geometry at once — keyline shapes ↔ pixel grid ↔ safe area; the 0.2s border transition cuts straight under `prefers-reduced-motion: reduce`;
+- **Audit switch**: violations become visible instantly — red ring, red paths, and the audit table all flip in sync; one click restores the compliant set;
+- **Stroke drag** (CSS variable): every icon (including the 24px native row) thickens and thins in sync, showing "stroke is a user unit; display scaling keeps the proportion"; at 1.5, arrow-right's violation verdict disappears by coincidence (still a code smell — noted in the table);
+- **The 24px native row**: the same set side by side at native size, verifying legibility after shrinking (a static take on the blur test);
+- No translate/scale animation; every piece of feedback is a state switch, not motion.
+
+## Real-world examples
+
+- **Material's official grid template**: the numeric origin of the 24dp trim area / 20dp live area / four keyline shapes, distributed as an official AI source-file template (Apache 2.0) — a homegrown system can be checked directly against it (07 §2);
+- **Lucide's contribution spec**: 1px safe area, 2px element gaps, the 2.41px diagonal radius, the blur test and optical off-centering written as a checklist every contributor PR must pass — an open-source icon set governing community contributions with machine-checkable rules (07 §3.2);
+- **Heroicons' three-tier grid**: 24/20/16 as three independently redrawn viewBoxes (measured from source files) rather than scaling — the industry precedent for "re-tier instead of hard-scale" in dense layouts (07 §1.3).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stroke` | 3px reads heavier and blurs darker under the blur test; the user-unit proportion holds | 1px hits WCAG 1.4.11's "avoid particularly thin lines" warning (further diluted by anti-aliasing, 07 §3.3); at 1.5 arrow-right passes by coincidence |
+| `overlay` | the keylines option exposes keyline drift at a glance; safe exposes both the live area and the 1px boundary | none shows the finished icons — audits run on overlays, acceptance on the finished glyphs |
+| `audit` | the violations option lights all three defect classes (coordinates / trim / stroke) with sourced table rows | pass restores all-green — but only running the violations tier shows what the audit actually checks |
+| `naming` | the mixed option flags three offenders: mixed case/separators break lookup and tree-shaking together | kebab stays green; naming has no up/down — only consistent or collapsed |
+
+Anchors: naming collapses before graphics do; coordinates must be integers; content never escapes the trim area; one stroke width per system; heavier/lighter comes from a weight system, never scaling.

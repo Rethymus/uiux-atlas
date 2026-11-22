@@ -1,0 +1,80 @@
+## Structure & DOM
+
+A progress card is "one status container + mutually exclusive forms", with the form switched by a JS timeline:
+
+```html
+<div class="card" aria-busy="true">
+  <div class="head">
+    <span aria-live="polite">Loading…</span>             <!-- status text: the first carrier of meaning -->
+  </div>
+  <!-- forms are exclusive; only one renders at a time -->
+  <div class="skeleton" aria-hidden="true">…blocks…</div>  <!-- uncertain: nothing known -->
+  <div class="track">…looping sweep…</div>                 <!-- uncertain: loading, duration unknown -->
+  <div class="track" role="progressbar" aria-valuemin="0"
+       aria-valuemax="100" aria-valuenow="42">…</div>     <!-- certain: how much is left -->
+  <div class="done">…real content…</div>                   <!-- done state -->
+</div>
+```
+
+Key points:
+
+- Status text and aria-busy are the **first carrier**; animation only accompanies — NN/g's thresholds were segmented by informational value, not prettiness;
+- The indeterminate phase carries **no aria-valuenow**: with no real value, inventing one is lying; `role="progressbar"` attaches the moment quantifiable progress exists, synced per frame;
+- Skeleton blocks are `aria-hidden` (pure decoration; layout semantics are supplied by the real content in the done state) — the same discipline as the skeleton-loading entry.
+
+## Styling & Parameters
+
+Three parameters map to one CSS variable and two JS timelines:
+
+```css
+.demo-stage { --prog-pulse: 1200ms; }  /* indeterminate loop period (common community value, unverified) */
+
+/* Skeleton pulse: M3's "subtle pulse" — a sweeping layer translated, transform only */
+.skeleton-block::after {
+  content: "";
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+  animation: pm-sweep var(--prog-pulse) linear infinite;
+}
+/* Looped sweep: a 40%-wide gradient segment traveling the track (NN/g's "looped animation" tier) */
+.loop { transform: translateX(-100%); animation: pm-loop var(--prog-pulse) cubic-bezier(.4, 0, .6, 1) infinite; }
+/* Determinate: fill width written per frame by JS, paired with role=progressbar */
+.fill { background: var(--accent); }
+/* Done: content fades in fast at 200ms (M3 short4 + Standard, research 04 §1.4/§2.2) */
+.ready { animation: pm-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
+```
+
+Where the numbers come from:
+
+- **All form thresholds are NN/g's (research 04 §2.2)**: instant state change under 1s; an indicator is mandatory past 1s; looped animation (spinner/looped bar) suits 2–10s only; 10s+ wants a percent-done bar with descriptive text; beyond that an ETA. The demo's auto tier arranges exactly this: 0–1s skeleton → 1–3s loop → 3s–total percent (the 1s/3s breakpoints are the demo's arrangement; the thresholds themselves are official);
+- `total` defaults to 10000ms — exactly on NN/g's "≥10s wants a percent bar" threshold, which makes the percent phase legitimate;
+- `pulse` at 1200ms: M3 requires only a "subtle pulse" with no number — common community value, unverified (same convention as the skeleton-loading entry);
+- The completion fade of 200ms + `cubic-bezier(0.2, 0, 0, 1)`: M3 skeleton loaders' "fast fade-in of content" + the short4/Standard tokens (research 04 §1.4/§2.2);
+- Supporting evidence: NN/g relays a University of Nebraska study — with an indicator, satisfaction rises and users tolerate on average about **3×** the wait (research 04 §2.2).
+
+## Motion & Interaction
+
+- **Form is information**: the skeleton says "not even the layout is known", the loop says "loading but unknown duration", the percent bar says "this much is left" — form switches are not decoration, they are a live broadcast of rising certainty; the demo's phase param pins any form for comparison;
+- **Goal-gradient finish (12 §14)**: momentum grows near the goal; the percent number + ETA make the endpoint visible; staged flows may seed "artificial progress" (like a pre-completed first step), but **never creep evenly to 90% and stall** — fake progress damages trust more than a loop;
+- **Values and motion are separable**: the percentage/text/aria-valuenow advance per frame on rAF (information), while the pulse/sweep is a decorative layer that reduced-motion can switch off entirely without losing information;
+- **The completion handoff**: content fades in fast at 200ms over the placeholder (M3 skeleton loaders' ending), and the track disappears with it; for numeric reveal on completion see the count-up entry;
+- **reduced-motion**: pulse/sweep/fade all stop while values keep advancing — "the animation can switch off; the information never does".
+
+Interlinks: the skeleton-loading entry owns the skeleton form in depth (sweep direction, placeholder alignment); count-up owns the completion numeric reveal; full long-task interaction (cancel, backgrounding) is component-level and out of scope here.
+
+## Real-world examples
+
+- **Polar's skeleton screens**: Luke Wroblewski documented Polar killing its spinner with skeletons — attention lands on "content is coming" rather than clock-watching, the landmark case of replacing a loop with an uncertain form (research 04 §2.2);
+- **Google Search's slide-in transition**: folding the progress indicator into the transition itself (results slide straight in) to manufacture immediacy — a system-level case of digesting waiting through form switching (research 04 §2.2);
+- **Pre-stamped loyalty cards / ride-hailing head starts**: textbook goal-gradient applications — a loyalty card pre-stamped with one mark, a trip that starts with "x minutes already done" (12 §14, Laws of UX); the first is artificial progress, the second real progress seeded forward.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `total` | the percent phase becomes fully legitimate (the ≥10s semantics hold); the longer the task, the more the ETA matters | under 10s the percent phase exceeds NN/g's "loops" zone — the demo still runs but its semantics degrade; under 4s the three forms cannot complete |
+| `pulse` | slower, calmer loops; past 2s users may misread it as a freeze | hurried, anxious loops; too-fast pulsing approaches flicker (HIG: sustained oscillation is perceptually sensitive, research 04 §1.6) |
+| `phase` | pinning a form isolates that form's emotional cost | auto is the only tier that demonstrates the certainty→form mapping, and the recommended production path |
+
+Rule of thumb: estimate duration first, then pick the form (nothing under 1s; loops for 1–10s; percent + text + ETA at 10s+); switch from loop to percent the moment real progress exists; when uncertain, loop honestly — never fake progress; the animation can always switch off, the information never does.

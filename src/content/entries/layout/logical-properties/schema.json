@@ -1,0 +1,118 @@
+{
+  "name": "Logical Properties",
+  "nameZh": "逻辑属性",
+  "aliases": ["CSS 逻辑属性", "padding-inline", "margin-block", "inset-inline"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "用「块流/内联流」取代物理上下左右:padding-inline、margin-block、border-start-start-radius 一套声明,阿拉伯语 RTL、中文竖排只改一个 dir 属性就整体翻转——多语言站点的地基。",
+    "en": "Block/inline flow axes replace physical top/right/bottom/left: one set of padding-inline, margin-block and border-start-start-radius declarations, and Arabic RTL or vertical CJK flips wholesale with a single dir attribute — the foundation of multilingual sites."
+  },
+  "origin": {
+    "zh": "出自 CSS Logical Properties and Values(css-logical 规范,调研 12§2):以 inline(平行于文本行流动)与 block(垂直于它)两轴取代物理方向,start/end 相对书写方向——「一行的开头不总是左侧」。映射:padding-left→padding-inline-start、margin-left→margin-inline-start、width→inline-size、height→block-size、top→inset-block-start、border-bottom→border-block-end;简写族 padding-block/inline、margin-block/inline、inset 及圆角逻辑版 border-start-start-radius 等 4 个(调研 12§2)。",
+    "en": "From CSS Logical Properties and Values (css-logical, research 12 §2): the inline axis (parallel to text flow) and block axis (perpendicular to it) replace physical directions, with start/end relative to the writing direction — 'the start of a line is not always the left'. Mappings: padding-left→padding-inline-start, margin-left→margin-inline-start, width→inline-size, height→block-size, top→inset-block-start, border-bottom→border-block-end; shorthand families padding-block/inline, margin-block/inline, inset, plus the four logical border-radius corners such as border-start-start-radius (research 12 §2)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "padInline",
+      "unit": "px",
+      "min": 8,
+      "max": 48,
+      "step": 1,
+      "default": 24,
+      "cssVar": "--lp-pad-inline",
+      "effect": {
+        "zh": "内联轴内边距(CSS 型 --lp-pad-inline,注入 padding-inline)。默认 24px = 调研 12§2 片段的 padding-inline: 1.5rem(1rem=16px 换算);切 RTL 后逻辑卡的实际「行首侧」内边距随之翻到右边,物理卡的 padding-left 纹丝不动。",
+        "en": "Inline-axis padding (CSS-type --lp-pad-inline feeding padding-inline). Default 24px equals research 12 §2's fragment padding-inline: 1.5rem (at 1rem=16px); flip to RTL and the logical card's line-start padding jumps to the right while the physical card's padding-left stays put."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "padBlock",
+      "unit": "px",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--lp-pad-block",
+      "effect": {
+        "zh": "块轴内边距(CSS 型 --lp-pad-block,注入 padding-block)。默认 16px = 调研 12§2 片段的 padding-block: 1rem;水平书写模式下与 padding-top/bottom 等价,竖排(vertical-rl)后自动转为左右方向——物理写法做不到这一点。",
+        "en": "Block-axis padding (CSS-type --lp-pad-block feeding padding-block). Default 16px equals research 12 §2's fragment padding-block: 1rem; in horizontal writing it equals padding-top/bottom, and under vertical-rl it automatically becomes a left/right direction — something the physical form cannot do."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--lp-radius",
+      "effect": {
+        "zh": "块×内联起止组合圆角(CSS 型 --lp-radius,注入 border-start-start-radius,即「行首×块首」那只角)。默认 12px = 调研 12§2 片段的 border-start-start-radius: 12px;RTL 下这只角从左上翻到右上,物理的 border-top-left-radius 则原地不动。",
+        "en": "The block×inline start-start corner radius (CSS-type --lp-radius feeding border-start-start-radius — the 'line-start × block-start' corner). Default 12px equals research 12 §2's fragment border-start-start-radius: 12px; under RTL the corner flips from top-left to top-right while a physical border-top-left-radius stays frozen."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "dir",
+      "options": [
+        { "value": "ltr", "label": { "zh": "ltr 从左到右", "en": "ltr (left-to-right)" } },
+        { "value": "rtl", "label": { "zh": "rtl 从右到左", "en": "rtl (right-to-left)" } }
+      ],
+      "default": "ltr",
+      "effect": {
+        "zh": "demo 容器的 dir 属性(JS 型;dir 是 HTML 全局属性、direction 是 CSS 标准取值)。demo 订阅后切换容器 dir,ltr/rtl 两档下逻辑卡与物理卡的差异即多语言站点的真实差异——这正是调研 12§16-6 签名巧思「逻辑属性全站化,多语言 RTL 只改一个 dir 属性」。",
+        "en": "The demo container's dir attribute (JS-type; dir is a global HTML attribute and direction the CSS standard value). The demo subscribes and flips the container's dir; the logical-vs-physical gap across ltr/rtl is exactly what multilingual sites live with — research 12 §16-6's signature idea: 'logical properties site-wide, so RTL costs one dir attribute'."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "逻辑属性核心集(padding/margin/border/inset 的逻辑版)Chrome 87 / Firefox 41+ / Safari 14.1 起基本全面——该版本号为 MDN 页面备注口径,调研 12§2 明确注明「MDN 页正文未给完整矩阵,建议查 caniuse」,生产前请以 caniuse 复核目标浏览器矩阵。",
+      "en": "The logical-properties core set (logical padding/margin/border/inset) is broadly complete from Chrome 87 / Firefox 41+ / Safari 14.1 — these versions follow MDN page notes, and research 12 §2 explicitly flags that the MDN body carries no full matrix, recommending a caniuse check before production."
+    }
+  },
+  "fallback": {
+    "zh": "老引擎不认识逻辑属性时声明被整条丢弃,保持上一条物理声明的值——所以级联写法是「物理在前兜底、逻辑在后增强」(渐进增强);逐属性核对 caniuse 后可对未覆盖环境保留物理版;RTL 文案本身由 dir 属性与 Unicode 双向算法负责,不依赖逻辑属性也能显示,只是边距/圆角不会翻转。",
+    "en": "Engines that don't know a logical property drop the whole declaration and keep the preceding physical one — hence the cascade pattern 'physical first as fallback, logical second as enhancement' (progressive enhancement); audit caniuse per property and keep physical forms for uncovered environments; RTL text itself is handled by the dir attribute and the Unicode bidi algorithm, so it renders without logical properties — only margins/radii fail to flip."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "多语言组件库:一套组件 RTL 只翻 dir,边距/圆角/对齐全自动(调研 12§16-6)", "en": "Multilingual component libraries: flip dir and margins/radii/alignment follow (research 12 §16-6)" },
+      { "zh": "同时兼容横排与竖排的界面:侧边书脊标签、竖排卡片(与 writing-mode 天然联动)", "en": "Interfaces spanning horizontal and vertical writing: spine labels, vertical cards (pairs naturally with writing-mode)" },
+      { "zh": "设计系统间距 token:padding-block/inline 直接对应「主轴/次轴」语义,语义化优于物理方向", "en": "Design-system spacing tokens: padding-block/inline carry main/cross-axis semantics that outlive physical directions" },
+      { "zh": "列表行首图标与末侧操作:margin-inline-start/end 表达「行首/行尾」而非左/右", "en": "List rows with leading icons and trailing actions: margin-inline-start/end say 'line start/end', not left/right" }
+    ],
+    "avoid": [
+      { "zh": "跟物理方向强绑定的视觉(贴屏幕左缘的悬浮球)——该用物理属性时别硬翻成逻辑属性", "en": "Visuals physically bound to the screen edge (a floating ball pinned left) — when you mean physical, say physical" },
+      { "zh": "旧引擎占多数且无法渐进增强的关键样式——先查 caniuse 再决定全量切换(调研 12§2 未给完整矩阵)", "en": "Critical styles where legacy engines dominate and enhancement is impossible — check caniuse before switching wholesale (research 12 §2 has no full matrix)" },
+      { "zh": "混写物理与逻辑同轴属性(padding-left 与 padding-inline-start 混用)——级联顺序难以推理,一轴一制", "en": "Mixing physical and logical properties on the same axis (padding-left beside padding-inline-start) — the cascade becomes unguessable; one system per axis" },
+      { "zh": "以为逻辑属性会翻译内容——它只翻转盒模型方向,文字方向仍归 dir 与 Unicode 双向算法", "en": "Expecting logical properties to translate content — they only flip box-model axes; text direction stays with dir and the Unicode bidi algorithm" }
+    ]
+  },
+  "a11y": {
+    "zh": "dir 翻转只改盒模型方向不改 DOM 顺序,读屏朗读顺序保持稳定;RTL 下焦点环、外发光与滚动方向随之镜像,核对 :focus-visible 样式在镜像后仍可辨;图标若有方向语义(箭头、返回),RTL 需要镜像或换图,不要靠逻辑属性自动完成;对比度与命中区尺寸在两种方向下保持一致。",
+    "en": "A dir flip changes box axes only, never DOM order — screen-reader order stays stable; under RTL the focus ring, glow and scroll directions mirror too, so re-check that :focus-visible styling stays legible mirrored; directionally semantic icons (arrows, back) need explicit mirroring or swaps in RTL — logical properties won't do it for you; contrast and hit-area sizes must hold in both directions."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values",
+    "https://drafts.csswg.org/css-logical/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用逻辑属性复刻一张用户卡片:padding-block/inline、margin-inline-start: auto 推操作到行尾、border-start-start-radius 起角圆弧,dir=rtl 一键整体镜像,零物理方向声明。",
+      "en": "Recreate a user card in logical properties only: padding-block/inline, margin-inline-start: auto pushing actions to the line end, a border-start-start-radius corner — one dir=rtl flips the whole card, zero physical direction declarations."
+    },
+    "acceptance": [
+      { "zh": "边距与内边距全部使用 padding-block/inline(或 -start/-end),不出现 left/right/top/bottom", "en": "Margins and padding use padding-block/inline (or -start/-end) only; no left/right/top/bottom anywhere" },
+      { "zh": "圆角使用 border-start-start-radius 族,严格采用参数快照值", "en": "Corners use the border-start-start-radius family with the exact parameter snapshot values" },
+      { "zh": "推到「行尾」用 margin-inline-start: auto,不用 margin-left: auto", "en": "Pushing to the line end uses margin-inline-start: auto, not margin-left: auto" },
+      { "zh": "dir=rtl 下卡片整体镜像:行首侧内边距与起角都翻到另一侧", "en": "Under dir=rtl the card mirrors wholesale: line-start padding and the start corner both flip sides" },
+      { "zh": "物理回退声明写在逻辑声明之前(渐进增强级联)", "en": "Physical fallback declarations precede the logical ones (progressive-enhancement cascade)" }
+    ]
+  }
+}

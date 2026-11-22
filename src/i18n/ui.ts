@@ -47,11 +47,25 @@ export const ui = {
       aliases: "别名",
       officialDefault: "官方默认",
       paramEffectHint: "改动即时生效",
+      /** 同分类「上一条 / 下一条」分页器(spec §4.3 底部导航;核对清单 entry-prev-next-pager) */
+      pagerPrev: "上一条",
+      pagerNext: "下一条",
+      pagerNav: "同分类条目",
       categories: { styles: "风格流派", materials: "材质与光影", motion: "动效与微交互", color: "色彩与主题", type: "排版", layout: "布局与响应式", components: "前端部件", icons: "图标体系", dataviz: "数据可视化", principles: "交互法则" },
       subgroups: { basic: "基础", form: "表单", feedback: "反馈", data: "数据", navigation: "导航", other: "其他" },
     },
     footer: {
       note: "demo 代码 MIT · 正文 CC BY-NC 4.0 · 数值均注明一手来源",
+      /** 三栏页脚(清单 footer-thin):许可 / 分类导航 / 机器入口 */
+      colLicense: "许可",
+      colNav: "分类导航",
+      colMachine: "机器入口",
+      licenseDemo: "demo 代码",
+      licenseText: "正文",
+      licenseSource: "数值均注明一手来源",
+      machineLlms: "llms.txt · 全部条目索引",
+      machineRegistry: "registry · 部件发布件",
+      machineMcp: "MCP · 复刻 Prompt 服务器",
     },
     resources: {
       title: "深入学习的资源地图",
@@ -88,7 +102,12 @@ export const ui = {
       homeEntry: "趋势追踪 →",
       resourcesEntry: "趋势追踪:兴起与退潮 →",
     },
-    langSwitch: "English",
+    /** 404 页(zh 单页;设计语言内,清单 missing-404-page) */
+    notFound: {
+      title: "页面未找到",
+      message: "你要找的页面不存在或已被移动——从首页或下方分类重新出发。",
+    },
+    langSwitch: "中文",
   },
   en: {
     siteName: "UI/UX Design Atlas",
@@ -135,11 +154,25 @@ export const ui = {
       aliases: "Aliases",
       officialDefault: "official default",
       paramEffectHint: "changes apply instantly",
+      /** Same-category prev/next pager (spec §4.3 bottom nav; checklist entry-prev-next-pager) */
+      pagerPrev: "Previous",
+      pagerNext: "Next",
+      pagerNav: "Entries in this category",
       categories: { styles: "Styles", materials: "Materials", motion: "Motion", color: "Color", type: "Typography", layout: "Layout", components: "Components", icons: "Icons", dataviz: "Data Viz", principles: "Principles" },
       subgroups: { basic: "Basic", form: "Form", feedback: "Feedback", data: "Data", navigation: "Navigation", other: "Other" },
     },
     footer: {
       note: "Demo code MIT · Text CC BY-NC 4.0 · Every value cites a first-party source",
+      /** Three-column footer (footer-thin): license / category nav / machine entry points */
+      colLicense: "License",
+      colNav: "Categories",
+      colMachine: "Machine entry points",
+      licenseDemo: "Demo code",
+      licenseText: "Text",
+      licenseSource: "Every value cites a first-party source",
+      machineLlms: "llms.txt · full entry index",
+      machineRegistry: "registry · component items",
+      machineMcp: "MCP · replication prompt server",
     },
     resources: {
       title: "A map for going deeper",
@@ -175,6 +208,11 @@ export const ui = {
       sourceLabel: "Source",
       homeEntry: "Design trends →",
       resourcesEntry: "Trend tracker: rising & cooling →",
+    },
+    /** 404 page (zh-only page; kept in the site design language, checklist missing-404-page) */
+    notFound: {
+      title: "Page not found",
+      message: "The page you are looking for doesn't exist or has moved — head back home or pick a category below.",
     },
     langSwitch: "中文",
   },

@@ -1,0 +1,79 @@
+## Structure & DOM
+
+Writing mode is a container-level declaration: set it on an ancestor and the whole subtree's block and inline axes turn together, DOM order untouched:
+
+```html
+<article class="paper">   <!-- writing-mode on the container -->
+  <h3>静夜思 · Li Bai</h3>
+  <p>床前明月光</p>
+  <p>疑是地上霜</p>
+  <p>…</p>
+  <p><span class="year">2026</span> 年书</p>
+</article>
+<aside><h2 class="spine">书脊标签</h2></aside>
+```
+
+```css
+.paper {
+  writing-mode: vertical-rl;      /* traditional CJK vertical: lines top-to-bottom, right-to-left (research 12 §2) */
+  text-orientation: mixed;        /* CJK upright, latin rotated (spec default) */
+  height: 320px;                  /* vertical text needs a height; lines (columns) flow along the block axis */
+}
+.paper .year {
+  text-combine-upright: all;      /* tate-chu-yoko: '2026' squeezed into one em-square */
+}
+.spine { writing-mode: vertical-rl; }  /* side spine label (research 12 §2 fragment, verbatim) */
+```
+
+Key points:
+
+- Values: `horizontal-tb` (default) / `vertical-rl` / `vertical-lr` / `sideways-rl` / `sideways-lr` (whole glyphs rotated, experimental); the legacy `lr`/`tb` values are deprecated (research 12 §2);
+- In vertical modes "lines" become columns: `vertical-rl` stacks lines right-to-left, `vertical-lr` left-to-right — the visual order of the verses hinges on this one value;
+- The three companions: `direction` (inline direction), `text-orientation` (glyph orientation in vertical lines), `text-combine-upright` (tate-chu-yoko) (research 12 §2);
+- writing-mode also rotates the logical-property axes: under vertical setting `padding-block` is literally left/right — a natural pairing with the logical-properties entry.
+
+## Styling & Parameters
+
+Three parameters, all CSS-variable injected:
+
+```css
+.paper {
+  writing-mode: var(--wm-mode, vertical-rl);        /* vertical default: research 12 §2's 'traditional CJK vertical' */
+  text-orientation: var(--wm-orientation, mixed);   /* mixed is the spec default */
+}
+.paper .year { text-combine-upright: var(--wm-combine, none); }
+```
+
+Where the numbers come from:
+
+- The spine recipe `aside h2 { writing-mode: vertical-rl }` and the latin sideways form `sideways-lr` + the `@supports not (…) { transform: rotate(-90deg) }` fallback are **verbatim from research 12 §2's reusable fragment**;
+- `horizontal-tb` is the spec default; `mixed` is the text-orientation spec default;
+- `sideways-rl / sideways-lr` are experimental — research 12 §2 explicitly requires @supports detection, and per-browser release versions are unverified (unverified); the demo reports live via `CSS.supports('writing-mode','sideways-lr')`;
+- writing-mode is Baseline since 2017-03 (research 12 §2).
+
+## Motion & Interaction
+
+Switching the writing mode flips the whole subtree's flow; readouts make the invisible visible:
+
+- **Switching mode**: the sheet re-flows instantly — vertical-rl vs vertical-lr swap the verses' sides, horizontal-tb returns to horizontal; vertical setting needs a fixed height to break into columns, so the demo pins the sheet height to keep the column flow visible;
+- **The orientation probe**: the "Li Bai" in the title — mixed rotates it 90°, upright stacks it letter-by-letter upright, sideways rotates everything; CJK stays upright in both mixed and upright; the property only applies in vertical modes;
+- **The combine turn**: the colophon "2026 年书" compresses four digits into one em-square under all, keeping the line rhythm unbroken;
+- **The sideways readout**: `CSS.supports` runs on mount; native support takes `writing-mode: sideways-lr`, otherwise the button toggles the `rotate(-90deg)` fallback and honestly labels it "fallback required";
+- The sheet's entrance (0.45s fade + rise) animates only `opacity/translate`, dropped under `prefers-reduced-motion`; no transition on the mode switch itself — tweening a flow-direction flip is a headache machine.
+
+## Real-world examples
+
+- **Side spine labels (research 12 §2's original fragment use case)**: `aside h2 { writing-mode: vertical-rl }` stands section titles on their side, common on Chinese and Japanese doc sites as decorative section markers (editorial application — per-site lists not individually verified; the recipe is verbatim from the research);
+- **Vertical Chinese poem and calligraphy pages**: poetry-themed sites use vertical-rl to restore the traditional top-to-bottom, right-to-left line order, pairing text-combine-upright for year notations (editorial summary — per-site implementations not individually verified; the mechanism and values are as recorded in research 12 §2);
+- **The MDN writing-mode reference and the css-writing-modes spec (research 12 §2 sources)**: the authoritative home of the value table, the text-orientation/text-combine-upright companion semantics, and the "legacy values deprecated" note.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up (switching)… | Back to default… |
+| --- | --- | --- |
+| `mode` → vertical-lr | lines run left-to-right — opposite to the traditional Chinese order; the verse sides visibly swap | vertical-rl is the orthodox order for vertical Chinese; horizontal-tb returns to universal horizontal |
+| `orientation` → upright | latin letters stack one-by-one upright — good for short vertical tags; long sentences plummet in readability | mixed is the spec default: CJK upright + latin rotated, the stable mixed-script form |
+| `combine` → all | '2026' folds into one em-square and the vertical line rhythm holds; four-plus digits start to crowd | none sets each digit upright in its own cell, stretching the year column |
+| Sheet height | a lower cap means more columns and more frequent wrapping | without a cap every line squeezes into one column and the multi-column order vanishes |
+
+Rules of thumb: vertical containers must have a height or the block axis never wraps; experimental values always ship with feature detection; keep vertical setting presentational — with it off, content reads horizontally in DOM order.

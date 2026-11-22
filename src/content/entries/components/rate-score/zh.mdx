@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+评分的视觉是一排叠层星形,语义骨架是 **radiogroup**:容器 `role="radiogroup"`,每颗星(半星档下每半区)是 `role="radio"`——APG 官方 Rating Radio Group Example 的实现方式(补研 12§15):
+
+```html
+<div class="rate-group" role="radiogroup" aria-label="评分">
+  <span class="rate-star">
+    <span class="rate-glyph" aria-hidden="true">★</span>   <!-- 灰色底星 -->
+    <span class="rate-fill" aria-hidden="true">★</span>    <!-- 金色填充,宽度裁切 -->
+    <span class="rate-zone" role="radio" aria-checked="true"
+          aria-label="4 星:推荐" tabindex="0"></span>      <!-- 透明命中区 -->
+  </span>
+  <p class="rate-out" aria-live="polite">当前:4 星 · 推荐</p>
+</div>
+```
+
+关键点:
+
+- 星形字符分两层:灰底星(描边档)+ 金色填充星(用 `overflow: hidden` 宽度裁切表达半星);两者都 `aria-hidden`,**数值与含义由 radio 的 `aria-label` 与下方文字回显承载**;
+- 命中区(透明的 `role="radio"` 元素)叠在星形之上:整星档每星一个,半星档拆左右两个(`aria-label` 写「3.5 星」)——roving tabindex 让整组只有一个 Tab 停靠点;
+- 悬停预览只改视觉,不改 `aria-checked`;只有点击/Space 选中才改变 checked——focus ≠ selection(调研 07§35);
+- 当前值用 `aria-live="polite"` 文字回显,星级含义永远有文案(tooltips 语义,补研 12§15)。
+
+## 样式与参数
+
+三个 JS 型参数(count / allowHalf / allowClear)+ 一个 CSS 变量型参数(activeColor):
+
+```css
+.rate-star  { width: 24px; height: 24px; transition: scale .15s ease-out; }
+.rate-star:hover { scale: 1.12; }
+.rate-glyph { color: #d9d9d9; }                          /* colorBorder 描边档 */
+.rate-fill  { color: var(--rate-active, #faad14); }      /* gold #FAAD14 */
+.rate-fill > span { display: block; }                    /* 半星:width 50% */
+.rate-zone[data-half="left"]  { right: 50%; }
+.rate-zone[data-half="right"] { left: 50%; }
+.rate-zone:focus-visible { outline: 2px solid #1677ff; outline-offset: 2px; }
+```
+
+数值出处:
+
+- `count` **默认 5**、`allowClear` **默认 true** 均为 antd Rate 官方记载(补研 12§15);`allowHalf` 默认值调研未记载,demo 默认 off 为社区常见值,未证实;
+- 激活色 `--rate-active` 默认 #faad14 = antd gold 主色/seed 金 #FAAD14(设计调研 06§1.2/§2.2)——antd Rate 官方默认色 token 调研未证实,取 gold 档为社区常见值;空星描边 #d9d9d9 = colorBorder(06§2.2);
+- 焦点环 #1677ff = colorPrimary(06§2.2);星间 gap 4px = antd sizeXXS 档(06§2.3④,借档);
+- **星形 24px 为 demo 教学尺寸**(社区常见 20–24px,未证实;antd 未记载 Rate 几何数值);
+- tooltips 文案(tooltips[] 语义,补研 12§15)在 demo 中为「很差/较差/还行/推荐/超赞」五个档位标签,内容为 demo 自拟。
+
+## 动效与交互
+
+- **悬停预览**:mousemove 进入半区即以 `--rate-active` 预览到该档,离开组即回落当前值;预览不改变 `aria-checked`,下方文字显示「预览 Preview」与「当前 Current」双态;触屏无 hover,点击直接落值;
+- **点击落值 / 清空**:`allowClear=on`(官方默认)时再次点击当前值清空回 0——「再点一次撤销」是评分区别于普通单选组的关键交互(补研 12§15);off 时重复点击维持原值;
+- **键盘 radiogroup**:方向键在星组内漫游(roving tabindex)、Space/Enter 选中(APG Rating Radio Group Example,补研 12§15;radio 方向键组内移动,调研 07§36);Tab 一次进出整组;
+- **hover 缩放**:悬停星 1.12 倍放大 0.15s,只动 `scale`(合成器属性);命中 `prefers-reduced-motion` 时缩放取消(调研 07§37);
+- 评分是低频确认型输入,不做连续动画;落值后的状态变化由文字回显即时传达。
+
+## 真实产品案例
+
+- **电商/外卖评价**:淘宝、美团订单完成后默认五星制,星级旁配文字标签(差评→好评),半星档常见于骑手/商家服务分——「星级 + 文案」是降低理解成本的标准组合;
+- **应用商店评分**:App Store / Google Play 的应用页五星评分 + 汇总均值,用户点击即提交,无需表单——评分是「一击即达」的输入控件;
+- **内容平台的影游评分**:豆瓣电影/游戏平台的用户打分聚合为均值,半星与整星档并存影响聚合精度(编辑性泛例:聚合型平台的常见档位取舍)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `count` | 更多星档让表达更细,但选择时间上升(Hick 定律,调研 07§23),10 星是实用上限 | 3 星以下语义过粗(好/中/差),丢失区分度 |
+| `allowHalf` | on 给出 0.5 档,聚合均值更平滑,命中区减半 | off 每星命中区翻倍,移动端更易点中 |
+| `allowClear` | on 提供「点错撤销」出口,误触成本低 | off 用户点错只能整组重置,挫败感更强 |
+| `activeColor` | 高饱和金/橙是评分的默认心智,偏离太远(如蓝)会削弱「星级」联想 | 低饱和激活色与空星描边区分度下降,扫读变慢 |
+
+经验区间:五星制 + 文案标签是默认配置;每颗星命中区不小于 24px(Fitts 定律,调研 07§22);当前值必须文字回显;半星只在「用户评分会被聚合」的场景启用。

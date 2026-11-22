@@ -1,0 +1,57 @@
+## Structure & DOM
+
+The demo is a **feature-tiering chart**: a 10-feature usage-share bar chart + cumulative curve + an 80% reference line, with a side panel carrying three live numbers.
+
+```html
+<svg viewBox="0 0 380 210">
+  <line class="pp-ref" x1="34" y1="58" x2="350" y2="58" />  <!-- 80% reference line -->
+  <rect class="pp-bar pp-bar-hi" x="38" y="52" width="22" height="118" />  <!-- budgeted highlight -->
+  <rect class="pp-bar" x="69" y="131" width="22" height="39" />
+  <path class="pp-cum" d="M49,88 L80,124 …" />              <!-- cumulative curve -->
+</svg>
+<p class="pp-inline" aria-live="polite">
+  Top 2 carry 78.4% · 80% line at top-3 · budget of 2 covers 78.4%
+</p>
+```
+
+Key points:
+
+- 10 features line the x-axis **ordered by payoff**, shares computed live and normalized from `share ∝ 1/rank^skew` — every percentage comes from the current params; not a single "80" is hard-coded;
+- The conclusion is dual-channel: beyond the chart, "top 2 carry X% / 80% line at top-k / budget covers Y%" is permanent text (`aria-live` synced), and the panel lists the top-5 names with shares;
+- The budget highlight is **dual-channel**: bars change color AND each listed item carries a literal "budgeted" tag — never color alone.
+
+## Styling & Parameters
+
+```tsx
+// skew / budget are JS-type params subscribed from the store; shares computed live
+const raw = FEATURES.map((_, i) => Math.pow(i + 1, -skew));
+const shares = raw.map((r) => (r / raw.reduce((a, b) => a + b, 0)) * 100);
+const k80 = cum.findIndex((c) => c >= 80) + 1;   // rank where the 80% line is reached
+```
+
+- `skew` defaults to **1.9**: the top 2 of 10 features then carry **≈78.4%** (computed live), reproducing the 'roughly 80/20' shape; this is a demo teaching-model param — the law itself is only the qualitative 'roughly 80/20' claim (lawsofux stresses **roughly, not an exact split**);
+- `budget` defaults to **2**: the '20% vital few'; raising it to 4 covers ≈86% — the gain flattens from ~78%→~86%, and that diminishing-returns curve is the quantitative case for concentration;
+- Numbers from the source: **Pareto's observation that roughly 80% of Italy's land belonged to 20% of its population**, the UX phrasing 'concentrate energy on the areas that bring the greatest benefit to the most users', and the misuse warning 'mechanical application (e.g. obsessing over click counts)' — all from supplement research 12 §14;
+- The 80% reference line sits on a right-side 0–100% cumulative axis; `findIndex(c >= 80)` yields 'the top-k features needed to reach 80%'.
+
+## Motion & Interaction
+
+- Dragging `skew`: bars and the cumulative curve re-lay smoothly via `transition: y/height/d 0.3s ease` (SVG geometry props; where unsupported they snap instantly — no compat risk);
+- Dragging `budget`: the highlighted set switches instantly and the panel's 'budgeted' tags follow;
+- Under `prefers-reduced-motion: reduce` both transitions drop and numbers update instantly;
+- The SVG carries `role="img"` with a **dynamic aria-label** (top-2 share, budget coverage, 80%-line rank) so the conclusion is available to screen readers without vision.
+
+## Real-world examples
+
+- **Analytics-driven feature tiering (generic practice)**: telemetry/funnels surface the top-20% features for concentrated polish — the literal application of supplement research 12 §14's 'concentrate energy on the areas that bring the greatest benefit to the most users'; this demo's 'rank by payoff + budget' is that workflow, taught;
+- **Toolbar / primary-menu layering (generic practice)**: high-frequency actions stay in primary spots, low-frequency power tucks into 'more' menus — the interface-level 80/20, complementary to the serial-position rule 'key actions at the far ends' (research 07 §29): one splits by *how much*, the other by *where*;
+- **Misuse warning (supplement research 12 §14)**: lawsofux names the mechanical application — proxy goals like 'minimizing click counts' instead of the payoff itself; 80/20 is a diagnostic lens, not a scalpel for amputating the long tail.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `skew` | 3.0: a steeper distribution pushes the top-2 share to ~93% — the extreme 'head-concentrated' shape, 80% line at just top-2 | 1.5: a flatter distribution drops the top-2 share to ~67%, the 80% line retreats to top-4 — in a flat world concentration loses its punch |
+| `budget` | 10: covers 100% but spreads effort evenly; contrast with the 78% of 2 items to see how disproportionate the returns are | 2: exactly the '20% budget' at ~78% coverage — the slider stops there (min=2) |
+
+The lesson: find the **vital 20% with data first**, then concentrate the polish budget there; 80/20 is a 'roughly' approximation — use it to rank priorities, not to make exact promises, and never to mechanically amputate strategically vital long-tail features (supplement research 12 §14).

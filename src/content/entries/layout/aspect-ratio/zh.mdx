@@ -1,0 +1,75 @@
+## 结构与 DOM
+
+比例锁定是「容器 + replaced 内容」两层结构:外层盒子声明比例,内层图片负责填充:
+
+```html
+<div class="ratio-box">
+  <img src="photo.jpg" width="1200" height="900" alt="…" />
+</div>
+```
+
+```css
+.ratio-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;   /* 斜杠后省略高度按 1 处理,如 21 / 9 */
+}
+.ratio-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* 必须写在 img 上,不是容器上(调研 12§1) */
+}
+```
+
+关键点:
+
+- 比例只对「至少一边为 auto」的盒子生效——宽高都写死时声明被忽略(MDN 明确条件);demo 里高度保持 auto,由比例推导;
+- `aspect-ratio = auto || <ratio>`:`auto <ratio>` 组合对 img 等 replaced 元素有特殊语义——内容加载前用声明比例占位,加载后回退内在比例(MDN);
+- img 的 `width`/`height` **属性**(不是 CSS)让浏览器在加载前就按内在比例占位,这本身是 CLS 防线(MDN「Image aspect-ratio: preventing jank」指南主题);
+- `object-fit` 决定图片如何在比例盒内安放:cover 裁切填满、contain 完整留边、fill 拉伸变形——`object-position` 可再控制裁切锚点。
+
+## 样式与参数
+
+三个参数,全部 CSS 型变量注入:
+
+```css
+.ratio-box {
+  width: var(--ar-width, 320px);          /* 默认 320px:演示基准值,未证实 */
+  aspect-ratio: var(--ar-ratio, 16 / 9);  /* 默认 16/9:MDN 官方示例值 */
+  overflow: hidden;
+  border-radius: 12px;
+}
+.ratio-box img {
+  object-fit: var(--ar-fit, cover);       /* cover / contain / fill */
+}
+```
+
+数值出处:
+
+- `16 / 9`、`1 / 1`、`0.5` 出自 MDN 官方示例;`auto 3/2` 占位回退写法同为 MDN 示例;
+- 档位面板里的 4:3、3:2、21:9、9:16 为**社区常见内容比例,未证实**为规范推荐——按内容形态自选(头像方形、视频宽屏、竖屏短视频);
+- 样图刻意取内在 4:3(1200×900),与默认 16:9 比例盒不同比,三档 object-fit 的裁切/留边/变形一眼可辨。
+
+## 动效与交互
+
+比例是几何约束,交互反馈围绕「宽度变 → 高度跟」的推导链:
+
+- 拖宽度滑杆或调 ratio:高度瞬时重排,无补间——布局属性的过渡会造成连续重排,克制不加;
+- demo 读数同时给「实测高度」(ResizeObserver 测真实布局)与「换算高度」(width × height/width),两者恒等即是比例生效的直接证明;
+- 盒子入场 0.45s 淡入 + 10px 上移,只动 `opacity/translate`;`prefers-reduced-motion` 下取消;
+- 切 `object-fit` 不触发布局重排(fit 只影响绘制层),三档切换即时呈现。
+
+## 真实产品案例
+
+- **MDN 官方示例与「preventing jank」指南**:16/9、1/1 示例值与「img 永远带 width/height 属性防 CLS」的工程建议均出自 MDN aspect-ratio 页及其「See also」指南链(本次会话直连核对);
+- **视频/嵌入站点的 16:9 槽位**:播放器外层先按 16:9 占位、iframe 加载后不跳版,是 ratio 传播最广的用法(编辑性总结——具体站点实现未逐一核实;16:9 本身为 MDN 示例值);
+- **社交信息流的图片卡**:上传图比例各异,产品端用固定比例槽 + `object-fit: cover` 裁齐时间线,保证栅格整齐(编辑性总结——各产品裁切策略未逐一核实;cover + 比例盒组合出自 MDN 示例与调研 12§1 的 picture 片段惯例)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `ratio`(高度分母变大,如 21/9) | 盒子更扁长,cover 裁切更狠(上下被切更多),contain 留边更宽 | 盒子更接近方形/竖形,9:16 在窄屏占满高度,横屏内容首尾被切 |
+| `fit` → cover | 视觉饱满,信息可能被裁——重要主体放中央(object-position 补救) | → contain 完整可见但出现信箱边;→ fill 不裁不补,直接变形,仅用于可承受拉伸的底图 |
+| `width` | 更大的槽位,高度按比例同步放大;超过栅格列宽会被 max-width 卡住 | 高度同步收缩;低于 ~160px 时样图文字不可辨 |
+
+经验要点:比例跟内容走(视频 16:9、头像 1:1、文章配图 3:2 上下),别为视觉新奇选极端比例;凡 replaced 内容,`width/height` 属性 + CSS 一边 auto 是防 CLS 的标准组合。

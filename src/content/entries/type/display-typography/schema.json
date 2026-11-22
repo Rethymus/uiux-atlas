@@ -1,0 +1,116 @@
+{
+  "name": "Display Typography",
+  "nameZh": "展示级排版",
+  "aliases": ["展示级大字号", "display type", "hero typography", "tracking"],
+  "category": "type",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "展示级大字号的三件套:字号越大字距越紧(SF Pro 官方曲线)、行高比越低(apple.com 实测 56px→1.07)、可变字重替代合成加粗——与本站 hero 同源的手法。",
+    "en": "The display-size trio: the larger the size, the tighter the tracking (the official SF Pro curve), the lower the line-height ratio (apple.com-measured 56px→1.07), and variable weights instead of synthesized bold — the same techniques this site's hero uses."
+  },
+  "origin": {
+    "zh": "Apple HIG Typography §Tracking values 的 SF Pro 全曲线 66 行实抓(调研 01§2.2):6→17pt 渐紧(17pt = −26/1000em 全曲线最紧)、17→28pt 回松(28pt = +14‱ 局部最松)、28→80pt 渐收、80pt+ 归零;apple.com 网页版三铁律实抓(01§2.3):≥19px SF Pro Display/≤17px Text 换挡、行高比随字号减小放宽(56px→1.0714、40px→1.10、28px→1.1429)、三档断点只动 size+letter-spacing;本站 hero 同源:--step-5 clamp(35px,29.913px+1.413vw,48px)/ lh 1.12 / ls −0.02em(src/styles/global.css:163、883-888)。",
+    "en": "Apple HIG Typography §Tracking values, all 66 rows of the SF Pro curve captured (research 01 §2.2): 6→17pt progressively tighter (17pt = −26/1000em, the curve's tightest point), 17→28pt loosening back (28pt = +14‱, locally loosest), 28→80pt tightening again, 80pt+ at zero. apple.com's three web rules, captured from real CSS (01 §2.3): the ≥19px Display / ≤17px Text family switch, line-height ratios relaxing as sizes shrink (56px→1.0714, 40px→1.10, 28px→1.1429), and breakpoints touching only size+letter-spacing. This site's hero uses the same techniques: --step-5 clamp(35px,29.913px+1.413vw,48px), lh 1.12, ls −0.02em (src/styles/global.css:163, 883-888)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "size",
+      "unit": "px",
+      "min": 20,
+      "max": 96,
+      "step": 1,
+      "default": 48,
+      "cssVar": "--dt-size",
+      "effect": {
+        "zh": "展示字号。默认 48px 对齐 apple.com 大标题档(typography-headline 48px/600/−0.003em,01§2.3);96px 上限观察 SF 曲线 80pt+ 归零段。生产上大字号应流式化(clamp(),Baseline 2020-07,调研 05§12;本站 --step-5 即 Utopia 法)。",
+        "en": "Display size. The default 48px matches apple.com's large-headline tier (typography-headline 48px/600/−0.003em, 01 §2.3); the 96px cap shows the SF curve's zeroed 80pt+ range. In production, display sizes should be fluid (clamp(), Baseline 2020-07, research 05 §12; this site's --step-5 follows the Utopia method)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "weight",
+      "min": 100,
+      "max": 900,
+      "step": 10,
+      "default": 600,
+      "cssVar": "--dt-weight",
+      "effect": {
+        "zh": "展示字重。经 font-weight 驱动 Inter Variable 的 wght 100–900 注册轴(MDN 可变字体轴语义,调研 12§6/05§24 已核)——真实可变字重,非合成加粗;apple.com 展示级用 600(01§2.3)。",
+        "en": "Display weight. Drives Inter Variable's registered wght 100–900 axis through font-weight (MDN variable-font axis semantics, research 12 §6 / 05 §24) — real variable weight, not synthesized bold; apple.com uses 600 at display tiers (01 §2.3)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "trackingMode",
+      "options": [
+        { "value": "auto", "label": { "zh": "SF 曲线自动", "en": "SF curve (auto)" } },
+        { "value": "manual", "label": { "zh": "手动字距", "en": "Manual tracking" } }
+      ],
+      "default": "auto",
+      "effect": {
+        "zh": "JS 型参数(切 data-mode)。auto=按 SF Pro 官方曲线锚点(01§2.2,pt 档按 1x 折算近似)随字号插值字距;manual=直接应用 manualTracking。注意分歧:原生曲线 56pt 处 +6‱,而 apple.com 网页 56px 标题实测 −0.005em、本站 hero 48px 用 −0.02em——原生曲线与网页实践并不重合,演示如实并列两套数值。",
+        "en": "JS-type param (toggles data-mode). auto = interpolate tracking along the official SF Pro curve anchors (01 §2.2, pt tiers approximated at 1x) as size changes; manual = apply manualTracking directly. Note the divergence: the native curve reads +6‱ at 56pt, while apple.com's web headline measures −0.005em at 56px and this site's hero uses −0.02em at 48px — the native curve and web practice do not coincide; the demo shows both side by side."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "manualTracking",
+      "unit": "em",
+      "min": -0.05,
+      "max": 0.05,
+      "step": 0.005,
+      "default": -0.02,
+      "cssVar": "--dt-tracking",
+      "effect": {
+        "zh": "手动字距(em)。默认 −0.02em 为本站 hero/条目 h1 档(global.css:163);负字距只用于 ≥21px 标题(本站规范:中文正文字距 0,负字距是标题专属)。apple.com 实测档:56px −0.005em、48px −0.003em、17px meta −0.022em。",
+        "en": "Manual tracking in em. The default −0.02em is this site's hero/entry-h1 tier (global.css:163); negative tracking is reserved for ≥21px headings (site rule: zero tracking for CJK body, negative tracking is heading-only). apple.com measured tiers: 56px −0.005em, 48px −0.003em, 17px meta −0.022em."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "letter-spacing/font-weight 属基础能力;clamp() Baseline 2020-07(调研 05§12);可变字重需字体含 wght 轴(本站 Inter Variable wght 100–900,05§24 已核);无 wght 轴的字体浏览器合成伪粗体或钳制最近静态档。",
+      "en": "letter-spacing/font-weight are basic capabilities; clamp() is Baseline 2020-07 (research 05 §12); variable weight requires a wght axis (this site's Inter Variable wght 100–900, 05 §24 verified); fonts without the axis get synthesized pseudo-bold or clamping to the nearest static weight."
+    }
+  },
+  "fallback": {
+    "zh": "字体缺 wght 轴时 font-weight 退化为最近静态档或合成加粗,展示级观感(尤其 250–350 的轻档)会失真——关键标题钳制到字体实际提供的档位;无 opsz 轴时大字号沿用文本光学设计(Inter 的 opsz 14–32 双光学设计为已核示例,05§24),大字号可读性靠行高与字距补偿。",
+    "en": "Without a wght axis, font-weight falls back to the nearest static weight or synthesized bold, distorting display nuances (especially light 250–350 tiers) — clamp key headlines to weights the font actually ships. Without an opsz axis, large sizes keep the text optical design (Inter's opsz 14–32 dual optical design is the verified example, 05 §24); compensate legibility at display sizes via line-height and tracking."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "hero 大标语与章节大字:大字号 + 紧字距 + 低行高比(apple.com 铁律)", "en": "Hero taglines and section displays: large size + tight tracking + low line-height ratio (apple.com's rules)" },
+      { "zh": "流式大字标题:clamp() 把本手法一次性写成 CSS(本站 --step-5 同源)", "en": "Fluid display headings: clamp() writes this technique once in CSS (this site's --step-5 is the same source)" },
+      { "zh": "可变字重海报字:一张字体文件内 100–900 连续取档,微调无需重排", "en": "Variable-weight poster type: continuous 100–900 from one file, retuning without reflow" },
+      { "zh": "数字海报与统计大字:展示级字号 + tabular-nums(配合 tabular-numbers 条目)", "en": "Numeral posters and stat displays: display sizes + tabular-nums (pair with the tabular-numbers entry)" }
+    ],
+    "avoid": [
+      { "zh": "正文套负字距——小字号加宽才是可读性方向(SF 曲线 11pt 为 +6‱);本站规范:负字距只用于 ≥21px 标题", "en": "Negative tracking on body text — small sizes want wider tracking for legibility (the SF curve reads +6‱ at 11pt); this site's rule reserves negative tracking for ≥21px headings" },
+      { "zh": "中文大标题照搬西文紧字距——本站中文正文字距 0(CJK 本地化偏离,global.css:156),负字距对汉字的挤压需单独评估", "en": "Copying Latin tight tracking onto CJK display lines — this site keeps CJK body tracking at zero (CJK localization deviation, global.css:156); squeezing Han glyphs needs separate evaluation" },
+      { "zh": "把展示级手法用于长段落——1.07 的行高比只服务单双行大字,长文回到 1.5+ 体系(见 vertical-rhythm 条目)", "en": "Applying display treatment to long paragraphs — a 1.07 ratio serves one-to-two-line displays only; long text returns to the 1.5+ system (see vertical-rhythm)" }
+    ]
+  },
+  "a11y": {
+    "zh": "行高比与字距按大字号实测档走,但 WCAG 2.2 SC 1.4.12 的 0.12em 字距是用户覆写阈值而非设计默认(调研 05§18)——不得据此给展示标题加宽字距;大字号文本对比度按大文本阈值核对(见 wcag-contrast 条目);流式大字要防溢出(双行以上保持 lh ≥1.07 apple.com 档,三行以上回到更高行高比)。",
+    "en": "Line-height ratios and tracking follow the measured display tiers, but the WCAG 2.2 SC 1.4.12 0.12em letter-spacing is a user-override threshold, not a design default (research 05 §18) — do not widen display headings based on it; check contrast of large text against the large-text threshold (see wcag-contrast); guard fluid displays against overflow (keep lh ≥1.07 at the apple.com tier for up to two lines; return to higher ratios beyond three lines)."
+  },
+  "sources": [
+    "https://developer.apple.com/design/human-interface-guidelines/typography",
+    "https://rsms.me/inter/",
+    "https://utopia.fyi/type/calculator/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现展示级大字标题:字号 clamp() 流式,字距随字号自动收紧(SF 曲线插值或等效设计曲线),行高比按字号档走(48–56px → ~1.07),字重用可变 wght 轴;中文与西文分列处理字距。",
+      "en": "Build a display headline: fluid size via clamp(), tracking that tightens automatically with size (SF-curve interpolation or an equivalent design curve), line-height ratios by size tier (48–56px → ~1.07), variable wght weights; handle CJK and Latin tracking separately."
+    },
+    "acceptance": [
+      { "zh": "字号用 clamp(min, 首选, max) 流式化,端点命中设计档位", "en": "Size is fluid via clamp(min, preferred, max) with endpoints hitting the design tiers" },
+      { "zh": "负字距只作用于标题档(≥21px),正文与 CJK 正文保持 0 或正值", "en": "Negative tracking applies only to heading tiers (≥21px); body and CJK body keep 0 or positive values" },
+      { "zh": "行高比随字号收紧(48–56px → ~1.07–1.08,28px → ~1.14,apple.com 实测档)", "en": "Line-height ratios tighten with size (48–56px → ~1.07–1.08, 28px → ~1.14, apple.com-measured tiers)" },
+      { "zh": "字重经真实 wght 轴(font-weight 驱动可变字体),不依赖合成加粗", "en": "Weights ride the real wght axis (font-weight driving a variable font), never synthesized bolding" }
+    ]
+  }
+}

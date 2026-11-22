@@ -8,8 +8,10 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
 const entriesRoot = join(root, "src", "content", "entries");
 
-// 第七分类 components:24 个 slug(组件库分类学,六子分组)。
-// 24 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与其他分类同规则);
+// 第七分类 components:24 个 slug(组件库分类学,六子分组)+ 二批 6 条
+// (cascader / collapse-panel / rate-score / stepper / timeline / upload-states)
+// + 命令面板条目(command-palette,站点全站 Ctrl+K 的组件本体,吃狗粮条目)共 31 条。
+// 31 条已全部落地,均在下方 EXPECTED 缺失强制校验内(与其他分类同规则);
 // 条目级检查照常逐条全检(额外要求 subgroup ∈ 六值;nameZh 非空为全条目通用检查)。
 const COMPONENT_SLUGS = [
   "button", "icon", "tag", "typography",
@@ -18,29 +20,38 @@ const COMPONENT_SLUGS = [
   "table", "avatar", "badge", "card",
   "nav-menu", "tabs", "breadcrumb", "dropdown",
   "empty", "watermark",
+  "cascader", "collapse-panel", "rate-score", "stepper", "timeline", "upload-states",
+  "command-palette",
 ];
 
-// 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,8 slug)。
-// 16 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components 批产收口同动作);
-// 条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
+// 第八/第九分类 icons(图标体系)与 dataviz(数据可视化)。
+// icons 首批 8 条已落地;icons 第二批 b22-icons2(补全:icon-font-vs-svg / icon-button /
+// favicon-stack / icon-system-design,调研 07 + 12 补研 §12)落地即并入同一缺失强制校验
+// (与 b23-dataviz、b24-principles2 同动作);条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
 const ICONS_SLUGS = [
   "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
   "icon-sprite-symbols", "icon-lucide-set", "icon-color-states", "icon-motion",
+  "icon-font-vs-svg", "icon-button", "favicon-stack", "icon-system-design",
 ];
+// dataviz 扩编批(b23):small-multiples / chart-animation / chart-accessibility 三条落地,
+// 与既有 8 条并入同一强制校验(与此前各批「同动作」一致)。
 const DATAVIZ_SLUGS = [
   "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
   "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
   "dataviz-chart-selection", "dataviz-color-ordering",
+  "small-multiples", "chart-animation", "chart-accessibility",
 ];
 
 // 第十分类 principles(交互法则与无障碍,15 slug)。
 // 15 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components/icons/dataviz
 // 批产收口同动作);条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
+// b24-principles2 批(aesthetic-usability/goal-gradient/pareto-principle,调研 12 补研 §14)落地即并入同一强制校验。
 const PRINCIPLES_SLUGS = [
   "fitts-law", "hick-law", "millers-law", "jakobs-law", "peak-end-rule",
   "doherty-threshold", "teslers-law", "gestalt-proximity", "gestalt-similarity-closure",
   "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
   "prefers-contrast", "keyboard-navigation",
+  "aesthetic-usability", "goal-gradient", "pareto-principle",
 ];
 
 const EXPECTED = {
@@ -57,9 +68,13 @@ const EXPECTED = {
     "backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials",
     "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient",
     "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api",
+    // b21-materials2 批(材质与光影补全):4 条(调研 09/12),落地即并入缺失强制校验
+    // (与 color b12 批同动作)。
+    "contact-shadows", "specular-highlight", "dimming-layer", "depth-of-field",
   ],
   // motion 第 8 批:8 个工艺/行为条目已落地,自本轮起并入缺失强制校验(与 styles 第 8 批同动作)。
   // b14 批(动效补全):6 条 M3/Web 动效条目并入同一强制校验。
+  // b19 批(微交互补全·二):6 条(调研 10§7/§8.2 + 12§3/§4/§5/§6/§14),落地即并入缺失强制校验。
   motion: [
     "motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens",
     "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture",
@@ -68,6 +83,8 @@ const EXPECTED = {
     "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow",
     "m3-duration-tokens", "easing-pairs", "choreography", "parallax",
     "haptics-web", "page-transitions",
+    "flip-technique", "scroll-snap", "magnetic-hover", "kinetic-typography",
+    "progress-motion", "handoff-curves",
   ],
   color: [
     "oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color",
@@ -76,18 +93,28 @@ const EXPECTED = {
     // b12-color 批(色彩与主题补全):5 条(调研 06 色彩与主题 + 11 补研),落地即并入缺失强制校验。
     "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces",
     "color-psychology-ui", "theme-transition",
+    // b18-color2 批(色彩与主题二批):5 条(调研 06 + 12 补研§11),落地即并入缺失强制校验(同前批动作)。
+    "brand-color-system", "dark-mode-patterns", "status-color-system",
+    "color-functions", "multi-theme-tokens",
   ],
   // type b11 批(排版补全):6 条排版条目并入同一强制校验。
+  // type b17-type2 批(排版二次补全):6 条排版条目并入同一强制校验。
   type: [
     "fluid-type-scale", "variable-fonts", "fluid-spacing",
     "measure-line-length", "wcag-text-spacing", "cjk-typography",
     "font-display-strategy", "text-wrap-balance", "drop-cap-initial",
+    "tabular-numbers", "baseline-grid", "font-pairing",
+    "small-caps-features", "vertical-rhythm", "display-typography",
   ],
   // layout b10 批(布局补全):8 条(调研 05§一§二 + 11 补研),落地即并入缺失强制校验。
+  // layout b16-layout2 批:6 条(split-view/aspect-ratio/responsive-images/logical-properties/
+  // writing-modes/custom-scrollbar,调研 05§8 + 12§1/§2 + 10§8.3 + 11§9),落地即并入同一强制校验。
   layout: [
     "container-queries",
     "auto-fit-minmax", "subgrid", "position-sticky", "safe-area",
     "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning",
+    "split-view", "aspect-ratio", "responsive-images", "logical-properties",
+    "writing-modes", "custom-scrollbar",
   ],
   components: COMPONENT_SLUGS,
   icons: ICONS_SLUGS,

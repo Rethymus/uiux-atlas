@@ -2,7 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import { RESOURCES, RESOURCE_GROUPS } from "@/data/resources";
 import { t } from "@/i18n/ui";
-import { resourcesUrl, trendsUrl } from "@/lib/urls";
+import { homeUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // Resources page (en): five groups × resource cards; data sourced from prior research (src/data/resources.ts)
 const dict = t("en");
@@ -17,6 +17,15 @@ const res = dict.resources;
   activeNav="resources"
 >
   <div class="resources-page">
+    {/* Back affordance (checklist: non-hierarchy pages get a back link too): "← Back home";
+        the Base.astro global script intercepts [data-back] — history.back() when the
+        previous entry is same-origin, plain <a href> fallback to home otherwise */}
+    <p class="page-back">
+      <a class="back-link" href={homeUrl("en")} data-back>
+        <span class="back-arrow" aria-hidden="true">←</span>
+        {dict.list.backHome}
+      </a>
+    </p>
     {/* Page head: same skeleton as list pages (.list-head, --step-4 title + mono count) */}
     <header class="list-head">
       <h1 class="list-title">{res.title}</h1>

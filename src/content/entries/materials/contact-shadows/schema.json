@@ -1,0 +1,127 @@
+{
+  "name": "Contact Shadows",
+  "nameZh": "接触阴影",
+  "aliases": ["接触阴影", "Contact Shadow", "Ambient Occlusion", "AO", "贴地阴影"],
+  "category": "materials",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "元素贴着表面时脚下那道紧贴的深色椭圆软阴影,模拟 3D 渲染的环境光遮蔽(AO);与悬浮投影(偏移大、更弥散)构成「贴地/悬浮」两档高度语言。",
+    "en": "The tight, dark elliptical shadow right beneath an element touching its surface, simulating ambient occlusion from 3D rendering; paired with float shadows (large offset, more diffuse) as a two-step grounded/floating elevation language."
+  },
+  "origin": {
+    "zh": "术语来自 3D 渲染的环境光遮蔽(ambient occlusion);CSS 社区惯用「椭圆伪元素 + blur」实现,属实践共识,调研未找到单一权威文档定义(out/design-study/12-expansion.md §7,如实标注);分层阴影与「阴影不叠纯黑、单一全局光源」原则经 Josh Comeau《Designing Shadows》核验;阴影随体积/高度加深的定性规则见 WWDC25 219(out/design-study/09-apple-materials.md §8.4)。",
+    "en": "The term comes from ambient occlusion in 3D rendering; the CSS community idiom is an elliptical pseudo-element + blur — a practice consensus with no single authoritative document (out/design-study/12-expansion.md §7, honestly noted); the layered-shadow and non-pure-black principles are verified against Josh Comeau's Designing Shadows; the qualitative rule that shadows deepen as elements grow/lift is in WWDC25 219 (out/design-study/09-apple-materials.md §8.4)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "distance",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 6,
+      "cssVar": "--cs-distance",
+      "effect": {
+        "zh": "元素底面到表面的贴合距离:贴地椭圆挂在该距离处,高度 = 2×distance、下探 = distance(椭圆一半藏在元素底边后、一半露出)。默认 6px 取自调研配方(椭圆 bottom:-6px、height:12px,即 distance=6);0 = 完全贴合,椭圆被元素自身遮住(物理正确)。距离越大椭圆越长、元素读作「被抬离表面」。",
+        "en": "The fit distance between the element's bottom edge and the surface: the contact ellipse sits at that distance, height = 2×distance, protruding = distance (half tucked behind the element's bottom edge, half showing). Default 6px is the research recipe (ellipse bottom:-6px, height:12px, i.e. distance=6); 0 = fully grounded, the ellipse hides behind the element itself (physically correct). Larger distance = longer ellipse and the element reads as lifted."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "spread",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 6,
+      "cssVar": "--cs-spread",
+      "effect": {
+        "zh": "贴地椭圆的模糊半径(filter: blur)。默认 6px 取自调研配方 blur(6px)。「软接触」的软就来自它:越大阴影越软越融,过大时与表面糊成一片、失去「接触感」。",
+        "en": "Blur radius of the contact ellipse (filter: blur). Default 6px is the research recipe blur(6px). This is the 'soft' in soft contact: larger = softer and more blended; too large smears into the surface and loses the sense of contact."
+      }
+    },
+    {
+      "type": "color",
+      "name": "color",
+      "format": "hex",
+      "default": "#3366cc",
+      "cssVar": "--cs-color",
+      "effect": {
+        "zh": "阴影基色。原则:阴影不叠纯黑——取背景色相、降饱和降亮度;默认 #3366cc 即调研示例的蓝底配方 hsl(220deg 60% 50%) 的等值 hex。带色相的阴影在浅色界面上比纯黑更干净、与背景同源。",
+        "en": "Shadow base color. Rule: never pure black — derive from the backdrop hue with reduced saturation and lightness; default #3366cc is the hex equivalent of the research example recipe hsl(220deg 60% 50%) on a blue backdrop. Tinted shadows read cleaner than black on light UI and stay in the backdrop's family."
+      }
+    },
+    {
+      "type": "number",
+      "name": "alpha",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.25,
+      "cssVar": "--cs-alpha",
+      "effect": {
+        "zh": "贴地椭圆的基础不透明度;默认 0.25 取调研配方 hsl(... / 0.25)。悬浮投影(Comeau 分层配方)按同透明度原则缩放:每层 0.2 = 0.25×0.8。分层原则:各层透明度一致,靠倍增偏移/模糊造层次。",
+        "en": "Base opacity of the contact ellipse; default 0.25 is the research recipe hsl(... / 0.25). The float projection (Comeau layered recipe) scales on the same-opacity principle: each layer 0.2 = 0.25×0.8. Layering rule: equal opacity across layers, hierarchy comes from doubled offsets/blurs."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "contact", "label": { "zh": "贴地接触 contact", "en": "Contact" } },
+        { "value": "float", "label": { "zh": "悬浮投影 float", "en": "Float" } }
+      ],
+      "default": "contact",
+      "effect": {
+        "zh": "JS 型参数,demo 订阅后切换 data-mode。contact = 贴地接触阴影(椭圆伪元素 + blur,模拟 AO——元素「坐」在表面上);float = 悬浮投影(Comeau 五层倍增配方:1/2/4/8/16px 偏移与模糊同步倍增、每层同透明度 0.2——元素「漂」在表面上方)。两式共用同一阴影色与光源比例(水平:竖直 = 1:2)。",
+        "en": "JS-type param; the demo subscribes and toggles data-mode. contact = grounded contact shadow (elliptical pseudo-element + blur, simulating AO — the element sits on the surface); float = floating projection (Comeau's five-layer doubling recipe: 1/2/4/8/16px offsets and blurs doubled in lockstep, equal opacity 0.2 per layer — the element floats above the surface). Both share the same shadow color and light ratio (horizontal:vertical = 1:2)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "box-shadow / filter / 渐变均 Baseline 广泛可用(调研 12 §7);demo 的 color-mix() 需 Baseline 2023-05(Chrome 111+ / Safari 16.2+ / Firefox 113+,调研 12 §11)。颜色参数本身是普通 hex,无兼容门槛。",
+      "en": "box-shadow / filter / gradients are all Baseline widely available (research 12 §7); the demo's color-mix() needs Baseline 2023-05 (Chrome 111+ / Safari 16.2+ / Firefox 113+, research 12 §11). The color parameter itself is plain hex with no compatibility floor."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 color-mix() 时退回 8 位 hex 写死透明度(如 #3366cc40);极老环境不支持 filter: blur 时椭圆退回纯色半透明(边缘略硬,仍是有效的接触阴影)。阴影是纯装饰层,任何降级都不影响功能与可读性。",
+    "en": "Without color-mix(), fall back to 8-digit hex with a fixed alpha (e.g. #3366cc40); on very old engines without filter: blur, the ellipse degrades to flat translucent color (harder edge, still a valid contact shadow). Shadows are purely decorative — no degradation affects function or readability."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "拖拽排序中被抓起的卡片:抬升时接触阴影拉长变淡,落点弹回贴地——高度叙事的核心道具", "en": "Cards picked up in drag-to-reorder: the contact shadow stretches and fades as they lift, snapping back to grounded on drop — the core prop of elevation storytelling" },
+      { "zh": "底部吸附元素(FAB、Dock、工具条)与表面的贴合感", "en": "Bottom-docked elements (FABs, docks, toolbars) sitting convincingly on their surface" },
+      { "zh": "3D/AR 视图、产品陈列、卡片桌面等「物体放在平面上」的隐喻界面", "en": "Metaphorical interfaces where objects rest on planes: 3D/AR views, product shelves, card tables" },
+      { "zh": "贴地卡与悬浮卡的层级区分——两式阴影对照表达高度差", "en": "Distinguishing grounded vs floating cards — the two shadow styles contrast to encode height" }
+    ],
+    "avoid": [
+      { "zh": "对分层悬浮阴影做逐帧动画——渲染开销大,调研明确不建议(调研 12 §7)", "en": "Frame-by-frame animation of layered float shadows — expensive to render, explicitly discouraged (research 12 §7)" },
+      { "zh": "阴影叠纯黑——压灰褪色、与背景脱节(调研 12 §7)", "en": "Pure-black shadows — they gray out and detach from the backdrop (research 12 §7)" },
+      { "zh": "多光源混用——全站应共享单一光源与同一偏移比例(如水平:竖直 = 1:2)", "en": "Mixing light sources — the whole product should share one light and one offset ratio (e.g. horizontal:vertical = 1:2)" },
+      { "zh": "用阴影表达可点击——阴影表达高度与材质,不表达交互性", "en": "Using shadows to mean clickable — shadows encode height and material, not interactivity" }
+    ]
+  },
+  "a11y": {
+    "zh": "阴影是纯装饰深度线索:不可作为传达层级或状态的唯一手段(需配合位移/尺寸/文字);控件边界仍需满足 3:1 非文本对比(WCAG 2.1 SC 1.4.11);深色表面上阴影可感知度下降,需按实际背景核对;阴影不承载交互语义,焦点指示仍需可见(WCAG 2.1 SC 2.4.7)。",
+    "en": "Shadows are decorative depth cues: never the sole carrier of hierarchy or state (pair with position/size/text); control boundaries still need 3:1 non-text contrast (WCAG 2.1 SC 1.4.11); shadows lose legibility on dark surfaces — check against the real backdrop; shadows carry no interaction semantics, so focus indicators remain mandatory (WCAG 2.1 SC 2.4.7)."
+  },
+  "sources": [
+    "https://www.joshwcomeau.com/css/designing-shadows/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "在浅色桌面上摆放一张可调「贴合距离」的内容卡:contact 模式用椭圆伪元素 + blur 画出紧贴的接触阴影,float 模式切换为五层倍增悬浮投影;阴影色取背景色相而非纯黑,并附一排固定距离(0/6/16px)的对照小卡。",
+      "en": "Place a content card with an adjustable ground distance on a light desk: contact mode draws a tight contact shadow with an elliptical pseudo-element + blur, float mode switches to a five-layer doubling projection; the shadow hue derives from the backdrop, not pure black, plus a reference row of fixed-distance minis (0/6/16px)."
+    },
+    "acceptance": [
+      { "zh": "贴地椭圆随 distance 联动:height = 2×distance、下探 = distance,blur 用 spread,颜色/透明度用 color/alpha 快照值", "en": "The contact ellipse tracks distance: height = 2×distance, protrusion = distance; blur from spread; color/opacity from the color/alpha snapshot values" },
+      { "zh": "阴影色不叠纯黑:从界面背景色相派生(示例 #3366cc = hsl(220 60% 50%)),全站共享单一光源与 1:2 偏移比例", "en": "No pure-black shadows: derive from the backdrop hue (example #3366cc = hsl(220 60% 50%)); one shared light and 1:2 offset ratio sitewide" },
+      { "zh": "float 模式用 1/2/4/8/16px 五层倍增 box-shadow,每层同透明度(默认档 0.2 = alpha 0.25×0.8)", "en": "Float mode uses the five-layer 1/2/4/8/16px doubling box-shadow with equal per-layer opacity (default 0.2 = alpha 0.25×0.8)" },
+      { "zh": "分层阴影不做逐帧动画;参数切换的过渡只落在可合成属性上,prefers-reduced-motion 时取消", "en": "No frame-by-frame animation of layered shadows; transitions on parameter changes touch only compositable properties and are disabled under prefers-reduced-motion" },
+      { "zh": "阴影不作为层级唯一线索:元素同时以位移/标注表达高度", "en": "Shadows are never the only hierarchy cue: elements also express height via offset/labels" }
+    ]
+  }
+}

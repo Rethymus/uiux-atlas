@@ -1,0 +1,79 @@
+## 结构与 DOM
+
+书写模式是「容器级声明」:挂在祖先盒上,整棵子树的块流与内联流一起转向,DOM 顺序不变:
+
+```html
+<article class="paper">   <!-- writing-mode 挂容器 -->
+  <h3>静夜思 · Li Bai</h3>
+  <p>床前明月光</p>
+  <p>疑是地上霜</p>
+  <p>…</p>
+  <p><span class="year">2026</span> 年书</p>
+</article>
+<aside><h2 class="spine">书脊标签</h2></aside>
+```
+
+```css
+.paper {
+  writing-mode: vertical-rl;      /* 传统中日竖排:行自上而下、从右往左(调研 12§2) */
+  text-orientation: mixed;        /* 汉字直立、西文旋转(规范默认) */
+  height: 320px;                  /* 竖排要限高,行(列)沿块轴排列 */
+}
+.paper .year {
+  text-combine-upright: all;      /* 纵横对齐:「2026」压进一个字格 */
+}
+.spine { writing-mode: vertical-rl; }  /* 侧边书脊标签(调研 12§2 片段原样) */
+```
+
+关键点:
+
+- 取值:`horizontal-tb`(默认)/ `vertical-rl` / `vertical-lr` / `sideways-rl` / `sideways-lr`(字形整体侧放,experimental);`lr`/`tb` 旧值已废弃(调研 12§2);
+- 竖排下「行」变成列:`vertical-rl` 行从右往左排,`vertical-lr` 从左往右——诗句顺序的视觉翻转由这一个值决定;
+- 配套三件:`direction`(行内方向)、`text-orientation`(竖排字形朝向)、`text-combine-upright`(纵横对齐)(调研 12§2);
+- `writing-mode` 也改变逻辑属性的轴:`padding-block` 在竖排里就是左右方向——与 logical-properties 条目天然联动。
+
+## 样式与参数
+
+三个参数,全部 CSS 型变量注入:
+
+```css
+.paper {
+  writing-mode: var(--wm-mode, vertical-rl);        /* 默认竖排:12§2 记「传统中日竖排」 */
+  text-orientation: var(--wm-orientation, mixed);   /* mixed 为规范默认 */
+}
+.paper .year { text-combine-upright: var(--wm-combine, none); }
+```
+
+数值出处:
+
+- `vertical-rl` 书脊配方 `aside h2 { writing-mode: vertical-rl }` 与西文侧放 `sideways-lr` + `@supports not (…) { transform: rotate(-90deg) }` 回退**逐字出自调研 12§2 可复用片段**;
+- `horizontal-tb` 为规范默认值;`mixed` 为 text-orientation 规范默认值;
+- `sideways-rl / sideways-lr` 为 experimental,调研 12§2 明确「需 @supports 检测」,各家正式版本未核验(未证实)——demo 以 `CSS.supports('writing-mode','sideways-lr')` 运行时检测如实报告;
+- writing-mode Baseline 自 2017-03(调研 12§2)。
+
+## 动效与交互
+
+书写模式切换是整棵子树的流翻转,读数负责把「不可见」变「可见」:
+
+- **切 mode**:信纸瞬时重排——vertical-rl 与 vertical-lr 的诗句左右互换、horizontal-tb 回横排;竖排要限高才成「列」,demo 固定信纸高度让换列可见;
+- **orientation 三档探针**:标题里的「Li Bai」——mixed 旋转 90°、upright 逐字母直立堆叠、sideways 全侧放;汉字在三档下都保持直立(mixed/upright),该属性仅竖排生效;
+- **combine 的纵横对齐**:落款「2026 年书」在 all 档把四位数压进一个字格,行气不断;
+- **sideways 检测读数**:页面载入即跑 `CSS.supports`,原生支持走 `writing-mode: sideways-lr`,不支持时按钮可切换 `rotate(-90deg)` 回退并如实标注「需回退」;
+- 卡片入场 0.45s 淡入上移只动 `opacity/translate`,`prefers-reduced-motion` 下取消;书写模式切换本身无过渡——流方向翻转做补间只会头晕。
+
+## 真实产品案例
+
+- **侧边书脊标签(调研 12§2 片段原始用例)**:`aside h2 { writing-mode: vertical-rl }` 把侧栏标题竖起来,中文文档站与日文站常用于装饰性分区标签(编辑性应用——具体站点清单未逐一核实;配方逐字出自调研);
+- **中文竖排诗笺/书法页面**:诗词主题站点用 vertical-rl 恢复「自上而下、行从右起」的传统文序,配合 text-combine-upright 处理纪年(编辑性总结——具体站点实现未逐一核实;机制与取值均为调研 12§2 记载);
+- **MDN writing-mode 参考页与 css-writing-modes 规范(调研 12§2 来源)**:取值表、text-orientation/text-combine-upright 配套语义与「旧值已废弃」标注的权威出处。
+
+## 参数敏感度
+
+| 参数 | 调大(切档)会… | 调小(回默认)会… |
+| --- | --- | --- |
+| `mode` → vertical-lr | 行序从左往右——与中文传统文序相反,诗句左右互换一眼可辨 | vertical-rl 是中文竖排正字法;horizontal-tb 回横排通用 |
+| `orientation` → upright | 拉丁字母逐个直立堆叠,适合单词竖排标记;长句可读性骤降 | mixed 是规范默认:汉字直立 + 西文旋转,混排最稳 |
+| `combine` → all | 「2026」压进一个字格,竖排行气连贯;四位数以上开始拥挤 | none 逐字竖排,数字逐个占格,年份行被拉长 |
+| 信纸高度 | 限高越低,竖排列数越多、换列越频繁 | 不限高时所有行挤进一列,竖排的「多列文序」消失 |
+
+经验要点:竖排容器必须限高,否则块轴不换行;experimental 值永远配特性检测;竖排只做呈现增强,关闭后内容仍按 DOM 顺序横排可读。

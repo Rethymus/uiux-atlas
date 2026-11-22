@@ -1,0 +1,69 @@
+## Structure & DOM
+
+Magnetism needs only "a sensing field + one attracted button", with no extra layers:
+
+```html
+<div class="field">          <!-- sensing area: listens to pointermove/pointerleave -->
+  <button class="magnetic">CTA</button>
+</div>
+```
+
+Key points:
+
+- The distance test and interpolation live entirely in JS; the DOM serves no animation purpose. The button is a plain `<button>` — keyboard reachable, semantics intact;
+- Displacement is written straight to `el.style.translate` (compositor path) and **never through CSS variables** — per-frame custom-property writes invalidate the subtree; variables are for event-level switches (research 10 §7.4);
+- Touch detection goes through media queries and `pointerType`: under `(hover: none)` the magnet loop simply never starts (12 §5).
+
+## Styling & Parameters
+
+All three parameters are JS-type (demo-subscribed), matching the three quantities in the 12 §5 implementation snippet:
+
+```js
+// Distance test (verbatim from the 12 §5 snippet):
+const reach = Math.max(r.width, r.height) / 2 / (1 - radius);
+if (dist < reach) { tx = mx * radius; ty = my * radius; }  // attracted: target = pointer offset × radius
+else              { tx = 0; ty = 0; }                       // outside: snap back
+
+// Per-frame lerp + rAF (the hand-rolled lerp version of the 12 §5 snippet):
+cx += (tx - cx) * lerp; cy += (ty - cy) * lerp;
+el.style.translate = `${cx}px ${cy}px`;
+```
+
+```css
+/* Degradation belt-and-suspenders (12 §5 CSS snippet): touch has no hover semantics, reduced-motion is vestibular safety */
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .magnetic { translate: none !important; }
+}
+```
+
+Where the numbers come from:
+
+- `radius = 0.45` and `lerp = 0.15` are the defaults of the implementation snippet in 12 §5; that page records **0.05–0.2** as the common lerp band and "inset/expand the box by 25%–50%" as the common catch band;
+- The GSAP route: the official docs recommend `gsap.quickTo()` to pre-configure reusable tweens for "high-frequency tweens of the same target and property" (3.10.0+), with mouse followers and magnetic buttons as the official showcase scenario (12 §5) — the demo's hand-rolled lerp version is its dependency-free equivalent;
+- The Codrops magnetic tutorial URL could not be verified due to polluted search results (recorded as unverified in 12 §5); every number here anchors on the GSAP docs and standard lerp math, with no values quoted from third-party tutorials.
+
+## Motion & Interaction
+
+- **Anticipatory displacement**: the value of magnetism is the button leaning half a step toward the pointer — advertising clickability ahead of the click; the radius factor caps displacement at 45% of the pointer offset, so the button never reaches the pointer and the click target never drifts;
+- **Release is the bounce-back**: outside the radius the target zeroes out and lerp's exponential approach naturally yields the fast-then-slow return — no extra easing curve needed;
+- **Tune the hand-feel with lerp**: stay within 0.05–0.2 — higher tracks harder, lower feels denser; each frame writes translate directly and the loop stops itself once settled, never idling rAF;
+- **Degradation discipline (12 §5)**: `(hover: none)` touch and `prefers-reduced-motion` (large displacement pan/scale is a classic vestibular trigger) get the plain hover; the demo shows both detections live and mode=plain previews the degraded form;
+- No magnetism on high-frequency buttons — Apple HIG: avoid motion on frequent interactions; for pressed-state color feedback see the press-feedback entry.
+
+Relation to smooth-craft: magnetism is the textbook scene for "transform only + per-frame direct writes"; to replace the snap-back with a real spring (velocity handoff), see handoff-curves.
+
+## Real-world examples
+
+- **The GSAP documentation**: the quickTo page lists "mouse followers and magnetic buttons" as the API's official showcase scenario (12 §5, first-hand gsap.com docs) — toolchain-level official endorsement of the pattern;
+- **Magnetic CTAs on marketing sites** (common on the hero buttons of product sites like Stripe and Linear): a popular community practice not site-by-site verified in this research; parameters typically converge on radius 0.3–0.5 / lerp 0.1–0.2;
+- **macOS Dock magnification**: icons scale with a distance falloff as the pointer nears — the system-level prototype of "distance-field-driven UI" (publicly known behavior; Apple publishes no parameters); the magnetic button is the same idea at button scale.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `radius` | the pull gets aggressive, the button leans almost onto the pointer; past 0.6 click targeting starts to suffer | the magnetism becomes a faint nod; under 0.2 it is barely perceptible — skip the effect entirely at that point |
+| `lerp` | harder tracking, faster return, more "mechanical"; past 0.3 it approaches direct follow | sluggish, jelly-like displacement; under 0.05 the button moves through honey and the return visibly lags |
+| `mode` | plain previews what touch / reduced-motion users actually see — verify the degradation | magnet is the full pointer experience; both must remain reachable |
+
+Rule of thumb: start at radius 0.3–0.5, smaller radius for bigger buttons; fine-tune lerp within 0.1–0.2; enable only in desktop hover contexts — touch and reduced-motion get the plain state. Magnetism spends surplus attention; it never belongs on the task-critical path.

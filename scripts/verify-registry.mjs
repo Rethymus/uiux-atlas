@@ -1,4 +1,4 @@
-// shadcn registry 发布件门禁:校验 public/registry/ 下的 24 个 item JSON 与 registry index。
+// shadcn registry 发布件门禁:校验 public/registry/ 下的 31 个 item JSON 与 registry index。
 // 任一 problem 即 exit 1(先 generate:registry 再跑本门禁)。
 // 用法:pnpm -C uiux-atlas run verify:registry
 import { readdirSync, readFileSync, existsSync } from "node:fs";
@@ -10,16 +10,25 @@ const root = resolve(scriptDir, "..");
 const entriesRoot = join(root, "src", "content", "entries", "components");
 const regDir = join(root, "public", "registry");
 
-// 24 = components 分类部件条目数(与 generate-registry.mjs、verify-entries.mjs 的
-// COMPONENT_SLUGS 口径一致;若部件清单增删,三处需同步修订)
-const EXPECTED_COUNT = 24;
+// 31 = components 分类部件条目数:24 基础 + 二批 6(cascader / collapse-panel /
+// rate-score / stepper / timeline / upload-states)+ command-palette(清单
+// mcp-registry-stale:三口径同步后与 verify-entries.mjs 的 COMPONENT_SLUGS 对齐;
+// 若部件清单增删,与 generate-registry.mjs、verify-entries.mjs 三处同步修订)
+const EXPECTED_COUNT = 31;
 
 const problems = [];
 const items = {}; // slug -> item(供 index 对账)
 
-// 期望 slug 清单直接从条目目录取,与生成器同口径
+// 期望 slug 清单直接从条目目录取,与生成器同口径:
+// 统一条目谓词 = schema.json + demo/Demo.tsx + zh.mdx 三件齐全(清单 mcp-registry-stale:
+// 只看 schema.json 会把在制骨架收进期望,与 MCP/站点口径互斥;三处一致后骨架自动出局)
 const slugs = readdirSync(entriesRoot)
-  .filter((s) => existsSync(join(entriesRoot, s, "schema.json")) && existsSync(join(entriesRoot, s, "demo", "Demo.tsx")))
+  .filter(
+    (s) =>
+      existsSync(join(entriesRoot, s, "schema.json")) &&
+      existsSync(join(entriesRoot, s, "demo", "Demo.tsx")) &&
+      existsSync(join(entriesRoot, s, "zh.mdx")),
+  )
   .sort();
 if (slugs.length !== EXPECTED_COUNT) {
   problems.push(`条目目录部件数为 ${slugs.length},期望 ${EXPECTED_COUNT}(部件清单增删需同步门禁)`);
@@ -81,7 +90,7 @@ if (!existsSync(regDir)) {
   const expected = new Set([...slugs.map((s) => `${s}.json`), "index.json"]);
   for (const f of files) {
     if (f.startsWith(".")) continue;
-    if (!expected.has(f)) problems.push(`public/registry/${f} 不在期望清单(index.json + 24 item)内`);
+    if (!expected.has(f)) problems.push(`public/registry/${f} 不在期望清单(index.json + 31 item)内`);
   }
 
   // ── registry index:JSON 数组,数量与 item 一致,名字集合一致 ──

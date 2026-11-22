@@ -3,7 +3,7 @@ import Base from "@/layouts/Base.astro";
 import { TRENDS, type Trend } from "@/data/trends";
 import { listEntryMetas } from "@/lib/metas";
 import { t } from "@/i18n/ui";
-import { entryUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
+import { entryUrl, homeUrl, resourcesUrl, trendsUrl } from "@/lib/urls";
 
 // Trends page (en): 2023–2026 rising/cooling point-in-time snapshots, sourced from
 // out/research/03-visual-style-trends.md §2 (src/data/trends.ts, with per-trend basis and source)
@@ -32,6 +32,15 @@ const labelOf = (m: { name: string; nameZh?: string }) => m.nameZh ?? m.name;
 
 <Base locale="en" title={trends.title} description={trends.intro} altUrl={trendsUrl("zh")}>
   <div class="resources-page">
+    {/* Back affordance (checklist: non-hierarchy pages get a back link too): "← Back home";
+        the Base.astro global script intercepts [data-back] — history.back() when the
+        previous entry is same-origin, plain <a href> fallback to home otherwise */}
+    <p class="page-back">
+      <a class="back-link" href={homeUrl("en")} data-back>
+        <span class="back-arrow" aria-hidden="true">←</span>
+        {dict.list.backHome}
+      </a>
+    </p>
     {/* Page head: same skeleton as the resources page (.list-head, --step-4 title + mono count;
         no category context here, the 3px bar takes the :root default --cat = --accent, spec §4.4-1) */}
     <header class="list-head">

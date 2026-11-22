@@ -1,0 +1,78 @@
+## 结构与 DOM
+
+接触阴影是「表面 + 悬浮元素」两层结构,阴影本身是悬浮元素的伪元素:元素贴着表面时,脚下有一道紧贴、色深、边缘柔和的椭圆暗影,模拟 3D 渲染里的环境光遮蔽(AO);元素悬浮时则切换为偏移大、更弥散的投影。
+
+```html
+<div class="scene">
+  <div class="floor"></div>      <!-- 表面:接触阴影的落点 -->
+  <div class="card">内容</div>   <!-- 悬浮元素;::after 即贴地椭圆 -->
+</div>
+```
+
+关键点:
+
+- 椭圆挂在元素的 `::after` 上、`z-index: -1`——叠在表面之上、元素之下,被元素底边遮住一半;
+- 元素与表面的间距(distance)决定椭圆的长度与下探量:间距越大椭圆越长,元素读作「被抬离表面」;
+- 同一场景所有元素共享单一光源:同一阴影色相、同一偏移比例(如水平:竖直 = 1:2),这是「整套 UI 像被同一盏灯照亮」的前提(调研 12 §7)。
+
+## 样式与参数
+
+四个 CSS 变量型参数 + 一个 JS 型模式开关,椭圆几何与配色全部由调研配方给出:
+
+```css
+.card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 10%; right: 10%;                    /* 椭圆内收,不顶满卡宽 */
+  height: calc(var(--cs-distance) * 2);     /* 12px @ 默认 6 */
+  bottom: calc(var(--cs-distance) * -1);    /* 下探 6px */
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 100%), transparent);
+  filter: blur(var(--cs-spread));           /* 6px */
+}
+
+/* float 模式:Comeau 五层倍增悬浮投影,每层同透明度(默认档 0.2 = alpha 0.25×0.8) */
+[data-mode="float"] .card {
+  box-shadow:
+    1px 2px 2px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    2px 4px 4px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    4px 8px 8px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    8px 16px 16px  color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    16px 32px 32px color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent);
+}
+```
+
+数值出处:
+
+- 贴地椭圆配方:`bottom: -6px` + `height: 12px` + `blur(6px)` + `hsl(阴影色 / 0.25)` = 调研 12 §7 的可复用片段(distance=6 恰好还原该配方);
+- 分层悬浮投影:偏移与模糊按 1/2/4/8/16px 倍增、每层同透明度——同篇调研记载的 Comeau 分层原则(示例用 0.2/层);
+- 阴影基色 `#3366cc` = 调研示例 `hsl(220deg 60% 50%)`(蓝底示例)的等值 hex——「阴影不叠纯黑」的落地;
+- `color-mix()` Baseline 自 2023-05;`box-shadow`/`filter` 均为 Baseline 广泛可用。
+
+## 动效与交互
+
+接触阴影的动效服务于「高度叙事」——抬升与落下:
+
+- **拖拽抬升**:抓起时 distance 增大(椭圆拉长下探、元素上移),落点弹回贴地;过渡只落在 `transform`/`filter` 等可合成属性上;
+- **模式切换**(contact↔float):两套阴影直接置换,不做逐帧动画——调研明确「分层阴影渲染开销大,不建议对其做动画」(调研 12 §7);
+- 阴影不承载交互语义:可点击性仍由光标、焦点环等常规指示表达;
+- `prefers-reduced-motion` 时取消全部过渡。
+
+## 真实产品案例
+
+- **Josh Comeau 博客(joshwcomeau.com)**:分层着色阴影 + 贴地椭圆的配方出处,作者在该文中自述其卡片阴影体系即「同透明度分层 box-shadow + 背景色相阴影变量」(调研 12 §7 的来源文章);
+- **iOS 26 Liquid Glass**:官方定性「玻璃 flex/morph 成大元素时……更深阴影、更明显的 lensing」(WWDC25 219 [422–445s],调研 09 §8.4)——阴影随体积/高度加深的高度语言在系统材质中的对应;
+- **WinUI/Fluent 拖拽抬升**:「被拖起的元素临时提高 z,落点恢复」——Fluent 深度模型的典型交互(见 theme-shadow 条目,调研 02 §C5),接触阴影↔悬浮投影的切换正是其 web 落地形态。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `distance` | 椭圆拉长、元素上移,读作「悬浮中」;>16px 接近悬浮投影的领地,接触感流失 | 元素贴向表面;\<2px 椭圆几乎被卡底遮住,阴影形同消失;0 = 完全贴合(椭圆藏于卡后,物理正确) |
+| `spread` | 阴影更软更融,「软接触」的软感增强;过大(>12px)与表面糊成一片、失去接触感 | 边缘变硬,像贴了一片深色胶带;0 = 无模糊的实心椭圆,最生硬 |
+| `color` | 色相越接近背景越「隐形和谐」;偏离背景色相会产生彩色溢光(特效向) | 越接近纯黑越压灰褪色——调研明令禁止的做法 |
+| `alpha` | 阴影更实更显眼;>0.4 开始喧宾夺主,像一处污渍 | 越淡越含蓄;\<0.1 在浅表面上几乎不可感知(深表面更甚) |
+| `mode` → float | 悬浮投影:偏移大、弥散、多层的「漂在上方」,适合抓起/弹层等高程状态 | 贴地接触:紧、深、边缘柔,适合静置/落点的默认态 |
+
+经验区间:distance 4–8px(默认 6 即调研配方)、spread 4–8px、alpha 0.2–0.3;深色表面与低 alpha 的组合要专门实测——深表面上阴影是所有材质线索里最先失效的一个。

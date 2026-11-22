@@ -1,0 +1,85 @@
+{
+  "name": "Pareto Principle",
+  "nameZh": "帕累托法则",
+  "aliases": ["80/20 法则", "80-20 Rule", "二八法则"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "约 80% 的效果来自约 20% 的原因——「约」字是法则的一部分。识别带来最大收益的少数关键区域,把精力集中投给它;但别机械套用。",
+    "en": "Roughly 80% of effects come from roughly 20% of causes — and 'roughly' is part of the law. Identify the vital few areas that yield the most and concentrate effort there; never apply it mechanically."
+  },
+  "origin": {
+    "zh": "Vilfredo Pareto 观察到意大利约 80% 土地归 20% 人口;UX 语境:约 80% 的产品效果来自约 20% 的功能/原因(lawsofux 明确「roughly,非精确值」;out/design-study/12-expansion.md §14)。",
+    "en": "Vilfredo Pareto observed that roughly 80% of Italy's land belonged to 20% of its population; in UX terms, roughly 80% of a product's effects come from roughly 20% of its features/causes (lawsofux stresses 'roughly', not an exact split; out/design-study/12-expansion.md §14)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "skew",
+      "min": 1.5,
+      "max": 3,
+      "step": 0.1,
+      "default": 1.9,
+      "effect": {
+        "zh": "JS 型参数:分布偏斜度(demo 教学模型 share ∝ 1/rank^skew,归一化为占比)。默认 1.9 时 10 项功能中前 2 项承载约 78.4%(demo 实时实算显示)——复现「约 80/20」形态。定律本身只给「约 80/20」的定性描述,不规定任何分布参数。",
+        "en": "JS-type param: distribution skew (demo teaching model, share ∝ 1/rank^skew, normalized). At the default 1.9, the top 2 of 10 features carry ≈78.4% (computed live in the demo) — reproducing the 'roughly 80/20' shape. The law itself is the qualitative 'roughly 80/20' claim and fixes no distribution parameter."
+      }
+    },
+    {
+      "type": "number",
+      "name": "budget",
+      "unit": "项",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "JS 型参数:「重点打磨」的工程预算——demo 高亮收益排序前 budget 项,并给出覆盖占比与剩余项合计。默认 2 对应「20% 关键区域」;从 2 调到 4,覆盖从约 78% 升到约 86%,增益骤减——收益递减曲线即「集中投资少数」的量化理由。",
+        "en": "JS-type param: the 'polish these' engineering budget — the demo highlights the top-budget features by payoff and shows their covered share plus the remainder. The default 2 matches the '20% vital few'; raising it to 4 moves coverage from ≈78% to ≈86% — the flattening gain is the quantitative case for concentrating on the vital few."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示用内联 SVG 绘制柱状图与累计曲线,全现代浏览器可用。",
+      "en": "The bar chart and cumulative curve are inline SVG; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "定律的工程出口:用分析数据(使用率/收益)给功能排序,预算向头部集中。可降级路径:拿不到埋点数据时,用上一迭代的高频功能清单或客服工单 Top N 作代理;没有排序依据时,至少保证头部路径(首页→核心任务)的手工打磨优先级。红线:80/20 是近似值,别机械裁掉长尾中的战略性少数功能——lawsofux 点名的误用正是「机械套用(如只顾减少点击次数)」。",
+    "en": "The engineering exit: rank features by analytics (usage/payoff) and budget toward the head. Degradation path: without telemetry, proxy with last iteration's high-frequency feature list or the top-N support tickets; with no ranking basis at all, at least hand-polish the head path (home → core task) first. Red line: 80/20 is approximate — never mechanically amputate strategically vital long-tail features; lawsofux names the misuse exactly as 'mechanical application (e.g. obsessing over click counts)'."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "版本规划:识别使用率/收益前 20% 的功能,优先打磨、优化性能与可达性", "en": "Release planning: identify the top-20% features by usage/payoff and prioritize their polish, performance and accessibility" },
+      { "zh": "界面分层:高频动作常驻显性位置,低频能力收进「更多」", "en": "Interface layering: keep high-frequency actions in primary spots, tuck low-frequency power into 'more' menus" },
+      { "zh": "性能与质量投入:先优化覆盖最多用户的头部路径,再处理长尾", "en": "Performance & quality spend: optimize the head paths serving the most users before the long tail" }
+    ],
+    "avoid": [
+      { "zh": "机械套用 80/20:lawsofux 点名的误用是「只顾减少点击次数」一类机械目标,不是收益本身", "en": "Mechanical 80/20: lawsofux names the misuse as mechanical proxies like 'minimize click counts' instead of the payoff itself" },
+      { "zh": "把 80/20 当精确值汇报或写死在代码里——「roughly」是法则原文的一部分", "en": "Reporting 80/20 as exact or hard-coding it — 'roughly' is part of the law's own wording" },
+      { "zh": "砍掉低用量但战略关键的长尾功能(合规、无障碍、企业客户必需项)", "en": "Amputating low-usage but strategically vital long-tail features (compliance, accessibility, enterprise must-haves)" }
+    ]
+  },
+  "a11y": {
+    "zh": "柱状图信息必须双通道:SVG 之外,「前 2 项承载 X%」「80% 线:前 k 项达到」「预算覆盖 Y%·剩余合计 Z%」全部以文本呈现并随参数实时更新;预算高亮同时用颜色与「预算内」文字标注,不靠颜色单独区分;SVG 带 role=img 与动态 aria-label;prefers-reduced-motion 下柱体与曲线过渡取消,数值即时更新。",
+    "en": "Chart information must be dual-channel: beyond the SVG, 'top 2 carry X%', '80% line reached at k features' and 'budget covers Y% · remainder Z%' all appear as text updating live with the params; the budget highlight is marked by color AND the literal word 'budgeted', never color-only; the SVG carries role=img with a dynamic aria-label; under prefers-reduced-motion bar and curve transitions drop and numbers update instantly."
+  },
+  "sources": [
+    "https://lawsofux.com/pareto-principle/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "画一个功能分层演示:10 项功能的使用占比柱状图(占比 ∝ 1/rank^skew,实时归一化实算)+ 累计曲线 + 80% 参考线;skew 控制分布偏斜、budget 控制重点打磨预算;面板实时给出「前 2 项承载 X%」「80% 线:前 k 项达到」「预算 budget 项覆盖 Y%」三组数字。",
+      "en": "Draw a feature-tiering demo: a 10-feature usage-share bar chart (shares ∝ 1/rank^skew, normalized and computed live) + cumulative curve + an 80% reference line; skew controls the distribution shape, budget the polish budget; the panel shows three live numbers: 'top 2 carry X%', '80% line reached at k features', 'budget of budget features covers Y%'."
+    },
+    "acceptance": [
+      { "zh": "skew/budget 为 JS 型参数经 store 订阅;所有百分比由公式实时实算显示,不得写死 80", "en": "skew/budget are JS-type params consumed via store subscription; every percentage is computed live from the formula — never hard-coded 80" },
+      { "zh": "80% 参考线 + 「达到 80% 需前 k 项」文本,曲线按右侧 0–100% 轴绘制", "en": "An 80% reference line plus '80% reached at the top-k features' text; the curve plots on a right-side 0–100% axis" },
+      { "zh": "预算内柱体高亮 + 逐项「预算内」文字标注(双通道);面板列出前 5 名名称与占比", "en": "Budgeted bars highlight AND carry literal 'budgeted' text per item (dual-channel); the panel lists the top-5 names with shares" },
+      { "zh": "预算从 2 调到 4 时覆盖增益骤减(约 78%→86%),面板如实显示递减数字,不修饰", "en": "Raising budget from 2 to 4 shows the flattening gain (≈78%→86%) with unedited numbers — diminishing returns displayed as computed" },
+      { "zh": "标注「share∝1/rank^skew 为 demo 教学模型,80/20 是 roughly 近似」;prefers-reduced-motion 下过渡取消", "en": "Label 'share ∝ 1/rank^skew is a demo teaching model; 80/20 is a roughly approximation'; transitions drop under prefers-reduced-motion" }
+    ]
+  }
+}

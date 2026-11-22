@@ -1,0 +1,104 @@
+{
+  "name": "Responsive Images",
+  "nameZh": "响应式图片",
+  "aliases": ["srcset", "sizes", "picture 元素", "fetchpriority"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "srcset/sizes 让浏览器按『槽宽 × DPR』自选分辨率候选,<picture> 管艺术指导与格式切换,fetchpriority 提示首屏大图的加载优先级——三件套分工,一张图省一半流量。",
+    "en": "srcset/sizes let the browser pick a resolution candidate by 'slot width × DPR'; <picture> handles art direction and format switching; fetchpriority hints the priority of above-the-fold heroes — three tools, one job: half the bytes for the same image."
+  },
+  "origin": {
+    "zh": "出自 HTML 规范的响应式图片机制(调研 12§1,MDN/web.dev 一手核对):仅提供多分辨率版本时官方建议直接用 <img srcset> 而不必包 <picture>(省流模式下浏览器可自动选低密度版本);<picture> 用于三种显式控制场景——① art direction 按视口换构图、② 格式切换(AVIF/WebP 兼容回退)、③ 按设备能力选图;fetchpriority 是资源相对优先级的提示性信号(high/low/auto,默认 auto),对应 Fetch API 的 priority 选项。",
+    "en": "From the HTML responsive-images mechanism (research 12 §1, verified first-hand on MDN/web.dev): when only offering multiple resolutions, the official advice is plain <img srcset> without <picture> (so data-saver modes can auto-pick lower density); <picture> covers three explicit-control scenarios — art direction per viewport, format switching (AVIF/WebP fallback), and capability-based picks; fetchpriority is a hint about a resource's relative priority (high/low/auto, default auto), mirrored by the Fetch API's priority option."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "viewport",
+      "options": [
+        { "value": "390", "label": { "zh": "手机 390px", "en": "Phone 390px" } },
+        { "value": "768", "label": { "zh": "平板 768px", "en": "Tablet 768px" } },
+        { "value": "1280", "label": { "zh": "桌面 1280px", "en": "Desktop 1280px" } }
+      ],
+      "default": "1280",
+      "effect": {
+        "zh": "模拟视口宽度(JS 型,驱动设备框与槽宽换算)。390/768/1280 为社区常见设备基准值,未证实为任何规范值;iPhone 类机型 CSS 宽 390、iPad 竖屏 768、入门桌面 1280 是社区划分惯例。切换后 demo 重写 img 的 sizes,浏览器按选择算法实时重选候选。",
+        "en": "The simulated viewport width (JS-type; drives the device frame and slot math). 390/768/1280 are common community device anchors, unverified as spec values — 390 CSS px phone-class, 768 iPad portrait, 1280 entry desktop are community conventions. Switching rewrites the img's sizes and the browser re-runs its selection live."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "vwShare",
+      "unit": "%",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "default": 60,
+      "effect": {
+        "zh": "图片槽位占视口宽的比例(JS 型)。默认 60% 逐字出自调研 12§1 片段的 sizes=\"(min-width: 900px) 60vw, 100vw\";槽宽 = 视口 × 该比例,与 DPR 相乘即理想宽度——「有 sizes 时『槽宽 × DPR = 理想宽度』,从 srcset 选最接近者」(调研 12§1 选择规则)。",
+        "en": "The image slot's share of the viewport width (JS-type). The 60% default is verbatim from research 12 §1's fragment sizes=\"(min-width: 900px) 60vw, 100vw\"; slot = viewport × share, and slot × DPR is the ideal width — 'with sizes, slot width × DPR = ideal width; pick the closest candidate in srcset' (research 12 §1 selection rule)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "fetchpriority",
+      "options": [
+        { "value": "high", "label": { "zh": "high(首屏大图)", "en": "high (hero image)" } },
+        { "value": "auto", "label": { "zh": "auto(默认)", "en": "auto (default)" } },
+        { "value": "low", "label": { "zh": "low(轮播非首图)", "en": "low (off-screen carousel)" } }
+      ],
+      "default": "high",
+      "effect": {
+        "zh": "写入 demo 图片的 fetchpriority 属性(JS 型;demo 只展示属性与读数——优先级在真实网络加载时才生效)。high/low/auto 为标准取值;调研 12§1 实测:Google Flights 给 LCP 图加 high,LCP 2.6s→1.9s;Oodle 轮播非首图设 low,加载减少 2s;loading=\"lazy\" 的近视口图若仍被 high 加载,应改用 fetchpriority=\"low\"。",
+        "en": "Written to the demo image's fetchpriority attribute (JS-type; the demo surfaces the attribute and readouts — the hint only bites during real network loads). high/low/auto are the standard values; research 12 §1 measurements: Google Flights added high to its LCP image, LCP 2.6s→1.9s; Oodle set low on non-first carousel slides, saving 2s; a near-viewport lazy image still fetched high should switch to fetchpriority=\"low\"."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "<picture> 为 Baseline Widely available,自 2016-03 起主流浏览器可用(MDN,调研 12§1);srcset/sizes 同期落地。fetchpriority:Chrome/Edge 102+、Firefox 132+、Safari 17.2+(web.dev,调研 12§1)。不支持的浏览器忽略该属性并按默认优先级加载,不报错。",
+      "en": "<picture> is Baseline Widely available since 2016-03 across mainstream browsers (MDN, research 12 §1); srcset/sizes landed in the same era. fetchpriority: Chrome/Edge 102+, Firefox 132+, Safari 17.2+ (web.dev, research 12 §1). Unsupported browsers ignore the attribute and load at default priority, without errors."
+    }
+  },
+  "fallback": {
+    "zh": "<picture> 的兼容回退内建于结构:不带 type/media 的 <img> 是最后兜底,浏览器跳过不支持的 source(media 条件为假或 MIME 不认识)选下一个;不支持 srcset/sizes 的极老浏览器直接加载 img src(写足尺寸的 jpg 兜底);fetchpriority 不被识别时静默忽略——所以「兜底图务必选够用的最大体积」是结构级纪律。",
+    "en": "<picture>'s compatibility fallback is built into the structure: the <img> without type/media is the final safety net; browsers skip sources whose media condition fails or whose MIME they don't know; ancient browsers without srcset/sizes just load the img src (ship a suitably-sized jpg there); unrecognized fetchpriority is silently ignored — so 'make the fallback image good enough' is a structural discipline."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "首屏 LCP 大图:srcset 多密度 + fetchpriority=\"high\" + 显式 width/height 防布局偏移(调研 12§1 片段与 Google Flights 实测)", "en": "Above-the-fold LCP heroes: multi-density srcset + fetchpriority=\"high\" + explicit width/height (research 12 §1 fragment and the Google Flights measurement)" },
+      { "zh": "艺术指导:桌面宽幅构图、手机方幅构图——<source media> 按视口换图而不是缩放同一张", "en": "Art direction: wide crop on desktop, square on phones — <source media> swaps composition, not just scale" },
+      { "zh": "格式切换:AVIF/WebP source 在前、jpg 兜底,新格式省流量老浏览器不破", "en": "Format switching: AVIF/WebP sources first with a jpg fallback — savings on new engines, unbroken on old" },
+      { "zh": "轮播/长列表的非首图:fetchpriority=\"low\"(+ loading=\"lazy\"),调研 12§1 记 Oodle 实测省 2s", "en": "Carousel/long-list non-hero images: fetchpriority=\"low\" (+ loading=\"lazy\") — Oodle measured a 2s saving, research 12 §1" }
+    ],
+    "avoid": [
+      { "zh": "只有多分辨率却硬包 <picture>——官方建议直接 img srcset,省流模式还能自动降密度(调研 12§1)", "en": "Wrapping <picture> when you only have resolutions — the official advice is plain img srcset so data-saver can downgrade automatically (research 12 §1)" },
+      { "zh": "srcset 里混用 w 与 x 描述符或重复同一值——两者不可混用、不允许重复值(调研 12§1)", "en": "Mixing w and x descriptors or repeating a value in srcset — the two cannot be mixed and duplicates are disallowed (research 12 §1)" },
+      { "zh": "把 object-fit 写在 <picture> 上——它必须写在子 img 上(调研 12§1)", "en": "Putting object-fit on <picture> — it belongs on the child img (research 12 §1)" },
+      { "zh": "给所有图加 fetchpriority=\"high\"——提示性信号全部拉满等于没提示,首屏只保 LCP 图(调研 12§1 语义)", "en": "fetchpriority=\"high\" on everything — maxing every hint is no hint at all; only the LCP image earns it (research 12 §1 semantics)" }
+    ]
+  },
+  "a11y": {
+    "zh": "候选切换不改变语义:无论浏览器选了哪个候选,alt 只写一次且描述图像内容(不是文件名或尺寸);<picture> 内的 img 是唯一的 alt 载体,source 不参与无障碍树;装饰性图 alt=\"\";demo 的设备框是模拟界面,真实读数(槽宽/DPR/命中候选)以文本呈现,不依赖颜色区分候选。",
+    "en": "Candidate switching never changes semantics: whichever candidate the browser picks, the alt is written once on the img and describes the image (not the filename or size); inside <picture> the img is the sole alt carrier, sources stay out of the accessibility tree; decorative images get alt=\"\"; the demo's device frame is a mockup, with real readouts (slot/DPR/chosen candidate) presented as text, never color-only."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture",
+    "https://web.dev/articles/fetch-priority"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻首屏响应式大图:<picture> 内 AVIF/WebP 双 source 带宽密度 srcset 与 sizes,img 兜底 jpg 并带显式宽高与 fetchpriority=\"high\",加载零布局偏移。",
+      "en": "Replicate an above-the-fold responsive hero: <picture> with AVIF/WebP sources carrying width-descriptor srcset and sizes, a fallback jpg img with explicit dimensions and fetchpriority=\"high\", zero layout shift."
+    },
+    "acceptance": [
+      { "zh": "srcset 仅用 w 描述符(或仅 x),不混用、不重复;sizes 媒体条件–槽宽对逐字采用参数快照", "en": "srcset uses only w descriptors (or only x), never mixed, never duplicated; the sizes condition-slot pairs use the exact parameter snapshot" },
+      { "zh": "img 兜底 src 指向够用的 jpg,并写 width/height 属性占位", "en": "The fallback img src points to a good-enough jpg and carries width/height attributes" },
+      { "zh": "仅多分辨率时直接用 img srcset,不包 <picture>;艺术指导/格式切换才用 picture", "en": "Resolution-only cases use plain img srcset without <picture>; picture only for art direction or format switching" },
+      { "zh": "LCP 图 fetchpriority=\"high\",轮播非首图 fetchpriority=\"low\"", "en": "The LCP image gets fetchpriority=\"high\"; off-screen carousel images get fetchpriority=\"low\"" },
+      { "zh": "object-fit 写在子 img 上,比例盒由 width/height 属性 + CSS 约束共同守住", "en": "object-fit sits on the child img; the ratio slot is held by width/height attributes plus CSS constraints" }
+    ]
+  }
+}

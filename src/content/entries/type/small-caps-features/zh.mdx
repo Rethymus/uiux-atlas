@@ -1,0 +1,64 @@
+## 结构与 DOM
+
+无特殊结构——特性声明在文本元素上,建议优先用高层 `font-variant-*`:
+
+```html
+<p class="kicker">Uiux Atlas · Typography Notes</p>
+<p class="liga">Difficult waffles — efficient airflow.</p>
+<p class="num">O0 · 编号 0070</p>
+```
+
+```css
+.kicker { font-variant-caps: all-small-caps; }       /* 高层:c2sc + smcp */
+.liga   { font-variant-ligatures: no-common-ligatures; } /* 关连字 ≡ 低层 "liga" 0 */
+.num    { font-variant-numeric: slashed-zero; }      /* 高层 ≡ "zero" 1 */
+
+/* 低层兜底:仅高层无法表达时用(如风格集 ss01–ss20、花体 swsh) */
+.fancy  { font-feature-settings: "ss07" 1; }
+```
+
+关键点:
+
+- **标签语法**:低层标签恰好 4 个 ASCII 字符(U+20–U+7E),写错整条声明无效;`on/off ≡ 1/0`,缺省 1;非布尔特性用数值选字形变体(如 `"swsh" 2` = 第 2 个花体字形)(调研 12§10,MDN 原文);
+- **官方分层指引**:能用高层属性就用高层;MDN 明确「不要用 font-feature-settings 启用小型大写」(12§10 原文核对);
+- 特性生效前提是**字体文件包含对应 OpenType 特性表**;不含表的声明无效但无害。
+
+## 样式与参数
+
+三个参数全部是 CSS 变量型,各自落到一条高层属性:
+
+```css
+.sc-kicker { font-variant-caps: var(--sc-caps); }              /* normal|small-caps|all-small-caps */
+.sc-liga   { font-variant-ligatures: var(--sc-lig); }          /* common|no-common-ligatures */
+.sc-zero   { font-variant-numeric: var(--sc-zero); }           /* normal|slashed-zero */
+```
+
+数值出处:
+
+- `font-feature-settings` Baseline 2016-03;`font-variant-caps` Baseline 2020-01(MDN,本批次补核);
+- 小型大写关键字→OpenType 映射(MDN,本批次补核):`small-caps` = smcp(只转小写字母);`all-small-caps` = c2sc + smcp(大写也转);`pcap`/`unic`/`titl` 为扩展档,MDN 注明并非所有浏览器实现全部值;
+- **缺字形回退**(MDN,本批次补核):字体没有小型大写字形时,浏览器**从普通大写字形合成**近似小型大写;无大小写之分的字符(标点等)**绝不合成**;低层 font-feature-settings 则只开关字体内已有的表,没有即无效果;
+- 字距 0.08em:本站大写小标纪律同款(`src/styles/global.css:852-856`);眉标叠加小型大写时同用。
+
+## 动效与交互
+
+- **宽度探针**:两栏同文本对照(左原样、右特性生效),实测 `getBoundingClientRect().width` 差——小型大写 Δ>0 说明字形已替换(真 smcp 字形或 MDN 记载的合成字形,宽度无法区分二者);Δ≈0 时如实标注「当前字体可能缺该特性表」;
+- **连字开关**:切到 no-common-ligatures,`waffle airflow` 的 fi/fl 组合宽度立刻变化——连字(liga)默认开启,这是最容易实测验证的特性;
+- **斜杠零**:font-variant-numeric 的 zero 关键字,Inter 官方提供(调研 05§24),效果直接可见;
+- 无动画,全部为即时重排,`prefers-reduced-motion` 无需处理。
+
+## 真实产品案例
+
+- **MDN 的官方分层指引本身就是行业标准叙事**:「能用高层属性就用高层属性,不要用它启用小型大写」写在 font-feature-settings 参考页正文(12§10 原文核对)——低层属性被官方定位为「风格集、花体等高层表达不了的场景」的兜底。
+- **Inter 字体**:官方仓库列出 slashed zero、表格数字等 OpenType 特性(调研 05§24),被 Figma、GitLab、NASA 采用——特性表质量决定 CSS 声明的实际效果,选字体就是选特性供给。
+- **本站 uiux-atlas**:元数据小标采用「全大写 + 0.08em 字距」而非小型大写(源码 `src/styles/global.css:852-856`)——系统字体栈无法保证 smcp 字形供给,全大写是零依赖的可控替代;这是「特性依赖字体前提」在真实工程里的取舍。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `caps` | all-small-caps 整行转小型大写(眉标常用);缺字形时按 MDN 规则合成 | normal 恢复原大小写;短标签之外慎用,大段正文难读(MDN 无障碍提示) |
+| `ligatures` | common-ligatures 回到默认连字,fi/fl 融为一体、排版更顺 | no-common-ligatures 拆开连字,代码/URL 场景逐字符更清晰 |
+| `zero` | slashed-zero 防止 O/0 混淆(订单号/验证码防错) | normal 保留字体默认 0 形 |
+
+经验法则:小型大写只给短标签;先确认字体特性表(CSS 声明只是开关);高层属性优先,低层留给风格集;合成行为因浏览器而异,关键界面实测。

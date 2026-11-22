@@ -7,7 +7,8 @@ const mdUrl = (entryId: string): string => `/${entryId}/index.md`;
 
 /**
  * llms.txt(agent 消费通道,静态端点):
- * 站点一句话定位 + 九分类 + 全部条目清单(name/nameZh/URL/.md 链接)。
+ * 站点一句话定位 + 十分类(遍历 CATEGORIES,清单增删自动跟随)+
+ * 全部条目清单(name/nameZh/URL/.md 链接)。
  * 纯文本输出;Content-Type: text/plain; charset=utf-8。
  */
 export async function GET() {

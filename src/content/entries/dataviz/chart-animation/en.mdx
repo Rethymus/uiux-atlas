@@ -1,0 +1,69 @@
+## Structure & DOM
+
+The first law of chart motion is **layering**: animation lands on the data layer only (bars/lines/points); the reference layer (axes, grids, ticks) stays still throughout — "moving ticks" reads as "moving data" (same discipline as the Chart Axes & Grid entry).
+
+```html
+<svg viewBox="0 0 600 340">
+  <!-- Reference layer: grid/axes/ticks, static (opacity 0.09 = Grafana formula) -->
+  <g class="grid">…</g><g class="axes">…</g>
+  <!-- Data layer: the only animated layer -->
+  <g class="bars"><!-- keyframes define `from` only; base state = final state -->
+    <rect height="…" … />
+  </g>
+</svg>
+```
+
+Key points:
+
+- The three entrances divide labor: **grow** (the data layer rises from the zero baseline via scaleY — Chart.js' default origin animation carries the same growth semantics), **fade** (one group opacity, the most restrained), **sweep** (clip-path inset collapsing right-to-left, data revealing left-to-right — suits "advancing through time");
+- Keyframes define `from` only: the base state is the final state, so with animation disabled or unsupported the element **renders its final state directly** — a zero-cost fallback;
+- Duration and easing ride CSS variables (`--ca-dur` / `--ca-ease`) driven live by the parameter panel; replay re-mounts the data layer;
+- The applicability boundary (Wikipedia's documented research conclusion): animation expresses **trend and motion**; precise comparison between two time points belongs to a small-multiples array, not a replayed sweep.
+
+## Styling & Parameters
+
+Three parameters, every default pointing at Chart.js' official animations docs (supplement 12 §13, fetched and verified):
+
+| Parameter | Type | Default | Source |
+| --- | --- | --- | --- |
+| `entrance` | JS-type | **grow** | Chart.js' default entrance animates from the origin (growth semantics); fade/sweep are the demo's contrast tiers |
+| `duration` | CSS var `--ca-dur` | **1000ms** | Chart.js global `animation.duration` default 1000 (official docs verbatim) |
+| `easing` | CSS var `--ca-ease` | **easeOutQuart** | Chart.js `easing: 'easeOutQuart'` (verified verbatim); cubic-bezier(0.165, 0.84, 0.44, 1) is the community's standard approximation — coefficients unpublished by the library, labeled "community value, unverified" |
+
+Companion Chart.js defaults (same docs, verified): 30 easings; three-level config override — global `defaults` → type `datasets[type]` → instance `options`; transition modes `active/hide/reset/resize/show` with hover (active) at 400ms and resize at **0**; `options.animation = false` disables entirely; `onProgress/onComplete` fire only under the main animation config.
+
+```css
+.bars {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ca-grow var(--ca-dur, 1000ms) var(--ca-ease, ease-out) both;
+}
+@keyframes ca-grow { from { transform: scaleY(0); } }
+@keyframes ca-fade { from { opacity: 0; } }
+@keyframes ca-sweep { from { clip-path: inset(-8% 100% -8% 0); } }
+@media (prefers-reduced-motion: reduce) { .bars { animation: none; } } /* final state directly */
+```
+
+## Motion & Interaction
+
+- **One entrance, controlled replay**: the demo's replay button re-triggers the CSS animation by re-mounting the data layer; in real dashboards the entrance happens once at first paint — never looped;
+- **Completion announcement**: the entrance completes into an `aria-live="polite"` announcement (the `onComplete → ariaLive("chart loaded")` pattern from supplement 12 §13) so screen-reader users know the data is ready without watching motion;
+- **Reduce renders the final state**: under `prefers-reduced-motion: reduce`, `animation: none` — and because keyframes define `from` only, the final state appears immediately (Baseline since 2020-01, MDN verified);
+- **Structural changes don't animate**: Chart.js hard-codes the resize transition at duration 0 — layout reflows land instantly; the motion budget belongs to data;
+- Duration tiers: hover updates 400ms, entrance 1000ms, resize 0; ECharts' tooltip `transitionDuration: 0.4` seconds (TooltipModel.ts verified verbatim, see the Tooltip & Legend entry) follows the same discipline at interaction level.
+
+## Real-world examples
+
+- **Chart.js** (official animations docs, supplement 12 §13 verified): default `duration: 1000` + `easing: 'easeOutQuart'`, 30 easings; three-level config override (global → type → instance); transition modes with `active` at 400ms and `resize` at 0; `animation: false` to disable — a complete defaults system of "entrance 1s, hover 0.4s, reflow 0s".
+- **Wikipedia's "Small multiple" article** (12 §13 verified): the map-domain research conclusion — animation wins at presenting trend and motion, small multiples win at between-timepoint comparison; sweeps tell "progress", side-by-side panels tell "comparison" — don't swap them.
+- **ECharts v5.5.1** (TooltipModel.ts verified verbatim, research 08 §6): tooltip `transitionDuration: 0.4` / `hideDelay: 100` / `showDelay: 0` — chart motion is not just entrances; interaction-layer float timing carries the same library-defaults discipline.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `entrance` | sweep is the most narrative but tells "progress" — on comparison scenes it invites misreading; grow best expresses "magnitude from nothing" | fade is the most restrained and safest for reduced-motion users and weak devices; all three render the final state under reduce |
+| `duration` | past 2000ms readers wait on the animation instead of reading data; high-frequency dashboard refreshes smear | below 300ms it approaches direct render and loses the arrival cue; 0ms is the final state outright (equivalent to options.animation=false) |
+| `easing` | overshooting curves push bars past the true value before settling — false data on screen for a beat; forbidden on data layers | linear feels mechanical; easeOutQuart-style "fast out, slow settle" is the working choice for data entrances |
+
+Working range: entrance 800–1200ms (Chart.js' 1000 sits mid-range), hover 400ms, resize 0; easing converges without overshoot; axes/grids never move; rendering the final state under `prefers-reduced-motion` is non-negotiable.

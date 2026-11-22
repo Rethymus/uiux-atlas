@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+派生是**单向引用**:组件里零 hex,一切颜色从 `--brand` 变量经函数派生。DOM 上每个派生色是一个消费变量的元素,函数写在 CSS 里、不在 JS 里:
+
+```html
+<div class="scene" data-space="oklab">
+  <span class="chip base">base</span>
+  <span class="chip hover">hover</span>
+  <span class="chip soft">soft bg</span>
+</div>
+```
+
+```css
+.chip.base  { background: var(--brand); }
+.chip.hover { background: color-mix(in oklab, var(--brand), black 12%); }
+.chip.soft  { background: color-mix(in oklab, var(--brand) 12%, transparent); }
+```
+
+关键点:
+
+- `color-mix(<插值方法>?, <color> <p1>?, <color> <p2>?)`:默认在 **oklab** 插值;极坐标空间可加 `shorter|longer|increasing|decreasing hue` 色相策略(补研 12§11;调研 06§4);
+- 相对颜色语法 `rgb(from <color> r g b / alpha)`:原色解构成通道变量,可 `calc()` 运算;输出空间可与输入不同(补研 12§11);
+- 回退纪律:每条派生声明先写静态兜底色,再在 `@supports (color: color-mix(in oklab, red, blue))` 内覆写——不支持时声明按无效处理,没有兜底就是透明。
+
+## 样式与参数
+
+五个参数:brand/hoverMix/softBg/borderMix 为 CSS 变量型(demo 内 `calc(var(--…))` 直接进函数),space 为 JS 型(data-space 四档显式规则):
+
+```css
+:root {
+  --brand: oklch(0.62 0.19 250); /* 补研 12§11 片段;实测越 sRGB 域,裁剪 ≈ #0088F2(调研 06§2) */
+  --brand-hover:  color-mix(in oklab, var(--brand), black 12%);
+  --brand-active: color-mix(in oklab, var(--brand), black 24%);
+  --brand-soft-bg: color-mix(in oklab, var(--brand) 12%, transparent);
+  --brand-border: color-mix(in oklab, var(--brand) 40%, transparent);
+  --on-brand:     color-mix(in oklab, var(--brand), white 85%);
+}
+.btn:hover { background: rgb(from var(--brand) calc(r * .85) calc(g * .85) calc(b * .85)); }
+```
+
+数值出处(全部为补研 12§11 可复用片段原文):hover=black 12%、active=black 24%、soft-bg=12% 掺 transparent、border=40% 掺 transparent、on-brand=white 85%;空间选型指引(MDN):模拟色光→`xyz`/`srgb-linear`,感知均匀→`oklab`/`lab`,避免变灰→`oklch`/`lch`,匹配 sRGB 设备→`srgb`。
+
+**百分比归一化三规则**(MDN,补研 12§11):双省 → 各 50%;单省 → 补足 100%;`p1+p2 < 100%` → alpha 乘数(等效向 transparent 混);两者 0% → 整条无效。
+
+**支持度**:color-mix() Baseline 2023-05;相对颜色 Baseline「广泛可用」但「部分支持程度不一」,Safari 16.4 旧语法要求 calc 内通道带百分比,探测用 `@supports (color: rgb(from red r g calc(b + 30%)))`(MDN 原文示例,补研 12§8/§11)。
+
+## 动效与交互
+
+- 函数是声明式的:滑杆改的是 CSS 变量,所有派生色由浏览器同步重算,无 JS 参与——**这本身就是本条的交互模型**;
+- hover 加深演示用真 `:hover` + 相对颜色 `calc(r*.85)…`,过渡 0.15s;`prefers-reduced-motion` 时取消过渡;
+- 空间实验室切换 data-space,三块色板即时换算(不给过渡——插值空间的差异要看得直接);
+- 相对颜色行整行包在 `@supports` 探测内:不支持的浏览器隐藏演示、显示说明行,而不是留一块死色。
+
+## 真实产品案例
+
+- **Tailwind CSS v4(2025-01)**:透明度工具链用 `color-mix(in oklab, var(--color-blue-500) 50%, transparent)`,渐变默认 OKLAB 插值,整个调色板换成 oklch(官方公告,调研 06§4);
+- **GitHub Primer Primitives**:DTCG token 的 alpha 变换(`{ $value: '{base.color.blue.3}', alpha: 0.4 }`)是「编译期相对颜色」——同一思想在构建管线落地的形态(调研 06§10);
+- **Evil Martians 生产工作流**:hover 派生写 `oklch(from var(--user-avatar-dominant) calc(l + 0.1) c h)`,固定 L 只调 C/H(调研 06§2)——相对颜色语法在真实站点的用法。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hoverMix` | hover/active 更深;>30% 后 active 与 hover 拉开但整体发暗 | hover 与 base 难区分;\<5% 时按压态几乎不可辨 |
+| `softBg` | 淡底更浓,上面的深字对比下降(派生后仍要过 4.5:1) | 淡底趋近透明,状态感消失;0% 等于没写 |
+| `borderMix` | 描边更实:传达语义的边框过 3:1 更稳(SC 1.4.11) | 描边变虚;低过 3:1 时边框只剩装饰作用 |
+| `space` | oklch 档饱和、srgb 档发灰——蓝→绿中点对比最直观 | (档位无大小;对照:默认 sRGB 长距离色相过渡出「脏灰带」,调研 06§4) |
+| `brand` | 派生色全体随动;越域时浏览器裁剪,派生色跟着裁剪值走(实测现状) | — |
+
+经验:派生配方给的是起点不是终点——on-brand 本会话实测对裁剪后品牌底仅 3.06:1(过 UI/大字档、不过正文 AA),任何派生组合按用途重跑 WCAG 闸(调研 06§17)。

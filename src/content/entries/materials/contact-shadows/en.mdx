@@ -1,0 +1,78 @@
+## Structure & DOM
+
+A contact shadow is a two-layer "surface + floating element" structure where the shadow itself is a pseudo-element of the floating element: while the element touches the surface, a tight, dark, soft-edged elliptical shade sits directly beneath it, simulating ambient occlusion from 3D rendering; once the element floats, it switches to a large-offset, diffuse projection.
+
+```html
+<div class="scene">
+  <div class="floor"></div>      <!-- surface: where the shadow lands -->
+  <div class="card">Content</div> <!-- floating element; ::after is the ground ellipse -->
+</div>
+```
+
+Key points:
+
+- The ellipse hangs on the element's `::after` with `z-index: -1` — above the surface, below the element, half hidden behind the element's bottom edge;
+- The distance between element and surface drives the ellipse's length and protrusion: more distance = longer ellipse, and the element reads as "lifted";
+- Every element in a scene shares a single light source: one shadow hue, one offset ratio (e.g. horizontal:vertical = 1:2) — the premise of "the whole UI lit by one lamp" (research 12 §7).
+
+## Styling & Parameters
+
+Four CSS-variable parameters plus one JS mode switch; the ellipse geometry and palette come straight from the research recipe:
+
+```css
+.card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 10%; right: 10%;                    /* ellipse insets, not full card width */
+  height: calc(var(--cs-distance) * 2);     /* 12px @ default 6 */
+  bottom: calc(var(--cs-distance) * -1);    /* protrudes 6px */
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 100%), transparent);
+  filter: blur(var(--cs-spread));           /* 6px */
+}
+
+/* float mode: Comeau's five-layer doubling projection, equal opacity per layer (default 0.2 = alpha 0.25×0.8) */
+[data-mode="float"] .card {
+  box-shadow:
+    1px 2px 2px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    2px 4px 4px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    4px 8px 8px    color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    8px 16px 16px  color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent),
+    16px 32px 32px color-mix(in srgb, var(--cs-color) calc(var(--cs-alpha) * 80%), transparent);
+}
+```
+
+Where the numbers come from:
+
+- Contact ellipse recipe: `bottom: -6px` + `height: 12px` + `blur(6px)` + `hsl(shadow / 0.25)` = the reusable snippet in research 12 §7 (distance=6 reproduces it exactly);
+- Layered float projection: offsets and blurs double 1/2/4/8/16px with equal opacity per layer — Comeau's layering principle from the same research (0.2 per layer in the example);
+- Shadow base `#3366cc` = the hex equivalent of the research example `hsl(220deg 60% 50%)` (blue-backdrop example) — the concrete form of "never pure black";
+- `color-mix()` is Baseline since 2023-05; `box-shadow`/`filter` are Baseline widely available.
+
+## Motion & Interaction
+
+Contact-shadow motion serves the "elevation story" — lifting and landing:
+
+- **Drag lift**: distance grows while grabbed (the ellipse stretches and protrudes, the element rises), snapping back to grounded on drop; transition only on compositable properties like `transform`/`filter`;
+- **Mode switch** (contact↔float): swap the two shadow sets directly — no frame-by-frame animation, since the research explicitly warns that layered shadows are expensive to render (research 12 §7);
+- Shadows carry no interaction semantics: clickability is still expressed by cursors, focus rings and the usual indicators;
+- All transitions are disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Josh Comeau's blog (joshwcomeau.com)**: the origin of the layered tinted-shadow + ground-ellipse recipe; the author describes his card shadow system — same-opacity layered box-shadow plus a hue-derived shadow variable — in the source article of research 12 §7;
+- **iOS 26 Liquid Glass**: Apple's qualitative rule that a glass element flexing/morphing into a larger one casts "a deeper shadow, more pronounced lensing" (WWDC25 219 [422–445s], research 09 §8.4) — the system-material counterpart of shadows deepening with volume and height;
+- **WinUI/Fluent drag lift**: "temporarily raise z while dragging, restore on drop" — the canonical Fluent depth interaction (see the theme-shadow entry, research 02 §C5); the contact↔float switch is its web implementation.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `distance` | the ellipse stretches, the element rises — reads as "floating"; past 16px it enters float-projection territory and the contact feel drains away | the element settles toward the surface; below 2px the ellipse hides behind the card and the shadow effectively vanishes; 0 = fully grounded (hidden behind the card — physically correct) |
+| `spread` | softer, more blended shade — more of the "soft" in soft contact; past 12px it smears into the surface and loses the sense of contact | a hard edge, like a strip of dark tape; 0 = a flat solid ellipse, the harshest reading |
+| `color` | hues closer to the backdrop read invisible-and-harmonious; hues far from it produce colored spill (a deliberate effect) | approaching pure black grays the scene out and detaches the shadow — the practice the research forbids |
+| `alpha` | denser, more prominent shade; past 0.4 it starts competing with content, reading as a stain | subtler; under 0.1 it is barely perceptible on light surfaces (worse on dark) |
+| `mode` → float | floating projection: large offset, diffuse, layered — the "hovering above" state for grabs/overlays | grounded contact: tight, dark, soft-edged — the resting default |
+
+Working ranges: distance 4–8px (default 6 is the research recipe), spread 4–8px, alpha 0.2–0.3. Test the dark-surface × low-alpha combination deliberately — on dark surfaces the shadow is the first material cue to fail.

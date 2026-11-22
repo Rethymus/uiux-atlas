@@ -1,0 +1,117 @@
+{
+  "name": "Baseline Grid",
+  "nameZh": "基线网格",
+  "aliases": ["基线对齐", "8px 网格", "baseline grid", "8pt grid"],
+  "category": "type",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "让垂直空间落在固定步长(如 8px,允许 4px 半步)上,并叠加基线/网格可视化开关——偏离网格的间距无处藏身。",
+    "en": "Snap vertical space to a fixed step (8px, with 4px half-steps allowed) and overlay a baseline/grid visualization toggle — off-grid spacing has nowhere to hide."
+  },
+  "origin": {
+    "zh": "Bringhurst《The Elements of Typographic Style》:「空间如时间,比例化间隔远胜任意值」,经 Richard Rutter《Compose to a Vertical Rhythm》(24ways, 2006)转述(调研 12§9,URL 已核);8px 生产实例:本站 4/8 间距网格(src/styles/global.css:165「禁止非 4 倍数 padding/margin 字面值」)与 TDesign 行高常数公式 line-height = 字号 + 8(官网 design-basic.ts,调研 02§2)。",
+    "en": "Bringhurst's Elements of Typographic Style: 'space, like time, is best divided proportionally rather than arbitrarily', relayed through Richard Rutter's Compose to a Vertical Rhythm (24ways, 2006) (research 12 §9, URL verified). 8px production instances: this site's 4/8 spacing grid (src/styles/global.css:165, 'no non-multiple-of-4 padding/margin literals') and TDesign's line-height constant formula line-height = font-size + 8 (official design-basic.ts, research 02 §2)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "unit",
+      "unit": "px",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--bl-unit",
+      "effect": {
+        "zh": "网格步长。8px 是本站与业界常见的 4/8 空间网格基础步(社区惯例,未证实;生产实例:本站 spec「间距:4/8 网格」、TDesign 的 +8 常数)。调大后更疏朗,调小(4px)即退化为像素级自由排版。",
+        "en": "Grid step. 8px is this site's and the industry's common 4/8 spatial grid base step (community convention, unverified; production instances: this site's spec 'spacing: 4/8 grid' and TDesign's +8 constant). Larger reads airier; dropping to 4px degenerates into pixel-level free layout."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "fontSize",
+      "unit": "px",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--bl-size",
+      "effect": {
+        "zh": "正文字号。行盒高度 = 字号 × 行高比,决定文本落在网格上的位置;配合 lineHeight 1.5 时 16px 字号的呼吸空间恰为 8px(与 TDesign「行高=字号+n」常数同构,调研 02§2)。",
+        "en": "Body font size. The line box = size × line-height ratio determines where text sits on the grid; at line-height 1.5, 16px text breathes exactly 8px — isomorphic to TDesign's 'line-height = size + n' constant (research 02 §2)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lineHeight",
+      "min": 1,
+      "max": 2.5,
+      "step": 0.05,
+      "default": 1.5,
+      "cssVar": "--bl-lh",
+      "effect": {
+        "zh": "行高比(无单位)。默认 1.5 同时满足 WCAG 2.2 SC 1.4.12 的行高阈值(≥1.5×,调研 05§18)并让 16px 字号落在 3×8px 的行盒上;调偏后基线可视化会立刻暴露错位。",
+        "en": "Line-height ratio (unitless). The default 1.5 both satisfies the WCAG 2.2 SC 1.4.12 line-height threshold (≥1.5×, research 05 §18) and lands 16px text on a 3×8px line box; any drift is exposed immediately by the baseline overlay."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "overlay",
+      "options": [
+        { "value": "none", "label": { "zh": "关闭", "en": "Off" } },
+        { "value": "grid", "label": { "zh": "8px 网格", "en": "8px grid" } },
+        { "value": "baselines", "label": { "zh": "基线", "en": "Baselines" } },
+        { "value": "both", "label": { "zh": "网格+基线", "en": "Grid + baselines" } }
+      ],
+      "default": "both",
+      "effect": {
+        "zh": "JS 型参数(切 data-overlay)。可视化开关:grid=每 unit 一条淡线;baselines=按当前行盒高度画的近似基线线(基线在行盒内的精确位置因字体度量而异,可视化按 ~80% 行高近似,属教学近似而非测量);none 恢复普通渲染。",
+        "en": "JS-type param (toggles data-overlay). The visualization switch: grid = a faint line every unit; baselines = approximate baseline lines drawn per current line-box height (exact baseline position inside the line box varies by font metrics — the overlay approximates at ~80% of the line, a teaching approximation, not a measurement); none restores plain rendering."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无新特性门槛:可视化用 repeating-linear-gradient,叠加层 pointer-events:none 纯装饰;布局本体与审计逻辑只依赖 getBoundingClientRect/computedStyle 等广泛可用 API。",
+      "en": "No feature gate: the overlays use repeating-linear-gradient with a pointer-events:none decorative layer; the layout and audit logic rely only on widely available APIs such as getBoundingClientRect/computed styles."
+    }
+  },
+  "fallback": {
+    "zh": "基线网格是排版纪律而非浏览器特性,无回退问题;把 overlay 切到 none 即恢复普通视图。唯一约束:可视化叠加层必须 aria-hidden 且不影响命中测试,避免被读屏朗读或拦截交互。",
+    "en": "The baseline grid is a typesetting discipline, not a browser feature — nothing to fall back. Switching overlay to none restores the plain view. The only constraint: the overlay must be aria-hidden and non-interactive so screen readers skip it and it never intercepts pointers."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长文档/落地页的排版系统校准——标题、正文、图片、按钮落在同一步长上", "en": "Typesetting calibration for long documents and landing pages — headings, body, images and buttons land on one step" },
+      { "zh": "多组件拼接的仪表盘:间距一致性审计(配合 4/8 半步规则)", "en": "Dashboards assembled from many components: spacing consistency audits (with the 4/8 half-step rule)" },
+      { "zh": "设计系统间距 token 设计(本站 --space-* 即 4/8 网格,src/styles/global.css:165)", "en": "Spacing tokens for a design system (this site's --space-* is exactly the 4/8 grid, src/styles/global.css:165)" },
+      { "zh": "代码评审与视觉走查:开基线可视化逐块核对偏移", "en": "Code review and visual QA: audit block offsets one by one with the baseline overlay on" }
+    ],
+    "avoid": [
+      { "zh": "多字号混排的复杂编辑排版——严格基线网格维护成本高,社区实践允许局部豁免(实践共识,未证实)", "en": "Complex editorial layouts mixing many sizes — a strict baseline grid is costly to maintain; local exemptions are common in practice (community practice, unverified)" },
+      { "zh": "像素级自由的海报/插画式页面——纪律本身与自由排版目标相悖", "en": "Pixel-free poster/illustration pages — the discipline contradicts free-form composition" }
+    ]
+  },
+  "a11y": {
+    "zh": "可视化叠加层 pointer-events:none、aria-hidden,不进可访问性树;行高默认 1.5 兼顾 WCAG 2.2 SC 1.4.12(≥1.5×,调研 05§18);网格纪律本身不改变文本内容,只约束留白——低视力用户从一致的行距与呼吸空间中获益更多。",
+    "en": "Overlays are pointer-events:none and aria-hidden, outside the accessibility tree; the default 1.5 line-height also satisfies WCAG 2.2 SC 1.4.12 (≥1.5×, research 05 §18); the discipline changes spacing only — consistent rhythm and breathing room benefit low-vision users most."
+  },
+  "sources": [
+    "https://24ways.org/2006/compose-to-a-vertical-rhythm/",
+    "https://tdesign.tencent.com/design/fonts",
+    "https://github.com/Tencent/tdesign/blob/main/site/src/locales/pages/design-basic.ts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "排版一篇带标题、正文、列表与描边卡片的短文,所有垂直尺寸(margin/padding/行盒)落在 8px 步长(允许 4px 半步)上,并提供可开关的基线/网格叠加与逐块偏移审计。",
+      "en": "Lay out a short article with heading, body, list and a bordered card so every vertical dimension (margins/padding/line boxes) lands on the 8px step (4px half-steps allowed), with a toggleable baseline/grid overlay and per-block offset audit."
+    },
+    "acceptance": [
+      { "zh": "全部 margin/padding 使用步长的整数倍(或半步),1px 描边须计入预算(1px + 7px = 8px)", "en": "All margins/paddings are integer multiples (or half-steps) of the unit; count 1px borders into the budget (1px + 7px = 8px)" },
+      { "zh": "行盒高度 = 字号 × 行高比落在步长倍数上(16px × 1.5 = 24px = 3 步)", "en": "Line boxes = size × ratio land on step multiples (16px × 1.5 = 24px = 3 steps)" },
+      { "zh": "叠加层为 repeating-linear-gradient,pointer-events:none + aria-hidden,可用开关关闭", "en": "Overlays use repeating-linear-gradient with pointer-events:none + aria-hidden and can be switched off" },
+      { "zh": "偏移审计以实测 offset 计算,判据为「步长整数倍或半步」,不写死结论", "en": "The audit computes offsets from live measurements against the 'multiple or half-step' criterion instead of hardcoded conclusions" }
+    ]
+  }
+}

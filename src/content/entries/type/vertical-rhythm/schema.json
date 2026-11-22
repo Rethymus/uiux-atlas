@@ -1,0 +1,112 @@
+{
+  "name": "Vertical Rhythm",
+  "nameZh": "垂直韵律",
+  "aliases": ["行高韵律", "韵律排版", "vertical rhythm", "rhythm-based spacing"],
+  "category": "type",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "以正文行高为基本单元:标题行高反推(单元 ÷ 字号)、间距取整倍数、行盒逐行叠加——韵律可视化让文本块像乐谱一样可读。",
+    "en": "Take the body line-height as the base unit: derive heading line-heights backwards (unit ÷ size), snap gaps to integer multiples, stack line boxes row by row — rhythm visualization turns text blocks into readable sheet music."
+  },
+  "origin": {
+    "zh": "Richard Rutter《Compose to a Vertical Rhythm》(24ways, 2006,调研 12§9 URL 已核):基本单元 = 正文行高(工作示例 12px × 1.5 = 18px);标题行高 = 18 ÷ 字号(14px 标题行高 1.286);一切垂直尺寸落在单元整数倍,全部用 em 保证用户缩放不破坏节奏;Bringhurst 名言「空间如时间,比例化间隔远胜任意值」经该文转述。",
+    "en": "Richard Rutter's Compose to a Vertical Rhythm (24ways, 2006, URL verified in research 12 §9): the base unit = body line-height (worked example 12px × 1.5 = 18px); heading line-height = 18 ÷ size (a 14px heading gets 1.286); every vertical dimension lands on integer multiples of the unit, all in em so user zoom never breaks the rhythm; Bringhurst's 'space, like time, is best divided proportionally' is relayed by that article."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "baseUnit",
+      "unit": "px",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "default": 18,
+      "cssVar": "--vr-unit",
+      "effect": {
+        "zh": "基本单元 = 正文行高(px)。18px 是 24ways 原文工作示例值(12px × 1.5);单元同时是段落间距的倍数基(1×/1.5×/2×)与叠加可视化的行距。",
+        "en": "The base unit = body line-height in px. 18px is the worked example value from the 24ways original (12px × 1.5); the unit is also the multiple base for paragraph gaps (1×/1.5×/2×) and the line spacing of the stack visualization."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "bodySize",
+      "unit": "px",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--vr-body",
+      "effect": {
+        "zh": "正文字号。12px 为 24ways 2006 年工作示例值(当年网页惯例);行高比 = 单元 ÷ 字号,默认 18/12 = 1.5 恰好满足 WCAG 2.2 SC 1.4.12(≥1.5×,调研 05§18)。调大字号而单元不动,行高比跌破 1.5 时演示会亮出阈值警示。",
+        "en": "Body font size. 12px is the worked example from the 2006 original (the web convention of its day); the line-height ratio = unit ÷ size, and the default 18/12 = 1.5 exactly meets WCAG 2.2 SC 1.4.12 (≥1.5×, research 05 §18). Raising size without raising the unit drops the ratio below 1.5 and the demo raises the threshold warning."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "headingSize",
+      "unit": "px",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "default": 14,
+      "cssVar": "--vr-head",
+      "effect": {
+        "zh": "标题字号。韵律法的核心动作:标题行高 = 单元 ÷ 字号 反推(24ways 原文示例 18 ÷ 14 = 1.286),让标题行盒恰好占一个单元;demo 自动推导并实时显示该比值。",
+        "en": "Heading size. The core move of the method: heading line-height = unit ÷ size, derived backwards (the original's example 18 ÷ 14 = 1.286) so the heading's line box occupies exactly one unit; the demo derives and displays the ratio live."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "rhythm", "label": { "zh": "套用韵律", "en": "Apply rhythm" } },
+        { "value": "free", "label": { "zh": "自由排版对照", "en": "Free-form contrast" } }
+      ],
+      "default": "rhythm",
+      "effect": {
+        "zh": "JS 型参数(切 data-mode)。rhythm=标题行高按单元反推、间距取整倍数;free=任意值(13px/7px 间距、1.1 标题行高)——放开纪律,可视化层与偏移读数立刻显示文本漂出韵律线。对照模式是该条目的教学本体。",
+        "en": "JS-type param (toggles data-mode). rhythm = heading line-height derived from the unit, gaps at integer multiples; free = arbitrary values (13px/7px gaps, a 1.1 heading ratio) — loosen the discipline and the visualization plus offset readouts immediately show text drifting off the rhythm lines. The contrast mode is this entry's teaching core."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯排版方法,无特性门槛:line-height 无单位值、calc() 间距与 repeating-linear-gradient 叠加层均广泛可用;无单位行高保证缩放行为正确。",
+      "en": "A pure typesetting method with no feature gate: unitless line-height, calc() gaps and the repeating-linear-gradient stack overlay are all widely available; unitless line-heights keep zoom behavior correct."
+    }
+  },
+  "fallback": {
+    "zh": "无回退问题;韵律失效的表现不是报错而是「发闷」——free 对照模式即其样子。唯一纪律:行高必须用无单位值或 em,px 行高会让用户字号覆写(WCAG 1.4.12 场景)打破节奏。",
+    "en": "Nothing to fall back; the failure mode of broken rhythm is not an error but 'visual mush' — the free contrast mode is exactly what it looks like. One discipline stands: line-heights must be unitless or em; px line-heights break the rhythm when users override font sizes (the WCAG 1.4.12 scenario)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长文/杂志式排版:标题、正文、引语、图注共享一个单元", "en": "Long-form and magazine layouts: headings, body, quotes and captions share one unit" },
+      { "zh": "博客与文档站的行距 token 设计(单元 = 正文行高)", "en": "Spacing tokens for blogs and docs sites (unit = body line-height)" },
+      { "zh": "设计系统交接:把「呼吸空间」从玄学变成单元倍数的算术", "en": "Design-system handoff: turning 'breathing room' from vibes into unit-multiple arithmetic" },
+      { "zh": "评审排版 PR:叠加韵律线逐块核对偏移", "en": "Reviewing typesetting PRs: audit block offsets against overlaid rhythm lines" }
+    ],
+    "avoid": [
+      { "zh": "控件密集的界面——组件间距走 4/8 网格(见 baseline-grid 条目),行高倍数体系管不到按钮内边距", "en": "Control-dense interfaces — component spacing follows the 4/8 grid (see baseline-grid); line-height multiples do not govern button paddings" },
+      { "zh": "多字号混排的密集仪表盘——严格韵律维护成本高,社区实践允许局部豁免(实践共识,未证实)", "en": "Dense dashboards mixing many sizes — strict rhythm is costly to maintain; local exemptions are common (community practice, unverified)" }
+    ]
+  },
+  "a11y": {
+    "zh": "行高纪律与 WCAG 2.2 SC 1.4.12 直接挂钩:单元 ÷ 正文字号 ≥ 1.5 是硬阈值(默认 18/12 恰好达标,调研 05§18);行高必须用无单位值或 em,保证用户覆写字号时节奏不崩;韵律线叠加层 aria-hidden 且 pointer-events:none。",
+    "en": "The rhythm discipline ties directly into WCAG 2.2 SC 1.4.12: unit ÷ body size ≥ 1.5 is a hard threshold (the default 18/12 meets it exactly, research 05 §18); line-heights must be unitless or em so user font-size overrides never collapse the rhythm; rhythm-line overlays are aria-hidden with pointer-events:none."
+  },
+  "sources": ["https://24ways.org/2006/compose-to-a-vertical-rhythm/"],
+  "promptTemplate": {
+    "goal": {
+      "zh": "排版一篇短文:基本单元 = 正文行高(18px),标题行高按单元 ÷ 字号反推,段落间距取单元整数倍,并叠加单元韵律线与逐块偏移读数;提供 free 对照模式展示纪律松开后的混乱。",
+      "en": "Lay out a short article: base unit = body line-height (18px), heading line-height derived as unit ÷ size, paragraph gaps at integer multiples, with unit rhythm lines overlaid and per-block offset readouts; provide a free contrast mode showing the mush when the discipline loosens."
+    },
+    "acceptance": [
+      { "zh": "正文行高 = 单元(无单位比值 = 单元 ÷ 字号),标题行盒恰好占一个单元", "en": "Body line-height = the unit (unitless ratio = unit ÷ size); heading line boxes occupy exactly one unit" },
+      { "zh": "段落间距为单元整数倍(1×/1.5×/2×),行高全部无单位或 em", "en": "Paragraph gaps are integer multiples of the unit (1×/1.5×/2×); all line-heights unitless or em" },
+      { "zh": "韵律线叠加层用 repeating-linear-gradient,aria-hidden + pointer-events:none,可关闭", "en": "Rhythm-line overlays use repeating-linear-gradient with aria-hidden + pointer-events:none, switchable off" },
+      { "zh": "偏移读数以实测 DOM 值 ÷ 单元计算,free 模式下如实标出非倍数偏移", "en": "Offset readouts divide measured DOM values by the unit; non-multiple offsets are flagged honestly in free mode" }
+    ]
+  }
+}

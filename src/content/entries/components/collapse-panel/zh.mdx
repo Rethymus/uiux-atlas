@@ -1,0 +1,81 @@
+## 结构与 DOM
+
+折叠面板是「标题行 + 可展开内容区」的成组结构,APG 骨架逐字落地:**真实 heading > 原生 button**,面板与标题按钮双向指认:
+
+```html
+<ul class="cp-group">
+  <li class="cp-item is-open">
+    <h3 class="cp-head">
+      <button type="button" id="cp-btn-invoice"
+              aria-expanded="true" aria-controls="cp-region-invoice">
+        <span class="cp-arrow" aria-hidden="true">▶</span> 发票开具
+      </button>
+    </h3>
+    <div id="cp-region-invoice" class="cp-body-wrap"
+         role="region" aria-labelledby="cp-btn-invoice">
+      <div class="cp-body-inner">
+        <p class="cp-body">电子普通发票 · 抬头…</p>
+      </div>
+    </div>
+  </li>
+</ul>
+```
+
+关键点:
+
+- 标题必须是 **button**(原生可 Tab、可 Enter/Space 激活),`aria-expanded` 实时同步开合、`aria-controls` 指向面板 id——APG 标准骨架(补研 12§15);
+- 面板外层挂 `role="region"` + `aria-labelledby` 指回标题按钮,让读屏可从面板内跳回标题;**同开面板可能超过 6 个时省略 region**,避免 landmark 泛滥(补研 12§15);
+- 内容区做两层:外层控制高度(grid-template-rows),内层 `overflow: hidden` 裁切——高度动画不让内容先溢出;
+- 多块面板是 ul/li 兄弟关系,`is-open` 类驱动样式与动画。
+
+## 样式与参数
+
+三个参数都是 JS 型(经 store 订阅改 data-*),CSS 按 `data-placement` / `data-collapsible` 分支:
+
+```css
+.cp-item + .cp-item { border-top: 1px solid #f0f0f0; }      /* colorBorderSecondary */
+.cp-btn { display: flex; gap: 8px; padding: 12px 16px;
+          color: rgba(0, 0, 0, 0.88); font-weight: 500; }
+.cp-stage[data-placement="end"] .cp-btn { flex-direction: row-reverse; }
+.cp-arrow { transition: rotate 0.2s cubic-bezier(0.645, 0.045, 0.355, 1); }
+.cp-btn[aria-expanded="true"] .cp-arrow { rotate: 90deg; }
+.cp-body-wrap {
+  display: grid;
+  grid-template-rows: 0fr;                                   /* 收起:0 高 */
+  transition: grid-template-rows 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.cp-item.is-open .cp-body-wrap { grid-template-rows: 1fr; }  /* 展开:内容自然高 */
+.cp-stage[data-collapsible="disabled"] .cp-btn { color: rgba(0, 0, 0, 0.25); cursor: not-allowed; }
+```
+
+数值出处:
+
+- 过渡 0.2s + cubic-bezier(0.645,0.045,0.355,1) = antd motionDurationMid + motionEaseInOut(设计调研 06§3.1/3.2;动效族含 collapse 族,06§3.3);箭头旋转同 token;
+- 文字色 rgba(0,0,0,0.88)/0.65/0.25 = antd TextPrimary/Secondary/Quaternary 透明度体系(06§2.3⑤);分隔线 #f0f0f0 = colorBorderSecondary(06§2.3⑤);
+- 标题 14px/fontWeight 500 = antd fontSize + medium 字重(06§1.3);
+- **标题 padding 12px 16px、内容底 padding 12px 为社区常见值,未证实**(调研未记载 Collapse 几何数值),demo 按常见比例绘制;
+- `accordion` / `expandIconPlacement(start|end)` / `collapsible(header|icon|disabled)` 的取值均来自 antd Collapse 现行文档(补研 12§15);三者官方默认值调研未记载,demo 默认 off/start/header 为社区常见值,未证实。
+
+## 动效与交互
+
+- **展开/收起**:`grid-template-rows 0fr→1fr` 过渡 0.2s——高度随内容自然高,不用 JS 量高;箭头同步旋转 90°;命中 `prefers-reduced-motion` 时两组过渡全部取消,直接显隐(调研 07§37);
+- **accordion=on(手风琴)**:打开一块即收起其余——「同一时刻只开一个」是折叠面板的特例而非默认(补研 12§15);切换时其余面板跟随收起,aria-expanded 逐块同步;
+- **collapsible 三档**:header 整行可点;icon 仅箭头区响应点击(icon 档下**键盘 Enter/Space 仍可切换**——指针限制不剥夺键盘路径);disabled 整块不可交互,`aria-disabled` 表达且内容仍静态可读;
+- **键盘路径**:Tab 在标题按钮间移动,Enter/Space 切换(补研 12§15;WebAIM 按钮键位,调研 07§36);APG 手风琴的方向键/Home/End 为可选增强,本 demo 仅实现已记载的 Enter/Space;
+- 展开动作不改变焦点位置——焦点留在被点击的标题按钮上,收起后内容移出视野但按钮仍在原位。
+
+## 真实产品案例
+
+- **GitHub README 的 `<details>` 折叠块**:构建日志、CI 输出、长报告收进原生折叠块,展开才看全文——原生 details/summary 是折叠面板的零 JS 兜底实现;
+- **官网 FAQ/帮助中心**:常见问题一问一面板,多数配手风琴单开,保证视口里同时只有一个答案,扫读问题列表不被答案干扰;
+- **电商结算页的可选区块**:京东/淘宝结账页把「发票开具」「优惠码」「配送备注」做成默认收起的折叠区——主流程(收货、支付)不被可选表单挤压(编辑性泛例)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `accordion` | on 单开让视口永远只呈现一块内容,适合问答/逐项讲解 | off 多开方便对比几块内容,但页面纵向长度不可控 |
+| `expandIconPlacement` | end(箭头在右)是「行尾操作」的心智,整行更像列表项 | start(箭头在左)是「树形/目录」的心智,层级感更强 |
+| `collapsible` | icon 档把误触降到最低,但指针用户要多瞄准小箭头 | header 整行命中区最大(Fitts 定律,调研 07§22);disabled 只用于内容暂不可用的真禁用 |
+
+经验区间:单组 3–6 块;标题一行、内容尽量一屏内;默认展开哪一块跟随任务(主流程相关的展开、可选的收起);禁用面板给出原因文字,不要只灰掉。

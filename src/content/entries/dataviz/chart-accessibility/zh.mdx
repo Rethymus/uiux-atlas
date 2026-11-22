@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+复杂图像需要「**两段式替代文本**」(W3C WAI 复杂图像教程):第一段是短 `alt` / svg 的 `aria-label`,写明**图表类型+内容概要**;第二段是页面内的**长描述**,写齐趋势结论、比例尺、颜色顺序、相对高度,并且**对所有人可见**——首选 `figure role="group"` + `figcaption` 承载。
+
+```html
+<figure role="group">
+  <svg role="img" aria-label="柱状图:示例站点 3-8 月访问量,总体上升,详见长描述">
+    <title>…</title><desc>…</desc>
+    …柱与轴…
+  </svg>
+  <figcaption><!-- 长描述:数据表或文字,所有用户可见 -->
+    <table><caption>示例站点 3-8 月访问量</caption>…</table>
+  </figcaption>
+</figure>
+```
+
+关键点:
+
+- `aria-describedby` **只适合喂纯文本**:把结构化数据表挂上去,读屏会把它读成连续段落(WAI 原文)——表格请放 figcaption;
+- 正文里先用一句话概括图表,再给图——这是教程的同款顺序;
+- 色相之外必须有第二通道:**直标数值**(jfly 原话:「在图上直标,而不是做远处对色的图例」)与**贴花纹理**;
+- svg 自带 `title` + `desc` 作兜底;交互 tooltip 另须满足 WCAG 2.1 SC 1.4.13 三件套(Esc 可关/可悬停/常驻,W3C 理解页已核,详见图例与提示条目)。
+
+## 样式与参数
+
+三个参数全部为 JS 型(demo 订阅 store),默认值逐字可查:
+
+| 参数 | 默认值 | 出处(逐字核验) |
+| --- | --- | --- |
+| `decal` | **off** | ECharts `aria.decal.show` 官方默认 false(`src/visual/aria.ts`,08§3.4)——贴花是色盲安全的兜底通道,库默认关着,必须显式开启;decal 参数(dashArrayX/dashArrayY/rotation)定义于 `util/decal.ts`,demo 用 SVG pattern 等效示意 |
+| `directLabel` | **on** | jfly CUD 页原话(08§1.1 已核):直标优于远处对色图例 |
+| `longDesc` | **table** | WAI 教程首选 figcaption 承载长描述;table/text 两档都要写齐趋势/比例尺/颜色顺序/相对高度清单 |
+
+配套默认值(ECharts `aria.ts` 源码核验):`aria.label.enabled` 默认 **true**——库会自动生成图形摘要供读屏;但贴花 `aria.decal.show` 默认 **false**,两者一开一关是有意设计:摘要是标配、纹理是显式选择。
+
+```css
+/* 贴花:色相之外的第二视觉编码(SVG pattern 等效;ECharts 走 decal.ts 的 dashArray/rotation) */
+<defs>
+  <pattern id="decal" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(255,255,255,.8)" stroke-width="2.5"/>
+  </pattern>
+</defs>
+```
+
+## 动效与交互
+
+- **长描述切换走 ARIA tablist**:两枚 `role="tab"`(`aria-selected` + roving tabindex)+ `role="tabpanel"`,方向键左右切换;demo 里 tab 点击写回参数 store,面板与视图双向同步;
+- **sonification(数据声响化)说明**:把数值映射为声音参数(本条 demo 自研示意:数值 → 音高 220–880Hz 正弦短音),为盲用用户提供「形状听得到」的第二感知通道;**产品级 sonification 实现(具体库与默认参数)本轮调研未核验,不引具体数值**——WebAudio 须在用户手势后创建 AudioContext(自动播放策略),播放状态经 `aria-live="polite"` 播报;
+- 贴花/直标切换即时重绘,无过渡依赖;图表本体动效纪律(数据层动画、轴静止、reduce 直出终态)见图表动效条目;
+- 读屏路径不依赖动效:数值永远可以从轴刻度、`<title>`、figcaption 数据表三条通道取回。
+
+## 真实产品案例
+
+- **ECharts v5.5.1**(aria.ts 源码逐字核验,08§3.4):`aria.label.enabled` 默认 true(自动生成图形摘要供读屏)、`aria.decal.show` 默认 false——「摘要默认开、贴花默认关」的组合是库对无障碍的官方立场;贴花参数(dashArrayX/Y、rotation)在 `util/decal.ts`。
+- **W3C WAI 复杂图像教程**(w3.org 已核,12§13):alt 写「图表类型+内容概要」、长描述写趋势/比例尺/颜色顺序/相对高度、首选 `figure role="group"` + `figcaption`、`aria-describedby` 仅适合纯文本——本条 demo 的整体结构即按此搭建。
+- **jfly / Okabe-Ito CUD 指南**(08§1.1 页面已核):「For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key」——直标原则的原话出处;柱顶直标数值是该原则在柱状图上的直接落地。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `decal` | on 后色盲用户在色相失效时仍有纹理通道;纹理过密(线宽大)会让柱面发花、直标可读性下降 | off 是官方默认——纯色柱依赖色相单通道,色盲场景必须靠直标/表格兜底 |
+| `directLabel` | on 时读值不依赖轴也不依赖色;柱顶文字在窄面板可能与相邻标签相撞 | off 退化为仅轴刻度:读值精度下降,读屏仍可走表格,但低视力扫读通道变窄 |
+| `longDesc` | text 档给叙事型结论,一句趋势话最快;结构化校对能力弱于表格 | table 档数值可复制可校对;若错挂 aria-describedby 而非 figcaption,读屏会读成连续段落 |
+
+经验组合:decal=off(官方默认)+ directLabel=on + longDesc=table 是最稳的出厂态;色盲用户场景或打印灰度场景把 decal 打开;`aria-describedby` 留给纯文字摘要,结构化数据永远进 figcaption。

@@ -1,0 +1,81 @@
+## Structure & DOM
+
+A collapse group is "header row + expandable body" units; the APG skeleton lands verbatim: **a real heading wrapping a native button**, with the panel and header button cross-referencing each other:
+
+```html
+<ul class="cp-group">
+  <li class="cp-item is-open">
+    <h3 class="cp-head">
+      <button type="button" id="cp-btn-invoice"
+              aria-expanded="true" aria-controls="cp-region-invoice">
+        <span class="cp-arrow" aria-hidden="true">▶</span> Invoice
+      </button>
+    </h3>
+    <div id="cp-region-invoice" class="cp-body-wrap"
+         role="region" aria-labelledby="cp-btn-invoice">
+      <div class="cp-body-inner">
+        <p class="cp-body">Electronic invoice · Title…</p>
+      </div>
+    </div>
+  </li>
+</ul>
+```
+
+Key points:
+
+- The header must be a **button** (natively focusable, Enter/Space activatable), with `aria-expanded` tracking the live open state and `aria-controls` pointing at the panel id — the APG standard skeleton (supplementary study 12 §15);
+- The panel carries `role="region"` + `aria-labelledby` pointing back at the header button so screen readers can jump from panel to title; **omit region when more than 6 panels can be open at once** to avoid landmark flooding (12 §15);
+- The body has two layers: the outer wrapper controls height (grid-template-rows), the inner clips with `overflow: hidden` — the height animation never leaks content;
+- Panels are ul/li siblings; the `is-open` class drives styling and animation.
+
+## Styling & Parameters
+
+All three parameters are JS-type (store-subscribed, driving data-*), with CSS branching on `data-placement` / `data-collapsible`:
+
+```css
+.cp-item + .cp-item { border-top: 1px solid #f0f0f0; }      /* colorBorderSecondary */
+.cp-btn { display: flex; gap: 8px; padding: 12px 16px;
+          color: rgba(0, 0, 0, 0.88); font-weight: 500; }
+.cp-stage[data-placement="end"] .cp-btn { flex-direction: row-reverse; }
+.cp-arrow { transition: rotate 0.2s cubic-bezier(0.645, 0.045, 0.355, 1); }
+.cp-btn[aria-expanded="true"] .cp-arrow { rotate: 90deg; }
+.cp-body-wrap {
+  display: grid;
+  grid-template-rows: 0fr;                                   /* collapsed: zero height */
+  transition: grid-template-rows 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.cp-item.is-open .cp-body-wrap { grid-template-rows: 1fr; }  /* open: natural height */
+.cp-stage[data-collapsible="disabled"] .cp-btn { color: rgba(0, 0, 0, 0.25); cursor: not-allowed; }
+```
+
+Where the numbers come from:
+
+- Transition 0.2s + cubic-bezier(0.645,0.045,0.355,1) = antd motionDurationMid + motionEaseInOut (design study 06 §3.1/3.2; the motion family includes a collapse family, 06 §3.3); the arrow rotation shares the token;
+- Text colors rgba(0,0,0,0.88)/0.65/0.25 = antd's TextPrimary/Secondary/Quaternary opacity system (06 §2.3⑤); divider #f0f0f0 = colorBorderSecondary (06 §2.3⑤);
+- Header 14px / weight 500 = antd fontSize + medium weight (06 §1.3);
+- **The 12px 16px header padding and 12px body bottom padding are community-common values, unverified** (the research records no Collapse geometry); the demo draws them at that common ratio;
+- The `accordion` / `expandIconPlacement (start|end)` / `collapsible (header|icon|disabled)` values all come from antd Collapse's current docs (supplementary study 12 §15); the three official defaults are unrecorded — the demo's off/start/header defaults are community-common values, unverified.
+
+## Motion & Interaction
+
+- **Expand/collapse**: a `grid-template-rows 0fr→1fr` transition over 0.2s — height follows the content's natural height with no JS measuring; the arrow rotates 90° in sync; both transitions are dropped under `prefers-reduced-motion` and the body snaps (research 07 §37);
+- **accordion=on**: opening one panel collapses the rest — "one open at a time" is the special case, not the default (supplementary study 12 §15); aria-expanded stays in sync per panel;
+- **collapsible tiers**: header makes the whole row clickable; icon restricts pointer clicks to the arrow zone (under icon the keyboard's Enter/Space still toggles — a pointer restriction never strips the keyboard path); disabled makes the panel inert with `aria-disabled`, content still statically readable;
+- **Keyboard path**: Tab moves between header buttons, Enter/Space toggles (12 §15; WebAIM button keys, research 07 §36); APG's arrow-key/Home/End enhancements are optional and this demo implements only the recorded Enter/Space;
+- Expanding never moves focus — focus stays on the pressed header button; collapsing moves the body out of view but the button stays put.
+
+## Real-world examples
+
+- **GitHub README `<details>` blocks**: build logs, CI output and long reports fold into native disclosure blocks, read on expand — native details/summary is the zero-JS fallback of the collapse panel;
+- **Site FAQ / help centers**: one question per panel, mostly accordion single-open, so only one answer occupies the viewport and scanning the question list stays undisturbed;
+- **E-commerce checkout optional sections**: JD/Taobao checkout folds "invoice", "promo code" and "delivery note" into collapsed-by-default panels — the main flow (shipping, payment) never competes with optional forms (editorial generalization).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `accordion` | on guarantees one panel fills the viewport — right for Q&A / guided walkthroughs | off invites side-by-side comparison but the page height runs away |
+| `expandIconPlacement` | end (arrow right) reads as an "end-of-row action"; rows feel like list items | start (arrow left) reads as a tree/directory; the hierarchy feel is stronger |
+| `collapsible` | icon minimizes misfires but pointer users must aim at a small arrow | header gives the biggest hit area (Fitts' law, research 07 §22); disabled only for truly unavailable content |
+
+Working ranges: 3–6 panels per group; one-line headers, bodies within one screen; pick the default-open panel by task (main-flow sections open, optional ones closed); give disabled panels a reason in text, never just a gray-out.

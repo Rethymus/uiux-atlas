@@ -11,6 +11,46 @@ interface FilterBarProps {
 
 const STAR_ORDER = [3, 2, 1] as const;
 
+/* ── 过滤态持久化(清单 filter-state-not-persisted):
+     两层:① URL query(?system=xxx&star=3,replaceState 不入历史栈,可分享/收藏);
+     ② sessionStorage 按页面路径回退(MPA 整页返回/重开标签后仍保留)。
+     SSR/水合前恒 all/all(与卡片直出结构一致),挂载后恢复,过滤仍由岛屿显隐。
+     分享链接的参数快照走 #s= hash(lib/shareLink.ts),query 层互不冲突。 ── */
+const FILTER_SESSION_PREFIX = "atlas-filter:";
+
+type StarFilter = number | "all";
+
+interface PersistedFilter {
+  system: string;
+  star: StarFilter;
+}
+
+const parseStarParam = (raw: string | null): StarFilter =>
+  raw === "1" || raw === "2" || raw === "3" ? Number(raw) : "all";
+
+/** URL query 优先,回退 sessionStorage(按 pathname);非法值交给调用方校验 */
+function readPersistedFilter(): PersistedFilter {
+  const fallback: PersistedFilter = { system: "all", star: "all" };
+  if (typeof window === "undefined") return fallback;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const qs = q.get("system");
+    const qStar = q.get("star");
+    if (qs !== null || qStar !== null) return { system: qs ?? "all", star: parseStarParam(qStar) };
+    const saved = window.sessionStorage.getItem(`${FILTER_SESSION_PREFIX}${window.location.pathname}`);
+    if (!saved) return fallback;
+    const obj = JSON.parse(saved) as { system?: unknown; star?: unknown };
+    return {
+      system: typeof obj.system === "string" ? obj.system : "all",
+      star: typeof obj.star === "number" && (obj.star === 1 || obj.star === 2 || obj.star === 3)
+        ? obj.star
+        : parseStarParam(obj.star == null ? null : String(obj.star)),
+    };
+  } catch {
+    return fallback; // 存储不可用(隐私模式等):与现状一致,不持久化
+  }
+}
+
 /**
  * 分类列表页过滤条(spec §4.2 / §6-10):来源体系 × 参数化星级两个维度,客户端过滤。
  * - 卡片由 .astro 直接渲染(带 data-slug / data-system / data-star),本岛屿只切换
@@ -18,6 +58,8 @@ const STAR_ORDER = [3, 2, 1] as const;
  * - sticky 过滤栏:初始透明,停靠(哨兵滚出视口顶)后加 --glass-* 底 + --shadow-1,
  *   IntersectionObserver 哨兵实现;RM 下状态切换瞬时(CSS 全局降级)。
  * - 结果计数行 aria-live="polite";过滤切换时对剩余卡做 120ms 淡入(只 opacity)。
+ * - 过滤态持久化:URL query(?system=&star=,replaceState 不入栈)+ sessionStorage
+ *   按路径回退(清单 filter-state-not-persisted;挂载后恢复,水合前恒 all/all)。
  * - 选项用 chip 体系(spec §3 Chip:可点 Chip hover --fill-1,选中 accent-dim 底);
  *   <640 两行分组、Chip 横向滑动(CSS 承担)。
  */
@@ -57,6 +99,46 @@ export default function FilterBar({ entries, locale }: FilterBarProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ── 过滤态恢复(挂载后一次):URL query 优先、sessionStorage 回退;
+  //    值按本分类实际可选项校验(死过滤器/非法值回退 all),SSR 标记不受影响
+  useEffect(() => {
+    const saved = readPersistedFilter();
+    const present = new Set<string>(entries.map((e) => e.system));
+    const sys = saved.system === "all" || present.has(saved.system) ? saved.system : "all";
+    const st = saved.star;
+    if (sys !== "all") setSystem(sys);
+    if (st !== "all") setStar(st);
+  }, [entries]);
+
+  // ── 过滤态双写:sessionStorage(按路径)+ URL query(replaceState 不入栈)。
+  //    挂载当拍会以 all/all 写一次、随恢复态二次覆盖,结果正确
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.setItem(
+        `${FILTER_SESSION_PREFIX}${window.location.pathname}`,
+        JSON.stringify({ system, star }),
+      );
+    } catch {
+      /* 存储不可用(file://、隐私模式):仅 URL 层生效 */
+    }
+    const q = new URLSearchParams(window.location.search);
+    if (system === "all") q.delete("system");
+    else q.set("system", system);
+    if (star === "all") q.delete("star");
+    else q.set("star", String(star));
+    const qs = q.toString();
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (next !== current) {
+      try {
+        window.history.replaceState(null, "", next);
+      } catch {
+        /* file:// 等:静默跳过 */
+      }
+    }
+  }, [system, star]);
 
   // 显隐卡片(骨架逻辑保留)+ 过滤切换时剩余卡 120ms 淡入;只依赖过滤态
   useEffect(() => {

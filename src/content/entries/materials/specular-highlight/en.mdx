@@ -1,0 +1,78 @@
+## Structure & DOM
+
+A specular highlight is a purely decorative lighting layer laid over the element's surface: statically, a gradient "sky-light band" along the top edge; dynamically, a light spot that tracks the pointer. It handles no events and carries no information — it only answers "where does the light come from".
+
+```html
+<div class="card">   <!-- lit element: position: relative; ::before is the highlight layer -->
+  <h3>Title</h3>
+  <p>Body</p>
+  <!-- invisible in the DOM: ::before top band / optional hairline -->
+</div>
+```
+
+Key points:
+
+- The highlight layer must take `border-radius: inherit` to follow the element's shape and `pointer-events: none` to stay out of the way;
+- The dynamic offsets live in element-level CSS variables (`--sh-x`/`--sh-y`), written per frame straight to the element's style rather than through compound selectors (global class churn invalidates the whole subtree every frame);
+- The light is a sitewide convention: highlight direction (top rim / upper-left) should share the same light ratio as the shadows before materials feel coherent (research 12 §16.5).
+
+## Styling & Parameters
+
+Three CSS-variable parameters (intensity/height/hairline) plus one JS switch (lighting):
+
+```css
+.card {
+  /* inset hairline and the outer shadow share one declaration */
+  box-shadow:
+    inset 0 var(--sh-hairline) 0 0 hsl(0 0% 100% / var(--sh-intensity)),  /* 0.5px rim line */
+    0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;                                  /* top rim */
+  height: var(--sh-height);                           /* 6px sky-light band */
+  border-radius: inherit;
+  background: linear-gradient(hsl(0 0% 100% / var(--sh-intensity)), transparent); /* peak 0.5 */
+  pointer-events: none;
+}
+
+/* Dynamic form: a radial spot whose center follows --sh-x/--sh-y written by the pointer */
+[data-lighting="pointer"] .card::before {
+  inset: 0;
+  height: auto;
+  background: radial-gradient(170px circle at var(--sh-x, 50%) var(--sh-y, -30%),
+              hsl(0 0% 100% / var(--sh-intensity)), transparent 75%);
+}
+```
+
+Where the numbers come from:
+
+- `height: 6px` + peak `hsl(0 0% 100% / 0.5)` = the top-edge band recipe in research 12 §7 (::before with `inset: 0 0 auto 0`);
+- The `0.5px` hairline = the web-practice value in research 09 §1.4d (a matching hairline stacked on the band) — **derived, never officially published**;
+- Calibration ranges (light `0.25–0.4`, dark `0.08–0.15`) = derived values from research 09 §1.4d, **⚠️unverified**: official highlight-intensity numbers do not exist; calibrate against the real backdrop;
+- The demo's glass fill `rgba(17,25,40,0.55)` = the production-measured dark-glass recipe (superdesign.dev, see the glassmorphism entry).
+
+## Motion & Interaction
+
+- **Static→dynamic switch**: the highlight turns from a "top band" into a "pointer-tracked spot"; the radial center is written to element-level variables and resets to the default top light (`50% / -30%`) on pointer leave;
+- **Pointer-driven means input feedback**: Apple's touch-glow is described as "lighting up from beneath the fingertip and spreading across the element and neighboring glass" (WWDC25 219 [725–737s], research 09 §8.8) — the spot moves only when the pointer moves, never drifting on its own; under `prefers-reduced-motion` the input-driven tracking stays while the entrance animation is dropped;
+- Animate the highlight layer only via `background`/`opacity`, never layout properties;
+- When the element moves, the highlight must be recomputed (the light stays put, the element moves) — the exact semantics of the "moves-with-position" dynamic form.
+
+## Real-world examples
+
+- **iOS 26 Liquid Glass controls**: Apple defines the material's core as lensing — "bending, shaping and converging light in real time" (WWDC25 219, research 09 §1.4d/§8.1); web recreations approximate the lit form with "a 1px inner highlight + top-edge light" (see the liquid-glass entry's glass-pod recipe); the touch glow "lighting up from the fingertip" corresponds to the dynamic form ([725–737s]);
+- **visionOS gaze highlight**: the system applies a hover highlight effect to every interactive element (WWDC25 303 [90–104s], research 09 §3) — the official case of highlights as a system-level interaction language;
+- **Josh Comeau's blog (joshwcomeau.com)**: origin of the 6px sky-light band recipe; the author frames it as a "sky-light reflection" and pairs it with shadows under one light ratio (research 12 §7).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `intensity` | brighter, "wetter" highlight; past 0.6 on dark surfaces it starts blowing out and squeezing text contrast | the highlight fades; under 0.1 the material reads matte and the glass feel is left to blur alone |
+| `height` (static) | the band widens into a lamp shining straight onto the card; past 10px it loses the "lit rim" reading and becomes a bright cap | the band narrows to nothing; 0 = only the hairline's crisp line remains |
+| `hairline` | the line thickens and solidifies; past 1px it reads as a white outline, not lighting | the line fades; 0 = only the soft gradient, and the rim loses its sharp lit point |
+| `lighting` → pointer | the spot roams with the pointer and the material comes alive; watch that wide sweeps never cross body text | back to static top light: the quietest, most controllable default |
+
+Working ranges: intensity 0.25–0.4 on light, 0.08–0.15 on dark (derived — measure it); height 4–8px; hairline 0.5px per the recipe convention. The acid test for over-highlighting: card text must still hold 4.5:1 against the brightest point (WCAG 2.1 SC 1.4.3).

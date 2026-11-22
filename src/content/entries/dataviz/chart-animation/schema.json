@@ -1,0 +1,102 @@
+{
+  "name": "Chart Animation",
+  "nameZh": "图表动效",
+  "aliases": ["Entrance Animation", "Growth Animation", "Chart.js animation"],
+  "category": "dataviz",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "入场三式——生长(从零基线长出)/ 淡入 / 扫描(clip-path 左→右揭示):时长 1000ms、easeOutQuart(Chart.js 官方默认),动画只落在数据层,轴与网格静止;prefers-reduced-motion 时直出终态。",
+    "en": "Three entrances — grow (rise from the zero baseline) / fade / sweep (left-to-right clip-path reveal): 1000ms, easeOutQuart (Chart.js official defaults), animation on the data layer only while axes and grids stay still; under prefers-reduced-motion the final state renders directly."
+  },
+  "origin": {
+    "zh": "数值出处:Chart.js 官方动画文档(补研 12§13 抓取已核)——全局 animation.duration 默认 1000、easing 默认 'easeOutQuart'(30 种缓动可选)、hover 过渡 400ms、resize 过渡 0、options.animation=false 整体禁用、onProgress/onComplete 仅在主 animation 配置生效;「地图场景动画胜趋势/运动、小倍数胜时间点对比」的适用边界取自 Wikipedia Small multiple 条目(12§13 已核)。",
+    "en": "Numeric provenance: Chart.js official animations docs (supplement 12 §13, fetched and verified) — global animation.duration defaults to 1000, easing to 'easeOutQuart' (30 easings), hover transition 400ms, resize transition 0, options.animation=false disables entirely, onProgress/onComplete fire only under the main animation config; the applicability boundary \"animation for trend/motion, small multiples for between-timepoint comparison\" comes from Wikipedia's Small multiple article (12 §13, verified)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "entrance",
+      "options": [
+        { "value": "grow", "label": { "zh": "生长", "en": "Grow" } },
+        { "value": "fade", "label": { "zh": "淡入", "en": "Fade" } },
+        { "value": "sweep", "label": { "zh": "扫描", "en": "Sweep" } }
+      ],
+      "default": "grow",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-entrance)。grow=数据层整体从零基线 scaleY 长出(Chart.js 默认入场即从原点起动画的「生长」语义);fade=整组 opacity 淡入,最克制;scan/sweep=clip-path inset 从右往左收、数据左→右揭示——扫描式适合表达「随时间推进」,但逐时间点精确对比请交给小倍数阵列(Wikipedia 结论)。",
+        "en": "JS-type param (the demo subscribes and toggles data-entrance). grow = the data layer rises from the zero baseline via scaleY (the growth semantics of Chart.js' default origin animation); fade = one group opacity fade, the most restrained; sweep = clip-path inset collapsing right-to-left, data revealing left-to-right — sweeps suit \"advancing through time\", but precise between-timepoint comparison belongs to small multiples (Wikipedia's conclusion)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "duration",
+      "unit": "ms",
+      "min": 0,
+      "max": 3000,
+      "step": 100,
+      "default": 1000,
+      "cssVar": "--ca-dur",
+      "effect": {
+        "zh": "CSS 变量型参数(经 DemoStage 注入)。入场时长,默认 1000ms 逐字对应 Chart.js 全局 animation.duration 默认值(官方 docs 已核);Chart.js 的对照纪律:结构性变化不做动画——resize 过渡 duration 0(已核),更新动效 hover 400ms(已核)。0ms = 直出终态,与 options.animation=false 的视觉等效。",
+        "en": "CSS-var param (injected by DemoStage). Entrance duration; the 1000ms default matches Chart.js' global animation.duration verbatim (official docs verified); Chart.js' companion discipline: structural changes don't animate — resize transition duration 0 (verified), hover update 400ms (verified). 0ms = render the final state directly, visually equivalent to options.animation=false."
+      }
+    },
+    {
+      "type": "cubicBezier",
+      "name": "easing",
+      "default": [0.165, 0.84, 0.44, 1],
+      "cssVar": "--ca-ease",
+      "effect": {
+        "zh": "CSS 变量型参数。入场缓动,经 --ca-ease 注入为 cubic-bezier()。Chart.js 默认 easing='easeOutQuart'(官方已核);贝塞尔系数 (0.165, 0.84, 0.44, 1) 是社区通行的 easeOutQuart 近似映射——官方未发布系数换算,此处如实标注「社区常见值,未证实」。调快出锋(spring 类曲线)会让柱子「过冲」越过真实值再回落,数据图应避免。",
+        "en": "CSS-var param. Entrance easing, injected as cubic-bezier() via --ca-ease. Chart.js' default easing is 'easeOutQuart' (verified); the coefficients (0.165, 0.84, 0.44, 1) are the community's standard easeOutQuart approximation — the official mapping is unpublished, so this is honestly labeled \"community value, unverified\". Overshooting spring curves make bars overshoot the true value and settle back — avoid that on data charts."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS keyframes / transform / opacity / clip-path 均为广泛可用特性;prefers-reduced-motion Baseline 自 2020-01 广泛可用(MDN,补研 12§5 已核);clip-path 各浏览器版本矩阵本轮未逐项核验,demo 对不支持者自然回退为整块出现。",
+      "en": "CSS keyframes / transform / opacity / clip-path are widely available; prefers-reduced-motion is Baseline widely available since 2020-01 (MDN, supplement 12 §5 verified); the clip-path per-browser version matrix was not audited this round — unsupported browsers naturally fall back to the block appearing at once."
+    }
+  },
+  "fallback": {
+    "zh": "三式动画只定义 from 关键帧,基态即终态:CSS animation 不支持/被禁用时元素直接呈现终态,天然零成本回退;clip-path 不支持时 sweep 退化为整块出现——关键场景可改 fade 兜底;时长 0 或 options.animation=false 是显式的「直出终态」开关。",
+    "en": "All three entrances define only the from keyframe, so the base state is the final state: with CSS animation unsupported or disabled, the element renders its final state directly — a zero-cost fallback; without clip-path, sweep degrades to the block appearing at once — switch to fade for critical scenes; duration 0 or options.animation=false is the explicit render-final-state switch."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "仪表盘/报告首屏的入场引导——数据层一次性生长或淡入,给读者「数据到了」的完成信号", "en": "First paint of dashboards/reports — one grow or fade on the data layer as the \"data has arrived\" completion signal" },
+      { "zh": "时间序列的扫描式入场(左→右揭示)——强调「随时间推进」的叙事感", "en": "Sweep entrance on time series (left-to-right) — when the story is \"advancing through time\"" },
+      { "zh": "数据更新过渡(hover 高亮 400ms 一档)——Chart.js active 过渡的默认时长档", "en": "Data-update transitions (hover highlight at the 400ms tier) — Chart.js' default active-transition tier" },
+      { "zh": "onComplete 回调接 aria-live 播报「图表加载完成」——动效与读屏反馈同步", "en": "Wiring onComplete to an aria-live \"chart loaded\" announcement — motion and screen-reader feedback in step" }
+    ],
+    "avoid": [
+      { "zh": "轴/网格/刻度参与动画——「刻度在动」会被误读为「数据在动」(坐标轴条目同一纪律)", "en": "Animating axes/grids/ticks — \"moving ticks\" reads as \"moving data\" (same discipline as the Chart Axes entry)" },
+      { "zh": "对比两时点的场景用扫描动画代替并排面板——地图研究结论:时间点对比小倍数胜过动画", "en": "Using a sweep instead of side-by-side panels to compare two time points — map research: between-timepoint comparison favors small multiples" },
+      { "zh": "resize/布局重排做过渡——Chart.js 官方把 resize 过渡写死 duration 0,结构性变化即时到位", "en": "Transitioning resize/layout reflows — Chart.js hard-codes resize transition duration 0; structural changes land instantly" },
+      { "zh": "过冲型 spring 曲线用于数据层——数值先越过真实值再回落,一瞬间呈现假数据", "en": "Overshooting spring curves on the data layer — values overshoot the truth and settle back, showing false data for a beat" }
+    ]
+  },
+  "a11y": {
+    "zh": "prefers-reduced-motion: reduce 时跳过入场直接渲染终态(demo 用 @media 关闭 animation;终态=基态,零 JS 判断也能成立);入场完成用 aria-live=\"polite\" 播报(补研 12§13 片段的 onComplete → ariaLive 模式),读屏用户不依赖视觉动画也能知道数据就绪;动效不是传达数据的唯一通道——数值仍有轴刻度、<title> 与表格兜底。",
+    "en": "Under prefers-reduced-motion: reduce, skip the entrance and render the final state (the demo kills animation via @media; final state = base state, so it holds with zero JS checks); announce completion via aria-live=\"polite\" (the onComplete → ariaLive pattern from supplement 12 §13) so screen-reader users know the data is ready without watching motion; motion is never the sole data channel — values remain reachable via axis ticks, <title> and the table."
+  },
+  "sources": [
+    "https://www.chartjs.org/docs/latest/configuration/animations.html",
+    "https://en.wikipedia.org/wiki/Small_multiple",
+    "https://raw.githubusercontent.com/apache/echarts/5.5.1/src/component/tooltip/TooltipModel.ts"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用手绘 SVG 柱状图实现三式可切换入场:生长(数据层从零基线 scaleY)/ 淡入 / 扫描(clip-path 左→右),时长走 --ca-dur(默认 1000ms = Chart.js 默认),缓动走 --ca-ease(easeOutQuart 社区近似),提供重播按钮,轴/网格层静止,prefers-reduced-motion 直出终态。",
+      "en": "Implement a hand-drawn SVG bar chart with three switchable entrances: grow (data layer scaleY from the zero baseline) / fade / sweep (left-to-right clip-path), duration via --ca-dur (default 1000ms = Chart.js default), easing via --ca-ease (community easeOutQuart approximation), a replay button, static axes/grids, and the final state rendered directly under prefers-reduced-motion."
+    },
+    "acceptance": [
+      { "zh": "入场时长默认 1000ms、缓动默认 easeOutQuart(Chart.js 官方默认;贝塞尔系数标注社区近似未证实)", "en": "Entrance defaults to 1000ms and easeOutQuart (Chart.js official defaults; bezier coefficients labeled as unverified community approximation)" },
+      { "zh": "动画只落在数据层(柱/线);轴、网格、刻度全程静止", "en": "Animation touches the data layer (bars/lines) only; axes, grids and ticks stay still throughout" },
+      { "zh": "@media (prefers-reduced-motion: reduce) 下取消动画直出终态;关键帧只写 from,基态=终态", "en": "Under @media (prefers-reduced-motion: reduce) animation is removed and the final state renders; keyframes define from only, base state = final state" },
+      { "zh": "入场完成经 aria-live 播报;0ms 时长即直出终态(options.animation=false 的视觉等效)", "en": "Completion announces via aria-live; a 0ms duration renders the final state directly (visually equivalent to options.animation=false)" },
+      { "zh": "resize/结构变化不做过渡(Chart.js resize duration 0 纪律);不过冲型缓动优先", "en": "No transitions on resize/structural changes (Chart.js resize duration 0 discipline); non-overshooting easing preferred" }
+    ]
+  }
+}

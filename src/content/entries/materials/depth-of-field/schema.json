@@ -1,0 +1,104 @@
+{
+  "name": "Depth of Field",
+  "nameZh": "景深层次",
+  "aliases": ["景深层次", "Depth of Field", "Blur Layering", "模糊分层"],
+  "category": "materials",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "用 blur 分层伪造摄影景深:前景清晰、远景 blur+saturate 降清晰度并轻压暗——blur → dim → sharp 三段深度,焦点平面可切换(blur px 可调)。",
+    "en": "Fake photographic depth of field with blur layering: the foreground stays sharp while the far plane loses definition via blur+saturate and a light dim — a blur → dim → sharp depth stack with a switchable focus plane (adjustable blur px)."
+  },
+  "origin": {
+    "zh": "三层景深配方来自调研 12 §8(可复用片段):远景 `.stage__far { filter: blur(8px) saturate(.9); transform: scale(1.02) }`、玻璃中景 `backdrop-filter: blur(6px)` + scrim 底色;「用 filter: blur() 对远景层降清晰度、配合 scrim 压暗与前景清晰层,构成三层深度(blur → dim → sharp)」为该节定义。失焦薄纱的 25% 借 MDN ::backdrop 典型值(调研 12 §8),属演示近似。",
+    "en": "The three-plane recipe comes from research 12 §8 (reusable snippets): far plane `.stage__far { filter: blur(8px) saturate(.9); transform: scale(1.02) }`, glass midplane `backdrop-filter: blur(6px)` over a scrim base; the section defines the depth stack as 'blur the far layer with filter: blur(), dim it with a scrim, keep the foreground sharp — three planes of depth (blur → dim → sharp)'. The 25% unfocused veil borrows MDN's typical ::backdrop value (research 12 §8) as a demo approximation."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--dof-blur",
+      "effect": {
+        "zh": "失焦平面的模糊半径(filter: blur)。默认 8px 取调研 12 §8 配方(.stage__far blur(8px));玻璃中景层的 backdrop-filter 固定 6px 亦出自同配方——两处各司其职:远景用本参数,玻璃层不随动。blur 作用于元素自身(区别于 backdrop-filter 作用于身后内容)。",
+        "en": "Blur radius applied to out-of-focus planes (filter: blur). Default 8px is the research 12 §8 recipe (.stage__far blur(8px)); the glass midplane's backdrop-filter stays fixed at 6px from the same recipe — each layer has its own job: the far plane follows this param, the glass plane does not. blur acts on the element itself (unlike backdrop-filter, which acts on what is behind it)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "saturation",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.9,
+      "cssVar": "--dof-sat",
+      "effect": {
+        "zh": "失焦平面的降饱和系数(saturate())。默认 0.9 取调研 12 §8 配方(saturate(.9))——轻微褪色让远景「退后」,与 blur 一起构成距离感;1 = 只模糊不褪色。",
+        "en": "Desaturation factor for out-of-focus planes (saturate()). Default 0.9 is the research 12 §8 recipe (saturate(.9)) — a slight fade pushes the far plane back, building distance alongside the blur; 1 = blur without the fade."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "focus",
+      "options": [
+        { "value": "near", "label": { "zh": "前景 near(默认)", "en": "Near (default)" } },
+        { "value": "mid", "label": { "zh": "中景 mid(玻璃层)", "en": "Mid (glass)" } },
+        { "value": "far", "label": { "zh": "远景 far(反转)", "en": "Far (reversed)" } }
+      ],
+      "default": "near",
+      "effect": {
+        "zh": "JS 型参数,demo 订阅后切换 data-focus(对焦平面)。near = 前景清晰(默认摄影景深语义,中景/远景失焦);mid = 玻璃中景成为主体(自身不糊,远景/前景失焦);far = 远景清晰(反转景深,全部前景失焦——用于对照)。失焦平面按配方 blur+saturate+scale(1.02) 处理,并叠 25% 黑薄纱(借 MDN ::backdrop 典型值,演示近似)压暗。",
+        "en": "JS-type param; the demo subscribes and toggles data-focus (the focus plane). near = sharp foreground (the default photographic semantics; mid/far planes defocus); mid = the glass midplane becomes the subject (itself unblurred, far/near defocus); far = sharp far plane (reversed depth of field, everything in front defocuses — for comparison). Defocused planes get the recipe's blur+saturate+scale(1.02) plus a 25% black veil (borrowing MDN's typical ::backdrop value; demo approximation)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "filter Baseline 自 2016-09(调研 12 §8);backdrop-filter 与 transform 均为现代基线。demo 的 color-mix() 需 Baseline 2023-05(Chrome 111+ / Safari 16.2+ / Firefox 113+,调研 12 §11)。blur/saturate 作用于大图属于 GPU 合成开销项,静态使用无碍,频繁动画需谨慎(见 fallback)。",
+      "en": "filter is Baseline since 2016-09 (research 12 §8); backdrop-filter and transform are modern baselines. The demo's color-mix() needs Baseline 2023-05 (Chrome 111+ / Safari 16.2+ / Firefox 113+, research 12 §11). blur/saturate over large imagery is a GPU-compositing cost — fine when static, caution when animated (see fallback)."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 color-mix() 时薄纱退回 rgba(0 0 0 / 25%);不支持 filter 的极老环境放弃景深、只保留层级(压暗 + 前景)——景深本来就是纯装饰深度线索,降级不伤功能。切勿对大面积 blur 做逐帧动画:滤镜 GPU 合成、可能建新合成层,开销显著(调研 12 §8);确需「拉焦」动画时用两态交叉溶解(opacity)替代。",
+    "en": "Without color-mix(), the veil falls back to rgba(0 0 0 / 25%); on engines without filter, drop the depth-of-field effect and keep hierarchy (dimming + foreground) — the effect is a purely decorative depth cue, so degradation costs nothing functional. Never animate large-area blur frame by frame: filters composite on the GPU and may create new compositing layers at significant cost (research 12 §8); if a rack-focus animation is truly needed, cross-dissolve two states via opacity instead."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "媒体详情页/产品陈列:远景照片虚化退后,信息卡浮在清晰层", "en": "Media detail pages and product shelves: the far photo recedes in blur while the info card floats in the sharp layer" },
+      { "zh": "英雄区背景弱化:全幅背景 blur+saturate 后,标题与 CTA 独占清晰度", "en": "Hero background softening: a full-bleed backdrop blurred + desaturated so title and CTA own the sharpness" },
+      { "zh": "弹窗背后的「模糊+压暗」组合:MDN 示例的 ::backdrop blur(0.5rem) 搭配(调研 09 §7.1)", "en": "The blur-plus-dim pairing behind dialogs: MDN's own ::backdrop blur(0.5rem) example (research 09 §7.1)" },
+      { "zh": "滚动边缘效应的对照参考:内容滚入玻璃下方时「逐渐溶解进背景」(WWDC25 219,调研 09 §8.7)——溶解即降清晰度", "en": "A reference for scroll edge effects: content 'dissolving into the background' as it scrolls under glass (WWDC25 219, research 09 §8.7) — dissolving is definition loss" }
+    ],
+    "avoid": [
+      { "zh": "对大面积 blur 做逐帧动画——GPU 合成开销显著,调研明确告诫(调研 12 §8);拉焦用交叉溶解替代", "en": "Frame-by-frame animation of large-area blur — significant GPU cost, explicitly warned against (research 12 §8); use cross-dissolve for rack focus" },
+      { "zh": "失焦平面上的可读内容——一旦某层承载文字/数据,它就不该被 blur(信息≠装饰)", "en": "Readable content on a defocused plane — once a layer carries text/data it must not be blurred (information is not decoration)" },
+      { "zh": "blur 值过大(>16px)叠大面积图层——糊成色块、边缘采样开销上升,景深感反而丢失", "en": "Very large blur (>16px) over large layers — it smears into color fields, sampling cost climbs, and the depth cue is lost" },
+      { "zh": "把景深当层级语义的唯一手段——深度线索必须配合尺寸/位置/文字(WCAG 1.4.11 的边界可辨要求)", "en": "Depth of field as the only hierarchy cue — depth needs size/position/text alongside it (WCAG 1.4.11 boundary legibility)" }
+    ]
+  },
+  "a11y": {
+    "zh": "景深是纯装饰深度线索:不可作为传达层级或状态的唯一手段(需配合位置/尺寸/文字);失焦平面不得承载任何必读信息;blur 层的边缘因 scale(1.02) 外扩,不产生布局位移(无 CLS);对前庭敏感用户,焦点切换不做 filter 动画(直接切换),prefers-reduced-motion 下取消一切过渡;压暗薄纱不承载状态语义。",
+    "en": "Depth of field is a purely decorative depth cue: never the sole carrier of hierarchy or state (pair with position/size/text); defocused planes must carry no required information; the blur layer's edge grows outward via scale(1.02), causing no layout shift (no CLS); for vestibular users the focus switch has no filter animation (a direct swap), and all transitions stop under prefers-reduced-motion; the dim veil carries no state semantics."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/filter",
+    "https://developer.apple.com/videos/play/wwdc2025/219/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻三层景深舞台:远景照片按 blur/saturation 快照值虚化退后(带 25% 压暗薄纱),玻璃中景固定 backdrop-filter blur(6px)+scrim,前景信息卡清晰;对焦平面可切换(near/mid/far),far 用于反转对照。",
+      "en": "Recreate a three-plane depth stage: the far photo recedes blurred per the blur/saturation snapshot values (with a 25% dim veil), the glass midplane stays fixed at backdrop-filter blur(6px)+scrim, and the foreground info card is sharp; the focus plane switches (near/mid/far), far serving as the reversed comparison."
+    },
+    "acceptance": [
+      { "zh": "失焦平面 = blur(快照值) + saturate(快照值) + scale(1.02)(补模糊边,无布局位移)", "en": "Defocused planes = blur(snapshot) + saturate(snapshot) + scale(1.02) (edge compensation, no layout shift)" },
+      { "zh": "玻璃中景固定 backdrop-filter blur(6px) + scrim 底色(调研配方分工,不随 blur 参数联动)", "en": "The glass midplane stays fixed at backdrop-filter blur(6px) + scrim base (the research recipe's division of labor; it does not follow the blur param)" },
+      { "zh": "焦点切换不做 filter 过渡(直接换,性能告诫);失焦薄纱 opacity 过渡 ≤0.25s,prefers-reduced-motion 时取消", "en": "The focus switch has no filter transition (a direct swap, per the performance warning); the veil fades over ≤0.25s opacity, disabled under prefers-reduced-motion" },
+      { "zh": "失焦平面不承载任何必读信息;前景文字对比度不受 blur/薄纱影响", "en": "Defocused planes carry no required information; foreground text contrast is untouched by blur/veil" },
+      { "zh": "标注三层深度语义(blur → dim → sharp);far 反转态明确标注为对照演示", "en": "Label the three-depth semantics (blur → dim → sharp); the reversed far state is explicitly marked as a comparison" }
+    ]
+  }
+}

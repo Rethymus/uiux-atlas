@@ -1,0 +1,85 @@
+## Structure & DOM
+
+A timeline is a "rail + event cells" list: one thin vertical line drawn by a container pseudo-element, and each cell holding a node (dot/icon), a timestamp and content, with the node sitting on the rail:
+
+```html
+<ol class="tl-list">
+  <li class="tl-item" data-tone="success">
+    <span class="tl-dot" aria-hidden="true"></span>
+    <span class="tl-mark" aria-hidden="true">✓</span>
+    <div class="tl-body">
+      <div class="tl-time">09:02</div>
+      <div class="tl-title">Tests passed</div>
+      <div class="tl-desc">214 cases green</div>
+    </div>
+  </li>
+  <li class="tl-item" data-tone="loading">
+    <span class="tl-dot" aria-hidden="true"></span>
+    <div class="tl-body">
+      <div class="tl-time">09:12</div>
+      <div class="tl-title">Deploying…</div>
+    </div>
+  </li>
+</ol>
+```
+
+Key points:
+
+- Use `ol/li` semantics — events are inherently ordered and screen readers announce them in sequence; node dots and check/cross marks are decoration (`aria-hidden`), and **time and status meaning must live in text**;
+- The rail is an absolutely positioned `::before` line on the container that doesn't break as items come and go; each cell aligns its dot to the rail;
+- The three `mode` values (start left / alternate centered / end right) only change the cell grid template and rail position — the DOM is untouched (antd Timeline mode semantics, supplementary study 12 §15);
+- `reverse` is expressed with `flex-direction: column-reverse`, keeping DOM order equal to visual order so screen readers don't jump.
+
+## Styling & Parameters
+
+One CSS-var param (accent) plus two JS-type params (mode / reverse):
+
+```css
+.tl-list::before { width: 2px; background: #f0f0f0; }   /* colorBorderSecondary rail */
+.tl-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--tl-accent, #1677ff);                /* antd Timeline default blue */
+}
+.tl-item[data-tone="success"] .tl-dot { background: #52c41a; }  /* colorSuccess */
+.tl-item[data-tone="error"]   .tl-dot { background: #ff4d4f; }  /* colorError */
+.tl-item[data-tone="loading"] .tl-dot {
+  background: transparent;
+  border: 2px solid var(--tl-accent, #1677ff);
+  border-top-color: transparent;
+  animation: tl-spin 1s linear infinite;
+}
+.tl-time  { font-size: 12px; color: rgba(0, 0, 0, 0.45); font-variant-numeric: tabular-nums; }
+.tl-title { font-size: 14px; font-weight: 500; color: rgba(0, 0, 0, 0.88); }
+.tl-desc  { font-size: 12px; color: rgba(0, 0, 0, 0.65); }
+```
+
+Where the numbers come from:
+
+- The default node blue maps to antd Timeline's officially recorded item color default **blue** (12 §15); the demo expresses it with antd colorPrimary #1677ff (step 6 of the blue palette, design study 06 §1.2/§2.2); success green #52c41a and error red #ff4d4f = antd colorSuccess/colorError (06 §2.2); the rail #f0f0f0 = colorBorderSecondary (06 §2.3⑤);
+- Time 12px / title 14px / desc 12px = antd's fontSizeSM / fontSize / fontSizeSM scale (06 §2.3①); timestamps use `tabular-nums` so digits don't jitter (antd numeric typography advice, 06 §1.3);
+- Text alphas 88/65/45% = antd's TextPrimary/Secondary/Tertiary opacity system (06 §2.3⑤);
+- **The 12px node diameter and 2px rail are community-common values, unverified** (the research records no Timeline geometry); the demo draws them at that common ratio;
+- The 1s linear loading spin is a demo teaching parameter (antd item loading semantics in 12 §15; the specific speed is unrecorded).
+
+## Motion & Interaction
+
+- **Entrance stagger**: items fade in with an 8px rise, 0.3s each (antd motionDurationSlow + motionEaseOut, 06 §3.1/3.2), offset 60ms between neighbors; only `opacity/translate` animate (compositor-friendly); everything is dropped under `prefers-reduced-motion` (research 07 §37);
+- **Loading dot**: a ring spinning at 1s per turn — the spin itself carries "in progress" semantics; under `prefers-reduced-motion` it freezes to a plain ring and the visible "Deploying…" text carries the state; spinners suit 2–10s operations (NN/g progress-indicator guidance, research 07 §19);
+- **mode/reverse switching**: layout flips instantly with no transition — animating a structural swap only slows comparison down;
+- The timeline is not an interactive control and carries no keyboard behavior of its own; links/buttons inside items just keep their native Tab order.
+
+## Real-world examples
+
+- **GitHub Issue/PR timeline**: comments, references, state changes (close/reopen) and approvals string vertically as event cells, with key milestones (merge, close) carrying icons and semantic colors — the event feed is the canonical production form of a timeline;
+- **E-commerce shipment tracking**: order pages on Taobao/JD show "ordered → picked up → in transit → out for delivery → delivered" node sequences with the current node highlighted and completed ones checked, letting users gauge progress at a glance;
+- **CI/CD deploy logs**: GitHub Actions, Vercel and peers spread build steps vertically over time with failed steps in red — this demo's pipeline scenario draws on that pattern (editorial parallel).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `accent` (color) | a warm or highly saturated accent makes plain nodes shout, flattening the semantic hierarchy under success/error | a muted accent lets the semantic greens/reds own the focus — clearer hierarchy |
+| `mode` | alternate zigzags every cell — rhythmic but a poor reading path for long copy | start/end single-side is the steadiest, densest, fastest-to-scan default |
+| `reverse` | on floats the newest event to the top — right for activity feeds (newest first) | off keeps chronological narration (earliest on top) — right for step retrospectives |
+
+Working ranges: 5–10 items per screen; one line of title + one line of description each; past ~20 items move to pagination/virtualization; status color always pairs with text, and the rail always sits one step lighter than the nodes.

@@ -11,14 +11,18 @@ import { t } from "@/i18n/ui";
 import { categoryUrl, entryUrl, homeUrl, resourcesUrl } from "@/lib/urls";
 import { goDeeperLinks } from "@/data/resources";
 import { displayName, secondaryName } from "@/lib/displayName";
+import type { EntryMeta } from "@/lib/types";
 
 interface Props {
   entryId: string;
   schema: EntrySchema;
   locale: Locale;
+  /** 同分类上一条/下一条(getStaticPaths 按分类列表同序计算;清单 entry-prev-next-pager) */
+  prevMeta?: EntryMeta;
+  nextMeta?: EntryMeta;
 }
 
-const { entryId, schema, locale } = Astro.props;
+const { entryId, schema, locale, prevMeta, nextMeta } = Astro.props;
 const dict = t(locale);
 // entryId 首段必为九分类 id(getStaticPaths 只从 CATEGORIES 生成),这里收窄给 goDeeperLinks
 const [category] = entryId.split("/") as CategoryId[];
@@ -48,20 +52,32 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
   description={schema.tagline[locale]}
   altUrl={altUrl}
   activeCategory={category}
+  ogType="article"
 >
-  {/* 页面根挂 --cat:渐变带 / 面包屑当前分类 / Tabs 指示条 / 铭牌点统一消费 */}
+  {/* 页面根挂 --cat:渐变带 / 返回链接 / 面包屑当前分类 / Tabs 指示条 / 铭牌点统一消费 */}
   <div class="entry-page" style={`--cat: var(--cat-${category});`}>
-    {/* ── 1. 紧凑头(spec §4.3-1:面包屑 → h1 → aliases 一行 → tagline 一行截断 →
+    {/* ── 1. 紧凑头(spec §4.3-1:返回链接 + 面包屑 → h1 → aliases 一行 → tagline 一行截断 →
          chips 行;origin 行移出头部,并入 MetaAccordion 的「来源」item) ── */}
     <header class="entry-head">
       <div class="entry-band" aria-hidden="true"></div>
-      <nav class="crumbs" aria-label="breadcrumb">
-        <a href={homeUrl(locale)}>{dict.nav.home}</a>
-        <span aria-hidden="true"> / </span>
-        <a class="crumbs-cat" href={categoryUrl(locale, category)}>{catName}</a>
-        <span aria-hidden="true"> / </span>
-        <span>{entryName}</span>
-      </nav>
+      {/* 返回可供性(清单 entry-back-affordance + breadcrumb-prominence 合并实现):
+          「← {分类名}」显式返回链接,分类语义色(--cat 用法纪律③:分类语义处),
+          命中区 ≥44px(spec §7,::after 扩边处方);Base.astro 全站脚本对 [data-back]
+          接管点击——上一条历史为同源页面时 history.back()(保留列表页滚动位置),
+          直链/外站进入时原生 <a href> 兜底回分类列表页 */}
+      <div class="entry-navrow">
+        <a class="back-link" href={categoryUrl(locale, category)} data-back>
+          <span class="back-arrow" aria-hidden="true">←</span>
+          {catName}
+        </a>
+        <nav class="crumbs" aria-label="breadcrumb">
+          <a href={homeUrl(locale)}>{dict.nav.home}</a>
+          <span aria-hidden="true"> / </span>
+          <a class="crumbs-cat" href={categoryUrl(locale, category)}>{catName}</a>
+          <span aria-hidden="true"> / </span>
+          <span>{entryName}</span>
+        </nav>
+      </div>
       {/* §6-9 共享元素过渡(条目侧):与来源列表卡同名 —— EntryCard 动态赋名
           card-<slug>(「/」不是合法 custom-ident,替换为 -,防重名),
           跨文档 morph 由 global.css 的 @view-transition 承接(--dur-4 档)。
@@ -130,6 +146,50 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
     {/* ── 5. 信息 Accordion(spec §4.3-5 / §3 Accordion):
          场景/避免/a11y/支持/回退/来源 六项收纳,默认全收;来源含 origin ── */}
     <MetaAccordion schema={schema} locale={locale} />
+
+    {/* ── 同分类「上一条 / 下一条」分页器(清单 entry-prev-next-pager):
+         顺序 = 分类列表页卡片顺序(getStaticPaths 同源计算);
+         单条分类或边界处缺一侧则不渲染该侧,两侧皆缺则整个分页器不渲染 ── */}
+    {
+      (prevMeta || nextMeta) && (
+        <nav class="entry-pager" aria-label={dict.entry.pagerNav}>
+          {prevMeta ? (
+            <a
+              class="pager-cell is-prev"
+              href={entryUrl(locale, prevMeta.slug)}
+              aria-label={`${dict.entry.pagerPrev}:${displayName(prevMeta, locale)}`}
+            >
+              <span class="pager-dir">
+                <span class="pager-arrow" aria-hidden="true">
+                  ←
+                </span>
+                {dict.entry.pagerPrev}
+              </span>
+              <span class="pager-name">{displayName(prevMeta, locale)}</span>
+            </a>
+          ) : (
+            <span class="pager-cell is-empty" aria-hidden="true" />
+          )}
+          {nextMeta ? (
+            <a
+              class="pager-cell is-next"
+              href={entryUrl(locale, nextMeta.slug)}
+              aria-label={`${dict.entry.pagerNext}:${displayName(nextMeta, locale)}`}
+            >
+              <span class="pager-dir">
+                {dict.entry.pagerNext}
+                <span class="pager-arrow" aria-hidden="true">
+                  →
+                </span>
+              </span>
+              <span class="pager-name">{displayName(nextMeta, locale)}</span>
+            </a>
+          ) : (
+            <span class="pager-cell is-empty" aria-hidden="true" />
+          )}
+        </nav>
+      )
+    }
 
     {/* ── 「继续深入」卡(授人以渔):按体系 + 分类的静态映射(src/data/resources.ts,
          无新 collection),2–3 条最相关资源;web-std 额外呈现 schema.sources 官方 URL。

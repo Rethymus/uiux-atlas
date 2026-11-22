@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+两种形态的 DOM 结构完全不同:**icon font 是一个文本节点**(码位指向字体里的字形),**inline SVG 是真正的矢量图形元素**:
+
+```html
+<!-- icon font:码位/连字 → 字体字形,color 染色 -->
+<i class="icon icon-home" aria-hidden="true"></i>
+
+<!-- inline SVG:真矢量,stroke=currentColor 染色(24 网格、2px 圆头) -->
+<svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+     stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <path d="…" />
+</svg>
+```
+
+关键点:
+
+- 字体路线的渲染链是「码位 → 字体文件 → 字形 → `color` 染色」,链条上每一环都是失败点:`@font-face` 加载失败、跨域字体被 CORS 拦截、Opera Mini 不支持 `@font-face`、广告拦截/用户样式干掉字体文件(CSS-Tricks CAGEMATCH 失败面清单,12 §12);
+- SVG 路线内嵌文档,**没有外部失败态**——只要页面在,图标就在;
+- 字体字形是纯文本:尺寸=`font-size`,垂直居中要靠 `line-height`/`vertical-align` 微调;SVG 尺寸就是 `width`/`height`,定位直观。
+
+## 样式与参数
+
+四个参数对应一套对照实验:两个 CSS 变量(`--icf-size` / `--icf-color`)同时驱动两条渲染链路,两个 JS 型开关切换交付形态与故障模拟:
+
+```css
+.icf-glyphs { color: var(--icf-color); }          /* 宿主 color:两条链路共用 */
+.icf-glyph   { font-size: var(--icf-size); }      /* 字体字形:尺寸=font-size */
+.icf-glyph svg { width: var(--icf-size); height: var(--icf-size); } /* SVG:尺寸=width/height */
+```
+
+数值出处:
+
+- 默认尺寸 **24px** = 全行业共同祖先网格(Lucide/Feather 源码 `width: 24, height: 24`、Heroicons 24 outline、Material 24 设计基准,07 §0/§1);
+- 染色链路:`stroke="currentColor"` 来自 Lucide `defaultAttributes.ts` 源码定值(07 §1.1);`currentcolor` 取「同元素的 color 属性值」是 CSS Color 4 §6.4 规范原文(07 §5.2);
+- 故障清单(字体未加载 → tofu + 裸连字;码位挂 U+FE0F → 彩色 emoji 接管):前者为 CSS-Tricks 失败面的仿真呈现,后者是真实浏览器行为(平台相关)。
+
+## 动效与交互
+
+本条目的「动效」是形态与故障切换的即时反馈,克制的 0.2s 过渡即可:
+
+- **交付形态切换**(`delivery`):当前采用一侧亮起蓝色描边与「采用中」徽标,下方代码片段同步替换为 SVG 或字体路线的真实写法;
+- **故障模拟**(`failure`)只作用于字体侧:`font-missing` 档把三个字形换成 tofu 方框并展示裸连字文本;`emoji-crash` 档让 ⚙ 挂上 U+FE0F,真实渲染成彩色 emoji——SVG 侧永远无动于衷,这正是「内嵌文档无怪异失败态」的直观证明;
+- 过渡只落在 `border-color/box-shadow/opacity`;`prefers-reduced-motion: reduce` 时全部过渡直切(`transition: none`),状态反馈本身不删;
+- 字体字形受**文本反锯齿**影响(小尺寸发虚),SVG 是形状反锯齿——两者并排放大多档位对比即可看出锐度差(12 §12)。
+
+## 真实产品案例
+
+- **CSS-Tricks《Inline SVG vs Icon Fonts [CAGEMATCH]》**(Chris Coyier, 2014):这场「正面对决」的结论——IE9+/Android 3+ 起 inline SVG 几乎全面胜出、IE8 是 icon font 仅存优势——至今仍是选型文的引用原点(12 §12);
+- **Lucide / Feather**:现代开源图标集干脆放弃字体路线,交付形态就是 SVG 文件 + 官方雪碧图(`feather-sprite.svg` 外链用法是五套图标集中唯一写进 README 的),`currentColor` 染色契约全家族通用(07 §1.1/§1.2/§5);
+- **Material Symbols**:字体技术的现代变体——Google 用**可变字体**交付图标(连字 `arrow_forward` + `opsz/wght/GRAD/FILL` 四轴),但官方指南同时要求 `&display=block` 防 FOUC、`icon_names` 子集化到 1.7KB 才敢上首屏:即便在字体路线内部,失败面治理依然是主课题(07 §1.5)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `delivery` | 切到 font:暴露 line-height 定位与失败面,字体路线在现代浏览器无补偿性优势 | 切到 svg:内嵌矢量 + currentColor,是 CSS-Tricks 结论里的默认胜者 |
+| `size` | SVG 与字形同步放大;字体字形的文本反锯齿发虚在大尺寸下同样可见 | 小尺寸(≤16px)下字体字形受文本 AA 影响更糊,SVG 线条仍保持形状清晰 |
+| `color` | 两条链路同步染色:字形吃 `color`,SVG 走 `currentColor`——单色域内两者打平 | 无特殊效应;但多色分部控制只有 SVG 做得到(12 §12) |
+| `failure` | `font-missing`/`emoji-crash` 两档展示字体路线的整个失败谱系(tofu/连字/emoji 接管) | `none` 档字体侧「看起来能用」——失败面的可怕正在于它只在生产环境随机出现 |
+
+锚点:现代项目默认 inline SVG + `currentColor`;字体路线只在 IE8 遗留场景与可变字体特例(Material Symbols)里保留;凡用字体字形,先想好「字体没来」页面长什么样。

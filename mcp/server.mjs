@@ -16,7 +16,7 @@
  * 条目 id 形如 "styles/glassmorphism"(与 src/lib/urls.ts 的 entryUrl 注释同源)。
  */
 import { createInterface } from "node:readline";
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,8 +29,10 @@ const SERVER_INFO = { name: "uiux-atlas", version: PKG.version ?? "0.0.0" };
 const SUPPORTED_PROTOCOL_VERSIONS = ["2025-03-26"];
 
 /**
- * 九分类与来源体系 —— 与 src/lib/types.ts 的 CATEGORIES / SYSTEMS 同源(只读副本;
+ * 十分类与来源体系 —— 与 src/lib/types.ts 的 CATEGORIES / SYSTEMS 同源(只读副本;
  * server 零依赖,不 import TS)。顺序即 categories.ts 列表页顺序。
+ * (清单 mcp-registry-stale:principles 分类此前漏同步,已补齐;条目数不再写死,
+ *  initialize instructions / search_entries 描述运行时取 loadEntries().length。)
  */
 const CATEGORIES = [
   { id: "styles", zh: "风格流派", en: "Styles" },
@@ -42,6 +44,7 @@ const CATEGORIES = [
   { id: "components", zh: "前端部件", en: "Components" },
   { id: "icons", zh: "图标体系", en: "Icons" },
   { id: "dataviz", zh: "数据可视化", en: "Data Viz" },
+  { id: "principles", zh: "交互法则", en: "Principles" },
 ];
 const SYSTEMS = [
   { id: "apple", zh: "Apple HIG", en: "Apple HIG" },
@@ -53,7 +56,10 @@ const SYSTEMS = [
 ];
 
 // ---------------------------------------------------------------------------
-// 条目加载(懒加载 + 缓存;只读 schema.json)
+// 条目加载(懒加载 + 缓存;统一条目谓词,清单 mcp-registry-stale)
+// 谓词 = schema.json + demo/Demo.tsx + zh.mdx 三件齐全(与 generate-registry.mjs /
+// verify-registry.mjs 同一口径):只有 schema.json 的在制骨架不进 MCP 索引,
+// 三处口径一致后不会再出现「MCP 收了 / registry 没收」的互斥。
 // ---------------------------------------------------------------------------
 
 let entriesCache = null;
@@ -68,6 +74,13 @@ function loadEntries() {
     for (const slug of readdirSync(catDir, { withFileTypes: true })) {
       if (!slug.isDirectory() || slug.name.startsWith(".")) continue; // 隐藏目录非条目(同 verify-entries.mjs 约定)
       const schemaPath = join(catDir, slug.name, "schema.json");
+      // 统一谓词:三件套不全 = 在制骨架,跳过(如实写 stderr,不静默吞)
+      const demoPath = join(catDir, slug.name, "demo", "Demo.tsx");
+      const zhMdxPath = join(catDir, slug.name, "zh.mdx");
+      if (!existsSync(schemaPath) || !existsSync(demoPath) || !existsSync(zhMdxPath)) {
+        process.stderr.write(`[uiux-atlas-mcp] skip incomplete entry (需 schema.json + demo/Demo.tsx + zh.mdx): ${category.name}/${slug.name}\n`);
+        continue;
+      }
       let schema;
       try {
         schema = JSON.parse(readFileSync(schemaPath, "utf8"));
@@ -323,7 +336,7 @@ function toolBuildPrompt(args) {
   return toolText(lines.join("\n"));
 }
 
-/** list_categories() — 九分类与计数 */
+/** list_categories() — 十分类与计数 */
 function toolListCategories() {
   const entries = loadEntries();
   const categories = CATEGORIES.map((c) => ({
@@ -342,16 +355,19 @@ function toolListCategories() {
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
 const SYSTEM_IDS = SYSTEMS.map((s) => s.id);
 
+/* 条目总数(模块加载时实算一次;清单 mcp-registry-stale:描述/说明里的数字
+   不再写死,清单增删自动跟随 loadEntries 口径) */
+const ENTRY_COUNT = loadEntries().length;
+
 const TOOLS = [
   {
     name: "search_entries",
-    description:
-      "检索 uiux-atlas 图集条目(81 条,九分类)。按关键词 / 分类 / 来源体系 / 参数化星级过滤,返回精简列表(id、name、nameZh、tagline、star、system、url)。query 大小写不敏感子串匹配,覆盖 id、英文名、中文名、aliases、双语 tagline。",
+    description: `检索 uiux-atlas 图集条目(${ENTRY_COUNT} 条,十分类)。按关键词 / 分类 / 来源体系 / 参数化星级过滤,返回精简列表(id、name、nameZh、tagline、star、system、url)。query 大小写不敏感子串匹配,覆盖 id、英文名、中文名、aliases、双语 tagline。`,
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string", description: "关键词(可选):匹配 id / name / nameZh / aliases / tagline(zh+en)" },
-        category: { type: "string", enum: CATEGORY_IDS, description: "九分类 id,如 styles / materials" },
+        category: { type: "string", enum: CATEGORY_IDS, description: "十分类 id,如 styles / materials" },
         system: { type: "string", enum: SYSTEM_IDS, description: "来源体系 id,如 apple / m3 / fluent / web-std / component-lib / community" },
         star: { type: "integer", minimum: 1, maximum: 3, description: "参数化程度精确匹配(1–3)" },
       },
@@ -391,7 +407,7 @@ const TOOLS = [
   },
   {
     name: "list_categories",
-    description: "列出九分类(id、中文名、英文名)与各类条目计数、总数。",
+    description: "列出十分类(id、中文名、英文名)与各类条目计数、总数。",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     handler: () => toolListCategories(),
   },
@@ -438,8 +454,7 @@ function handleMessage(msg) {
         protocolVersion: negotiated,
         capabilities: { tools: { listChanged: false } }, // 仅 tools 能力;prompts/resources 不提供
         serverInfo: SERVER_INFO,
-        instructions:
-          "uiux-atlas 设计图集:九分类 81 条目(styles 风格 / materials 材质 / motion 动效 / color 色彩 / type 排版 / layout 布局 / components 部件 / icons 图标 / dataviz 数据可视化)。list_categories 看分类计数 → search_entries 检索 → get_entry 看详情与参数 → build_prompt 生成一比一复刻 prompt。",
+        instructions: `uiux-atlas 设计图集:十分类 ${loadEntries().length} 条目(${CATEGORIES.map((c) => `${c.id} ${c.zh}`).join(" / ")})。list_categories 看分类计数 → search_entries 检索 → get_entry 看详情与参数 → build_prompt 生成一比一复刻 prompt。`,
       },
     };
   }

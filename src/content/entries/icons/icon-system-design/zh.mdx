@@ -1,0 +1,61 @@
+## 结构与 DOM
+
+一套迷你图标系统 = **共享几何契约的 SVG 文件族**:每个图标都是 24×24 viewBox 的独立文档,但栅格、线宽、线帽、命名全部受同一份规范约束:
+
+```html
+<!-- 每枚图标一个文件;根元素写死公共契约(Lucide defaultAttributes 同构) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+     fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 11L12 4L20 11"/>  <!-- X/Y 全整数;内容不越修剪区 -->
+  <path d="M6 10V20H18V10"/>
+</svg>
+```
+
+系统的四层契约(由外到内):
+
+1. **命名层**:kebab-case、全小写、无重复——命名是最先崩塌的防线,混入 `search_icon`/`arrowRIGHT` 后按名检索与 tree-shaking 双双失灵;
+2. **栅格层**:24×24 网格,X/Y 坐标必须整数(Material 官方规则,07 §2);键程 shapes 定基准——方 18×18、圆 Ø20、竖 16×20/横 20×16,「圆比方大 2dp」是官方光学铁律(07 §2/§3.1);
+3. **安全区层**:live area 20×20(四周 2dp padding),修剪区 = 完整 24dp 且内容绝不可出;Lucide 补充:描边距画布边 ≥1px、相邻元素间隙 ≥2px(07 §2/§3.2);
+4. **线宽层**:系统标准一条(默认 2px = Lucide/Feather 源码定值),Heroicons 的 1.5px 是独立体系不可混入;连续变粗细走 Material Symbols 的 `wght` 100–700 轴,绝不缩放 SVG 硬改(07 §1)。
+
+## 样式与参数
+
+四个参数把审计台搭起来:一个 CSS 变量 + 三个 JS 开关:
+
+```css
+/* 系统标准线宽:SVG 用户单位,写在一个地方,全部图标继承 */
+.isd-tile svg { stroke-width: var(--isd-stroke, 2px); }
+```
+
+- **overlay** 叠加层三种几何全部由调研数值驱动:键程档画出方 18×18/圆 Ø20/两块长方形;栅格档每 2 单位一条线,专查「整数坐标」;安全区档绿框 = live area 20×20、橙框 = 1px 安全区边界;
+- **audit** 注入三类真实缺陷:search 手柄端点 `(19.5, 19.5)`(整数坐标规则)、home 屋顶 `y=1`(修剪区红线)、arrow-right 硬编码 1.5px(线宽一致性)——违规元素标红、tile 亮红环、审计表给判定;
+- **naming** 注入 `Home` / `search_icon` / `arrowRIGHT` 三个命名违例,违例名标红;
+- 审计表四行(命名/栅格/线宽/安全区)每行都写明标准与出处,判定机器可复核。
+
+数值出处:2px 线宽(Lucide `defaultAttributes.ts` 源码 + Material 2dp)、键程四值与 2dp padding/整数坐标(m2.material.io system-icons)、1px 安全区与 2px 元素间距(Lucide 贡献规范)、wght 100–700 轴(Material Symbols README)——全部 07 章一手。
+
+## 动效与交互
+
+- **overlay 切换**(JS 型参数):六枚 tile 的 SVG 内叠加层整体换装,键程 shapes ↔ 像素栅格 ↔ 安全区;0.2s 边框过渡,`prefers-reduced-motion: reduce` 下直切;
+- **audit 切换**:违规注入瞬间可见——红环、红路径、审计表三处同步翻红;合规档一键恢复;
+- **stroke 拖动**(CSS 变量):全部图标(含 24px 原生档)同步变粗变细,展示「线宽是用户单位、显示放大比例不变」;调到 1.5 时 arrow-right 的违规判定恰好消失(巧合对齐仍是坏味道,表内注明);
+- **24px 原生档**:同一组图标以原生尺寸并排,对照大图验证缩小后仍可辨(模糊法验收的静态版);
+- 无位移动画;所有反馈都是状态切换而非运动。
+
+## 真实产品案例
+
+- **Material 官方栅格模板**:24dp 修剪区/20dp live area/键程四形状的数值出处,官方随页分发 AI 源文件模板(Apache 2.0),自建系统可直接对表(07 §2);
+- **Lucide 贡献规范**:把「1px 安全区、2px 元素间距、2.41px 斜角半径、模糊法验收、光学偏心」写成贡献者必须过的检查单——开源图标集用机器可判规则管理社区 PR 的真实范本(07 §3.2);
+- **Heroicons 三档网格**:24/20/16 三个独立重绘的 viewBox(实测源文件)而非缩放——密集布局「换档重绘」而非「硬缩」的行业先例(07 §1.3)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stroke` | 3px 视觉变重,模糊法灰度加深;仍保持用户单位比例 | 1px 触及 WCAG 1.4.11 的「避免特别细线条」警戒(抗锯齿稀释后更淡,07 §3.3);1.5 时 arrow-right 巧合过关 |
+| `overlay` | keylines 档一眼看出键程偏差;safe 档同时暴露 live area 与 1px 边界 | none 档看成品观感——审计靠叠加层,验收靠成品 |
+| `audit` | violations 档三类缺陷(坐标/修剪区/线宽)同时点亮,表内逐条给出处 | pass 档六枚全绿——但只有跑过 violations 档,才知道审计在查什么 |
+| `naming` | mixed 档三个违例名标红:大小写/分隔符混用让检索与 tree-shaking 双失灵 | kebab 档全绿;命名规范没有「调大调小」,只有一致或崩溃 |
+
+锚点:命名先于图形崩塌;坐标必须整数;内容不出修剪区;线宽一套一个数;更粗更细换权重体系不缩放。

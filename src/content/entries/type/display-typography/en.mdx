@@ -1,0 +1,66 @@
+## Structure & DOM
+
+No special structure — a display headline is an ordinary heading element; the discipline lives in the size/tracking/line-height/weight coupling:
+
+```html
+<h1 class="display">Display type</h1>
+```
+
+```css
+.display {
+  font-size: clamp(35px, 29.913px + 1.413vw, 48px); /* fluid display size (this site's --step-5) */
+  font-weight: 600;                                  /* variable-weight tier */
+  line-height: 1.12;                                 /* the larger the size, the lower the ratio */
+  letter-spacing: -0.02em;                           /* negative tracking, display-only */
+}
+```
+
+Key points:
+
+- Three coupled quantities: **tracking tightens as size grows** (the official SF Pro curve: 6→17pt progressively tighter, 17→28pt loosening back, 28→80pt tightening again, 80pt+ at zero, research 01 §2.2); **line-height ratios drop as size grows** (apple.com-measured 56px→1.0714, 40px→1.10, 28px→1.1429, 01 §2.3); **weight tiers stay fixed** (breakpoints touch only size + letter-spacing, third rule of 01 §2.3);
+- Negative tracking is **heading-only**: this site's rule is "zero tracking for CJK body, negative tracking only for ≥21px headings" (`src/styles/global.css:156`);
+- Production display sizes should be fluid: clamp() is Baseline 2020-07 (research 05 §12); this site's `--step-5` is a Utopia-method product (global.css:163).
+
+## Styling & Parameters
+
+Four parameters: size/weight/manualTracking (CSS-variable type) + trackingMode (JS type):
+
+```css
+.display {
+  font-size: var(--dt-size);      /* 48px */
+  font-weight: var(--dt-weight);  /* 600 → Inter Variable wght axis */
+  letter-spacing: var(--dt-tracking); /* manual tier: −0.02em */
+}
+[data-mode="auto"] .display { letter-spacing: var(--dt-auto); } /* SF-curve interpolation */
+```
+
+Where the numbers come from:
+
+- Tracking curve: all 66 rows of the SF Pro tracking table captured (01 §2.2); anchors: 17pt = −26‱ (the curve's tightest), 28pt = +14‱ (locally loosest), 80pt+ = 0; the demo interpolates piecewise-linearly (pt tiers approximated at 1x, for teaching perception);
+- Line-height anchors: captured from apple.com's production CSS (01 §2.3) — 56px/1.0714, 48px/1.0835, 40px/1.10, 28px/1.1429, 19px/1.2105, 12px/1.3334;
+- Weight 600: apple.com's display tier (01 §2.3); Inter Variable's real wght 100–900 axis (research 05 §24), never synthesized bold;
+- **The divergence between the native curve and web practice is shown as-is**: the SF curve reads +6‱ at 56pt, while apple.com's 56px web headline measures −0.005em and this site's hero uses −0.02em at 48px — both value sets coexist, neither impersonates the other.
+
+## Motion & Interaction
+
+- **Curve cursor**: drag `size` and the cursor slides along the polyline of official SF anchors in the mini chart (0.15s transition, disabled under `prefers-reduced-motion`); in auto mode the specimen's tracking interpolates in sync;
+- **auto/manual contrast**: auto shows the native "size drives tracking" logic; manual applies a fixed em value, letting you feel the difference between −0.005 (apple.com) and −0.02 (this site);
+- **Weight axis**: drag `weight` 100→900 — Inter Variable steps continuously with no reflow and no synthesized bold (the variable-font trait that GRAD changes visual density without changing occupancy is in research 12 §6);
+- The specimen itself has no animation; only the cursor transition cares about `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **apple.com product pages**: the mega-headline measures 56px / 1.0714 / 600 / **−0.005em**, with breakpoints at 1068/734px touching only size + letter-spacing; ≥19px uses SF Pro Display and ≤17px switches to SF Pro Text with negative tracking (−0.022em) (research 01 §2.3, captured from overview.built.css) — the original source of the display-typography trio of rules.
+- **This site's hero, uiux-atlas**: `--step-5: clamp(35px, 29.913px + 1.413vw, 48px)` with `line-height: 1.12` and `letter-spacing: -0.02em` (`src/styles/global.css:163、883-888`) — the same "large size, tight tracking, low ratio" structure as Apple's, landed on a Utopia fluid system; the site-wide fluid scale (ratios relaxing 1.12→1.65 as sizes shrink) is documented in the `--step-*` comments (154-163).
+- **Inter's dual optical design**: the opsz 14–32 axis pairs small optical sizes with a taller x-height for readability and ships separate text/display designs at large sizes (research 05 §24, official specs verified) — the typeface-side counterpart of display typography; fonts without variable opsz compensate at display sizes through line-height and tracking.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | the SF curve enters its tightening-back range (28→80pt tracking falls), suggested ratios drop toward ~1.07; watch for overflow | the cursor slides toward the 17pt tightest point (−0.026em); below ~21px enters this site's "negative-tracking forbidden zone" |
+| `weight` | 600+ reads as display authority (the apple.com tier); Inter's wght axis steps continuously | light tiers 250–350 strain contrast on light backgrounds; fonts without the wght axis distort most here |
+| `trackingMode` | auto couples tracking to size (the native curve logic) | manual pins an em value for matching apple.com's or this site's exact tiers |
+| `manualTracking` | positive values loosen (the feel of 28pt's +0.014em local peak) | negative values tighten; at ≤ −0.03em Latin letters start gluing together and CJK glyphs feel squeezed |
+
+Working ranges: hero 48px/600/−0.02em/1.12 (this site); headline 56px/600/−0.005em/1.07 (apple.com); ratios always drop as size grows; negative tracking never enters body text or small CJK sizes.

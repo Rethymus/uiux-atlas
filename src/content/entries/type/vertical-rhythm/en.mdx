@@ -1,0 +1,66 @@
+## Structure & DOM
+
+No special structure — an ordinary article flow; the discipline lives in how line-heights and gaps take their values:
+
+```html
+<article class="col">
+  <h2>Heading</h2>
+  <p>Body paragraph…</p>
+  <blockquote>Quote</blockquote>
+  <p class="cap">Caption / footnote</p>
+</article>
+```
+
+```css
+.col  { --unit: 18px; }                            /* base unit = body line-height */
+.col p { font-size: 12px; line-height: var(--unit); }       /* line box = 1 unit */
+.col h2 { font-size: 14px; line-height: 1.2857; }           /* derived: 18 ÷ 14 */
+.col p + p { margin-block-start: calc(var(--unit) * 1.5); }  /* gaps = unit multiples */
+```
+
+Key points:
+
+- The rhythm algorithm (24ways original, research 12 §9): **fix the unit = body line-height (12px × 1.5 = 18px) → every vertical dimension (margin/padding/line-height) lands on integer multiples of the unit → derive heading line-heights backwards as unit ÷ size (a 14px heading = 1.286, its line box fills exactly one cell) → asymmetric margins are fine as long as the totals are unit multiples**;
+- **Everything unitless or em** — the rhythm survives user font-size zooming (24ways discipline);
+- The line-height ratio = unit ÷ body size; 18/12 = 1.5 exactly meets the WCAG 2.2 SC 1.4.12 threshold of ≥1.5× (research 05 §18) — the rhythm method and the accessibility threshold coincide at the defaults.
+
+## Styling & Parameters
+
+Four parameters: three CSS-variable plus one JS contrast switch:
+
+```css
+.col p  { font-size: var(--vr-body); line-height: var(--vr-unit); }  /* 12px / 18px */
+.col h2 { font-size: var(--vr-head); /* line-height = unit ÷ size, derived in TSX */ }
+[data-mode="free"] :is(p, blockquote) { line-height: 1.45; margin: 0 0 7px; } /* contrast: arbitrary */
+```
+
+Where the numbers come from:
+
+- Unit 18px, body 12px, heading 14px by default: **all taken from the 24ways worked example** (12×1.5=18; 18÷14=1.286) — verified method-example values, not modern recommendations; a 12px body reads small today, so scale the unit to your body system (16×1.5=24) in production;
+- Heading line-height 1.2857 (18÷14): the direct output of the backwards derivation, displayed live in the demo;
+- Paragraph gap 1.5× the unit (27px): the 24ways menu allows 1×/1.5×/2× unit multiples;
+- 12 §10 adds: borders count into the rhythm — a 1px border + 8px padding = 9px is exactly a half-step of the 18px unit.
+
+## Motion & Interaction
+
+- **Rhythm visualization**: blue rhythm lines run every unit (repeating-linear-gradient); body/quote blocks carry per-line "line-box stripes" (a translucent gradient with a period of one unit) — under rhythm mode the stripes interlock with the rhythm lines row by row, and text reads like sheet music;
+- **Free contrast mode**: 13px/7px arbitrary gaps plus a 1.1 heading ratio and 1.45 body ratio push the stripes off the lines instantly — this "broken rhythm scene" is the entry's teaching core;
+- **Ratio warning**: drag `bodySize` up without moving the unit, and once the ratio drops below 1.5 the badge turns red (the WCAG 1.4.12 threshold, research 05 §18);
+- No animation — instant reflows; nothing needed for `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **The 24ways article itself**: the 2006 Compose to a Vertical Rhythm established the complete algorithm (unit = line-height, backwards headings, the em discipline) and remains the reference literature for CSS rhythm teaching (research 12 §9, URL verified) — its Bringhurst quote "space, like time…" is the anchor of the whole system.
+- **TDesign's "+8 constant"**: officially abandoning the fixed 1.5× ratio for "line-height = font-size + n, n = 8" — the 8 makes 14/16px sizes coincide exactly with 1.5× and stops spacing inflating on large sizes (design-basic.ts, research 02 §2) — another production answer to the rhythm constant.
+- **This site's fluid type scale**: line-height ratios relaxing as sizes shrink (1.12→1.65) and negative tracking reserved for ≥21px headings are written into the `--step-*` variable comments (`src/styles/global.css:154-163`) — the same "line-height is a system parameter, not per-element guesswork" thinking.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `baseUnit` | airier rhythm with wider stripe spacing; if the unit decouples from the size the ratio inflates | compact but crowded; below "size × 1.5" trips the WCAG 1.4.12 warning |
+| `bodySize` | larger sizes lower the ratio — past 1.5 the badge turns red (the unit must scale along) | small sizes densify the rhythm; the 2006-era 12px body reads small today |
+| `headingSize` | large headings get smaller ratios under the derivation — large displays occupy multiple units instead | small headings push the ratio above 1 while the line box still fills one cell |
+| `mode` | free shows the mush of arbitrary values — the teaching core | rhythm interlocks stripes with the lines; text reads like sheet music |
+
+Working rules: unit = body line-height; heading line boxes fill whole units (line-height = unit ÷ size); gaps at 1×/1.5×/2×; line-heights always unitless or em; borders count into the budget. Modern bodies start at 16px, so the unit becomes 24px — same method, values scaled to your body system.

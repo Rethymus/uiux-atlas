@@ -1,0 +1,59 @@
+## Structure & DOM
+
+The demo is a **playable coffee punch card**: stamp slots, a progress bar, a punch button, plus a per-stamp interval panel.
+
+```html
+<div class="gg-card">
+  <div class="gg-stamps">
+    <span class="gg-stamp" data-pre="true">pre</span>  <!-- head-start artificial progress, honestly labeled -->
+    <span class="gg-stamp" data-hit="true">✓</span>   <!-- stamps the user earned -->
+    <span class="gg-stamp"></span>                     <!-- empty slot -->
+  </div>
+  <div class="gg-progress" role="progressbar"><i style="width: 40%"></i></div>
+  <p class="gg-readout" aria-live="polite">4/10 · 40% · 6 stamps left</p>
+  <button class="gg-punch">Punch</button>
+</div>
+<div class="gg-panel">…per-stamp interval bars + latest/min/max text…</div>
+```
+
+Key points:
+
+- The three slot states differ on **glyph + shape + color** channels at once: empty dashed circle, user-stamped solid with `✓`, pre-stamped marked with the `pre` glyph and honestly labeled as artificial progress — never color-only (illusory progress must be honest; that is the ethical edge of Kivetz et al.'s research);
+- The conclusion never relies on reading a chart: 'n/N · percent · m stamps left' text syncs with `aria-live`, and every interval bar carries its numeric value;
+- On completion the punch button morphs in place into 'another round' — the next goal starts the instant one ends, keeping the gradient loop unbroken.
+
+## Styling & Parameters
+
+```tsx
+// steps / headStart are JS-type params subscribed from the store; intervals are real millisecond measurements
+const prev = punches === 0 ? roundStart : roundStart + intervals.reduce((a, b) => a + b, 0);
+setIntervals((arr) => [...arr, Math.round(now - prev)]);
+```
+
+- `steps` defaults to **10 stamps** (a typical reward card's size), `headStart` to **1** — pre-punching one 'done' slot, from the signature trick "pre-stamp one completed slot on steppers/reward cards" (supplement research 12 §16-9);
+- Both params are **demo teaching params**: the law says only "closer → faster", nothing about card size or how many slots to pre-punch — stated as such in the schema;
+- Interval = **real milliseconds** since the previous stamp (stamp 1 measured from round start) — the demo measures the user's own behavior, no simulated data;
+- Bar heights normalize as `interval / maxInterval`, bar order = stamp order, so 'opening vs final stretch' is directly comparable by eye;
+- The progress bar uses `transition: width 0.3s ease`, matching the site-wide percent-done convention (NN/g: percent-done is mandatory past 10s, research 07 §20).
+
+## Motion & Interaction
+
+- Each click: the new stamp pops once over 0.25s (`gg-pop`), the bar slides 0.3s, interval bars re-lay over 0.3s — all confined to `transform/opacity/width`;
+- On reaching the goal: a one-shot "Done! reward unlocked ✓" line plus the button turning green as 'another round'; the celebration fires once, never loops;
+- Under `prefers-reduced-motion: reduce` all three animations/transitions drop and numbers update instantly — timing and text are unaffected by the motion setting;
+- Keyboard-ready: punch is a native `button` (Space/Enter); each slot carries its own `aria-label`.
+
+## Real-world examples
+
+- **The coffee loyalty card's pre-punched first stamp**: the 'artificial progress' pattern recorded in supplement research 12 §14, applied literally — a free done-stamp at the start puts users at non-zero progress immediately, measurably shortening the opening interval (supplement research 12 §16-9);
+- **Uber-style head-start progress**: the application form named verbatim in supplement research 12 §14 — a small instantly-completed segment at the start of a flow drops users into the "already close" mindset;
+- **NN/g's percent-done progress bars**: operations past 10 seconds must show percentage progress (research 07 §20) — the loading progress line is the goal-gradient's carrier at the system-feedback layer; the clearer the closing signal, the more tolerable the wait.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `steps` | 12 stamps: a longer middle makes the motivation dip more visible — the "long goal with no milestones" caution, playable | 6 stamps: the final sprint arrives sooner and the interval narrowing shows earlier |
+| `headStart` | 3 stamps: you open at 30% progress and the very first interval is visibly shorter — artificial progress's pull on the opening step, directly measurable | 0 stamps: the no-head-start control; alternate rounds at 0 and 1 and compare stamp-1 intervals to reproduce the illusory-progress effect on yourself |
+
+The lesson: progress must be **clear (visible), honest (pre-stamped slots disclosed), and finish-visible (m stamps left always present)**; investing in the final stretch yields the most — the nearer the goal, the stronger the same step pulls (supplement research 12 §14).

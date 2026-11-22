@@ -1,0 +1,70 @@
+## Structure & DOM
+
+Depth of field is a stack of three planes, each holding its own filter, with the focus plane carrying none: far (the scene), mid (a glass/scrim plane), near (the subject). Depth reads as "blur → dim → sharp": defocused planes first lose definition to blur, then luminance to a veil, while the foreground owns the sharpness (as defined in research 12 §8).
+
+```html
+<div class="stage">
+  <div class="stage__far">…full-bleed scene…</div>     <!-- filter: blur+saturate, defocused -->
+  <div class="stage__glass">…glass midplane…</div>   <!-- backdrop-filter + scrim base -->
+  <div class="stage__near">…info card…</div>      <!-- sharp focus subject -->
+</div>
+```
+
+Key points:
+
+- `filter: blur()` acts on the element **itself**, `backdrop-filter` on the content **behind** it — the far plane uses the former, the glass plane the latter; never mix them up;
+- Defocused layers need `scale(1.02)` to compensate edges: blur pulls the rim inward by a ring, and without compensation a hard edge shows (the recipe includes it);
+- A defocused plane must carry no required information — it has given up definition, so information lives only on the focus plane.
+
+## Styling & Parameters
+
+Two CSS-variable parameters (blur/saturation, applied only to defocused planes) plus one JS focus switch:
+
+```css
+/* Defocused plane: blur + desaturation + edge compensation (research recipe: .stage__far) */
+.stage__far {
+  filter: blur(var(--dof-blur)) saturate(var(--dof-sat));  /* defaults 8px / 0.9 */
+  transform: scale(1.02);                                   /* edge compensation, no layout shift */
+}
+/* The dim veil: the dim step, 25% black (borrowing MDN's typical ::backdrop value; demo approximation) */
+.stage__far::after { background: rgb(0 0 0 / 25%); }
+
+/* Glass midplane: fixed recipe values, does not follow the blur param (.stage__glass) */
+.stage__glass {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  background: color-mix(in oklab, black 55%, transparent);  /* scrim base */
+}
+```
+
+Where the numbers come from:
+
+- `blur(8px)` + `saturate(.9)` + `scale(1.02)` = the far-plane recipe in research 12 §8 (`.stage__far`);
+- The glass midplane's `backdrop-filter: blur(6px)` + `color-mix(in oklab, black 55%, transparent)` scrim = the same section's glass recipe (`.stage__glass`) — the two blurs have separate jobs;
+- The 25% dim veil = MDN's typical `::backdrop` value `rgb(0 0 0 / 25%)` (same section), used as a demo approximation for layer dimming;
+- `filter` is Baseline since 2016-09; `backdrop-filter`/`transform` are modern baselines.
+
+## Motion & Interaction
+
+- **No filter transition on focus switches**: frame-by-frame animation of large-area blur has significant GPU-compositing cost, and the research explicitly warns to "avoid large areas and frequently animated elements" (research 12 §8) — the demo swaps the focus plane directly;
+- If a rack-focus animation is truly needed: keep it to small elements, or pre-render both states and cross-dissolve via `opacity`;
+- The dim veil may fade over ≤0.25s of `opacity` (a cheap compositable property); disabled under `prefers-reduced-motion`;
+- `will-change` goes on when used and comes off when done (MDN best practice, research 09 §9.2) — a permanent hint costs memory and layering;
+- The focus switch itself is input-driven (the user picks the plane), producing no autonomous animation.
+
+## Real-world examples
+
+- **iOS 26 scroll edge effects**: as content scrolls under glass it "gradually dissolves the content into the background" (WWDC25 219 [532–599s], research 09 §8.7) — "dissolving" is the system-level, definition-loss counterpart of blur layering;
+- **MDN's `<dialog>` examples**: `::backdrop` paired with `backdrop-filter: blur(0.5rem)` over the dimming scrim (research 09 §7.1) — the canonical blur-plus-dim combination behind dialogs, i.e. the production form of this entry's midplane and veil;
+- **Apple HIG material thickness semantics**: "thicker materials are more opaque and give better contrast to fine-stroke text; thinner ones are more translucent and preserve the backdrop's context" (research 09 §1.2) — the official framing of the blur/dim/sharp tradeoff: when a layer yields definition for hierarchy, the foreground must stay readable.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `blur` | the far plane recedes further; past 16px it smears into a color field, sampling cost climbs, and the depth cue is lost | the far plane stays legible; under 4px the depth cue vanishes and only dimming remains |
+| `saturation` | below 0.7 the far plane reads like a faded photo — pushed further back, but too much reads "dead" | 1 = blur without the fade, and the sense of distance leans entirely on blur |
+| `focus` → far | reversed depth of field: the foreground defocuses and the far plane sharpens — check whether the abandoned foreground actually carried information | near is the default photographic semantics: foreground sharp, everything else recedes |
+| The veil (demo approximation) | defocused layers grow darker and the "dim" step heavier; too heavy swallows the far plane's color memory | only a "bright blur" remains and the three depth steps degrade to two |
+
+Working ranges: blur 6–12px (default 8 is the recipe), saturation 0.85–0.95; the glass plane stays fixed at 6px and does not follow. Two hard limits: no required information on defocused planes, and no frame-by-frame animation of large-area blur — break either one and depth of field turns from a material language into a performance incident.

@@ -1,0 +1,74 @@
+## Structure & DOM
+
+FLIP introduces no new structure — it is a timing pattern ("layout first, animation after") on an ordinary list/grid:
+
+```html
+<div class="grid">              <!-- layout container: CSS Grid/Flex, DOM order is the final order -->
+  <button class="tile">A</button>
+  <button class="tile">B</button>
+  <button class="tile">C</button>
+</div>
+```
+
+Key points:
+
+- **State first**: on reorder, update the data/DOM order and let the browser compute the new layout in one pass; the animation is a retro-fitted visual layer that never participates in layout;
+- The four steps map to two measurements: **First** records `getBoundingClientRect()` before the change, **Last** measures again after — the delta becomes the inverted transform of Invert (12 §3);
+- Keep the animated unit separate from the content unit — a scale invert stretches text (aerotwist's own warning); restructure the DOM to split the animated layer from the text layer when needed;
+- Rects are viewport coordinates, so `transform: translate(dx, dy)` maps directly with no conversion.
+
+## Styling & Parameters
+
+Three parameters map to two CSS variables and one presentation switch:
+
+```css
+.demo-stage {
+  --flip-duration: 350ms;                     /* Play-phase duration */
+  --flip-ease: cubic-bezier(0.2, 0.7, 0.3, 1);/* Play-phase easing */
+}
+
+/* Invert: reversed transform + transition off — visually motionless, layout already at target */
+.tile { transform-origin: top left; }
+.tile.inverted {
+  transition: none;
+  transform: translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-s));
+}
+/* Play: remove the inverted transform and let the transition carry it back to zero */
+.tile.playing {
+  transition: transform var(--flip-duration) var(--flip-ease);
+  transform: none;
+}
+```
+
+Where the numbers come from:
+
+- The four steps, `transform-origin: top left`, "animate only transform/opacity (compositor path, no repaint)" and the ~**100ms post-interaction response window** for pre-computation all come from the aerotwist article (12 §3);
+- `350ms + cubic-bezier(0.2, 0.7, 0.3, 1)` comes from the adapted aerotwist snippet recorded in 12 §3 — an example value, not an official spec;
+- The transition route cleans up on `transitionend`, the WAAPI route (`el.animate([...])`) on `finish`; the GSAP FLIP plugin is also an option (12 §3);
+- The dependencies — `getBoundingClientRect`, transform, WAAPI — are all Baseline widely available.
+
+## Motion & Interaction
+
+- **The expensive work happens once**: layout reflows are concentrated into the First/Last measurements; Play animates transform only — that is the whole reason FLIP exists (per-frame left/top/width edits are ruinously expensive, 12 §3);
+- **Auto is the production form**: in the demo's auto mode First→Last→Invert complete within one frame and the user only sees the Play glide; step mode splits the four phases for inspection with a live readout of the computed dx / dy / scale;
+- **Interruptibility**: clear the old transition before starting a new run; never use FLIP for continuous driving (drag tracking) — that territory belongs to direct manipulation + springs (see handoff-curves);
+- **reduced-motion**: Play is skipped, the inverted transform clears immediately and the final state lands directly; the reorder itself never depends on the animation;
+- Relation to slot-spring: the single-`layoutId` bubble of BuildUI's AnimatedTabs is Motion performing FLIP automatically inside the library (research 10 §2.1) — a hand-rolled FLIP teaches the principle, the library version removes the boilerplate.
+
+For the browser-native counterpart see the view-transitions entry (same-origin, cross-document transitions); the performance baseline (transform/opacity only) lives in the smooth-craft entry.
+
+## Real-world examples
+
+- **Motion's layoutId layout animations**: when an element moves between slots, the library automatically runs "record old position → layout → inverted transform → tween to zero" — the BuildUI AnimatedTabs verified verbatim in research 10 §2.1 is that capability in production;
+- **The GSAP FLIP plugin**: named in the aerotwist article (12 §3) as the ready-made implementation, wrapping the four steps into `gsap Flip.getState()/from()` with list reordering as the flagship scenario;
+- **The View Transitions API**: the browser bakes "snapshot old and new, animate between the snapshots" as a native primitive (support matrix in research 04 §3.1/§3.2) — the same idea as FLIP with manual measurement replaced by browser snapshots.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `duration` | moves feel more deliberate; reorders past 500ms read as "the UI is stalling" | the move flashes by; under 150ms the eye sees only a blink and FLIP's continuity narrative is lost |
+| `easing` | a decelerating shape (high early y, flat late y) reads as "settling"; linear feels mechanical | a strong overshoot (y₂>1) makes cards lunge past their slot and return — jittery for reordering |
+| `mode` | step: the teaching view — every phase and the computed values are visible | auto: the production form, First→Last→Invert in one frame, smoothest experience |
+
+Rule of thumb: scale duration to travel (small moves within 250ms, half-screen jumps 350–500ms); avoid large scale inverts on text-bearing units — split layers or use translate only; prefer a library's layoutId/FLIP plugin over hand-written measurement boilerplate.

@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+景深层次是三个平面的叠放,每个平面独立持有滤镜,对焦平面不设 filter:远景(场景)、中景(玻璃/scrim 层)、前景(主体)。深度由「blur → dim → sharp」三段构成:失焦平面先被 blur 降清晰度,再被薄纱压暗,前景独占清晰度(调研 12 §8 的定义)。
+
+```html
+<div class="stage">
+  <div class="stage__far">…全幅场景…</div>     <!-- filter: blur+saturate 失焦 -->
+  <div class="stage__glass">…玻璃中景…</div>   <!-- backdrop-filter + scrim 底 -->
+  <div class="stage__near">…信息卡…</div>      <!-- 清晰对焦主体 -->
+</div>
+```
+
+关键点:
+
+- `filter: blur()` 作用于元素**自身**,`backdrop-filter` 作用于元素**身后**的内容——远景用前者、玻璃层用后者,互不混用;
+- 失焦层必须 `scale(1.02)` 外扩补边:模糊会把边缘缩进一圈,不补边就露出硬边(配方自带);
+- 失焦平面不得承载任何必读信息——它已经放弃清晰度,信息只活在对焦平面。
+
+## 样式与参数
+
+两个 CSS 变量型参数(blur/saturation,只作用于失焦平面)+ 一个 JS 型对焦开关(focus):
+
+```css
+/* 失焦平面:blur + 降饱和 + 补边(调研配方:.stage__far) */
+.stage__far {
+  filter: blur(var(--dof-blur)) saturate(var(--dof-sat));  /* 默认 8px / 0.9 */
+  transform: scale(1.02);                                   /* 补模糊边,无布局位移 */
+}
+/* 失焦薄纱:dim 段,25% 黑(借 MDN ::backdrop 典型值,演示近似) */
+.stage__far::after { background: rgb(0 0 0 / 25%); }
+
+/* 玻璃中景:配方固定值,不随 blur 参数联动(.stage__glass) */
+.stage__glass {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  background: color-mix(in oklab, black 55%, transparent);  /* scrim 底色 */
+}
+```
+
+数值出处:
+
+- `blur(8px)` + `saturate(.9)` + `scale(1.02)` = 调研 12 §8 远景配方(`.stage__far`);
+- 玻璃中景 `backdrop-filter: blur(6px)` + `color-mix(in oklab, black 55%, transparent)` scrim = 同节玻璃层配方(`.stage__glass`)——两处 blur 各司其职;
+- 失焦薄纱 25% = MDN `::backdrop` 典型值 `rgb(0 0 0 / 25%)`(同节),用作层压暗的演示近似;
+- `filter` Baseline 自 2016-09;`backdrop-filter`/`transform` 现代基线。
+
+## 动效与交互
+
+- **对焦切换不做 filter 过渡**:大面积 blur 逐帧动画的 GPU 合成开销显著,调研明确告诫「避免对大区域或频繁动画元素使用」(调研 12 §8)——demo 直接置换对焦平面;
+- 若确需「拉焦」(rack focus)动画:只对小面积元素、或预渲染两态用 `opacity` 交叉溶解替代;
+- 失焦薄纱可做 ≤0.25s 的 `opacity` 过渡(合成属性,便宜);`prefers-reduced-motion` 时取消;
+- `will-change` 用时加、结束移除(MDN 最佳实践,调研 09 §9.2)——常驻提示会带来内存/分层开销;
+- 焦点切换本身是输入驱动(用户选择对焦平面),不产生自主动画。
+
+## 真实产品案例
+
+- **iOS 26 滚动边缘效应(scroll edge effect)**:内容滚入玻璃下方时「逐渐把内容溶解进背景」(WWDC25 219 [532–599s],调研 09 §8.7)——「溶解」即系统级的景深式降清晰度,是 blur 分层的官方语义对应;
+- **MDN `<dialog>` 官方示例**:`::backdrop` 上 `backdrop-filter: blur(0.5rem)` 与压暗遮罩搭配(调研 09 §7.1)——弹窗背后「模糊+压暗」的标准组合,即本条目中景/薄纱的生产形态;
+- **Apple HIG 材质厚度语义**:「更厚的材质更不透明,对细笔画文本对比更好;更薄的材质更透,让用户保留背景上下文」(调研 09 §1.2)——blur/dim/sharp 的取舍在系统层的官方表述:层级让渡清晰度时,必须同时保证前景可读。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `blur` | 远景更「退后」;>16px 糊成色块、边缘采样开销上升,景深感反而丢失 | 远景仍可辨认;\<4px 景深线索消失,只剩压暗 |
+| `saturation` | \<0.7 远景像褪色照片,推得更远;过低保彩会显得「死」 | 1 = 纯模糊不褪色,退后感全部依赖 blur 一项 |
+| `focus` → far | 反转景深:前景失焦、远景清晰——检查「被放弃的前景」是否本该承载信息 | near 是默认摄影语义:前景清晰、其余退后 |
+| 薄纱(演示近似) | 失焦层更暗,「dim 段」更重;过重会吞掉远景的色彩记忆 | 只剩 blur 的「亮糊」,深度三段退化为两段 |
+
+经验区间:blur 6–12px(默认 8 即配方)、saturate 0.85–0.95;玻璃层固定 6px 不随动。两条硬边界:失焦平面无必读信息;大面积 blur 不做逐帧动画——违反任何一条,景深就从材质语言退化成性能事故。

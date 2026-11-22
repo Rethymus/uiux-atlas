@@ -1,0 +1,120 @@
+{
+  "name": "Multi-Theme Tokens",
+  "nameZh": "多主题 Token",
+  "aliases": ["多品牌换肤", "primitive 层换主题", "themeable tokens"],
+  "category": "color",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "三套品牌主题共享同一份组件 CSS:换肤只替换 primitive 层的一个 --brand 变量,语义层用 color-mix 现场重派生,组件层零改动——换肤后对比度管线整组重跑。",
+    "en": "Three brand themes share one component CSS: swapping themes replaces a single --brand primitive, the semantic layer re-derives live via color-mix, the component layer never changes — and the contrast pipeline reruns as a set."
+  },
+  "origin": {
+    "zh": "三层架构(primitive → semantic → component)为 GitHub Primer 实测分层,W3C DTCG 格式(调研 06§10);Android 文档同构佐证:「语义化分配 color role 而非具体值」(调研 06§10);三套主题 primitive 值逐字取自补研 12§11 片段:blue oklch(0.62 0.19 250) / crimson oklch(0.58 0.2 20) / forest oklch(0.6 0.15 150),派生配方(hover black 12%、soft 12%、border 40%、on-brand white 85%)同片段。",
+    "en": "The three layers (primitive → semantic → component) are Primer's measured layering in W3C DTCG format (research 06 §10); the Android docs corroborate the structure: 'assign color roles semantically, not concrete values' (research 06 §10); the three theme primitives are verbatim from the research 12 §11 snippet — blue oklch(0.62 0.19 250) / crimson oklch(0.58 0.2 20) / forest oklch(0.6 0.15 150) — with the derivation recipes from the same snippet (hover black 12%, soft 12%, border 40%, on-brand white 85%)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "theme",
+      "options": [
+        { "value": "blue", "label": { "zh": "蓝 Blue", "en": "Blue" } },
+        { "value": "crimson", "label": { "zh": "绯红 Crimson", "en": "Crimson" } },
+        { "value": "forest", "label": { "zh": "林绿 Forest", "en": "Forest" } }
+      ],
+      "default": "blue",
+      "effect": {
+        "zh": "JS 型参数:demo 订阅后只改写 data-theme,data-theme 只重挂 primitive 层的 --tk-brand(oklch 值逐字取补研 12§11 片段);语义层 color-mix 现场重派生,组件层零改动。三套值的 sRGB 裁剪结果(本会话实测):blue #0088F2(越域裁剪)/ crimson #D73246 / forest #25984D。",
+        "en": "JS-type param: on subscription the demo rewrites only data-theme, which remounts only the primitive --tk-brand (oklch values verbatim from the research 12 §11 snippet); the semantic layer re-derives live via color-mix and the component layer never changes. The sRGB results (measured this session): blue #0088F2 (clipped) / crimson #D73246 / forest #25984D."
+      }
+    },
+    {
+      "type": "number",
+      "name": "softBg",
+      "unit": "%",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--tk-soft-bg",
+      "effect": {
+        "zh": "语义变量 --tk-primary-soft 的派生比例(品牌色掺 transparent)。默认 12% 取自补研 12§11 片段(--brand-soft-bg 同款);这是语义层的参数,换主题不需要动它。",
+        "en": "The derivation ratio for the semantic --tk-primary-soft (brand toward transparent). Default 12% from the research 12 §11 snippet (same as --brand-soft-bg); a semantic-layer parameter that no theme swap needs to touch."
+      }
+    },
+    {
+      "type": "number",
+      "name": "borderMix",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 40,
+      "cssVar": "--tk-border-mix",
+      "effect": {
+        "zh": "语义变量 --tk-border 的派生比例(品牌色掺 transparent)。默认 40% 取自补研 12§11 片段;阈值参照:传达语义的边框按 SC 1.4.11 对相邻色 ≥3:1 复核(调研 06§17)。",
+        "en": "The derivation ratio for the semantic --tk-border (brand toward transparent). Default 40% from the research 12 §11 snippet; threshold reference: a semantic border is audited at ≥3:1 against adjacent colors per SC 1.4.11 (research 06 §17)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "hoverMix",
+      "unit": "%",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--tk-hover-mix",
+      "effect": {
+        "zh": "语义变量 --tk-primary-hover 向 black 混入的比例。默认 12% 取自补研 12§11 片段(--brand-hover 同款)。",
+        "en": "The share mixed toward black for the semantic --tk-primary-hover. Default 12% from the research 12 §11 snippet (same as --brand-hover)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "换肤机制只用 CSS 自定义属性 + 属性选择器,广泛可用;语义层的 color-mix() 派生需 Baseline 2023-05(补研 12§11)。demo 对不支持 color-mix 的浏览器提供中性灰兜底 token 并显示说明(oklch() 同为 Baseline 2023-05,调研 06§1)。",
+      "en": "The swap mechanism uses only custom properties + attribute selectors, widely supported; the semantic layer's color-mix() derivation needs Baseline 2023-05 (research 12 §11). Browsers without color-mix get neutral-gray fallback tokens plus an explainer (oklch() is likewise Baseline 2023-05, research 06 §1)."
+    }
+  },
+  "fallback": {
+    "zh": "整条语义管线包在 @supports (color: color-mix(in oklab, red, blue)) 内:不支持的浏览器拿到一套中性灰兜底 token(不冒认任何主题的派生色),并显示说明行;primitive 层的 oklch() 同样有 hex 兜底声明(本会话换算)。",
+    "en": "The whole semantic pipeline sits inside @supports (color: color-mix(in oklab, red, blue)): unsupported browsers receive a neutral-gray fallback set (honestly not pretending to be any theme's derivatives) plus an explainer; the primitive layer's oklch() carries hex fallbacks too (converted this session)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "白标/多品牌产品:换品牌只换 primitive 层一张表,组件 CSS 与语义结构零改动(Primer 9 套主题同架构,调研 06§10)", "en": "White-label / multi-brand products: re-branding swaps one primitive sheet; component CSS and semantic structure never move (Primer's 9 themes share this architecture, research 06 §10)" },
+      { "zh": "亮暗+多品牌矩阵:主题数 = primitive 表数量,主题不相乘——语义层只有一份", "en": "The light/dark × multi-brand matrix: theme count = primitive sheet count, never a product — the semantic layer is single-sourced" },
+      { "zh": "品牌色由外部(运营/AB 实验)下发时:下发 primitive 值,前端语义管线不动", "en": "When brand colors arrive from ops/AB experiments: ship primitive values; the frontend semantic pipeline stays untouched" },
+      { "zh": "换肤后的回归验收:对比度闸(4.5:1/3:1)对每个主题整组重跑——派生结果随 primitive 变化,不能沿用上一主题的结论", "en": "Post-swap regression: contrast gates (4.5:1/3:1) rerun per theme — derivatives change with the primitive, so last theme's verdicts don't carry over" }
+    ],
+    "avoid": [
+      { "zh": "组件直接引用 primitive(--tk-brand)跳过语义层——Android 文档点名的反模式:应「语义化分配 color role 而非具体值」(调研 06§10)", "en": "Components referencing the primitive (--tk-brand) past the semantic layer — the Android docs' named anti-pattern: 'assign color roles semantically, not concrete values' (research 06§10)" },
+      { "zh": "给每套主题复制一份组件 CSS——主题爆炸时不可维护;Primer 的做法是语义层换映射表(调研 06§10)", "en": "Duplicating a component stylesheet per theme — unmaintainable as themes multiply; Primer's way is swapping mapping sheets in the semantic layer (research 06 §10)" },
+      { "zh": "沿用上一主题的对比度结论:crimson 主题白字 4.74:1 过 AA,blue/forest 同配方白字仅 3.62/3.70:1 不过(本会话实测)——结论不能跨主题搬运", "en": "Carrying contrast verdicts across themes: crimson's white text passes AA at 4.74:1 while blue/forest read 3.62/3.70:1 with the same recipe (measured this session) — verdicts do not transfer" },
+      { "zh": "语义名用观感词(--light-blue-500):换主题即失效;必须用角色词(bgColor-default 式,调研 06§10)", "en": "Appearance-word semantic names (--light-blue-500): dead on the first theme swap; use role words (bgColor-default style, research 06 §10)" }
+    ]
+  },
+  "a11y": {
+    "zh": "换肤不改闸门:每套主题的派生组合按 WCAG 2.1 重跑(正文 4.5:1、大字与 UI 3:1、语义边框 3:1,调研 06§17),判定不四舍五入。本会话实测三主题:白字 on 品牌底 blue 3.62 / crimson 4.74 / forest 3.70:1——同一配方,crimson 过正文 AA、另两套不过;on-brand(white 85%)on 品牌底 3.06–3.90:1,三套都过 UI/大字档、都不过正文 AA。这正是「换肤 = 重跑管线」的量化证明。",
+    "en": "Theme swaps change nothing about the gates: each theme's derived pairings rerun WCAG 2.1 (body 4.5:1, large & UI 3:1, semantic borders 3:1, research 06 §17), unrounded. Measured this session across the three themes: white text on the brand fill reads blue 3.62 / crimson 4.74 / forest 3.70:1 — same recipe, crimson passes body AA while the others don't; on-brand (white 85%) on the brand fill reads 3.06–3.90:1, passing the UI/large gate everywhere and body AA nowhere. The quantified proof that a theme swap means a pipeline rerun."
+  },
+  "sources": [
+    "https://github.com/primer/primitives",
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors",
+    "https://tailwindcss.com/blog/tailwindcss-v4"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现三套品牌主题的 token 换肤:primitive 层每主题一个 --brand 值,语义层用 color-mix 从 --brand 派生 primary/hover/soft/border/on-primary,组件层只消费语义变量;提供逐主题对比度复核表。",
+      "en": "Implement three brand themes as token swapping: a per-theme --brand primitive, a semantic layer deriving primary/hover/soft/border/on-primary from --brand via color-mix, and a component layer consuming only semantic variables; ship a per-theme contrast audit table."
+    },
+    "acceptance": [
+      { "zh": "换肤只改 primitive 层一个变量(data-theme 重挂),组件 CSS 与语义层零改动", "en": "Swapping touches exactly one primitive variable (via data-theme); component CSS and the semantic layer never change" },
+      { "zh": "组件文件零 hex/零 primitive 引用,只消费语义角色变量", "en": "Zero hex and zero primitive references in components — only semantic role variables" },
+      { "zh": "三套主题的派生组合逐套过对比度闸(4.5:1/3:1),判定不四舍五入、结论不跨主题搬运", "en": "All three themes' derived pairings pass contrast gates (4.5:1/3:1) individually, unrounded, with no verdict reuse across themes" },
+      { "zh": "语义名是角色词不是观感词", "en": "Semantic names are role words, never appearance words" },
+      { "zh": "提供 color-mix 不支持时的中性灰兜底与说明行(@supports 回退)", "en": "Provide neutral-gray fallbacks and an explainer when color-mix is unsupported (@supports fallback)" }
+    ]
+  }
+}

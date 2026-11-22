@@ -1,0 +1,104 @@
+{
+  "name": "Collapse",
+  "nameZh": "折叠面板",
+  "aliases": ["手风琴", "Accordion", "Disclosure"],
+  "category": "components",
+  "subgroup": "data",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "把成组内容收纳进「标题行 + 可展开内容区」:点标题切换显隐,多开是常规、同一时刻只开一块的手风琴是特例。",
+    "en": "Group content into 'header row + expandable body' units: toggling hides or shows the body; multiple-open is the norm and the accordion (one open at a time) is the special case."
+  },
+  "origin": {
+    "zh": "折叠面板定位是「分组/隐藏复杂区域保持页面整洁;手风琴是同一时刻只开一个的特例」(补研 12§15);APG 为其提供标准骨架:heading[aria-level] > button[aria-expanded][aria-controls] + 面板(可选 role=region[aria-labelledby]),Enter/Space 切换(补研 12§15;APG 30 模式含 Accordion,调研 07§34)。生产参照系是 Ant Design Collapse(补研 12§15 记载 API:accordion、activeKey/defaultActiveKey、collapsible(header|icon|disabled)、expandIconPlacement(start|end)、ghost、destroyOnHidden 等,2026-11-22 抓取 ant.design 现行文档)。",
+    "en": "The collapse panel is positioned as 'grouping/hiding complex regions to keep pages tidy; the accordion — one panel open at a time — is its special case' (supplementary study 12 §15); APG provides the canonical skeleton: heading[aria-level] > button[aria-expanded][aria-controls] + panel (optional role=region [aria-labelledby]), toggled with Enter/Space (12 §15; the APG 30-pattern library includes Accordion, research 07 §34). The production reference is Ant Design Collapse (12 §15 records accordion, activeKey/defaultActiveKey, collapsible (header|icon|disabled), expandIconPlacement (start|end), ghost, destroyOnHidden — captured from current ant.design docs on 2026-11-22)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "accordion",
+      "options": [
+        { "value": "off", "label": { "zh": "多开 off", "en": "Multi off" } },
+        { "value": "on", "label": { "zh": "单开 on(手风琴)", "en": "Single on (accordion)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后控制开一块是否收起其他)。对应 antd Collapse 的 accordion(补研 12§15):多开是常规、单开是特例——demo 默认 off 即多开;ant-collapse 的官方默认值调研未记载,off 为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes so opening one panel may close the rest). Maps to antd Collapse's accordion (12 §15): multiple-open is the norm and single-open the special case — the demo's off default is multi-open; the official antd default is unrecorded, so off is a community-common value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "expandIconPlacement",
+      "options": [
+        { "value": "start", "label": { "zh": "头部 start", "en": "Start" } },
+        { "value": "end", "label": { "zh": "尾部 end", "en": "End" } }
+      ],
+      "default": "start",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后把展开箭头放到标题行首/行尾)。对应 antd Collapse 的 expandIconPlacement: start|end(补研 12§15);官方默认值调研未记载,demo 默认 start 为社区常见值,未证实。",
+        "en": "JS-type param (demo subscribes to move the expand arrow to the header's start/end). Maps to antd Collapse's expandIconPlacement: start|end (12 §15); the official default is unrecorded — the demo's start default is a community-common value, unverified."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "collapsible",
+      "options": [
+        { "value": "header", "label": { "zh": "整行 header", "en": "Header" } },
+        { "value": "icon", "label": { "zh": "仅图标 icon", "en": "Icon only" } },
+        { "value": "disabled", "label": { "zh": "禁用 disabled", "en": "Disabled" } }
+      ],
+      "default": "header",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换指针点击目标)。对应 antd Collapse 的 collapsible: header|icon|disabled(补研 12§15)——header 整行可点,icon 仅箭头区可点(disabled 整块不可交互);官方默认值调研未记载,demo 默认 header 为社区常见值,未证实。键盘路径不受 collapsible 影响:标题按钮的 Enter/Space 永远可切换。",
+        "en": "JS-type param (demo subscribes to switch the pointer click target). Maps to antd Collapse's collapsible: header|icon|disabled (12 §15) — header makes the whole row clickable, icon restricts clicking to the arrow zone, disabled makes the panel inert; the official default is unrecorded — the demo's header default is a community-common value, unverified. Keyboard is unaffected: the header button's Enter/Space always toggles."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "折叠面板是纯 DOM/CSS/JS 自绘:标题是原生 button(键盘无障碍),展开/收起高度动画用 CSS grid-template-rows 0fr/1fr 过渡(现代浏览器支持);读屏对 role=region 地标的播报取决于面板数量——同开面板超过 6 个时应省略 region 地标(APG 建议,补研 12§15)。",
+      "en": "The collapse panel is pure DOM/CSS/JS: headers are native buttons (accessible by default), and the expand/collapse height animation uses a CSS grid-template-rows 0fr/1fr transition (modern browsers); screen-reader announcement of role=region landmarks depends on panel count — omit region landmarks when more than 6 panels can be open at once (APG advice, 12 §15)."
+    }
+  },
+  "fallback": {
+    "zh": "无 JS 环境用原生 <details>/<summary> 兜底(浏览器原生开合语义);无 CSS grid-template-rows 过渡能力时展开/收起直接显隐,功能不受损;disabled 面板务必保留静态内容可读——折叠只藏交互,不藏必读信息。",
+    "en": "In no-JS environments fall back to native <details>/<summary> (browser-native disclosure semantics); without grid-template-rows transition support the body simply shows/hides with no functional loss; keep disabled panels' content readable — collapsing hides interaction, never must-read information."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单可选区块:发票开具、优惠码、高级选项——默认收起不干扰主流程", "en": "Optional form sections: invoicing, promo codes, advanced options — collapsed by default, out of the main flow" },
+      { "zh": "FAQ/帮助中心问答列表:一问一面板,常配手风琴单开", "en": "FAQ/help-center question lists: one question per panel, often accordion single-open" },
+      { "zh": "长页面的设置分组:通知偏好、隐私、账户安全逐组收纳", "en": "Long settings pages: notifications, privacy, account security grouped per panel" },
+      { "zh": "移动端概览页:摘要在上、详情折叠,节省纵向空间", "en": "Mobile overview pages: summary up top, details folded, saving vertical space" }
+    ],
+    "avoid": [
+      { "zh": "用户必须看到的内容别折叠——必读信息藏进展开区等于没写", "en": "Never fold must-see content — hiding required reading inside a collapsed panel equals not writing it" },
+      { "zh": "面板内超过一屏的长内容:滚动套滚动体验差,应拆分或改抽屉/独立页", "en": "Bodies longer than a screen: scroll-within-scroll reads badly — split or move to a drawer/page" },
+      { "zh": "深层嵌套折叠(折叠里再折叠)——层级成本超过收纳收益", "en": "Nested collapsibles inside collapsibles — hierarchy cost outweighs tidiness gains" },
+      { "zh": "同开面板可能超过 6 个时省略 role=region 地标,避免 landmark 泛滥(APG 建议,补研 12§15)", "en": "When >6 panels can be open at once, omit role=region landmarks to avoid landmark flooding (APG advice, 12 §15)" }
+    ]
+  },
+  "a11y": {
+    "zh": "APG 骨架逐字落地:标题用真实 heading(h3 带 aria-level 语义)> 原生 button[aria-expanded][aria-controls],面板可加 role=\"region\" + aria-labelledby 指回标题按钮(可同开面板 >6 个时省略 region,补研 12§15);键盘 Enter/Space 切换(补研 12§15;WebAIM:按钮 Enter/Space,调研 07§36),Tab 在标题间移动;展开态必须实时同步 aria-expanded;焦点环不可移除;禁用面板用 aria-disabled 表达并保留内容可读。",
+    "en": "The APG skeleton lands verbatim: a real heading (h3) wrapping a native button[aria-expanded][aria-controls]; panels may take role=\"region\" + aria-labelledby pointing back at the header button (omit region when >6 panels can be open at once, 12 §15); keyboard Enter/Space toggles (12 §15; WebAIM: buttons use Enter/Space, research 07 §36) and Tab moves between headers; aria-expanded must track the live open state; never remove the focus ring; disabled panels use aria-disabled and keep their content readable."
+  },
+  "sources": [
+    "https://ant.design/components/collapse",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/accordion/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一组折叠面板:三块「标题行 + 可展开内容」,支持多开/手风琴单开两种模式、箭头放行首或行尾、header/icon/disabled 三档点击目标,高度过渡平滑且键盘全可达。",
+      "en": "Replicate a collapse group: three 'header + expandable body' units with multi-open/accordion single-open modes, arrow at the row start or end, header/icon/disabled click targets, smooth height transitions and full keyboard access."
+    },
+    "acceptance": [
+      { "zh": "骨架逐字对齐 APG:h3 > button[aria-expanded][aria-controls],面板 role=region + aria-labelledby", "en": "Skeleton matches APG verbatim: h3 > button[aria-expanded][aria-controls], panels role=region + aria-labelledby" },
+      { "zh": "accordion=on 时打开一块自动收起其余;off 时互不影响,aria-expanded 与真实状态同步", "en": "accordion=on closes the rest when one opens; off leaves them independent; aria-expanded always tracks the live state" },
+      { "zh": "高度动画用 grid-template-rows 0fr/1fr 过渡 0.2s(motionDurationMid + motionEaseInOut),命中 prefers-reduced-motion 直接显隐", "en": "Height animates via grid-template-rows 0fr/1fr over 0.2s (motionDurationMid + motionEaseInOut); prefers-reduced-motion snaps open/shut with no transition" },
+      { "zh": "箭头 0.2s 旋转 90°,expandIconPlacement=start|end 两档换位;disabled 面板 aria-disabled 且内容仍可读", "en": "Arrow rotates 90° over 0.2s; expandIconPlacement=start|end swaps sides; the disabled panel carries aria-disabled with content still readable" },
+      { "zh": "键盘 Tab 到标题、Enter/Space 切换;icon 档限制指针点击区但键盘路径不变", "en": "Keyboard: Tab to headers, Enter/Space toggles; the icon tier narrows pointer clicks but leaves the keyboard path untouched" }
+    ]
+  }
+}

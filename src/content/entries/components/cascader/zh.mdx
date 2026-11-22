@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+级联选择是「触发器 + 多列浮层」两层结构,收在同一个相对定位容器里;浮层内每级一个纵向列表,选中上一级立刻重建下一列:
+
+```html
+<div class="cs-wrap">
+  <button type="button" class="cs-trigger" role="combobox"
+          aria-haspopup="listbox" aria-expanded="true" aria-controls="cs-popup">
+    广东省 / 深圳市 / 南山区 <span class="arrow" aria-hidden="true">▾</span>
+  </button>
+  <div class="cs-popup" id="cs-popup" role="listbox">
+    <ul class="cs-col" role="group" aria-label="第 1 级">
+      <li class="cs-opt" role="option" aria-selected="true" aria-label="广东省">广东省 ▸</li>
+      <li class="cs-opt" role="option" aria-selected="false" aria-label="上海市">上海市 ▸</li>
+    </ul>
+    <ul class="cs-col" role="group" aria-label="第 2 级">
+      <li class="cs-opt" role="option" aria-label="广东省 / 深圳市">深圳市 ▸</li>
+    </ul>
+    <ul class="cs-col" role="group" aria-label="第 3 级">
+      <li class="cs-opt" role="option" aria-label="广东省 / 深圳市 / 南山区">南山区</li>
+    </ul>
+  </div>
+</div>
+```
+
+关键点:
+
+- 触发器是**原生 button**(天然可 Tab、可 Enter/Space 激活),combobox 角色负责把浮层状态经 `aria-expanded` / `aria-activedescendant` 播报(APG 把「输入框 + 关联弹出层」归为 combobox 模式,调研 07§5);
+- 选项的 `aria-label` 写**完整路径**(「广东省 / 深圳市」)——读屏用户听单列上下文时才知道自己在哪一级;
+- 多列浮层不进入 Tab 序列,焦点始终留在触发器上(APG:弹出层及其后代从页面 Tab 序列中排除,调研 07§5);
+- 多选模式在每项前加勾选标记,已选项以标签回显,标签的 × 是独立按钮。
+
+## 样式与参数
+
+三个参数都是 JS 型(经 store 订阅改交互行为),视觉数值与 Select 家族共享同一套 token:
+
+```css
+.cs-trigger { border: 1px solid #d9d9d9; border-radius: 6px; min-height: 32px;
+              color: rgba(0, 0, 0, 0.88); font-size: 14px; }
+.cs-placeholder { color: rgba(0, 0, 0, 0.25); }        /* colorTextQuaternary */
+.cs-popup { background: #fff; border-radius: 6px;
+            box-shadow: 0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12),
+                        0 9px 28px 8px rgba(0,0,0,0.05); }   /* antd 浮层主阴影 */
+.cs-col  { max-height: 256px; overflow: auto; border-left: 1px solid #f0f0f0; }
+.cs-opt:hover, .cs-opt.is-active { background: rgba(0, 0, 0, 0.04); } /* FillTertiary */
+.cs-opt[aria-selected="true"] { color: #1677ff; font-weight: 500; }
+.cs-box[data-checked="true"] { background: #1677ff; border-color: #1677ff; color: #fff; }
+```
+
+数值出处:
+
+- 控件高度 32、圆角 6、字号 14 = antd controlHeight / borderRadius / fontSize 默认档(设计调研 06§2.2/§2.3②③);占位色 rgba(0,0,0,0.25) = TextQuaternary,hover 底 rgba(0,0,0,0.04) = FillTertiary(06§2.3⑤);
+- 浮层阴影逐字取 antd 浮层主阴影 boxShadow,列分隔线 #f0f0f0 = colorBorderSecondary(06§2.3⑥⑤);选中文字 #1677ff = colorPrimary、蓝色板第 6 阶(06§1.2/§2.2);
+- 浮层单列最大高度 256px 对齐 antd Select 的 listHeight 默认(06§4.6)——Cascader 文档未单列此值,借同族档位作教学基准;
+- `expandTrigger` 取值 click|hover、`changeOnSelect` 默认 false、`multiple` 语义均来自 antd Cascader 现行文档(补研 12§15);`expandTrigger`/`multiple` 的官方默认值调研未记载,demo 默认 click/off 为社区常见值,未证实。
+
+## 动效与交互
+
+- **展开**:浮层 opacity + 4px 上移入场 0.2s(antd motionDurationMid + motionEaseInOut,06§3.1/3.2);新列从左侧 4px 滑入,`prefers-reduced-motion` 时全部直接显隐;
+- **hover 展开**:`expandTrigger=hover` 时鼠标悬停父级即推入下一列(antd expandTrigger 语义,12§15),触屏上 hover 无意义,务必保留点击路径;
+- **键盘全路径**:Down/Up 在当前列移动高亮,Right/Enter 下钻到子级(叶子或 `changeOnSelect=on` 的任意级即确认),Left 收回上一列,Esc 关闭并恢复打开前的值(combobox「探索不丢选择」,调研 07§5),Tab 离开即收起;
+- **changeOnSelect=off** 时必须选到叶节点才回填触发器——父级点击只下钻;开启后点中任意一级即完成选择并关闭(antd changeOnSelect 语义,12§15);
+- **多选**:Space 切换高亮项勾选(WebAIM:checkbox Space,调研 07§36),标签 × 移除即时联动勾选;
+- **点击外部关闭**:document 级 pointerdown 监听,目标不在容器内即收起。
+
+## 真实产品案例
+
+- **电商收货地址**:下单页省/市/区(有的到街道/乡镇四级)逐级选择,选完省即载入市列表——用户不需要记住任何行政代码,路径回显「广东省 / 深圳市 / 南山区」本身就是地址预览;
+- **本地生活服务的城市→商圈筛选**(美团/大众点评类):先选城市再选商圈,两列级联把「全国数千商圈」压缩成每列十余项的可扫读列表;
+- **后台类目管理**:内容/商品后台给文章或 SKU 挂类目(一级类目→二级→三级),级联把树形数据变成线性路径,比展开整棵树省空间(编辑性泛例:树形数据在窄容器内的常见取用方式)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `expandTrigger` | hover 让「扫一眼就下钻」更快,但误触下钻也更多,触屏无效 | click 每一步都是明确意图,误操作少,层级深时多点一次 |
+| `changeOnSelect` | on 允许「先选个大概」(只要省),表单快速通过 | off 强制选到叶节点,数据一致性最好,但只想选省的用户被卡住 |
+| `multiple` | on 时标签区随选择增长,占位文本让位给「已选 N 项」 | off 路径回显单一清晰,是级联的主形态 |
+
+经验区间:每级可见选项 5–15 个最舒服;层级 ≥4 或每级需要搜索时考虑换树形选择或可搜索 combobox(loadData 懒加载不能与 showSearch 同用,补研 12§15);触发器永远回显完整路径,不要只显示末级名字。

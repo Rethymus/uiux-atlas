@@ -1,0 +1,72 @@
+## Structure & DOM
+
+No special structure — two (or one) voices, each in its place:
+
+```html
+<article class="card">
+  <p class="kicker">Kicker</p>
+  <h2 class="head">Serif headline</h2>
+  <p class="body">Sans body text…</p>
+  <blockquote class="quote">The quote follows the headline side</blockquote>
+</article>
+```
+
+```css
+/* Classic contrast: the serif owns the mood, the sans owns reading */
+.head, .quote { font-family: Georgia, "Times New Roman", "Songti SC", SimSun, serif; }
+.body         { font-family: system-ui, sans-serif; }
+
+/* Single-family strategy (Apple HIG): one family site-wide, hierarchy via size / weight / color */
+.head { font-weight: 650; }
+.body { font-weight: 400; }
+```
+
+Key points:
+
+- The `font-family` list **always ends with a generic** serif/sans-serif — it falls through level by level and never depends on a single font name;
+- CJK serif coverage: Georgia has no CJK glyphs, so the list names `Songti SC` (macOS) / `SimSun` (Windows) before the generic — the exact serif look varies by platform;
+- Separated duties: the display family is used only at large sizes; the body family must pass a long-form reading test (rule of thumb, unverified).
+
+## Styling & Parameters
+
+Three parameters: `pairing` (JS-type) plus heading size/weight (CSS-variable type):
+
+```css
+.fp-h2 {
+  font-size: var(--fp-head-size);      /* 34px */
+  font-weight: var(--fp-head-weight);  /* 600 */
+  line-height: 1.15;
+}
+[data-pairing="serif-head"] .fp-h2 { font-family: Georgia, …, serif; }
+[data-pairing="single"]     .fp-h2 { font-family: inherit; } /* weight only */
+```
+
+Where the numbers come from — with honest labeling:
+
+- Apple HIG Typography: "Minimize the number of typefaces you use", one family site-wide, hierarchy via size/weight/color only (research 01, HIG original verified) — the official basis of the single-family strategy;
+- Vercel ships Geist as four same-source families, Sans/Serif/Mono/Pixel, OFL 1.1 (research 05 §25) — the official instance of "same family, many voices";
+- This site's sans + mono duet: `--font-sans: Inter Variable, Noto Sans SC…` + `--font-mono: JetBrains Mono…` (`src/styles/global.css:150-152`, spec §2.2: "mono only for numerals/counts/shortcuts");
+- **The pairing methodology details (contrast principle, prefer same-family multi-axis, no third typeface) are community practice, unverified** — the Google Fonts Knowledge "Choosing type" page is JS-rendered and its body could not be verified (research 12 §9, recorded as such).
+
+## Motion & Interaction
+
+- **Strategy switch**: the pairing param swaps three pairings via `data-pairing`; the serif/sans re-costume is an instant reflow (font-family changes involve no animation);
+- **Weight experiments**: in single-family mode, dragging `headingWeight` 300→900 is driven by Inter Variable's real wght axis (not synthesized bolding); on the serif modes, values beyond the system stack's 400/700 get clamped or synthesized — the demo shows that distortion as-is;
+- **Size contrast**: pull `headingSize` from 64px down to 24px and watch the pairing degrade into "body text with a different font" — this is how under-contrasted pairings fail;
+- No `prefers-reduced-motion` branch: the demo has no animation, everything is an instant reflow.
+
+## Real-world examples
+
+- **Apple HIG and the SF system**: the official "Minimize the number of typefaces you use" plus one SF family site-wide, hierarchy through size differences plus weight differences (Headline uses Semibold against a same-size Body, research 01, verified from the HIG original) — the strongest endorsement of the single-family strategy.
+- **Vercel Geist**: distributed as four same-source families Sans/Serif/Mono/Pixel, verified from the official README (research 05 §25) — a family lineup that answers "serif headline × sans body" as one coherent set.
+- **This site, uiux-atlas**: the sans + mono duet (sans for UI and prose, mono only for numerals/counts/shortcuts) is written into spec §2.2 and implemented in the `--font-sans/--font-mono` variables (`src/styles/global.css:150-152`) — the engineering version of "no third typeface after duties are separated".
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `pairing` | the serif modes buy mood, the single family buys consistency; no all-purpose option, only different duty splits | "no pairing" (system defaults) also has consistency, but gives up the two-voice expressiveness |
+| `headingSize` | stronger contrast and a more audible serif temperament; too large squeezes the body | below ~24px the headline stops reading as a different voice — the pairing degrades into decoration |
+| `headingWeight` | in single-family mode 700+ separates hierarchy from the 400 body (real wght axis) | below 300 legibility drops on light backgrounds; serif values beyond 400/700 are clamped or synthesized |
+
+Working rules: assign the duties first (who owns mood, who owns reading), then pick families; two at most; carry hierarchy with size (≥1.5×), weight and color at once. Treat methodology details as community consensus and validate key decisions with a long-form reading test.

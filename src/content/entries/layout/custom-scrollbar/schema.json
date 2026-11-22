@@ -1,0 +1,128 @@
+{
+  "name": "Custom Scrollbar",
+  "nameZh": "自定义滚动条",
+  "aliases": ["scrollbar-color", "scrollbar-width", "::-webkit-scrollbar", "scrollbar-gutter"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "两套实现、一个互操作真相:标准属性 scrollbar-color/width 是 Firefox 路线(Chrome 121+/Safari 26.2 补齐),::-webkit-scrollbar 伪元素是 WebKit 老路——且 scrollbar-width ≠ auto 时 webkit 全家被忽略;scrollbar-gutter 负责给滚动条留槽防跳动。",
+    "en": "Two implementations, one interoperability truth: the standard scrollbar-color/width properties are the Firefox route (Chrome 121+, Safari 26.2 caught up), the ::-webkit-scrollbar pseudo-elements are the WebKit legacy — and once scrollbar-width ≠ auto, the whole webkit family is ignored; scrollbar-gutter reserves the slot so layouts stop jumping."
+  },
+  "origin": {
+    "zh": "标准属性出自 CSS Scrollbars Styling(css-scrollbars,调研 10§8.3 与 11§9):scrollbar-width: auto|thin|none(Baseline 2024-12;「目的是省空间不是审美」;MDN 警告 none 影响可及性/WCAG 2.1.1 键盘滚动;root 上设置的值应用到 viewport)、scrollbar-color: <thumb> <track>(Firefox 标准)。BCD 支持:scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2(WebKit 同期声明「建议停止使用 ::-webkit-scrollbar」),Android WebView 暂未支持(调研 11§9)。互操作事实(MDN 原文,调研 10§8.3):一旦元素 computed scrollbar-width ≠ auto,::-webkit-scrollbar 家族即被浏览器忽略,写回 auto 恢复。scrollbar-gutter 出自 CSS Overflow L3,Baseline 2024 Newly available(2024-12,本次会话直连 MDN 页核对)。",
+    "en": "The standard properties come from CSS Scrollbars Styling (research 10 §8.3 and 11 §9): scrollbar-width: auto|thin|none (Baseline 2024-12; 'the purpose is saving space, not aesthetics'; MDN warns none harms accessibility/WCAG 2.1.1 keyboard scrolling; a value set on root applies to the viewport) and scrollbar-color: <thumb> <track> (the Firefox standard). BCD support: scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2 (WebKit's release note the same period: 'stop using ::-webkit-scrollbar'), Android WebView not yet (research 11 §9). Interop fact (MDN verbatim, research 10 §8.3): once an element's computed scrollbar-width ≠ auto, the ::-webkit-scrollbar family is ignored; writing back auto restores it. scrollbar-gutter comes from CSS Overflow L3, Baseline 2024 Newly available (2024-12, verified against the MDN page this session)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "engine",
+      "options": [
+        { "value": "standard", "label": { "zh": "standard 标准属性", "en": "standard properties" } },
+        { "value": "webkit", "label": { "zh": "webkit 伪元素", "en": "webkit pseudo-elements" } }
+      ],
+      "default": "standard",
+      "effect": {
+        "zh": "双实现切换(JS 型,demo 挂 data-engine)。standard 档写 scrollbar-width/color;webkit 档不写标准属性(computed 保持 auto)以激活 ::-webkit-scrollbar 家族——这正是调研 10§8.3 互操作事实的正面用法;Firefox 不实现 webkit 伪元素,该档在 Firefox 无效果,demo 读数如实报告。",
+        "en": "The dual-implementation switch (JS-type, applied as data-engine). standard writes scrollbar-width/color; webkit deliberately leaves the standard properties alone (computed stays auto) to activate the ::-webkit-scrollbar family — the constructive use of research 10 §8.3's interop fact; Firefox doesn't implement the webkit pseudos, so that grade does nothing there, and the demo's readout says so."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "width",
+      "options": [
+        { "value": "auto", "label": { "zh": "auto 系统默认", "en": "auto (system default)" } },
+        { "value": "thin", "label": { "zh": "thin 细条", "en": "thin" } },
+        { "value": "none", "label": { "zh": "none 隐藏(慎用)", "en": "none (hide — careful)" } }
+      ],
+      "default": "thin",
+      "effect": {
+        "zh": "scrollbar-width 取值(JS 型)。thin 默认呼应 round2 报告记载的全站细滚动条惯例(scrollbar-width: thin + scrollbar-color 挂根继承)与调研 10§8.4 片段;none 档 demo 会亮出 MDN 警告——影响可及性/WCAG 2.1.1 键盘滚动(调研 10§8.3);webkit 档此参数不适用(伪元素固定 12px 演示基准值,未证实)。",
+        "en": "The scrollbar-width value (JS-type). The thin default echoes the site-wide thin-scrollbar convention recorded in the round-2 report (scrollbar-width: thin + scrollbar-color inherited at root) and the 10 §8.4 fragment; the none grade triggers the demo's MDN warning — harms accessibility/WCAG 2.1.1 keyboard scrolling (research 10 §8.3); under the webkit grade this param doesn't apply (the pseudos use a fixed 12px demo baseline, unverified)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "thumb",
+      "format": "hex",
+      "default": "#6a5cff",
+      "cssVar": "--sb-thumb",
+      "effect": {
+        "zh": "滑块颜色(CSS 型 --sb-thumb,喂 scrollbar-color 第一值与 ::-webkit-scrollbar-thumb 背景)。默认 #6a5cff 逐字出自调研 11§9 片段 html { scrollbar-color: var(--brand, #6a5cff) transparent }——品牌变量直通滚动条是「控件一键换肤」签名巧思的一环(调研 11§10-8)。",
+        "en": "The thumb color (CSS-type --sb-thumb, feeding scrollbar-color's first value and the ::-webkit-scrollbar-thumb background). The #6a5cff default is verbatim from research 11 §9's fragment html { scrollbar-color: var(--brand, #6a5cff) transparent } — piping the brand variable through is part of the 'one-line control re-skin' signature idea (research 11 §10-8)."
+      }
+    },
+    {
+      "type": "color",
+      "name": "track",
+      "format": "hex",
+      "default": "#00000000",
+      "presets": ["#00000000", "#00000040"],
+      "cssVar": "--sb-track",
+      "effect": {
+        "zh": "轨道颜色(CSS 型 --sb-track,喂 scrollbar-color 第二值与 ::-webkit-scrollbar-track 背景)。默认 #00000000(8 位 hex 全透明)= 调研 11§9 片段里的 transparent——轨道透空让滚动条浮在内容上,细滚动条的常见搭配。",
+        "en": "The track color (CSS-type --sb-track, feeding scrollbar-color's second value and the ::-webkit-scrollbar-track background). The default #00000000 (8-digit hex, fully transparent) equals the transparent in research 11 §9's fragment — a hollow track floats the scrollbar over content, the common pairing for thin scrollbars."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "gutter",
+      "options": [
+        { "value": "auto", "label": { "zh": "auto(初始值)", "en": "auto (initial)" } },
+        { "value": "stable", "label": { "zh": "stable 预留槽位", "en": "stable (reserve the gutter)" } }
+      ],
+      "default": "auto",
+      "cssVar": "--sb-gutter",
+      "effect": {
+        "zh": "scrollbar-gutter 取值(CSS 型 --sb-gutter)。auto 为规范初始值;stable 在 classic 滚动条下即使不溢出也预留槽位,防「内容变长→滚动条出现→布局跳一下」,both-edges 修饰符可两侧对称(MDN,本次会话直连核对);overlay 滚动条(如 macOS 默认)不占槽,该属性无效果。Baseline 2024 Newly available(2024-12)。",
+        "en": "The scrollbar-gutter value (CSS-type --sb-gutter). auto is the spec initial value; stable reserves the gutter under classic scrollbars even when content doesn't overflow, preventing the 'content grows → scrollbar appears → layout jumps' effect, with a both-edges modifier for symmetry (MDN, verified this session); overlay scrollbars (e.g. macOS default) take no slot, so the property has no effect there. Baseline 2024 Newly available (2024-12)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "scrollbar-width Baseline 2024-12(调研 10§8.3);scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2、Android WebView 暂未支持(BCD,调研 11§9;Safari 26.2 起官方建议弃用 ::-webkit-scrollbar);::-webkit-scrollbar 非标但 WebKit/Blink 家族长期广泛可用,Firefox 不实现;scrollbar-gutter Baseline 2024 Newly available 自 2024-12(本次会话直连 MDN 核对)。Safari < 26.2 上 standard 档无效果,webkit 档可用。",
+      "en": "scrollbar-width is Baseline 2024-12 (research 10 §8.3); scrollbar-color Chrome 121 / Firefox 64 / Safari 26.2, Android WebView not yet (BCD, research 11 §9; from Safari 26.2 WebKit officially advises dropping ::-webkit-scrollbar); the non-standard ::-webkit-scrollbar is long-broadly available in the WebKit/Blink family and unimplemented in Firefox; scrollbar-gutter is Baseline 2024 Newly available since 2024-12 (verified on MDN this session). On Safari < 26.2 the standard grade has no effect while the webkit grade works."
+    }
+  },
+  "fallback": {
+    "zh": "双写策略是结构性回退:标准属性与 webkit 伪元素并存于样式表,按互操作事实自然分流——支持标准的引擎优先标准样式(scrollbar-width ≠ auto 时 webkit 伪元素被忽略),老 WebKit 走伪元素,Firefox 走标准;两者都不支持(极老引擎)保持系统原生滚动条,功能无损只失装饰。切勿用 none 隐藏滚动条来「美化」——MDN 明确它伤害键盘滚动可及性(WCAG 2.1.1)。",
+    "en": "The dual-write strategy is the structural fallback: standard properties and webkit pseudos coexist in the stylesheet and split naturally by the interop fact — engines supporting the standard prefer it (scrollbar-width ≠ auto disables the webkit pseudos), legacy WebKit takes the pseudos, Firefox takes the standard; engines supporting neither keep the native scrollbar — functionality intact, only decoration lost. Never hide scrollbars with none for aesthetics — MDN is explicit that it harms keyboard-scrolling accessibility (WCAG 2.1.1)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "全站滚动条品牌化:scrollbar-color 接品牌变量挂 :root,暗色模式自动反色(调研 11§9 片段与 11§10-8 巧思)", "en": "Site-wide scrollbar branding: scrollbar-color on :root fed by the brand variable, auto-flipping in dark mode (research 11 §9 fragment and §10-8 idea)" },
+      { "zh": "密集数据区/代码块的细滚动条:thin 省空间不抢注意力(调研 10§8.3「目的是省空间不是审美」)", "en": "Thin scrollbars in dense data and code blocks: thin saves space without stealing attention (research 10 §8.3: 'the purpose is saving space')" },
+      { "zh": "聊天流/命令行面板:webkit 伪元素做圆角胶囊滑块,Blink/WebKit 环境的像素级控制", "en": "Chat streams and terminal panels: webkit pseudos for capsule thumbs and pixel-level control in Blink/WebKit" },
+      { "zh": "列表容器 scrollbar-gutter: stable 预留槽位,内容增减时布局不再左右横跳(MDN 用例,本次核对)", "en": "List containers with scrollbar-gutter: stable reserving the slot so layouts stop jittering as content grows (MDN use case, verified this session)" }
+    ],
+    "avoid": [
+      { "zh": "scrollbar-width: none 当装饰手段——MDN 警告影响键盘滚动可及性(WCAG 2.1.1,调研 10§8.3)", "en": "scrollbar-width: none as decoration — MDN warns it harms keyboard scrolling (WCAG 2.1.1, research 10 §8.3)" },
+      { "zh": "给整个视口强定制滚动条——root 上的值应用到 viewport,用户对系统滚动条的心智被打破(调研 10§8.3 root 行为)", "en": "Heavy customization of the viewport scrollbar — a root value applies to the viewport and breaks users' system mental model (research 10 §8.3 root behavior)" },
+      { "zh": "以为 webkit 伪元素全平台可用——Firefox 不实现,且 Safari 26.2 起官方建议弃用(调研 11§9)", "en": "Assuming webkit pseudos work everywhere — Firefox doesn't implement them and WebKit has advised dropping them since Safari 26.2 (research 11 §9)" },
+      { "zh": "高对比装饰色滑块——滑块/轨道对内容与彼此都要守住对比度,装饰性配色先过 WCAG 1.4.11 非文本对比", "en": "High-decoration thumb colors — thumb and track must hold contrast against content and each other; decorative palettes still pass WCAG 1.4.11 non-text contrast" }
+    ]
+  },
+  "a11y": {
+    "zh": "滚动条是操作暗示:隐藏(none)等于撤掉「这里能滚」的视觉线索,MDN 明确警告其对 WCAG 2.1.1 键盘滚动的影响(调研 10§8.3);自定义配色须同时守住滑块-轨道、滑块-内容两组非文本对比(WCAG 1.4.11);可滚动区域加 tabindex=0 与 role/aria-label,让键盘用户 Tab 进来即能用方向键滚动;装饰性改动不改变滚动行为本身,读屏不受影响;prefers-reduced-motion 与滚动条样式无交互,无需特殊处理。",
+    "en": "The scrollbar is an affordance: hiding it (none) removes the 'this scrolls' cue, and MDN explicitly warns of the WCAG 2.1.1 keyboard-scrolling impact (research 10 §8.3); custom colors must hold two non-text contrasts at once — thumb-vs-track and thumb-vs-content (WCAG 1.4.11); give scrollable regions tabindex=0 with role/aria-label so keyboard users can Tab in and scroll with arrows; decorative changes never alter scrolling behavior or screen-reader output; prefers-reduced-motion has no interaction with scrollbar styling, nothing special needed."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-gutter",
+    "https://github.com/mdn/browser-compat-data/blob/main/css/properties/scrollbar-color.json"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "给长列表容器做品牌化滚动条:scrollbar-width: thin + scrollbar-color 接品牌变量挂根,webkit 伪元素双写圆角滑块,scrollbar-gutter: stable 防内容增减时布局跳动,none 档禁用并给出可及性警告。",
+      "en": "Brand the scrollbar of a long list container: scrollbar-width: thin + scrollbar-color wired to the brand variable at root, webkit pseudo-elements double-written with a rounded thumb, scrollbar-gutter: stable against layout jitter, and the none grade disabled with an accessibility warning."
+    },
+    "acceptance": [
+      { "zh": "标准属性(scrollbar-width/color)与 ::-webkit-scrollbar 双写,并遵循互操作事实(standard 档 computed scrollbar-width ≠ auto)", "en": "Standard properties (scrollbar-width/color) double-written with ::-webkit-scrollbar, honoring the interop fact (the standard grade keeps computed scrollbar-width ≠ auto)" },
+      { "zh": "滑块/轨道颜色严格使用参数快照值,同时接品牌 CSS 变量", "en": "Thumb and track colors use the exact parameter snapshot values, wired through brand CSS variables" },
+      { "zh": "scrollbar-gutter: stable 应用于列表容器,预留槽位防布局跳动", "en": "scrollbar-gutter: stable applied to the list container, reserving the slot against layout jitter" },
+      { "zh": "不出现 scrollbar-width: none(如需隐藏,提供替代滚动指示与键盘可达性)", "en": "No scrollbar-width: none (if hidden, provide an alternative scroll indicator and keyboard reachability)" },
+      { "zh": "可滚动容器可聚焦(tabindex=0)并有可读名称,方向键可滚动", "en": "The scrollable container is focusable (tabindex=0) with an accessible name and arrow-key scrolling" }
+    ]
+  }
+}

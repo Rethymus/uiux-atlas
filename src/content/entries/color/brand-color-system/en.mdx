@@ -1,0 +1,66 @@
+## Structure & DOM
+
+The pipeline is three stages in a strict order: stage 1 "seed" is a single brand color oklch(L C H); stage 2 "expand" lays out the ramp across tones at fixed H/C; stage 3 "map" assigns tone steps to semantic roles, and components only ever see roles.
+
+```html
+<div class="scene">
+  <div class="ramp" role="img" aria-label="13-tone ramp of the brand hue">…</div>
+  <div class="audit-list">…</div>
+</div>
+```
+
+```css
+/* Tone steps are declared straight in oklch(): H/C fixed, only L follows tone */
+.tone-80 { background: oklch(0.8 0.19 250); }
+```
+
+Key points:
+
+- **Fixed H and C, only tone varies** — this is the dividing line between derivation and hand-picking a palette: the relation between steps is functional, not aesthetic (M3 tonal palette mechanics, research 06 §5; Radix's 12 steps are isomorphic, research 06 §8);
+- Semantic role mapping happens in its own layer (tone 80 → dark accent, tone 90 → container); components never see tone numbers;
+- The verification pipeline gates every text/background and graphic/adjacent-color pairing individually — never rubber-stamps the palette as a whole.
+
+## Styling & Parameters
+
+All four params are JS-type: the demo recomputes the tone ramp with the Oklab matrices on subscription, then re-audits every pairing with the WCAG 2.1 formula:
+
+```css
+/* Light context: solid accent = the brand tone itself */
+.accent { background: oklch(0.62 0.19 250); color: #fff; }
+
+/* Dark context: the accent jumps to tone 80 of the same hue, text takes a low tone
+   — isomorphic to the official baseline: M3 dark primary #D0BCFF (≈ tone 80) / on-primary #381E72 (research 06 §7) */
+[data-theme="dark"] .accent { background: oklch(0.8 0.19 250); color: oklch(0.2 0.19 250); }
+```
+
+Where the numbers come from:
+
+- `oklch(0.62 0.19 250)` is the brand seed from the expansion snippet (research 12 §11); measured this session: already outside sRGB at L=0.62/H=250, browsers clip it to **#0088F2**, which pairs with white text at **3.62:1** — passes the 3:1 large-text/UI gate, fails body AA (Evil Martians likewise warn that OKLCH alone does not guarantee accessibility, research 06 §2);
+- The dark side has an official anchor: M3 dark primary `#D0BCFF` ≈ tone 80 with on-primary `#381E72` (research 06 §7); this session's re-measurement of that official pair reads **7.71:1**, and the same-hue tone 80 + tone 20 demo pair reads **8.81:1**;
+- Hue scale: red≈20°, yellow≈90°, green≈140°, blue≈220°, purple≈320° (Evil Martians, research 06 §2); practical chroma ceiling ≈0.37 (research 06 §2), MDN's theoretical cap 0.5 with 100% = 0.4 (research 06 §1).
+
+## Motion & Interaction
+
+The pipeline is a static discipline; motion only exists to make the derivation visible:
+
+- Param sliders drive the JS recompute: ramp swatches and audit rows enter with 18ms/60ms staggers (opacity/transform only); all disabled under `prefers-reduced-motion`;
+- **The theme switch** (light/dark context) never redraws the ramp — it only moves the role chips: light pins the chip at the brand tone, dark jumps it to tone 80, turning "dark accents brighten" into a visible step shift;
+- Out-of-gamut swatches are labeled honestly: the clipped sRGB value feeds the same contrast audit, so what you see and what you measure never diverge (Chrome/Safari clip RGB outright today, research 06 §2);
+- Contrast badges flip instantly with no transition — verdict changes should never be smoothed over.
+
+## Real-world examples
+
+- **Material Theme Builder** (Google's official tool, Figma plugin / web app): a seed color in, full tonal palette and every semantic role out, shipped alongside the Android docs (research 06 §7) — the official product form of this pipeline;
+- **Android Material You dynamic color**: wallpaper → source color → a 13-tone tonal palette per key color → light/dark themes; the same derivation pipeline at OS scale (material-color-utilities, research 06 §5/§6);
+- **Radix Colors**: the 12-step scale industrialized "step → role" mapping (1–2 backgrounds / 3–5 component surfaces / 6–8 borders / 9–10 solid / 11–12 text), with steps 11/12 guaranteed at APCA Lc60/90 (research 06 §8).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hue` | roles unchanged, hue slides; red/green/blue slot into the Evil Martians map | same — the ramp structure is hue-insensitive, which is exactly why "swap brand color, keep components" works |
+| `lightness` | brand tone moves bright, white text on the light side gets riskier (closer to white) | brand tone moves dark, white text improves, but the accent slides from foreground toward background |
+| `chroma` | more vivid; high C overflows sRGB in the mid-high L range and browsers clip it, visibly shifting hue (practical ceiling ≈0.37) | drifts toward neutral gray; C=0 degenerates the ramp into a pure lightness ladder |
+| `theme` | dark: accent jumps to tone 80 with low-tone text (baseline-isomorphic) | light: accent is the brand tone itself — the white-text pairing is where body AA most often dies |
+
+Working rule: to pass body AA with white text on a light-side solid accent, push the tone lower and re-audit; any step change reruns the whole audit group — verdicts are unrounded, 4.499:1 still fails (research 06 §17).

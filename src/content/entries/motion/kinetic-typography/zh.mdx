@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+动态文字的 DOM 成本只有「拆分 span + 一层裁剪容器」,拆分必须在 JS 里做、语义在属性里补:
+
+```html
+<h2 class="headline" aria-label="Weight you can feel">  <!-- 整句给读屏 -->
+  <span aria-hidden="true" class="word">                <!-- 拆分树对读屏整体隐藏 -->
+    <span class="mask"><span class="char">W</span></span>
+    <span class="mask"><span class="char">e</span></span>
+    …
+  </span>
+</h2>
+```
+
+关键点:
+
+- 拆字(GSAP SplitText 的 `type: "words, chars"` 语义,补研 12§6):按词分组防止单词内断行,按字符(或单词)分配交错序号;
+- 每个 **mask** 是 `overflow: hidden` 的内联块——字符从 `translateY(110%)` 升起时被裁掉露头之前的部分,这就是 SplitText `mask` 选项的效果;
+- **语义完整性是硬约束**:整句写在容器的 `aria-label`,全部拆分 span `aria-hidden`——读屏读整句,永不读字母碎片(SplitText 的 `aria: "auto"` 做的就是这件事);
+- 轴动画不需要任何 DOM 变化:`font-variation-settings` 直接吃注册变量。
+
+## 样式与参数
+
+四个参数对应一条 CSS 变量、一个注册变量与两条 JS 内联:
+
+```css
+@property --k-wght { syntax: "<number>"; inherits: true; initial-value: 400; }
+
+.demo-stage {
+  --kinetic-rise: 600ms;   /* 单字符上升时长 */
+  --k-wght: 400;           /* 字重轴目标值(参数面板直写) */
+  transition: --k-wght 0.5s;  /* 轴过渡时长取补研 12§6 片段 */
+}
+.headline {
+  font-family: "Inter Variable", system-ui, sans-serif;
+  font-variation-settings: "wght" var(--k-wght);
+}
+.char {
+  display: inline-block;
+  animation: kt-rise var(--kinetic-rise) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+/* JS 内联:animation-delay = i × stagger */
+@keyframes kt-rise {
+  from { transform: translateY(110%); opacity: 0; }
+}
+```
+
+数值出处:
+
+- 注册轴范围:wght **1–1000** ↔ font-weight、wdth 百分比 ↔ font-stretch、自定义轴大写(如 GRAD——改变视觉密度不改变占位,可动画而不引起重排)(MDN,补研 12§6);demo 字体 Inter Variable 的 wght 实际范围 100–900,面板限在其中;
+- `font-variation-settings` 是低层语法:改一个值需整条重声明——用 CSS 变量绕过,变量成为唯一入参(补研 12§6);
+- 揭示参数:`rise .6s cubic-bezier(.2,.7,.3,1)` 与手写拆字的 `animation-delay: i × 40ms` 取自补研 12§6 无库兜底片段;GSAP SplitText 官方示例用 `stagger: 0.05`(50ms)与 `duration: 1`——同一维度上的两处参考值;
+- 轴过渡:`transition --wght .5s` 取自补研 12§6 片段;插值依赖 @property 注册(已 Baseline widely available,调研 09§1.2),不支持的浏览器字重跳变不插值。
+
+## 动效与交互
+
+- **轴动画是「一个变量」的动效**:hover/参数只改 `--k-wght`,不触发重排(前提是用 GRAD 这类不改占位的轴,或 wght 在不折行的标题上小范围滑动)——这是可变字体动效对性能的承诺(补研 12§6/巧思 8);
+- **揭示是「交错」的动效**:字符在 mask 里升起,间隔 = i × stagger;总铺开时间 = stagger × (字符数 − 1) + rise,标题越长 stagger 越要小;
+- **触发时机**:标题揭晓播一次即可(载入或章节转场),滚动重播留给营销页的 long-scroll 叙事;重播按钮用于对比参数;
+- **字体加载即重排**:SplitText 的 `autoSplit`(字体加载/宽度变化自动重拆)针对的正是这个问题——手写版至少要等 `document.fonts.ready` 再拆,否则字体换血后宽度全错;
+- **reduced-motion**:字符直出、轴过渡关闭(补研 12§6 CSS 片段的 `animation: none`),文字信息不受任何影响。
+
+与 variable-fonts 条目的关系:那是轴体系与 @font-face 范围描述符的基础条目;与 stagger-orchestration / choreography 条目共享同一套交错数学;标题接力可嵌进 page-transitions 的容器转场。
+
+## 真实产品案例
+
+- **GSAP SplitText 官方示例**:`SplitText.create(".headline", { type: "words, chars", mask: "chars" })` + `from(chars, { yPercent: 100, stagger: 0.05 })` 是逐字揭示的官方标准形态(补研 12§6,gsap.com 一手文档;v3.13+ 重写后体积减半、可脱离核心单独加载);
+- **字体厂商的 specimen 页**(可变字体的推广/样张页):wght/wdth 轴滑杆 + 实时预览是该品类的标配形态(社区常见形态,本调研未逐站核验)——demo 的轴滑杆即同款交互;
+- **营销 hero 标题逐词接力**:「标题单词逐个上升、正文随后淡入」是产品发布页的常见编排(社区常见,未逐站核验);生产实现多数落在 SplitText 一类拆字插件上,拆分/裁剪/aria 三件事一件不能少。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `stagger` | 铺开更「戏剧化」;标题越长越要小心——总时长 = stagger×(n−1)+rise,很容易超出 1s 注意窗口 | 全句近乎同时出现,「接力感」消失;0 时退化为整体淡入 |
+| `rise` | 单字符上升更从容,>800ms 后逐字动画开始显得拖沓 | 弹出感变「跳变」;\<250ms 时 mask 裁剪的上升感不可辨 |
+| `wght` | 标题视觉重量与占宽同步上升(wght 改占位,大范围滑动会引发折行变化) | 字重变轻;100–300 的细字重在深色底上可读性下降 |
+| `reveal` | words:播得更快、语义块完整,适合长标题 | chars:颗粒最细、接力感最强,是标题动效默认;正文禁用 |
+
+选型口诀:轴动画选「不改占位的轴」或标题短滑;揭示总时长压在 1s 内(stagger × 字符数 + rise);拆字必配 mask 裁剪 + aria 整句;能等 `document.fonts.ready` 就别抢跑。

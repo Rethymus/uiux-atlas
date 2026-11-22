@@ -1,0 +1,103 @@
+{
+  "name": "Font Pairing",
+  "nameZh": "字体搭配",
+  "aliases": ["字体组合", "衬线搭配", "typeface pairing", "serif × sans"],
+  "category": "type",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "衬线 × 无衬线的对比搭配,或同字族多字重的单字族策略:核心是对比、职责分离与克制——最多两种字体,第三种之前先问职责。",
+    "en": "Serif × sans contrast pairing, or the single-family multi-weight strategy: contrast, separated duties and restraint — two typefaces at most, and question the third."
+  },
+  "origin": {
+    "zh": "官方入口是 Google Fonts Knowledge「Choosing type」栏目(调研 12§9:页面 JS 渲染,正文未能核验);可核的官方立场出自 Apple HIG Typography:「Minimize the number of typefaces you use」——全站一个字族(SF 系),层级只动 size/weight/color(调研 01,官网原文已核);Vercel Geist 以 Sans/Serif/Mono/Pixel 四族同源发行(调研 05§25)。搭配方法论细则为社区实践共识,未证实。",
+    "en": "The official entry point is Google Fonts Knowledge's 'Choosing type' section (research 12 §9: JS-rendered page, body text could not be verified); the verifiable official stance comes from Apple HIG Typography: 'Minimize the number of typefaces you use' — one family site-wide (the SF system), hierarchy driven only by size/weight/color (research 01, HIG original verified). Vercel ships Geist as four same-source families: Sans/Serif/Mono/Pixel (research 05 §25). The pairing methodology details are community practice, unverified."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "pairing",
+      "options": [
+        { "value": "serif-head", "label": { "zh": "衬线标题 × 无衬线正文", "en": "Serif head × sans body" } },
+        { "value": "sans-head", "label": { "zh": "无衬线标题 × 衬线正文", "en": "Sans head × serif body" } },
+        { "value": "single", "label": { "zh": "单字族多字重", "en": "Single family, multi-weight" } }
+      ],
+      "default": "serif-head",
+      "effect": {
+        "zh": "JS 型参数(切 data-pairing)。三组演示搭配:衬线×无衬线(经典对比)、反向搭配(杂志正文衬线)、单字族(Inter Variable 仅动字重,Apple HIG 一字族原则)。前两档的衬线用系统衬线栈(Georgia → 宋体 → serif),零第三方依赖。",
+        "en": "JS-type param (toggles data-pairing). Three demo pairings: serif × sans (classic contrast), the reversed pairing (magazine-style serif body), and single-family (Inter Variable weights only, per Apple HIG's one-family principle). The serif in the first two modes is a system stack (Georgia → Songti/SimSun → serif), zero third-party dependencies."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "headingSize",
+      "unit": "px",
+      "min": 24,
+      "max": 64,
+      "step": 1,
+      "default": 34,
+      "cssVar": "--fp-head-size",
+      "effect": {
+        "zh": "标题字号。『标题字体只用于大字号』是搭配方法论的通则(社区实践,未证实);调到 24px 以下时衬线标题与正文的对比感消失,搭配退化为『换了字体的正文』。",
+        "en": "Heading size. 'Display faces only for large sizes' is a pairing rule of thumb (community practice, unverified); below ~24px the serif heading loses its contrast against the body and the pairing degrades into 'body text with a different font'."
+      }
+    },
+    {
+      "type": "number",
+      "name": "headingWeight",
+      "min": 300,
+      "max": 900,
+      "step": 100,
+      "default": 600,
+      "cssVar": "--fp-head-weight",
+      "effect": {
+        "zh": "标题字重。单字族模式由 Inter Variable 的 wght 100–900 轴真实驱动(调研 05§24 已核);系统衬线栈通常只有 400/700 两档,其余档位由浏览器合成或钳制到最近档——字重对比在衬线档可能失真,如实演示。",
+        "en": "Heading weight. In single-family mode it is driven by Inter Variable's real wght 100–900 axis (research 05 §24, verified); system serif stacks usually carry only 400/700, with other values synthesized or clamped by the browser — weight contrast may be distorted on the serif modes, shown as-is."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "无 CSS 新特性:font-family/font-weight 属最基础能力;系统衬线栈(Georgia/Songti/SimSun/serif 泛型)全平台可用,但具体衬线字形因平台而异;可变字重需字体含 wght 轴(本站 Inter Variable 已内置)。",
+      "en": "No modern CSS dependency: font-family/font-weight are the most basic capabilities; system serif stacks (Georgia/Songti/SimSun/generic serif) work everywhere but the exact serif glyphs vary by platform; variable weights need a wght axis (already shipped by this site's Inter Variable)."
+    }
+  },
+  "fallback": {
+    "zh": "font-family 列表永远以泛型(serif/sans-serif)收尾:列表逐级回退,中文衬线在无 Georgia 字形的平台落到宋体一类系统衬线,再落到泛型 serif;绝不依赖单一字体名。字重合成时视觉可能发虚,关键层级建议钳制到字体实际提供的档位。",
+    "en": "Always end the font-family list with a generic (serif/sans-serif): the list falls through level by level — CJK serif lands on system serifs like Songti where Georgia lacks CJK glyphs, then the generic serif; never depend on a single font name. Synthesized weights can look smudgy — clamp key hierarchy to weights the font actually ships."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "编辑/杂志式页面:衬线大标题 + 无衬线正文,氛围与可读性分工", "en": "Editorial/magazine pages: serif display headlines over sans body — mood and readability split the duties" },
+      { "zh": "产品官网 hero:无衬线大字 + 品牌调性一致的正文字族", "en": "Product-site heroes: sans display plus a body family consistent with the brand voice" },
+      { "zh": "工具型产品的单字族策略:一个可变字族 + 字重/字号/色彩分层级(Apple HIG 原则)", "en": "Tool products' single-family strategy: one variable family with size/weight/color carrying hierarchy (Apple HIG principle)" },
+      { "zh": "长文阅读场景:正文候选字体必须先过长文阅读测试(通则,未证实)", "en": "Long-form reading: any body candidate must pass a long-form reading test first (rule of thumb, unverified)" }
+    ],
+    "avoid": [
+      { "zh": "两种以上字体堆叠——职责分离后仍加第三种字体是方法论明令禁止项(社区共识,未证实)", "en": "Stacking three or more typefaces — adding a third after duties are separated is an explicit methodology violation (community consensus, unverified)" },
+      { "zh": "两个气质相近的字族『伪搭配』——对比不足时读者只感到混乱而非层次(实践共识,未证实)", "en": "Two near-identical voices in a 'fake pairing' — without contrast readers sense mess, not hierarchy (community practice, unverified)" },
+      { "zh": "标题字体拿来排长正文——展示字族的字号谱系不支持小字号阅读", "en": "Using a display family for long body text — display fonts are not designed for small-size reading" }
+    ]
+  },
+  "a11y": {
+    "zh": "层级不得只靠字体族区分——Apple HIG 要求字号/字重/色彩同时参与(调研 01,已核);衬线标题字重 ≤300 时浅底可读性明显下降;大面积衬线正文在低分屏上的小字号辨识度需实测;字体加载失败时回退栈的度量差异可能引起文本重排(配合 font-display-strategy 条目的后备字体思路)。",
+    "en": "Never encode hierarchy in the family alone — Apple HIG requires size/weight/color to participate (research 01, verified); serif headings at ≤300 weight lose legibility on light backgrounds; serif body at small sizes on low-DPI screens needs real testing; metric mismatches in the fallback stack can reflow text (pair with the font-display-strategy entry's fallback thinking)."
+  },
+  "sources": [
+    "https://fonts.google.com/knowledge/choosing_type",
+    "https://developer.apple.com/design/human-interface-guidelines/typography",
+    "https://github.com/vercel/geist-font"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "排版一张编辑风文章卡:标题/正文按选定的搭配策略使用两个字族(或单字族多字重),层级同时由字号、字重与色彩承载,并标注当前策略与回退栈。",
+      "en": "Compose an editorial article card where heading/body follow the chosen pairing strategy (two families, or one family with multiple weights), hierarchy carried by size, weight and color simultaneously, with the current strategy and fallback stack labeled."
+    },
+    "acceptance": [
+      { "zh": "最多两种字体;font-family 以泛型 serif/sans-serif 收尾", "en": "At most two typefaces; font-family lists end with a generic serif/sans-serif" },
+      { "zh": "衬线栈覆盖中文:Georgia, Songti SC, SimSun, serif 一类跨平台列表", "en": "The serif stack covers CJK: a cross-platform list like Georgia, Songti SC, SimSun, serif" },
+      { "zh": "层级不只靠字族:标题与正文同时拉开字号(≥1.5×)与字重", "en": "Hierarchy never rests on family alone: heading and body differ in size (≥1.5×) and weight at once" },
+      { "zh": "单字族模式用真实可变字重(Inter Variable wght),不依赖合成加粗", "en": "Single-family mode uses real variable weights (Inter Variable wght), not synthesized bolding" }
+    ]
+  }
+}
