@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+转场选型的主角不是动画,而是**起止态之间的关系**:demo 用一台迷你设备装两个绝对定位的屏(A 列表 / B 详情),每个模式只决定「谁进、谁出、沿什么方向、要不要持久元素」:
+
+```html
+<div class="device"><!-- overflow:hidden,转场的舞台 -->
+  <div class="screen screen-a">…列表…</div>   <!-- 起始态 -->
+  <div class="scrim"></div>                    <!-- enterexit 专用遮罩 -->
+  <div class="screen screen-b">…详情…</div>   <!-- 目的态 -->
+</div>
+```
+
+关键点:
+
+- 模式是**关系判断**,先于任何动画参数:有持久元素→Container transform;层级前进后退→Forward/backward;同级→Lateral;顶层目的地→Top level;有明确来源方向→Enter/exit;内容加载→Skeleton;
+- Android 侧官方约束:屏内元素(dialog/menu/snackbar)沿出入点的 x/y 轴展开,**避免 scale/z 轴位移**(其暗示层级变化);iOS 统一 scale 进入、淡出退出;
+- demo 的正向(B 承载进入、A 承载退出)与反向(角色互换)都实现了,skeleton 的反向退化为快淡。
+
+## 样式与参数
+
+`pattern` / `duration` 都是 JS 型参数;duration 以 `--pt-dur` 统一下发,曲线固定 Standard `cubic-bezier(0.2, 0, 0, 1)`(Emphasized 的官方 CSS 兜底):
+
+```css
+.screen { position: absolute; inset: 0; }
+
+/* container transform:FAB 位置为原点的展开(持久容器) */
+.screen-b.in-container {
+  transform-origin: calc(100% - 36px) calc(100% - 36px);  /* 对准右下角 FAB */
+  animation: container-in var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both;
+}
+/* forward:新屏自右滑入,旧屏小幅左移+淡出(Android 滑动+淡出,减少位移量) */
+.screen-b.in-forward  { animation: slide-from-right var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both; }
+.screen-a.out-forward { animation: slide-out-forward var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both; }
+/* toplevel:先快速淡出(0.3×)再淡入(0.7×) */
+.screen-a.out-toplevel { animation: fade-out calc(var(--pt-dur) * 0.3) both; }
+.screen-b.in-toplevel  { animation: fade-in calc(var(--pt-dur) * 0.7) both; animation-delay: calc(var(--pt-dur) * 0.3); }
+```
+
+各模式的官方描述与推荐配对(demo 读数条同步显示):container=持久容器连接起止,Emphasized 500ms;forward=Android 滑动+淡出 / iOS 视差,进入 decel 400ms / 退出 accel 200ms(按官方配对表);lateral=成组齐滑无淡出,Standard 300ms;toplevel=先快淡出再淡入、刻意不用持久元素;enterexit=沿来源方向(sheet 自底部、抽屉自侧缘),临时退出官方指定 Emphasized;skeleton=微妙脉动+完成后快速淡入,脉动时长官方未定值。
+
+工程化落地:整页/路由级转场用 View Transitions API(`document.startViewTransition` / 跨文档 `@view-transition`),把上面的动画覆写到 `::view-transition-*` 伪元素上——具体见 view-transitions 条目。
+
+## 动效与交互
+
+- **一按钮双向**:播放按钮按当前落位自动选正向(A→B)或反向(B→A),对应 forward/backward 的「前进/后退」语义;
+- **模式即语义,不能串档**:lateral 掺淡出会暗示层级变化;toplevel 用持久元素会错误建立强关联(官方明确「刻意不用」);dialog 用 scale/z 位移是 Android 侧官方点名的反模式;
+- **Enter/exit 的方向空间模型**:通知自顶部、抽屉自侧缘、sheet/键盘自底部——demo 的 sheet 自底部滑入即此;临时退出「停在屏缘」暗示可召回,所以官方给 Emphasized 而非 accelerate;
+- **skeleton 是两段式**:骨架脉动(不确定进度)→ 内容快速淡入;只做前半段会让内容出现得很突兀;
+- **焦点与状态**:转场前后焦点与滚动状态应交接(浮层类细节见 overlay-entrance 条目);骨架占位先于内容存在,布局不跳(M3 官方动机);
+- **reduced-motion**:reduce 时全部模式直切,状态不丢——动效可取消(HIG)。
+
+模式内部的时长/曲线选型见 m3-duration-tokens 与 easing-pairs 条目;骨架的实现细节见 skeleton-loading 条目。
+
+## 真实产品案例
+
+- **Android 系统前进/后退**:官方描述为滑动+淡出、刻意减少位移量——应用层级导航的标准转场(M3 Transition patterns,调研 04§3.3);
+- **iOS 系统前进/后退**:官方描述为视差转场——背景慢于前景,以速率差表达层级(M3 Transition patterns,调研 04§3.3;滚动侧实现见 parallax 条目);
+- **Container transform 的官方场景**:Card/搜索框/FAB/Sheet 无缝展开为详情页——Material 官方用「关系最强、感知最具表达力」定位它(调研 04§3.3),列表→详情类交互的选型首选。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `pattern` | 选错档不是「难看」而是「语义错」:顶层切换误用 container 会建立假关联,lateral 掺淡出会暗示层级变化 | 模式判据越明确(持久元素?层级?来源方向?),选型越不依赖手感 |
+| `duration` | 转场更从容、方向性更可辨;>500ms 开始拖沓(冻结感),且必须仍 ≤ 官方 600ms 环境转场上限 | 接近直切;200ms 以下方向性读不出来,只剩状态闪变 |
+
+选型口诀:先判关系(持久元素 / 层级 / 同级 / 顶层 / 来源方向 / 加载),再取配对表的时长曲线;同一产品内同一关系恒用同一模式,方向一致性就是空间模型的可靠性。

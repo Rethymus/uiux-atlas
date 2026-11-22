@@ -1,0 +1,56 @@
+## Structure & DOM
+
+The demo is an **oddball memory test**: the grid shows for 2.5s with exactly one oddball → everything masks → click the oddball's position → accuracy tallied per cue:
+
+```html
+<div class="vr-grid">
+  <button class="vr-tile" data-odd="true" data-cue="color"></button> <!-- the oddball -->
+  <button class="vr-tile" data-masked="true"></button>              <!-- after masking all look alike -->
+  <!-- ×n -->
+</div>
+```
+
+Key points:
+
+- During display only the oddball carries `data-odd="true"`; after masking all tiles look identical — **position info can only come from memory**, which is what the isolation effect tests;
+- Three switchable cues: color (accent fill) / shape (circle vs square) / motion (a 1.4s slow pulse);
+- Accuracy is tallied per cue — comparing the effect's strength across channels is the demo's core readout.
+
+## Styling & Parameters
+
+```css
+.vr-tile[data-odd="true"][data-cue="motion"] { animation: vr-pulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .vr-tile[data-odd="true"][data-cue="motion"] {
+    animation: none;
+    outline: 3px solid oklch(0.58 0.17 300); /* motion emphasis degrades to outline emphasis */
+  }
+}
+```
+
+- `tiles` defaults to **12**, `cue` to color; SHOW_MS = 2500 (a demo choice, not a law figure);
+- A 1.4s pulse is ~0.7 flashes/sec, far under WCAG SC 2.3.1's 3-per-second flash threshold; under reduced-motion it degrades to a 3px outline — **the signal never vanishes, it changes channels**;
+- The shape cue deliberately contrasts circle vs rounded square with no color dependency — 07 §30 "don't rely on color alone".
+
+## Motion & Interaction
+
+- Show/mask are discrete switches with no transition — "what you saw" shouldn't be blurred by animation;
+- Answering shows ✔/✕ instantly; the next round auto-starts after 1.2s; wrong answers never interrupt the flow;
+- The motion cue animates only `transform: scale` (compositor-friendly); the reduced-motion degradation path is declared right in the CSS;
+- Each round places the oddball randomly (Math.random — a demo randomness source, not security).
+
+## Real-world examples
+
+- **One Primary per screen**: IBM Carbon mandates a single primary per screen (research 07 §2) — the component-level form of 07 §30 "use restraint, avoid emphases competing"; the primary button's accent block is the page's one deliberate oddball;
+- **Ad labeling on Google search results**: ad cards differ subtly in shape and background from organic results while staying restrained — the flip side of the Laws of UX caveat "don't get mistaken for ads": ads themselves exploit the isolation effect to win memory;
+- **Required-field markers in forms**: a red asterisk plus the word "required" (dual-channel) makes required fields scannable oddballs in a gray form (editorial generalization echoing 07 §30 "never color alone").
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `tiles` | at 16 tiles background similarity is higher, the oddball stands out more, but localization gets harder | 6 tiles make the task trivial and the readout insensitive |
+| `cue` | motion is the most eye-catching cue but hostile to motion-sensitive users (auto-degrades under reduced motion) | color depends on color vision; shape is the color-safe channel — the per-cue stats are the teaching conclusion |
+| SHOW_MS (fixed) | 2.5s is the "see clearly, recall shakily" teaching window; longer would mask individual differences | — |
+
+The lesson: an oddball's value = scarcity × channel count; **allow only one oddball at a time** — when several things "differ", none does. Negative oddballs (errors, warnings) are remembered harder still, so spend them even more sparingly.

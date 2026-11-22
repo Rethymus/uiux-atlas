@@ -1,0 +1,116 @@
+{
+  "name": "Classic Brutalism",
+  "nameZh": "经典粗野主义",
+  "aliases": ["经典粗野主义", "Web Brutalism", "Classic Brutalism"],
+  "category": "styles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "默认、未加修饰的 HTML:系统字体、黑白硬对比、1–2px 黑边框、浏览器默认链接蓝、零阴影零圆角——「诚实材料」的心态而非视觉配方。",
+    "en": "Default, unstyled HTML as a style: system fonts, hard black/white contrast, 1–2px black borders, the browser default link blue, zero shadows and zero radius — a mindset of 'honest materials', not a visual recipe."
+  },
+  "origin": {
+    "zh": "源自战后建筑 béton brut(素混凝土),1952 年柯布西耶马赛公寓为建筑起点;2014 年 Pascal Deville 的 brutalistwebsites.com 将其「法典化」为独立数字风格——「对轻飘、乐观、讨好式现代网页设计的年轻代反叛」;David Bryant Copeland 宣言:「诚实材料:内容优先、链接像链接、性能即设计」(调研 03§5;补研 11§6)。",
+    "en": "Born from postwar béton brut architecture — Corbusier's Unité d'habitation (1952) as the architectural start; brutalistwebsites.com (Pascal Deville, 2014) codified it as a standalone digital style — 'a younger generation's rebellion against the light, optimistic, pleasing modern web'; David Bryant Copeland's manifesto: 'honest materials: content first, links look like links, performance is design' (research 03 §5; study 11 §6)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "borderWidth",
+      "unit": "px",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "cssVar": "--cb-border",
+      "effect": {
+        "zh": "实心黑边框宽度,经 --cb-border 驱动全部容器。调研 03§5 记载区间 1–2px,默认取上限 2px;对照新粗野主义的 2–4px 黑描边(本库 neo-brutalism 条目)——更细的边框是经典与 neo 的第一肉眼差异。",
+        "en": "Solid black border width, driving all containers via --cb-border. Research 03 §5 records a 1–2px range, default at the 2px top; compare neo-brutalism's 2–4px outlines (see our neo-brutalism entry) — the thinner border is the first visible split between classic and neo."
+      }
+    },
+    {
+      "type": "color",
+      "name": "linkColor",
+      "format": "hex",
+      "default": "#0000EE",
+      "cssVar": "--cb-link",
+      "effect": {
+        "zh": "链接色,默认即浏览器默认链接蓝 #0000EE(调研 03§5 逐字记载)。「链接像链接」:下划线永远保留,链接色就是浏览器默认色——不装饰、不品牌化,这正是「诚实材料」宣言的直接执行。",
+        "en": "Link color, defaulting to the browser default link blue #0000EE (verbatim from research 03 §5). 'Links look like links': underlines stay and the color stays the browser's own — undecorated, unbranded, the manifesto's 'honest materials' executed literally."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "typeface",
+      "options": [
+        { "value": "system", "label": { "zh": "系统默认字", "en": "System default" } },
+        { "value": "mono", "label": { "zh": "等宽栈", "en": "Monospace" } }
+      ],
+      "default": "system",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-typeface)。system=系统默认衬线(Times New Roman 系,补研 11§6 判据「系统默认字体」);mono=等宽栈 ui-monospace/\"JetBrains Mono\"/Courier New(调研 03§5 记载)。两者都是经典粗野主义的合法字面——共同点是「不加载字体文件」。",
+        "en": "JS-type param (demo subscribes and toggles data-typeface). system = the system default serif (Times New Roman lineage; study 11 §6 criterion 'system default fonts'); mono = the monospace stack ui-monospace/\"JetBrains Mono\"/Courier New (research 03 §5). Both are legitimate classic-brutalist faces — the common point is loading no font files at all."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "hoverInvert",
+      "options": [
+        { "value": "on", "label": { "zh": "硬反色", "en": "Hard invert" } },
+        { "value": "off", "label": { "zh": "仅下划线", "en": "Underline only" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-hover-invert)。on=hover 硬反色(黑↔白)零过渡(调研 03§5 记载);off=hover 仅补下划线,用于对照「反色不是唯一合法反馈」。无论哪档,transition 都保持 0——经典粗野主义不用缓动。",
+        "en": "JS-type param (demo subscribes and toggles data-hover-invert). on = hard hover inversion (black↔white) with zero transition (research 03 §5); off = hover adds only an underline, showing inversion is not the only legitimate feedback. Either way transitions stay at 0 — classic brutalism uses no easing."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "零新特性依赖:系统字体、链接下划线、border、ul/table 全是 Web 元老特性,所有浏览器一致渲染;不存在任何 @supports 分支。",
+      "en": "No modern-feature dependency: system fonts, link underlines, borders, ul/table are all Web-antique features rendered identically everywhere; there is no @supports branch to write."
+    }
+  },
+  "fallback": {
+    "zh": "该风格的 fallback 就是它自己:把 CSS 整个删掉,页面仍完全可读、可导航、可操作——「默认、未加修饰的 HTML」意味着浏览器默认渲染即是兜底。这也是它「性能即设计」宣言的来源:无字体下载、无图片装饰、无 JS 依赖。",
+    "en": "This style's fallback is itself: delete all the CSS and the page remains fully readable, navigable and operable — 'default, unstyled HTML' means the browser's default rendering IS the fallback. That is where its 'performance is design' manifesto comes from: no font downloads, no decorative images, no JS dependency."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "功能型内容站:文档、论坛、目录、新闻聚合——Craigslist/Hacker News 一脉的「常青用法」(调研:功能型粗野主义常青)", "en": "Functional content sites: docs, forums, directories, aggregators — the evergreen Craigslist/Hacker News lineage (research: functional brutalism endures)" },
+      { "zh": "宣言式作品集与杂志专题——用「反装饰」本身做表达,2014 画廊一脉的风格型用法", "en": "Manifesto portfolios and magazine features — anti-decoration as the message, the style-driven 2014 gallery lineage" },
+      { "zh": "原型与 MVP——零样式预算下用浏览器默认渲染先上线", "en": "Prototypes and MVPs — ship first on the browser's default rendering with a zero style budget" },
+      { "zh": "性能极限场景:弱网、低功耗设备——无字体/无装饰图片就是最快的首屏", "en": "Performance-critical contexts: slow networks, low-power devices — no fonts and no decorative images is the fastest first paint there is" }
+    ],
+    "avoid": [
+      { "zh": "消费级品牌站——「未抛光」与品牌信任感直接冲突", "en": "Consumer brand sites — 'unpolished' clashes directly with brand trust" },
+      { "zh": "数据可视化与富交互应用——黑白灰单色撑不起多维信息编码", "en": "Data visualization and rich apps — a black/white/gray palette cannot carry multi-dimensional encoding" },
+      { "zh": "把「风格型粗野」当长期皮肤:调研明示其易过时(2026-03 需求峰值 3.6% 后回落)", "en": "Treating style-driven brutalism as a long-term skin: research shows it dates fast (demand peaked at 3.6% in March 2026, then fell)" },
+      { "zh": "密集表单与支付流——默认渲染的控件外观在品牌一致性上会失守", "en": "Dense forms and checkout flows — default-styled controls leak brand consistency" }
+    ]
+  },
+  "a11y": {
+    "zh": "黑白硬对比天然过线:黑字白底即 WCAG 对比上限 21:1,任何文字色核对都轻松过 SC 1.4.3。链接永远保留下划线(「链接像链接」=可及性线索不剥除);焦点环使用浏览器默认 outline、不去除——裸焦点环本身就是本风格的一部分。hover 反色不承载信息、纯装饰,键盘路径不依赖它。",
+    "en": "Hard black/white contrast clears thresholds by construction: black on white is WCAG's 21:1 ceiling, so SC 1.4.3 passes without tuning. Links always keep their underline ('links look like links' = the affordance is never stripped); the focus ring is the browser's default outline, unremoved — the bare focus ring is part of the style. Hover inversion carries no information, it is pure decoration, and no keyboard path depends on it."
+  },
+  "sources": [
+    "https://superdesign.dev/styles/brutalism",
+    "https://brutalistwebsites.com",
+    "https://design-styles.enlighten-media.net/pages/brutalism/",
+    "https://99designs.com/blog/design-trends/brutalism/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一页经典粗野主义站点:系统默认字体、黑白硬对比、1–2px 实心黑边框、浏览器默认链接蓝 + 下划线、零阴影零圆角零过渡,hover 硬反色——像 1990s 裸 HTML 被有意装裱。",
+      "en": "Replicate a classic-brutalist page: system default fonts, hard black/white contrast, 1–2px solid black borders, the browser default link blue with underlines, zero shadows/radius/transitions, hard hover inversion — a 1990s bare-HTML page framed on purpose."
+    },
+    "acceptance": [
+      { "zh": "字体只用系统栈(衬线默认或等宽),不加载任何 web font", "en": "Fonts come only from system stacks (default serif or monospace); no web font loads" },
+      { "zh": "border-radius: 0、box-shadow: none、transition: none 三件套全部成立", "en": "border-radius: 0, box-shadow: none and transition: none all hold across the page" },
+      { "zh": "链接为浏览器默认蓝 #0000EE 且保留下划线", "en": "Links are the browser default blue #0000EE with underlines intact" },
+      { "zh": "容器边框为 1–2px 实心黑,直角", "en": "Containers use 1–2px solid black borders with square corners" },
+      { "zh": "语义结构裸露:h1/p/a/ul/table 直接承载内容,删除 CSS 后页面仍完全可读", "en": "Semantic structure is bare: h1/p/a/ul/table carry the content directly; the page stays fully readable with CSS removed" }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+## 结构与 DOM
+
+演示是**三个键盘场景 + skip link + 按键日志**的组合:
+
+```html
+<button class="kn-skip">跳到主内容 Skip to main content</button>
+<div class="kn-scene" tabindex="-1">
+  <!-- toolbar:role="toolbar" + roving tabindex -->
+  <!-- tabs:role="tablist"/"tab"/"tabpanel" -->
+  <!-- dialog 打开按钮 -->
+</div>
+<span class="kn-live" aria-live="polite"></span>
+```
+
+关键点:
+
+- **skip link**:视觉上藏在舞台顶部外(`translate: -200%`),获得键盘焦点时滑入——「Tab 第一跳即可用」的规范形态(WebAIM:长页面要有 skip link);
+- **toolbar**:`role="toolbar"` + roving tabindex(活动项 `tabindex=0`、其余 `-1`),Tab 只进一次,方向键在内部移动(07§35 的 Tab/方向键分工);
+- **tabs**:面板已预载 → 方向键切换时**选中随焦点**(07§35 给出的唯一适用条件);`aria-selected` 填充与焦点环是两种视觉,focus ≠ selection;
+- **dialog**:`aria-modal="true"` 困焦(双元素 Tab/Shift+Tab 循环),Esc 关闭并把焦点归还给「打开」按钮——07§36 键位表全套。
+
+## 样式与参数
+
+```css
+.demo-stage { --kn-ring-width: 3px; }
+.kn-skip:focus-visible { translate: -50% 0; }      /* 获焦即现 */
+.kn-field[data-ring="strong"] …:focus-visible {
+  outline: var(--kn-ring-width) solid oklch(0.45 0.16 260);
+  outline-offset: 2px;
+}
+```
+
+- `ring` 默认 **native**:不覆盖浏览器默认 outline(07§35 原文:默认 outline 轻易不要覆盖);`strong` 档演示自定义环的合规形态——实线、≥3:1 非文本对比(SC 1.4.11);
+- `ringWidth` 默认 **3px**(cssVar `--kn-ring-width`);
+- 场景切换(scene 参数)会重置该场景的内部状态,防止跨场景的状态串扰。
+
+## 动效与交互
+
+- skip link 滑入用 0.15s `translate` 过渡——它自己就是「键盘优先」的动效示范;reduced-motion 下过渡无伤大雅(位置变化即信息);
+- 按键日志把「按了什么 → 发生了什么」写进右侧面板,同时经 `aria-live="polite"` 播报——**焦点移动本身对读屏是静默的,日志补上了叙事**;
+- dialog 打开时焦点进对话框首个按钮,关闭时 `openerRef.focus()` 归还——07§35「焦点必须持久存在」的正反两面;
+- 全场景可纯键盘走完;Tab 顺序:skip link → 场景控件 → (对话框打开时困在框内)。
+
+## 真实产品案例
+
+- **GitHub 的键盘优先界面**:仓库内按 `.` 直接进入 web 版 VS Code、`t` 打开文件查找器——单键快捷键 + 命令面板是键盘导航的大成形态(编辑性泛例,呼应 07§21 启发式⑦「给专家快捷键」);
+- **组件库的 Dialog 实现**(如 Radix/shadcn 系):初态 scale + fade 的 overlay 入场、关闭后焦点归还触发者、Esc 释放——motion/overlay-entrance 条目取证的同族实现,键盘行为按 APG Dialog 模式落地(07§34/§35);
+- **WebAIM 的移动端提醒**:「要在外接键盘的移动设备上实测」——平板 + 外接键盘是键盘导航最容易被忽略的真实环境(07§36 原文)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `scene` | dialog:困焦/归还的完整链路;tabs:focus≠selection 双视觉;toolbar:roving 最小实现 | — |
+| `ring` | strong:3px+ 高对比实线,复杂背景上依旧醒目(合规的自定义环) | native:浏览器默认 outline——「什么都不做」就是大多数场景的正确答案 |
+| `ringWidth` | 8px 教学夸张,焦点位置一目了然 | 2px 时在密集 UI 里容易与边框混淆——恰是 SC 1.4.11 要 3:1 的原因 |
+
+经验结论:键盘导航的工程清单只有六条——可见(焦点环)、可达(不删 tabindex、`<a>` 带 href)、有序(Tab 顺序=阅读顺序)、不丢(关闭即归还)、可逃(Esc 释放困焦)、可预测(加载不抢焦点);六条全过,SC 2.1.1/2.1.2/2.4.7/2.4.3 就在射程内。

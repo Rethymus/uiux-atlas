@@ -1,0 +1,91 @@
+{
+  "name": "position: sticky",
+  "nameZh": "粘性布局 Sticky",
+  "aliases": ["position-sticky", "粘滞定位", "吸顶", "粘滞区域"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "元素随容器滚动,触达最近滚动祖先的偏移阈值后停留——position: sticky; top: 20px; 不脱离文档流,一行声明实现吸顶表头与粘滞侧栏。",
+    "en": "The element scrolls with its container, then sticks once it reaches the offset threshold of the nearest scrolling ancestor — position: sticky; top: 20px; never leaves document flow, and one line buys sticky table headers and sidebars."
+  },
+  "origin": {
+    "zh": "出自 CSS Positioned Layout Module 的 sticky 定位:`position: sticky; top: 20px;` —— 元素随容器滚动,直到触达最近滚动祖先的偏移阈值后停留,不脱离文档流;MDN 标注 Baseline Widely available(自 2015-07 起);MDN Layout Cookbook 收录 Sticky footers(内容不足时页脚贴底)与 Split navigation 配方(调研 05§7)。",
+    "en": "From the CSS Positioned Layout Module's sticky positioning: position: sticky; top: 20px; — the element scrolls with its container until it hits the offset threshold of the nearest scrolling ancestor and stays, without leaving document flow; MDN marks it Baseline Widely available (since 2015-07); the MDN Layout Cookbook collects the Sticky footers (footer pinned when content runs short) and Split navigation recipes (research 05 §7)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "top",
+      "unit": "px",
+      "min": 0,
+      "max": 96,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--sticky-top",
+      "effect": {
+        "zh": "吸顶偏移阈值(CSS 型,注入 --sticky-top)。默认 20px 取自调研 05§7 记载的示例 position: sticky; top: 20px; —— 元素滚到距滚动容器顶部 20px 处停住;0px 是全局导航的常见取值方向,留出阈值可以叠出层叠卡片效果。",
+        "en": "The sticking offset threshold (CSS-type, injected as --sticky-top). Default 20px follows the example recorded in research 05 §7 — position: sticky; top: 20px; the element parks 20px from the scroll container's top; 0px heads toward global-nav usage, while reserving a threshold stacks cards on top of each other."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "trap",
+      "options": [
+        { "value": "off", "label": { "zh": "无陷阱(正常 sticky)", "en": "no trap (sticky works)" } },
+        { "value": "on", "label": { "zh": "祖先 overflow: hidden(陷阱)", "en": "ancestor overflow: hidden (trap)" } }
+      ],
+      "default": "off",
+      "effect": {
+        "zh": "JS 型参数(demo 切换 data-trap,给滚动内容包一层 overflow: hidden 祖先)。sticky 只对『最近滚动祖先』生效——中间任何祖先 overflow 非 visible 都会成为它认错的滚动容器,吸顶随之失效。这是 sticky 最常见的生产事故,不是兼容性 bug。",
+        "en": "JS-type param (the demo toggles data-trap, wrapping the scrolled content in an overflow: hidden ancestor). sticky only answers to the 'nearest scrolling ancestor' — any intermediate ancestor with overflow other than visible becomes a mistaken scroll container and breaks sticking. This is sticky's most common production accident, not a compatibility bug."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Baseline Widely available 自 2015-07(MDN position,调研 05§7)——三引擎全线可用;失效风险来自布局结构(祖先 overflow / 父容器高度),而非兼容性。",
+      "en": "Baseline Widely available since 2015-07 (MDN position, research 05 §7) — all three engines ship it; the real risk is structural (ancestor overflow / parent height), not compatibility."
+    },
+    "baseline": "Baseline Widely available (2015-07)"
+  },
+  "fallback": {
+    "zh": "无需兼容性回退;不支持的环境(极老浏览器)元素按普通流滚动,内容仍可达。真正要防的是结构性失效:① 祖先链上任何 overflow: hidden/auto/scroll 都会劫持 sticky(见 demo 陷阱档);② sticky 元素的父容器高度不足时,元素随父容器一起滚走——粘滞范围以父容器为界。",
+    "en": "No compatibility fallback needed; on ancient engines the element simply scrolls in normal flow and content stays reachable. What actually needs guarding is structural failure: (1) any ancestor with overflow: hidden/auto/scroll hijacks the sticky element (see the demo's trap mode); (2) a too-short parent container carries the element away — the sticky range is bounded by its parent."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长列表/长表单的分组标题吸顶——滚到哪组,哪组的标题停在阈值处", "en": "Group headers on long lists/forms — the current group's header parks at the threshold while you scroll" },
+      { "zh": "数据表格的表头吸顶,长表滚动时列名始终可见", "en": "Sticky table headers keeping column names visible in long tables" },
+      { "zh": "文档站的左侧目录与全局导航吸顶(MDN Cookbook 的 Split navigation 同族用法,调研 05§7)", "en": "Doc-site sidebars and global navs (kin to MDN Cookbook's Split navigation, research 05 §7)" },
+      { "zh": "内容不足时页脚贴底的 Sticky footer 配方(Grid/Flexbox 实现,MDN Cookbook,调研 05§7)", "en": "Sticky footers pinning to the bottom on short pages (Grid/Flexbox recipe, MDN Cookbook, research 05 §7)" }
+    ],
+    "avoid": [
+      { "zh": "祖先链上有 overflow: hidden/auto/scroll 的布局——sticky 被劫持失效,先修结构再用(demo 陷阱档即此形态)", "en": "Layouts with any overflow: hidden/auto/scroll ancestor — sticky gets hijacked; fix the structure first (the demo's trap mode shows exactly this)" },
+      { "zh": "粘滞元素低于其父容器末尾——父容器滚完 sticky 就跟走了,粘滞范围以父容器为界", "en": "Sticky elements near their parent's end — once the parent scrolls past, the element goes with it; the parent bounds the sticky range" },
+      { "zh": "大面积吸顶层遮挡内容又不提供收起方式——遮挡是布局决策,不是默认正确", "en": "Large sticky layers covering content with no way to dismiss — overlaying is a layout decision, not a default" },
+      { "zh": "同一视口堆叠多个 sticky 层却算不清 z-index 与阈值——阈值设计先画图再写码", "en": "Stacking many sticky layers without a worked-out z-index/threshold plan — design the thresholds on paper before coding" }
+    ]
+  },
+  "a11y": {
+    "zh": "sticky 只改视觉位置,不脱离文档流——DOM 顺序与读屏顺序不变;吸顶元素不得遮挡获得焦点的控件:键盘 Tab 到被吸顶遮挡的元素时,浏览器会把焦点元素滚入视口,但吸顶层与内容重叠区仍需人工核对;吸顶工具条上的控件保持可达;粘滞状态本身不承载信息,不得只靠『停在顶部』传达分组语义(分组标题文本才是信息载体)。",
+    "en": "sticky changes visual position only and never leaves document flow — DOM and screen-reader order are unchanged; a sticky layer must not cover focused controls: browsers scroll focused elements into view on Tab, but overlap zones between the sticky layer and content still need manual checking; controls on sticky toolbars stay reachable; the stuck state itself carries no information — never let 'parks at the top' be the only carrier of group semantics (the header text is the carrier)."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/position",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻 sticky 吸顶分组列表:滚动容器内四个分组,各组标题 position: sticky; top: Npx 吸顶停留,滚动位置实时显示;并提供祖先 overflow: hidden 的陷阱对照档演示 sticky 失效。",
+      "en": "Replicate a sticky grouped list: four groups inside a scroll container, each header sticking at position: sticky; top: Npx with live scroll readout; plus an ancestor overflow: hidden trap mode demonstrating sticky failure."
+    },
+    "acceptance": [
+      { "zh": "position: sticky; top: 使用参数快照值(经 CSS 变量注入)", "en": "position: sticky; top: uses the parameter snapshot value (injected via CSS variable)" },
+      { "zh": "sticky 元素不脱离文档流:后续内容不被上移遮挡,占位完整", "en": "Sticky elements stay in flow: following content is not shifted up or covered, spacing intact" },
+      { "zh": "陷阱档在滚动内容外包一层 overflow: hidden 祖先,吸顶失效可见", "en": "Trap mode wraps the scrolled content in an overflow: hidden ancestor with visible sticky failure" },
+      { "zh": "吸顶状态变化通过真实滚动监听驱动,不用定时器伪造", "en": "Stuck-state changes are driven by a real scroll listener, never faked with timers" },
+      { "zh": "吸顶元素带背景实底,滚动内容从其下方穿过时文字不穿透重叠", "en": "Sticky elements carry a solid background so scrolled content never shows through the overlap" }
+    ]
+  }
+}

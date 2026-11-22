@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+两层结构:**滚动容器**(overflow 可滚的祖先)+ **粘滞元素**(声明 sticky 的标题/导航/侧栏)。粘滞元素不脱离文档流,后续内容不被上移。
+
+```html
+<div class="scroll-box">          <!-- 最近滚动祖先:粘滞范围的参照系 -->
+  <section>
+    <h4 class="sticky-head">§1 分组标题</h4>  <!-- position: sticky -->
+    <p>…</p><p>…</p>
+  </section>
+  <section>…</section>
+</div>
+```
+
+关键点:
+
+- `position: sticky; top: 20px;` —— 元素随容器滚动,触达**最近滚动祖先**的偏移阈值后停留;不脱离文档流(调研 05§7);
+- 粘滞范围以**父容器**为界:父容器滚完,sticky 元素跟着走;
+- sticky 只认「最近滚动祖先」——祖先链上任何 `overflow: hidden/auto/scroll` 都会劫持它(见 demo 陷阱档);
+- Baseline Widely available 自 2015-07(MDN position,调研 05§7)。
+
+## 样式与参数
+
+两个参数:top 为 CSS 型(--sticky-top),trap 为 JS 型(data-trap 切换陷阱包装层):
+
+```css
+.scroll-box {
+  height: 300px;
+  overflow-y: auto;          /* 最近滚动祖先 */
+}
+.sticky-head {
+  position: sticky;
+  top: var(--sticky-top);    /* 20px,调研 05§7 示例值 */
+  background: <实底>;         /* 必须实底,否则内容从下方穿透 */
+  transition: box-shadow 0.2s ease;
+}
+.sticky-head[data-stuck="true"] { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+
+/* 陷阱档:滚动内容与吸顶标题之间插入 overflow 祖先 → sticky 失效 */
+.trap { overflow: hidden; }
+```
+
+数值出处:`top: 20px` 为调研 05§7 记载的示例值;Baseline 2015-07(MDN position,调研 05§7);吸顶阴影与实底为演示层样式。
+
+## 动效与交互
+
+粘滞是**状态变化**,不是动画:
+
+- 元素「随流滚动 → 触阈值停留」瞬时切换;demo 用真实滚动监听驱动状态徽标(标题矩形与容器顶部距离 ≤ 阈值即 stuck),不用定时器伪造;
+- 吸顶瞬间阴影加深(0.2s box-shadow 过渡)提示状态;`prefers-reduced-motion` 下关闭过渡;
+- 「回到顶部」按钮用瞬时滚动(`scrollTo` 默认 behavior),不制造无谓平滑动画;
+- 拖动 top 滑杆实时改变阈值:0px 贴顶(全局导航方向),值越大标题停得越低。
+
+## 真实产品案例
+
+- **MDN Layout Cookbook** —— 收录 Sticky footers(内容不足时页脚贴底,Grid/Flexbox 实现)与 Split navigation 配方(调研 05§7)。
+- **长列表分组标题吸顶** —— iOS 分组列表范式的 Web 同源实现:滚到哪组,哪组标题停在阈值处(编辑性内容)。
+- **数据表格表头吸顶** —— 长表滚动时列名始终可见,是后台产品的普遍用法(编辑性内容)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `top` | 标题停在更低处:阈值以上留出更大观察窗,可叠出层叠卡片效果;96px 时吸顶窗占容器近三分之一 | 趋向贴顶:0px 即全局导航形态;多层吸顶时阈值递增(0/48/96px…)才能各层都可见 |
+| `trap` | on:overflow 祖先劫持 sticky,标题随内容滚走、徽标恒显「未吸顶」——生产事故可视化 | off:正常 sticky,标题在阈值处停留,阴影提示状态 |
+
+经验要点:粘滞范围 = 父容器;吸顶元素必须带实底背景;祖先链保持 overflow: visible 直到滚动容器为止;多层吸顶的阈值与 z-index 先画层级图再写码。

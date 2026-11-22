@@ -1,0 +1,60 @@
+## 结构与 DOM
+
+无特殊结构——`text-wrap` 是普通 CSS 属性,直接声明在标题与正文元素上:
+
+```html
+<h2 class="headline">标题会折成两三行,末行不再孤零零</h2>
+<p class="body">长正文段落……</p>
+```
+
+```css
+.headline { text-wrap: balance; } /* 短文本:均衡各行(≤6 行,Chromium) */
+.body     { text-wrap: pretty; }  /* 长正文:防孤行算法 */
+```
+
+关键点:
+
+- `text-wrap` 是简写属性 = `text-wrap-mode`(wrap/nowrap)+ `text-wrap-style`(auto/balance/stable/pretty 等)(MDN);
+- `balance` **只对行数有限的文本块生效**——标题、按钮、引语;套在长正文上行数超限(Chromium ≤6 行、Firefox ≤10 行)即失效;
+- `pretty` 才是长正文的工具:更慢但更优的算法,目标是把孤行(orphan)减到最少。
+
+## 样式与参数
+
+三个参数经 `--tw-*` 变量注入:
+
+```css
+.demo h2 { text-wrap: var(--tw-heading); max-width: calc(var(--tw-width) * 1ch); }
+.demo p  { text-wrap: var(--tw-body);   max-width: calc(var(--tw-width) * 1ch); }
+```
+
+数值出处(调研 11§2,MDN/BCD 一手核对):
+
+- 分值支持:**balance** = Chrome/Edge 114、Firefox 121、Safari 17.5;**pretty** = Chrome/Edge 117、Safari 26(WWDC25 预告「even out the ragged edge… prevent short last lines」),**Firefox 未支持**;
+- 简写属性整体 Baseline 2024-03 起广泛可用;
+- 行数上限:balance 在 Chromium 仅作用于 ≤6 行、Firefox ≤10 行(MDN 原文);
+- 官方用法指引:短文本(标题、引语)用 balance;长正文用 pretty(有性能代价,仅在排版优于速度时使用);可编辑内容用 stable。
+
+## 动效与交互
+
+换行策略本身无动效,交互在于「收窄逼出现象」:
+
+- demo 把标题拆成逐字符 span 按 `offsetTop` 分组,实时显示每一行的字符数与末行占比——balance 下各行趋同,auto 下末行常是「孤字」;
+- 拖窄 width 参数(24–40ch)逼出多行标题与孤行,对比 balance / pretty / stable / auto 四档的实际换行差异;
+- 顶部徽标用 `CSS.supports("text-wrap", "…")` 探测**本浏览器**对 balance 与 pretty 的真实支持态,Firefox 里会看到 pretty「未支持(回退 auto)」的如实标注;
+- 全部变化为即时重排,无动画,`prefers-reduced-motion` 无需处理。
+
+## 真实产品案例
+
+- **Tailwind CSS**:v3.4 起内置 `text-balance` 与 `text-pretty` 两个工具类,分别映射 `text-wrap: balance/pretty`——换行策略被收进主流框架的默认词汇表,新项目一行类名即可启用。
+- **Chrome for Developers / web.dev 官方教程**:Chrome 114 发布 balance 时,官方文章亲手演示「标题 balance、正文 pretty」的推荐组合,并把「可编辑内容用 stable」写进用法指引——这组搭配自此成为社区默认实践。
+- **Firefox / Safari 的跟进节奏**:Firefox 121 补齐 balance、Safari 26 才补 pretty(WebKit 在 WWDC25 预告中明确其防孤行定位)——三大引擎对「标题用 balance、正文用 pretty」的收敛,说明这套分工已是跨浏览器的排版共识。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `headingWrap` | balance 时标题各行字数趋同,末行不再孤字;超 6 行(Chromium)失效回 auto | auto 恢复贪心断行:首行尽量满、末行孤字 |
+| `bodyWrap` | pretty 重新分配断点避免末行一两个词;长文计算开销可感知 | auto 断行最快,但段落末行孤词常见 |
+| `width` | 超过 ~60ch 后标题单行放得下,balance 无事可做 | 低于 24ch 每行只容几个字,任何算法都救不了(容器太窄) |
+
+经验结论:balance 与 pretty 不是互斥竞品,而是「短文本/长文本」的分工——标题 balance、正文 pretty、可编辑 stable,一行都不多写。

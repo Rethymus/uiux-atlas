@@ -1,0 +1,56 @@
+## 结构与 DOM
+
+演示是**同一任务、两种范式**的对照面板:任务固定为「打开夜间模式 + 音量调到最小」,面板由 `variant` 参数切换:
+
+```html
+<div class="jk-panel" data-variant="familiar">
+  <div class="jk-row">
+    <label for="jk-night">夜间模式</label>
+    <button role="switch" aria-checked="false" />
+  </div>
+  <input type="range" id="jk-vol" />
+</div>
+```
+
+关键点:
+
+- familiar 范式:标签在左、`role="switch"` 开关在行右、音量滑块左小右大、主按钮右下——全是通行心智模型;
+- alien 反范式:夜间模式藏成无标签 🌙 图标、滑块 `direction: rtl` 反向(右端才是静音)、主按钮降级成角落灰字 `↩ some-text`;
+- 反范式只是**演示反面教材**:每个控件仍有 `aria-label`、仍可键盘操作——可达性底线不让步,牺牲的只是「熟悉感」。
+
+## 样式与参数
+
+```tsx
+// variant / hint 是 JS 型参数:demo 订阅 store 驱动
+const [variant, setVariant] = useState(() => store.get("variant") as string);
+useEffect(() => store.subscribe(() => {
+  setVariant(store.get("variant") as string);
+  setHint(store.get("hint") as string);
+}), [store]);
+```
+
+- 完成判定:夜间开 && 音量最小(familiar 里 `volume===0`,alien 反向滑块里 `volume===100`)——两个范式的「正确操作」不同,正是范式差异的体现;
+- 计时从「开始计时」到判定完成;误触只统计反范式里与任务无关的控件(如 `↩ some-text`);
+- 「隐藏提示」模式用于公平实验:没有「点这里」的引导时,范式差距进一步拉大。
+
+## 动效与交互
+
+- 开关把手用 0.15s `translate` 过渡——熟悉的开关语义也是「动效语义」的一部分;
+- 完成判定瞬间,任务区显示 `✔ 用时 x.xs`;两种范式各自保留最佳成绩在右侧面板并列对比;
+- 切换 `variant` 会重置本轮(两种范式的音量语义不同,混跑会污染计时);
+- 无循环动画,reduced-motion 下无差异(过渡极短且非必要信息载体)。
+
+## 真实产品案例
+
+- **YouTube 2017 改版**:把用了多年的布局换成全新结构,遭遇大量反弹后官方短暂提供「回到旧版」入口,随后数月内逐步回调部分改动——lawsofux 记载的教科书案例(调研 07§28);
+- **iOS 与 Android 的底部标签栏**:两者具体控件不同,但「高频导航沉底、5 个左右、图标+文字」是共同范式;任何 App 违反它(把「我的」藏进左上角头像)都会被用户用脚投票(编辑性泛例,07§28 的「期望迁移」结论);
+- **NN/g 十大启发式第 4 条「一致性与标准」**:Nielsen 把「遵循平台惯例」列为独立启发式,Jakob 定律正是它的心理学注脚——产品内一致 + 与平台一致(调研 07§21/§28)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `variant` | alien:无标签图标 + 反向滑块 + 降级主按钮,首次完成耗时通常数倍于 familiar | familiar:通行范式,提示隐藏时也能凭心智模型快速完成 |
+| `hint` | hide:公平对比模式——没有引导时,「猜」的成本全部计入计时 | show:引导抵消了范式差异的一部分,适合先熟悉规则 |
+
+经验结论:反范式不是「不能完成」,而是「完成得更慢、更挫败」——Jakob 定律惩罚的不是能力,是迁移成本;改版的正确姿势是给退路(YouTube 2017 的「回到旧版」),而不是一次性抛弃所有熟悉线索。

@@ -1,0 +1,100 @@
+{
+  "name": "Law of Similarity & Closure",
+  "nameZh": "格式塔·相似与闭合",
+  "aliases": ["相似原则", "闭合原则", "Similarity", "Closure"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "视觉相似(颜色/形状/大小/朝向)的元素被感知为同组;不完整的轮廓会被脑补成完整图形。相似的元素承担相似的功能,闭合让残缺的图形仍然可读。",
+    "en": "Visually similar elements (color/shape/size/orientation) group together; incomplete outlines are completed into whole figures. Similar look implies similar function; closure keeps broken shapes readable."
+  },
+  "origin": {
+    "zh": "格式塔分组原则的两支:相似原则——视觉相似的元素被感知为同组,指导「用颜色与形状标记同功能元素,确保链接与导航与普通文本可区分」(调研 07§33);闭合原则——共享明确轮廓的趋势,格式塔分组五类(Proximity/Similarity/Continuity/Closure/Connectedness)之一(07§31)。",
+    "en": "Two branches of Gestalt grouping: Similarity — visually similar elements are perceived as one group; guidance: mark same-function elements with color and shape, keep links and navigation distinguishable from plain text (research 07 §33); Closure — the tendency to complete shared outlines, one of the five Gestalt grouping laws (Proximity/Similarity/Continuity/Closure/Connectedness) (07 §31)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "cue",
+      "options": [
+        { "value": "color", "label": { "zh": "颜色线索", "en": "Color cue" } },
+        { "value": "shape", "label": { "zh": "形状线索", "en": "Shape cue" } }
+      ],
+      "default": "color",
+      "effect": {
+        "zh": "相似演示的分组线索。color=同类行染强调色;shape=同类行图标换圆角方块。07§33 指导:同功能元素用颜色与形状标记;注意别让颜色成为唯一通道(呼应 07§30 的色觉告诫)。",
+        "en": "Grouping cue for the similarity pane. color = same-function rows take the accent; shape = their icons become rounded squares. 07 §33: mark same-function elements by color AND shape; never let color be the only channel (cf. the color-vision caveat in 07 §30)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "marked",
+      "unit": "行",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "相似演示中被标记为「可点击同类」的行数(前 n 行)。被标记的行共享视觉特征→被感知为一组,并被预期承担同一功能(可点击)。",
+        "en": "Number of rows (from the top) marked as the clickable class in the similarity pane. Marked rows share visual features → perceived as one group and expected to share one function (clickable)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "mouth",
+      "unit": "°",
+      "min": 0,
+      "max": 90,
+      "step": 3,
+      "default": 24,
+      "cssVar": "--gc-mouth",
+      "effect": {
+        "zh": "闭合演示中每个「吃豆人」圆盘的缺口张角。默认 24°:四个缺口朝内的圆盘足以让大脑补全出中间的正方形;拉到 60°+ 补全崩解——闭合是「脑补」,补全是自动的但需最小线索量。",
+        "en": "Mouth angle of each pac-man disc in the closure pane. Default 24°: four inward mouths suffice for the brain to complete the central square; past 60° completion collapses — closure is inference, automatic but needing minimum cues."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "吃豆人圆盘用 conic-gradient 实现(缺角即透明扇区),现代浏览器全支持;不支持时退化为完整圆盘,闭合演示失去缺口,但仍可读。",
+      "en": "Pac-man discs use conic-gradient (the mouth is a transparent sector) — fully supported in modern browsers; without it the discs degrade to full circles: the closure demo loses its mouths but stays readable."
+    }
+  },
+  "fallback": {
+    "zh": "闭合的工程出口:加载中的环形 spinner 就是「闭合」的应用——残缺圆环被读作旋转中的完整圆;骨架屏的灰色块同理。降级路径:conic-gradient 不支持时用 SVG path 画缺口,或退化为完整圆。相似原则的红线同接近性:语义分组(fieldset/列表)必须与视觉相似并行。",
+    "en": "Closure's engineering exits: the loading spinner IS closure applied — a broken ring reads as a spinning whole; skeleton blocks work the same way. Degradation path: replace conic-gradient mouths with SVG paths, or fall back to full circles. Similarity's floor matches proximity: semantic grouping (fieldsets/lists) must run parallel to visual similarity."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "链接/按钮/正文用颜色+形状双通道区分,扫读时功能立辨(07§33)", "en": "Links/buttons/body text distinguished by color AND shape so function reads at a glance (07 §33)" },
+      { "zh": "同功能图标族共享形状语言(全部圆角方块/全部描边风格)", "en": "Same-function icon families share one shape language (all rounded squares, all outline style)" },
+      { "zh": "加载 spinner、环形进度:残缺圆环依赖闭合读作整体", "en": "Loading spinners and ring progress: broken rings read as wholes via closure" }
+    ],
+    "avoid": [
+      { "zh": "链接只靠颜色区分、不加下划线或形状差(与 SC 1.4.1 冲突)", "en": "Links distinguished by color alone, no underline or shape difference (clashes with SC 1.4.1)" },
+      { "zh": "多个「异类」互相争夺注意——相似性被滥用成噪音(呼应 07§30「强调要有节制」)", "en": "Multiple oddballs competing for attention — similarity abused into noise (cf. 07 §30 'use restraint')" }
+    ]
+  },
+  "a11y": {
+    "zh": "两条红线:①相似线索不能只有颜色(色觉障碍用户会丢失分组,呼应 07§30/SC 1.4.1)——demo 的 shape 线索就是双通道示范;②闭合「脑补」出的图形对读屏不存在——illusory square 没有语义,真实 UI 的关键信息不能只以闭合图形存在(配文本或 aria)。",
+    "en": "Two red lines: ① similarity cues must not be color-only (color-blind users lose the grouping — cf. 07 §30 / SC 1.4.1); the demo's shape cue demonstrates the dual channel. ② closure-completed figures don't exist for screen readers — the illusory square carries no semantics; essential UI information must never exist only as a closed figure (pair with text or ARIA)."
+  },
+  "sources": [
+    "https://lawsofux.com/law-of-similarity/",
+    "https://lawsofux.com/law-of-proximity/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个格式塔双联演示:上pane是 6 行列表,前 n 行用颜色或形状双通道标记为「可点击同类」,体感相似性分组;下pane用四个缺口朝内的 conic-gradient 圆盘围成正方形,缺口角度可调,体感闭合脑补。",
+      "en": "Build a Gestalt two-pane demo: the top pane is a 6-row list whose first n rows are marked clickable via a color+shape dual channel (similarity); the bottom pane squares off four inward-mouthed conic-gradient pac-man discs with an adjustable mouth angle (closure)."
+    },
+    "acceptance": [
+      { "zh": "cue 与 marked 为 JS 型参数,mouth 为 CSS 变量型参数(--gc-mouth)", "en": "cue and marked are JS-type params; mouth is a CSS-var-type param (--gc-mouth)" },
+      { "zh": "相似线索必须双通道:color 模式下被标记行同时改变图标形状", "en": "Similarity cues are dual-channel: even in color mode the marked rows change icon shape too" },
+      { "zh": "吃豆人缺口用 conic-gradient 透明扇区实现,四盘朝向中心", "en": "Pac-man mouths are conic-gradient transparent sectors, four discs facing the center" },
+      { "zh": "mouth≥60° 时标注「闭合崩解」,提示补全失效", "en": "At mouth ≥60° label 'closure collapses' to mark the completion failure" },
+      { "zh": "被标记行仍是真实可聚焦按钮,键盘可达", "en": "Marked rows stay real, focusable buttons, keyboard reachable" }
+    ]
+  }
+}

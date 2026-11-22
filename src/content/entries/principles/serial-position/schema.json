@@ -1,0 +1,85 @@
+{
+  "name": "Serial Position Effect",
+  "nameZh": "系列位置效应",
+  "aliases": ["序列位置效应", "首因效应", "近因效应"],
+  "category": "principles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "系列中的首尾项记忆最好(首因 + 近因):把最不重要的放中间,关键动作放导航的最左与最右。",
+    "en": "First and last items in a series are best remembered (primacy + recency): put the least important in the middle and key actions at the far left and right of navigation."
+  },
+  "origin": {
+    "zh": "术语由 Hermann Ebbinghaus 提出:序列位置影响回忆准确率,开头项(primacy)与结尾项(recency)的回忆都显著优于中间项(Jon Yablonski,Laws of UX)。lawsofux 记载 Apple、Electronic Arts、Nike 等公司的流行设计都在利用该效应;指导:最不重要的项放列表中间,关键动作放导航最左与最右(调研 07§29)。",
+    "en": "Coined by Hermann Ebbinghaus: position in a sequence affects recall accuracy, with opening items (primacy) and closing items (recency) recalled far better than the middle (Jon Yablonski, Laws of UX). Laws of UX records popular designs from Apple, Electronic Arts, and Nike exploiting the effect; guidance: park the least important items mid-list and put key actions at the far left and right of navigation (research 07 §29)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "items",
+      "unit": "个",
+      "min": 6,
+      "max": 12,
+      "step": 1,
+      "default": 9,
+      "effect": {
+        "zh": "每轮呈现的词数。默认 9:中间段足够长,首尾优势清晰;6 个时几乎人人全记,12 个时中间段的遗忘更刺眼。",
+        "en": "Words shown per round. Default 9: a long-enough middle for a clear first/last advantage; at 6 almost everyone recalls all; at 12 the middle's forgetting gets dramatic."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "dwell",
+      "unit": "ms",
+      "min": 300,
+      "max": 1500,
+      "step": 50,
+      "default": 600,
+      "effect": {
+        "zh": "每个词的呈现时长(demo 节奏参数,非定律结论)。过快(<300ms)来不及编码,整条曲线一起塌;600ms 让首因(有时间复述)与近因(仍在工作记忆)双双成立。",
+        "en": "Per-word display duration (demo pacing, not a law figure). Too fast (<300ms) starves encoding and flattens the whole curve; 600ms lets primacy (time to rehearse) and recency (still in working memory) both hold."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示为 DOM 序列呈现 + 输入框 + 内联 SVG 柱状图,全现代浏览器可用。",
+      "en": "Sequential DOM presentation, an input, and an inline SVG bar chart; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "效应的工程出口在信息架构层:导航/tab 条的两端放高频关键动作,中段放次级入口;列表页的排序与分页同样受它约束(第一屏首项与末屏末项记忆最深)。没有可降级的 CSS 特性。",
+    "en": "The engineering exit lives at the IA layer: navigation/tab bars put high-frequency key actions at both ends, secondary entries in the middle; list ordering and pagination obey the same constraint (first item of page one and last item of the last page are remembered best). No CSS feature to degrade."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "底部导航:高频入口放两端(如「首页」与「我的」)", "en": "Bottom navs: high-frequency entries at both ends (e.g. Home and Profile)" },
+      { "zh": "菜单与列表:最不重要的项沉到中段", "en": "Menus and lists: sink the least important items into the middle" },
+      { "zh": "表单分组:第一组放最重要的字段(首因)", "en": "Form sections: lead with the most important fields (primacy)" }
+    ],
+    "avoid": [
+      { "zh": "把关键操作埋进长列表中段", "en": "Burying key actions mid-way through a long list" },
+      { "zh": "用该效应为「信息架构不做排序」辩护——首尾优势不改变中段仍需可寻性", "en": "Using the effect to excuse unsorted IA — first/last advantage doesn't fix a findable-less middle" }
+    ]
+  },
+  "a11y": {
+    "zh": "位置优势不能成为唯一的信息架构依据:读屏用户按 DOM 顺序线性访问,「中间不重要」不成立——重要的动作仍需语义优先(landmark、heading、跳转链接)。演示的柱状图配完整数值文本,不依赖读图;序列呈现对读屏经 aria-live 播报。",
+    "en": "Position advantage must not be the only IA principle: screen-reader users traverse linearly in DOM order, so 'the middle doesn't matter' fails — key actions still need semantic priority (landmarks, headings, skip links). The demo's chart pairs full numeric text, never chart-only; the spoken sequence is announced via aria-live."
+  },
+  "sources": [
+    "https://lawsofux.com/serial-position-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个自由回忆实验:9 个词逐个呈现(每个 600ms)后,用户按任意顺序输入记得的词;按「位置 → 是否被回忆」画柱状图,多轮累计出 U 形曲线,体感首因与近因。",
+      "en": "Build a free-recall experiment: nine words shown one at a time (600ms each), then the user types remembered words in any order; chart position→recalled as bars and accumulate a U-shaped curve across rounds to feel primacy and recency."
+    },
+    "acceptance": [
+      { "zh": "items 与 dwell 使用参数快照值(默认 9 个 / 600ms)", "en": "items and dwell use the exact parameter snapshot (defaults 9 / 600ms)" },
+      { "zh": "序列呈现期间禁止提前偷看;结束后输入框自动聚焦并带 label", "en": "No peeking during the sequence; the input auto-focuses with a label afterwards" },
+      { "zh": "按任意顺序回忆、按位置计分:命中映射回原位置", "en": "Recall in any order but score by position: hits map back to their original slot" },
+      { "zh": "柱状图 + 每个位置的命中数值文本双呈现;多轮累计可重置", "en": "Bars plus per-position hit counts in text; cumulative across rounds and resettable" },
+      { "zh": "序列切换经 aria-live 播报,reduced-motion 不影响实验逻辑", "en": "Sequence changes announced via aria-live; reduced motion never affects experiment logic" }
+    ]
+  }
+}

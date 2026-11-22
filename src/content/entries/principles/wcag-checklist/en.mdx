@@ -1,0 +1,54 @@
+## Structure & DOM
+
+The demo is a quick checklist grouped by the **four POUR principles**: 22 common SCs (fieldset/legend groups) + a level filter + a progress meter:
+
+```html
+<fieldset class="wc-group">
+  <legend>Perceivable</legend>
+  <label class="wc-item">
+    <input type="checkbox" />
+    <span><b>1.4.3</b> <i>AA</i> Contrast (minimum): text ≥ 4.5:1</span>
+  </label>
+  <!-- … -->
+</fieldset>
+```
+
+Key points:
+
+- Every item keeps its **SC number + level badge** (A/AA/AAA in three colors) — traceable to the official W3C Understanding documents;
+- The filter means "≤ chosen level": conformance is cumulative, so AA automatically includes every A item;
+- Checkboxes are native `<input type="checkbox">` — the checklist itself is keyboard-operable the highest-priority way (2.1.1), a meta-level demonstration.
+
+## Styling & Parameters
+
+```tsx
+const order: Level[] = ["A", "AA", "AAA"];
+const visible = ITEMS.filter((it) => order.indexOf(it.level) <= order.indexOf(level));
+```
+
+- `level` defaults to **AA** (most products' conformance target); 22 items cover POUR:
+  - Perceivable ×8 (1.1.1, 1.3.1, 1.4.1, 1.4.3 4.5:1, 1.4.10 reflow at 320px, 1.4.11 3:1, 1.4.12 text spacing 2×/1.5×/0.16×/0.12×, 1.4.6 7:1);
+  - Operable ×7 (2.1.1, 2.1.2 no keyboard trap, 2.2.1, 2.4.1 skip link, 2.4.7 focus visible, 2.5.8 targets ≥24×24 CSS px, 2.1.3);
+  - Understandable ×5 (3.1.1, 3.2.1, 3.3.1, 3.3.2, 3.3.3);
+  - Robust ×2 (4.1.2, 4.1.3);
+- SC numbers, levels and thresholds (4.5:1 / 3:1 / 7:1 / 24px / 320px / 0.12–2× font-size spacings) are **official WCAG 2.2 facts**; the contrast and text-spacing figures were verified against official sources in research 05/07.
+
+## Motion & Interaction
+
+- Ticks update the progress meter instantly (with n/22 text, dual-channel);
+- Switching level grows/shrinks the list — checked state is kept by SC number (raising the level never wipes ticks);
+- No animation; a checklist is a working tool where instant beats transitioned.
+
+## Real-world examples
+
+- **The WebAIM WCAG 2 Checklist**: the referenced official companion site — grouped by POUR, filterable by WCAG version (2.0/2.1/2.2) and level (A/AA/AAA); this entry's grouping and filter mirror its structure;
+- **WCAG 2.2's SC 2.5.8 Target Size (Minimum)**: finalized in WCAG 2.2 (October 2022), it sets the 24×24 CSS px legal floor for pointer targets — the fitts-law entry's 48px is the roomier production reference; the two complement each other;
+- **CI accessibility pipelines**: the standard practice pairs axe-core-style automation with human walkthroughs — automation catches roughly 30–50% of common issues (color contrast, missing alt, duplicate ids); the rest (whether alt text is appropriate, whether focus order makes sense) requires a manual pass down this list (editorial generalization).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `level` | AAA: all 22 items including 7:1 enhanced contrast and no-exception keyboard — note WCAG officially states AAA is not required site-wide | A: the 12 baseline items for a quick check-up; AA is the usual conformance target |
+
+The lesson: the checklist earns its value through **process placement** — ask 1.4.3/1.4.11 (contrast) at design time, 2.1.x/4.1.2 (keyboard and semantics) at development time, and run the full walkthrough at delivery; one automated scan at launch compresses 22 items into about 5.

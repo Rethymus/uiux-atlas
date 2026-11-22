@@ -1,0 +1,88 @@
+{
+  "name": "Parallax",
+  "nameZh": "视差滚动",
+  "aliases": ["视差", "parallax scrolling", "多层滚动速率差"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "多层滚动速率差制造深度:背景层跟随滚动慢于前景(跟随比例 p,0=钉在视口、1=与内容同步),用 scroll-driven animations 的 scroll() 时间轴按层下发位移,可运行在主线程之外;reduced-motion 直出静态分层。",
+    "en": "Depth from per-layer scroll-rate differences: background layers follow scrolling slower than the foreground (follow ratio p, 0 = pinned to viewport, 1 = synced with content), implemented per layer with scroll() timelines of scroll-driven animations that can run off the main thread; reduced-motion renders the static layers."
+  },
+  "origin": {
+    "zh": "Chrome for Developers《Scroll-driven animations》(Bramus,实抓,调研 04§4)把「视差背景图」列为滚动驱动动画的典型用例:前景/背景随不同 timeline/range 以不同速度移动;实现机制(scroll()/view() 时间轴、duration auto、animation-timeline 须写在 animation 简写之后、声明式实现可在主线程外运行)同页。官方明确:视差未找到更专门的一手规范文章(调研 04§8.5);「iOS 转场的前景/背景视差」另见 M3 转场文档(调研 04§3.3)。跟随比例 p 无官方推荐值。",
+    "en": "Chrome for Developers' \"Scroll-driven animations\" (Bramus, fetched, research 04 §4) lists \"parallax background images\" as a canonical scroll-driven use case: foreground/background layers move at different speeds via different timelines/ranges; the mechanics (scroll()/view() timelines, duration auto, animation-timeline after the animation shorthand, declarative implementations can run off the main thread) are from the same page. The research notes no dedicated primary-source article on parallax exists (research 04 §8.5); iOS's foreground/background transition parallax is separate (research 04 §3.3). No official value exists for the follow ratio p."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "rate",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.3,
+      "cssVar": "--par-rate",
+      "effect": {
+        "zh": "最远层的滚动跟随比例 p:层随滚动移动的距离 = p × 滚动距离。0 = 层钉在视口上(完全无视差);1 = 与前景同步(视差消失)。中层/近层按 p×2、p×3 推导并封顶 1(演示分层)。官方未给推荐值——0.3 为演示值(社区常见分层多在 0.2–0.6,未证实)。",
+        "en": "The follow ratio p of the farthest layer: the layer moves p × the scrolled distance. 0 = pinned to the viewport (max parallax); 1 = synced with the foreground (no parallax). Mid/near layers derive as p×2, p×3 capped at 1 (demo layering). No official value — 0.3 is a demo value (community layering clusters at 0.2–0.6, unverified)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "css", "label": { "zh": "CSS scroll() 时间轴", "en": "CSS scroll() timeline" } },
+        { "value": "js", "label": { "zh": "JS scroll 事件对照", "en": "JS scroll event (contrast)" } }
+      ],
+      "default": "css",
+      "effect": {
+        "zh": "实现对照:css 模式用声明式 animation-timeline: scroll()——官方文章指出声明式滚动驱动动画可在主线程之外运行;js 模式用主线程 scroll 事件 + rAF 直写 transform,官方同页指出传统 scroll 事件在主线程且与合成器滚动异步,快速滚动易卡顿。浏览器不支持 scroll() 时 css 模式自动落到 js 路径并标注。",
+        "en": "Implementation contrast: css mode uses declarative animation-timeline: scroll() — per the official article, declarative scroll-driven animations can run off the main thread; js mode uses a main-thread scroll event + rAF writing transform directly, which the same page notes runs on the main thread, async to compositor scrolling and prone to jank. Without scroll() support, css mode falls back to the js path with a label."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "scroll()/view() 时间轴:官方文章快照为 Chrome/Edge 115+(调研 04§4);Firefox/Safari 的精确支持状态调研明确未逐项核实,以 MDN 兼容性表为准——demo 因此内置能力检测:不支持时自动落到 JS 兜底并标注。prefers-reduced-motion: Baseline 2020-01(调研 04§6.1)。",
+      "en": "scroll()/view() timelines: the official article snapshot covers Chrome/Edge 115+ (research 04 §4); Firefox/Safari status was explicitly not audited in the research — defer to the MDN compatibility table. The demo therefore feature-detects and falls back to a JS path with a label. prefers-reduced-motion: Baseline since 2020-01 (research 04 §6.1)."
+    }
+  },
+  "fallback": {
+    "zh": "两级降级:① 浏览器不支持 animation-timeline: scroll() 时,demo 自动切 JS 路径(rAF + scroll 事件直写 transform),视差保留;② prefers-reduced-motion: reduce 时视差整体关闭,所有层按静态构图直出——视差是典型前庭触发源,内容不依赖视差层传达。",
+    "en": "Two-tier fallback: (1) without animation-timeline: scroll() support the demo switches to a JS path automatically (rAF + scroll events writing transform), keeping the parallax; (2) under prefers-reduced-motion: reduce the parallax switches off entirely and every layer renders in a static composition — parallax is a classic vestibular trigger, and content never depends on the parallax layers."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "营销页/叙事页的多层背景(星空、山峦、城市天际线)——背景慢于前景制造纵深", "en": "Multi-layer backdrops on marketing/narrative pages (starfields, mountains, skylines) — slower backgrounds create depth" },
+      { "zh": "卡片/英雄区的深度分层:装饰层以 p×2/p×3 推导速率陪跑,内容层保持 1:1 可读", "en": "Depth layering on cards/heroes: decorative layers ride along at derived p×2/p×3 rates while content stays 1:1 readable" },
+      { "zh": "系统转场里的深度暗示——iOS 前进/后退转场即内置视差(背景慢于前景,M3 转场文档记载)", "en": "Depth cues inside system transitions — iOS forward/backward transitions ship parallax (background slower than foreground, per M3 transition docs)" }
+    ],
+    "avoid": [
+      { "zh": "正文/数据落在视差层上——文字随层变速移动直接伤害可读性;视差层只放装饰", "en": "Body copy or data on parallax layers — text moving at layer speed hurts readability; parallax layers carry decoration only" },
+      { "zh": "全屏视差铺满整个页面(visionOS 借鉴建议明确避免全屏视差,调研 11§5)", "en": "Full-screen parallax across an entire page (the visionOS-derived guidance explicitly avoids full-screen parallax, research 11 §5)" },
+      { "zh": "多层全用 JS scroll 事件驱动——主线程逐帧直写,快速滚动掉帧(官方同页结论);优先声明式 scroll()", "en": "Driving many layers from JS scroll events — main-thread per-frame writes jank under fast scrolling (same official page); prefer declarative scroll()" },
+      { "zh": "不做 reduced-motion 降级就上视差——前庭安全红线(MDN,调研 04§6.1)", "en": "Shipping parallax without a reduced-motion fallback — a vestibular safety red line (MDN, research 04 §6.1)" }
+    ]
+  },
+  "a11y": {
+    "zh": "视差必须响应 prefers-reduced-motion(reduce 时直出静态分层,不允许 JS 路径继续动);视差层不得承载任何关键信息(纯装饰,aria-hidden);大面积持续位移是前庭障碍的常见触发源(MDN),HIG 同时要求动效可取消、不得是关键信息唯一渠道;visionOS 借鉴建议:关键内容置于视口中部安全区,避免全屏视差(调研 11§5)。",
+    "en": "Parallax must honor prefers-reduced-motion (under reduce, static layers render and the JS path keeps still); parallax layers carry no key information (pure decoration, aria-hidden); sustained large-area displacement is a common vestibular trigger (MDN), and HIG adds that motion must be cancellable and never the sole channel for key information; visionOS-derived guidance: keep key content in the mid-viewport safe area and avoid full-screen parallax (research 11 §5)."
+  },
+  "sources": [
+    "https://developer.chrome.com/docs/css-ui/scroll-driven-animations",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 scroll-driven animations 实现一个三层视差:远层跟随比例 rate(p),中层/近层按 p×2/p×3 推导封顶 1,各层用 animation-timeline: scroll(nearest block) + duration auto 下发 translateY;内容层 1:1 随滚动;reduced-motion 直出静态分层。",
+      "en": "Implement a three-layer parallax with scroll-driven animations: far layer at follow ratio p, mid/near derived as p×2/p×3 capped at 1, each layer translating via animation-timeline: scroll(nearest block) + duration auto; the content layer scrolls 1:1; reduced-motion renders the static layers."
+    },
+    "acceptance": [
+      { "zh": "每层位移 = (1 − p_layer) × 可滚动距离,p_layer = min(rate × 层乘数, 1)", "en": "Per-layer translation = (1 − p_layer) × scrollable distance, with p_layer = min(rate × layer multiplier, 1)" },
+      { "zh": "声明式实现:animation-timeline: scroll() 写在 animation 简写之后,duration 取 auto", "en": "Declarative implementation: animation-timeline: scroll() declared after the animation shorthand, duration auto" },
+      { "zh": "只动画 transform;附 JS(rAF + scroll 事件)对照路径并标注主线程代价", "en": "Animate transform only; include a JS contrast path (rAF + scroll events) labeled with its main-thread cost" },
+      { "zh": "不支持 scroll() 的浏览器自动落到 JS 路径并显示标注;两级降级都保留内容可读", "en": "Browsers without scroll() fall back to the JS path with a label; both fallback tiers keep content readable" },
+      { "zh": "prefers-reduced-motion: reduce 时视差整体关闭、静态构图直出,视差层 aria-hidden 且不承载关键信息", "en": "Under prefers-reduced-motion: reduce, parallax switches off and static layers render; parallax layers are aria-hidden decoration carrying nothing critical" }
+    ]
+  }
+}

@@ -467,6 +467,24 @@ const CATEGORY_TOOLS: Record<CategoryId, DeepLink[]> = {
       url: "https://carbondesignsystem.com/data-visualization/color-palettes/",
     },
   ],
+  /* principles:第十分类(条目未接线);URL 纪律同上 —— APG patterns 与 RESOURCES
+     「WAI-ARIA APG」同址;WCAG 2.2 Understanding 为条目 schema 引用页
+     (icon-color-states、editorial-magazine 等)的公共前缀;Laws of UX 为
+     components/card 引用页 lawsofux.com/law-of-common-region 的根前缀 */
+  principles: [
+    {
+      label: { zh: "WAI-ARIA APG 组件模式", en: "WAI-ARIA APG patterns" },
+      url: "https://www.w3.org/WAI/ARIA/apg/patterns/",
+    },
+    {
+      label: { zh: "WCAG 2.2 理解文档", en: "WCAG 2.2 Understanding docs" },
+      url: "https://www.w3.org/WAI/WCAG22/Understanding/",
+    },
+    {
+      label: { zh: "Laws of UX 交互法则库", en: "Laws of UX" },
+      url: "https://lawsofux.com/",
+    },
+  ],
 };
 
 /**

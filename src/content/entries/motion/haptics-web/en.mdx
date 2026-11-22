@@ -1,0 +1,63 @@
+## Structure & DOM
+
+Haptics have no DOM — it is **one API call plus a synchronized visual echo**. The call must sit inside a user-gesture event handler; the visual echo (timeline bar / beat dots) gives users without vibration hardware or on unsupported platforms the same information:
+
+```html
+<button id="done">Done</button>
+```
+
+```js
+// sticky user activation: call synchronously inside click/pointerup handlers
+done.addEventListener("click", () => {
+  navigator.vibrate([100, 60, 100]); // vibrate 100ms → pause 60ms → vibrate 100ms (demo values)
+});
+// cancel: vibrate(0) or vibrate([])
+cancelButton.addEventListener("click", () => navigator.vibrate(0));
+```
+
+Key points:
+
+- `pattern` is a millisecond count (single pulse) or a vibrate/pause alternation array (multi-pulse), with **no trailing pause**;
+- Pulse count is the semantics: mirror HIG's three preset families — Selection one pulse, notification success two, error four (officially only counts/categories are recorded; no platform publishes milliseconds);
+- When the API is missing (iOS Safari) or hardware absent (desktops) the call is ignored — so the visual echo is not decoration, it is a parallel information channel.
+
+## Styling & Parameters
+
+Three JS-type params (`pulses` / `on` / `off`); the demo subscribes, builds the pattern, and drives the visual pulse in sync:
+
+```js
+const pattern = [];
+for (let i = 0; i < pulses; i++) {
+  pattern.push(on);                       // vibrate slots (odd)
+  if (i < pulses - 1) pattern.push(off);  // pause slots (even), no trailing pause
+}
+navigator.vibrate(pattern); // inside a gesture handler
+```
+
+Where the numbers come from: the array form, the SOS morse example (`[100,30,100,…]`), cancellation, truncation, and the activation constraint all come from MDN's `Navigator.vibrate` page (research 04 §5.2); pulse-count semantics from Apple HIG "Playing haptics" (success = two pulses, warning = two, error = four; Selection = one short pulse; impact in five grades, research 04 §2.3/§5.2). **The on/off defaults (100/60ms) are demo values, officially unspecified**; iOS's real waveforms come from system presets, with no web counterpart.
+
+Platform notes (MDN's wording): not Baseline; a no-op on iOS Safari; overly long patterns are truncated (implementation-defined cap); devices may stay silent in muted/DND modes.
+
+## Motion & Interaction
+
+- **Vibration and visuals fire together**: every playback lights the timeline bar and beat dots in sync — HIG's "match visual/audio intensity" put into practice;
+- **Cancellation is demonstrable**: vibrate(0) stops instantly (the API form of HIG's "must be disableable");
+- **Capability, honestly labeled**: the demo detects `navigator.vibrate`; without it only the visual pulse plays and the UI says so — it never pretends a vibration happened;
+- **Rhythm semantics**: pauses too short smear a multi-pulse pattern into one long buzz, erasing "four pulses = error"; pulses too short (20ms-grade) go unfelt on most devices;
+- **Sparingly**: HIG verbatim — occasional haptics are the ones that land; on high-frequency actions they depreciate fast (for the visual side of press feedback see press-feedback).
+
+## Real-world examples
+
+- **iOS system controls**: HIG records that iOS toggles/sliders/pickers **automatically play system haptics** (research 04 §2.6) — "value change = one pulse" is the system default; web components align to it via navigator.vibrate;
+- **Task-result feedback**: HIG's notification trio (success/warning/error) exists precisely for operation outcomes, fired in sync with toasts/dialogs (research 04 §2.3; for the toast scenario see toast-spring);
+- **Android web**: MDN is explicit that the API is not Baseline and is a no-op on iOS Safari — Android-family browsers are where web haptics are actually felt (research 04 §5.2); desktops often expose the API without any vibration hardware, which is exactly why the demo feature-detects.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `pulses` | more pulses carry heavier semantics: 2 = success, 4 = error per HIG; past 4 leaves the official semantic table and reads as noise | one pulse degrades to Selection semantics; pulse count is also the main driver of total duration (see off) |
+| `on` | heavier single pulses; past 200ms a pulse approaches one long buzz, the metaphor shifting from "tap" to "thud" | at 20ms-grade most devices barely register it — the haptic exists in name only (MDN gives no floor; the figure is folklore, unverified) |
+| `off` | longer gaps make the segmentation legible at the cost of linearly longer patterns | gaps too short smear the pulses into one buzz and the count semantics vanish |
+
+Selection rule of thumb: pick the pulse count first (semantics), then tune on/off; total = pulses×on + (pulses−1)×off, and result feedback should stay in the hundreds of milliseconds; always ship a synchronized visual echo and label on/off honestly as demo values.

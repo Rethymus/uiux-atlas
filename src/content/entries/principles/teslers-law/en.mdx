@@ -1,0 +1,54 @@
+## Structure & DOM
+
+The demo is **one shipping form, two ways of bearing it**: the field count comes from `fields` (3–8) and `mode` switches the paradigm:
+
+```html
+<div class="tl-row">
+  <label for="tl-recipient">Recipient</label>
+  <button class="tl-fill">fill</button>            <!-- manual: one click per field -->
+</div>
+<div class="tl-row">
+  <label>Address</label>
+  <span class="tl-lock">by system</span>            <!-- assisted: pre-filled & locked -->
+</div>
+```
+
+Key points:
+
+- Manual mode: every field shows a "fill" button; each click counts one user operation; "Auto-fill demo" clicks through at 300ms per field to make the burden felt;
+- Assisted mode: the first `fields−2` items read "by system" with sample values (recipient/phone/address drawn from account and order-history context), each carrying a "change" exit to unlock — transferring complexity must not revoke control;
+- The bottom split bar shows "user n items / system k items" live — the total width never changes, only the boundary moves. That is conservation.
+
+## Styling & Parameters
+
+```tsx
+// mode / fields are JS-type params: the demo subscribes to the store
+const sysCount = assisted ? Math.max(0, fields - 2) : 0;
+const allReady = active.every((f) => filled[f.key]);
+```
+
+- `fields` defaults to **6**, `mode` to **manual**: feel the burden of filling all six, then flip to assisted and watch four items get taken over;
+- The 300ms-per-field auto-fill pace is a demo simulation, not a law figure; its job is turning click counts into felt time;
+- Split bar: purple = user-borne, green = system-borne — color plus text legend, dual-channel (cf. SC 1.4.1).
+
+## Motion & Interaction
+
+- The purple/green segments move with a 0.25s `width` transition; dropped under `prefers-reduced-motion`;
+- Every "fill" click increments the operation counter; the panel shows readiness n/fields live;
+- Unlocking a pre-fill via "change" moves that item from system-borne back to user-borne — the bar reacts at once, the other side of the law: transfers carry cost and risk (a wrong pre-fill is worse than a blank);
+- Submit stays disabled until everything is ready — availability state is part of state feedback.
+
+## Real-world examples
+
+- **E-commerce address pre-fill**: recipient/phone/address pulled from account and order history so users supply only the delta — the checkout-class embodiment of "an engineer spending a week beats a million users each spending a minute" (generalized from 07 §26 guidance; no single product named in research);
+- **Delivery apps' smart defaults**: timeslot, packaging, invoice appear pre-chosen so 90% of users just tap next — the system absorbs "understand every option" (07 §26 "put guidance into context");
+- **"Auto-optimize" in media hosting services** (editorial generalization): upload-then-auto-compress/transcode/distribute takes over the entire complexity of image engineering; the user hands over a raw file — the complexity didn't vanish, the system bears all of it.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `fields` | longer form: manual clicks rise linearly and assisted's system share grows too (fields−2) | at 3 fields the mode gap narrows and the experiment loses tension |
+| `mode` | assisted: pre-fills locked with 2 editable, click count plummets; try "change" to take control back | manual: the baseline — an all-purple bar is what "all complexity on the user" looks like |
+
+The lesson: conservation of complexity lands on an **allocation decision**, not the absence of one — every "let the system handle it" must also answer "what if the pre-fill is wrong". Automation without a rollback exit isn't saved complexity; it's costlier complexity.

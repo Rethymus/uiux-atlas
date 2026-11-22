@@ -1,0 +1,106 @@
+{
+  "name": "CSS Anchor Positioning",
+  "nameZh": "锚点定位 Anchor Positioning",
+  "aliases": ["anchor-name", "position-area", "@position-try", "popper 替代"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "把浮层「系」在锚点元素上:anchor-name 命名锚点,position-area 一句声明贴到九宫格方位,溢出时 @position-try 自动换位——Tooltip/Popover 零 JS 定位。",
+    "en": "Tether a floating layer to an anchor element: anchor-name names the anchor, position-area pins the pop to a grid position in one declaration, and @position-try flips it on overflow — Tooltip/Popover with zero JS."
+  },
+  "origin": {
+    "zh": "出自 CSS Anchor Positioning(css-anchor-position-1):锚点定位模块定义将元素「系(tether)」在一起的特性——部分元素声明为锚点元素,锚点定位元素依据锚点位置/尺寸定位自身,并提供溢出备选位置(@position-try / position-try-fallbacks / position-try-order)与条件隐藏(position-visibility)机制;属性族:anchor-name、position-anchor、anchor()/anchor-size()、position-area、anchor-center、anchor-scope 与全局属性 anchor(MDN 模块页与参考页逐项核实,调研 11§1)。",
+    "en": "From CSS Anchor Positioning (css-anchor-position-1): the module defines features for 'tethering' elements together — some elements are declared anchor elements, and anchored elements size and position themselves relative to their anchor, with overflow fallbacks (@position-try / position-try-fallbacks / position-try-order) and conditional hiding (position-visibility); the property family: anchor-name, position-anchor, anchor()/anchor-size(), position-area, anchor-center, anchor-scope, plus the global anchor attribute (verified item-by-item on MDN pages, research 11 §1)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "area",
+      "options": [
+        { "value": "bottom center", "label": { "zh": "bottom center(下方居中)", "en": "bottom center" } },
+        { "value": "top center", "label": { "zh": "top center(上方居中)", "en": "top center" } },
+        { "value": "right center", "label": { "zh": "right center(右侧居中)", "en": "right center" } },
+        { "value": "left center", "label": { "zh": "left center(左侧居中)", "en": "left center" } }
+      ],
+      "default": "bottom center",
+      "effect": {
+        "zh": "position-area 值(JS 型,demo 生成声明并在回退路径换算坐标)——基于锚点周围的区域网格定位,声明式九宫格(调研 11§1)。默认 bottom center 为 11§1 片段 B 的原始写法。",
+        "en": "The position-area value (JS-type; the demo generates the declaration and converts coordinates on the fallback path) — declarative positioning on the grid of regions around the anchor (research 11 §1). Default bottom center is snippet B's original from research 11 §1."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "offset",
+      "unit": "px",
+      "min": 4,
+      "max": 48,
+      "step": 1,
+      "default": 8,
+      "cssVar": "--ap-offset",
+      "effect": {
+        "zh": "浮层与锚点的间距(CSS 型)。默认 8px 取自调研 11§1 片段 A 的 top: calc(anchor(bottom) + 8px);原生路径以 margin 消费该变量,回退路径以绝对坐标消费。",
+        "en": "The gap between pop and anchor (CSS-type). Default 8px from research 11 §1 snippet A's top: calc(anchor(bottom) + 8px); the native path consumes it as margin, the fallback path as absolute coordinates."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "tryFallback",
+      "options": [
+        { "value": "on", "label": { "zh": "溢出换位 on(@position-try)", "en": "flip on overflow (@position-try)" } },
+        { "value": "off", "label": { "zh": "溢出换位 off(可溢出裁切)", "en": "flip off (may overflow)" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 生成/移除 position-try-fallbacks 声明与 @position-try 规则)。on:溢出视口时自动尝试备选位置(bottom center 放不下翻到 top center);off:浮层可能被裁切——两档对照展示备选位置机制的价值。增补支持注意:position-try-fallbacks 的 flip-x/flip-y 与伪元素支持为 Safari 26.2(调研 11§1)。",
+        "en": "JS-type param (the demo adds/removes the position-try-fallbacks declaration and @position-try rule). on: when the primary placement would overflow the viewport, fallback positions are tried (bottom center flips to top center); off: the pop may be clipped — the contrast shows the fallback mechanism's value. Support nuance: position-try-fallbacks flip-x/flip-y and pseudo-element support arrive in Safari 26.2 (research 11 §1)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Chrome/Edge 125(2024-05)、Safari/iOS 26(WWDC25 官方预告「Anchor positioning is a new layout mechanism for anchoring one element to another on the web」;首个 beta 不含 position-visibility)、Firefox 147(2026-01-13 发布说明「Support for CSS anchor positioning was added, enabling tethering elements」);增补:position-visibility、position-try-fallbacks 的 flip-x/flip-y、伪元素支持:Safari 26.2;「定位在布局之后应用(zoom/transform)」修正:Chrome 144 / Safari 27 / Firefox 未支持(调研 11§1,BCD + 官方发布说明,2026-11-22 抓取)。",
+      "en": "Chrome/Edge 125 (2024-05), Safari/iOS 26 (WWDC25 announcement: \"Anchor positioning is a new layout mechanism for anchoring one element to another on the web\"; the first beta lacks position-visibility), Firefox 147 (2026-01-13 release notes: \"Support for CSS anchor positioning was added, enabling tethering elements.\"); additions: position-visibility, position-try-fallbacks flip-x/flip-y and pseudo-element support in Safari 26.2; the \"apply after layout (zoom/transform)\" fix: Chrome 144 / Safari 27 / Firefox unsupported (research 11 §1, BCD + official release notes, fetched 2026-11-22)."
+    }
+  },
+  "fallback": {
+    "zh": "@supports (anchor-name: --a) 特性检测后增强(调研 11§1 片段);不支持的环境回退 JS 定位(getBoundingClientRect 计算锚点与浮层坐标,demo 即此双路径并如实报告当前路径);无 JS 的环境退化为普通文档流提示块。底线:浮层的焦点管理与 Esc 关闭由 popover/dialog 语义保证,不依赖 anchor——定位只是位置,可达性另算。",
+    "en": "Enhance behind @supports (anchor-name: --a) (research 11 §1 snippet); unsupported engines fall back to JS positioning (getBoundingClientRect math for anchor and pop coordinates — the demo ships both paths and reports the active one honestly); with no JS at all, degrade to a plain in-flow note block. Bottom line: focus management and Esc-closing come from popover/dialog semantics, never from anchor — positioning is placement only; accessibility is a separate concern."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "Tooltip/Popover 的零 JS 锚定——11§10 签名巧思:position-area: bottom center 一句贴住按钮,@position-try 溢出自动翻面", "en": "Zero-JS Tooltip/Popover anchoring — the 11 §10 signature trick: position-area: bottom center pins to the button in one line, @position-try flips on overflow" },
+      { "zh": "表单校验提示锚定输入框,输入框滚到哪提示跟到哪", "en": "Form validation messages tethered to inputs, following them wherever they scroll" },
+      { "zh": "下拉菜单/选择器的溢出换位(@position-try + position-try-order)", "en": "Dropdown menus/selectors with overflow flipping (@position-try + position-try-order)" },
+      { "zh": "条件隐藏:position-visibility: anchors-visible 让锚点滚出视口时浮层自动消失(Safari 26.2 起支持,调研 11§1)", "en": "Conditional hiding: position-visibility: anchors-visible dismisses the pop when the anchor leaves the viewport (Safari 26.2 onward, research 11 §1)" }
+    ],
+    "avoid": [
+      { "zh": "不支持环境的唯一方案——必须保留 JS 回退(Chrome 125 前的 Chromium、旧 Safari 均不可用)", "en": "As the only mechanism on unsupported engines — keep the JS fallback (pre-125 Chromium and older Safari lack it entirely)" },
+      { "zh": "依赖「布局后定位」的场景——zoom/transform 下的定位时序修正 Chrome 144/Safari 27 才修、Firefox 未支持(调研 11§1)", "en": "Scenarios relying on post-layout positioning — the zoom/transform timing fix landed in Chrome 144/Safari 27 and is unsupported in Firefox (research 11 §1)" },
+      { "zh": "高频拖拽跟随的浮层——跟随性能未证实,先压测再上", "en": "Floaters following drag at high frequency — follow performance is unverified; load-test first" },
+      { "zh": "只用 anchor 管可达性——焦点陷阱、Esc 关闭、读屏播报仍归 popover/dialog 语义", "en": "Leaving accessibility to anchor alone — focus traps, Esc handling and screen-reader announcements stay with popover/dialog semantics" }
+    ]
+  },
+  "a11y": {
+    "zh": "anchor 只管位置:焦点管理、Esc 关闭、读屏播报由 popover/dialog 语义承担(popover API 的 light dismiss 与 anchor 定位天然互补);position-visibility: anchors-visible 在锚点不可见时隐藏浮层,避免指向不存在锚点的「幽灵提示」;@position-try 换位瞬时完成,不产生移动动画干扰;demo 的回退路径同样保证键盘可达;浮层文本与锚点用 aria-describedby / aria-expanded 关联。",
+    "en": "anchor handles placement only: focus management, Esc dismissal and screen-reader announcements belong to popover/dialog semantics (the popover API's light dismiss pairs naturally with anchor positioning); position-visibility: anchors-visible hides the pop when the anchor leaves view, preventing ghost tips pointing at nothing; @position-try flips instantly, with no motion to distract; the demo's fallback path keeps the same keyboard accessibility; associate pop text with its anchor via aria-describedby / aria-expanded."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning",
+    "https://drafts.csswg.org/css-anchor-position-1/",
+    "https://www.firefox.com/en-US/firefox/147.0/releasenotes/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻锚点定位 Tooltip:anchor-name 命名按钮为锚点,浮层 position-area: bottom center 贴合,@position-try 溢出翻面,position-visibility: anchors-visible 条件隐藏;并附 getBoundingClientRect 的 JS 回退路径与支持状态实时读数。",
+      "en": "Replicate an anchor-positioned Tooltip: anchor-name marks the button, the pop pins via position-area: bottom center, flips on overflow via @position-try, hides conditionally via position-visibility: anchors-visible; include a getBoundingClientRect JS fallback path and a live support readout."
+    },
+    "acceptance": [
+      { "zh": "锚点声明 anchor-name: --x,浮层 position-anchor 关联 + position-area 定位(声明式九宫格)", "en": "The anchor declares anchor-name: --x; the pop links via position-anchor and positions via position-area (declarative grid)" },
+      { "zh": "@position-try 备选位置与 position-try-fallbacks 溢出换位可用且可开关", "en": "@position-try fallbacks and position-try-fallbacks flip on overflow, toggleable" },
+      { "zh": "@supports (anchor-name: --a) 检测后增强;回退路径用 getBoundingClientRect 并如实报告当前路径", "en": "Enhance behind @supports (anchor-name: --a); the fallback uses getBoundingClientRect and the active path is reported honestly" },
+      { "zh": "浮层间距使用参数快照 offset(calc(anchor(bottom) + Npx) 或 margin)", "en": "The pop gap uses the snapshot offset (calc(anchor(bottom) + Npx) or margin)" },
+      { "zh": "浮层可达性归 popover/dialog 语义(焦点/Esc/播报),anchor 只管位置", "en": "Pop accessibility (focus/Esc/announcements) comes from popover/dialog semantics; anchor handles placement only" }
+    ]
+  }
+}

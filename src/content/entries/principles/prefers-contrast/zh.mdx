@@ -1,0 +1,55 @@
+## 结构与 DOM
+
+演示是一张**对比度偏好响应卡**(表单卡:输入框 / 按钮 / 分隔线 / 禁用态示例),`mode` 参数在真实媒体查询与手动模拟之间切换:
+
+```html
+<div class="pc-field" data-mode="auto">
+  <input class="pc-input" />       <!-- 虚线边框 + 虚线焦点环 -->
+  <button class="pc-btn">开启两步验证</button>
+</div>
+```
+
+关键点:
+
+- `auto` 档挂**真实的** `@media (prefers-contrast: more/less/custom)` 块——系统设置改了立刻生效;
+- `more/less/custom` 三档用 `data-mode` 手动模拟同样的声明——无法改系统设置时也能预览全部形态;
+- 四个值都落了具体形态:no-preference 默认;more 增强;less 柔和;custom 用 Canvas/Field/ButtonFace 等**系统色**,对应 forced-colors 用户调色板。
+
+## 样式与参数
+
+```css
+/* MDN 示例场景:命中 more 时虚线 outline 换高对比实线(调研 07§38) */
+.pc-field[data-mode="more"] .pc-input:focus-visible,
+.pc-field[data-mode="more"] .pc-btn:focus-visible {
+  outline: calc(var(--pc-ring) + 1px) solid oklch(0.2 0 0);
+}
+@media (prefers-contrast: more) {
+  .pc-field[data-mode="auto"] .pc-card { border-color: oklch(0.25 0 0); }
+  /* …同上 */
+}
+```
+
+- `mode` 默认 **auto**;四值语义逐字取 MDN(调研 07§38):`no-preference / more / less / custom`;
+- `ringWidth` 默认 **2px**(cssVar `--pc-ring`):基础焦点环宽;more 形态叠加 1px 并换实线——「更粗」与「更实」是两个可分离的增强;
+- custom 档切到系统色(Canvas/Field/ButtonFace)是**语义演示**:真实实现里 custom 形态应该交给 forced-colors 模式处理,demo 用系统关键字提前展示那套配色逻辑。
+
+## 动效与交互
+
+- 卡片边框/文本色的增强用 0.2s `border-color` 过渡,幅度极小;`prefers-reduced-motion` 下无额外处理(过渡本身不承载信息);
+- Tab 到输入框或按钮 → 焦点环可见:默认形态虚线 2px,more 形态实线 3px——**同一个控件,两种符合偏好强度的焦点反馈**;
+- 切 mode 不重载页面:模拟档与真实媒体查询互不干扰(auto 档的声明全部套在 `[data-mode="auto"]` 之下)。
+
+## 真实产品案例
+
+- **MDN 官方示例**:命中 `prefers-contrast: more` 时把虚线 outline 换成高对比实线——本条目焦点环增强的直接出处(调研 07§38);
+- **焦点环、分隔线、禁用态文字三件套**:07§38 指导原文明确点名这三个落点——「焦点环、分隔线、禁用态文字都应响应此查询增强」,本演示逐一落实;
+- **Windows 高对比度模式与 forced-colors**:custom 值与 `forced-colors: active` 的用户调色板对应(07§38)——系统级高对比主题用户换到浏览器时,`custom` 是那座桥(编辑性泛例,MDN 文档语义)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `mode` | 切到 more:边框/文本/分隔线/焦点环全面增强——用户「声明要更多对比」时 UI 的一切次要灰度都该让位 | 切到 less:柔和一档;注意 less 是用户**要**的柔和,不是缺陷 |
+| `ringWidth` | 8px 时焦点环非常醒目(教学夸张) | 1px 时默认形态焦点环几乎不可见——恰好演示「为什么 more 用户需要增强」 |
+
+经验结论:`prefers-contrast` 的正确姿势是**逐个组件响应**,不是全局换肤(那是 forced-colors 的职责);Baseline 2022-05 全浏览器可用,放手用,降级路径天然安全。

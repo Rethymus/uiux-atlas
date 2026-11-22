@@ -1,0 +1,66 @@
+## 结构与 DOM
+
+配对表是一张**查表选型卡**:先判过场类型(屏内起止 / 进入 / 永久退出 / 临时退出),类型直接决定曲线族与时长,DOM 无任何特殊结构:
+
+```html
+<div class="panel"><!-- 任何承载过渡的元素 --></div>
+```
+
+关键点:
+
+- 六组配对两两覆盖四种过场:**屏内起止**(Emphasized 500 大面积 / Standard 300 小面积)、**进入**(Emph-decel 400 / Std-decel 250)、**退出**(Emph-accel 200 永久 / Std-accel 200);
+- 临时退出(drawer/sheet 停在屏缘、可召回)官方单指定 Emphasized——它「停在屏缘」的姿态本身就是「可召回」的暗示;
+- demo 用一个采样滑块按所选配对重播:时长 + 曲线同时切换,六组手感差异一屏可比。
+
+## 样式与参数
+
+`pair` 是 JS 型参数(demo 订阅后以该组时长 + 贝塞尔重播);`travel` 是 CSS 变量型(`--ep-travel`),控制行程长度:
+
+```css
+.slider {
+  translate: var(--ep-travel, 120px) 0;      /* 终态位 */
+  animation: slide both;                      /* 时长与曲线由所选配对内联注入 */
+}
+@keyframes slide {
+  from { translate: 0 0; opacity: 0.35; }
+  to   { translate: var(--ep-travel, 120px) 0; opacity: 1; }
+}
+
+/* 官方曲线 CSS 值(tokens-specs 页,调研 04§1.4):
+   emphasized(CSS 无等价 → Standard 兜底)  cubic-bezier(0.2, 0, 0, 1)
+   emphasized decelerate                    cubic-bezier(0.05, 0.7, 0.1, 1)
+   emphasized accelerate                    cubic-bezier(0.3, 0, 0.8, 0.15)
+   standard                                 cubic-bezier(0.2, 0, 0, 1)
+   standard decelerate                      cubic-bezier(0, 0, 0, 1)
+   standard accelerate                      cubic-bezier(0.3, 0, 1, 1) */
+```
+
+官方配对表(《Applying easing and duration》,调研 04§1.4):Emphasized 500ms 起止均在屏内;Emphasized decelerate 400ms 进入;Emphasized accelerate 200ms 永久退出;Standard 300ms 起止均在屏内;Standard decelerate 250ms 进入;Standard accelerate 200ms 退出。
+
+注意:**Emphasized 本体在 CSS 没有等价贝塞尔**(官方标注 N/A)——Web 落地按官方口径以 Standard 兜底,Android 侧用多段 pathInterpolator(`M 0,0 C 0.05,0 … 1,1`)逼近,不要伪造单段「官方曲线」。
+
+## 动效与交互
+
+- **查表即用**:过场类型 → 配对是确定性映射,不需要凭手感调参;demo 的重播按钮让六组在同一行程下 A/B;
+- **曲线语义不能倒置**:Decelerate 缓停 = 「安顿下来」,Accelerate 峰值速度收尾 = 「一去不回」——永久退出误用 decel 会暗示「还会回来」;
+- **行程影响可辨度**:同一条 accelerate 曲线在 40px 上几乎读不出「静止起步」,拉长行程(`travel` 调大)后加减速段一目了然;
+- **进入比退出更长**:六组表里进入档(400/250ms)时长均高于退出档(200ms)——退出需要的注意力更少(官方准则);
+- **性能**:只动画 `translate/opacity`(合成器属性,web.dev 底线,调研 04§1.5);
+- **reduced-motion**:reduce 时直出终态,不播放位移过场。
+
+时长档位本身的四档 16 令牌见 m3-duration-tokens 条目;贝塞尔控制点的数学含义见 cubic-bezier 条目;这些配对在 SPA 路由/整页过场上的 API 落地见 view-transitions 条目。
+
+## 真实产品案例
+
+- **Android 系统动画**:Emphasized 曲线在 Android 侧以多段 pathInterpolator(`M 0,0 C 0.05,0 … 1,1`)实现——官方认可 CSS 单段贝塞尔表达不了它,这是「Standard 兜底」口径的出处(调研 04§1.4);
+- **M3 组件转场**:M3 官方用同一张配对表规范 drawer/sheet 的临时退出(Emphasized)与屏幕间进入/退出(decel 400 / accel 200),Material 系组件库的过场默认值即出自此表(调研 04§1.4、§3.3);
+- **进入/退出不对称**:官方示例进入 500ms / 退出 200ms 直接采用配对表两端——Android/iOS 系统级前进后退转场均退得比进得快(调研 04§1.4、§3.3,见 page-transitions 条目)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `pair` | 切到 Emphasized 系(500/400/200ms):大面积转场更有表现力,快起缓停的姿态更明显 | 切到 Standard 系(300/250/200ms):小工具类转场更利落,大面积上会显得平淡仓促 |
+| `travel` | 行程更长,曲线的加速/减速段在视觉上越可辨;>200px 时 200ms 档会读成「闪过」 | 行程更短,曲线差异趋近不可辨——配对选型在小位移上退化为只选时长 |
+
+选型口诀:类型先行(屏内起止 / 进入 / 永久退出 / 临时退出),面积定 Emphasized 或 Standard,永久退出恒用 accelerate;Emphasized 在 CSS 记得 Standard 兜底。

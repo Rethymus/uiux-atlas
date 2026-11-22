@@ -1,0 +1,104 @@
+{
+  "name": "P3 Wide Gamut",
+  "nameZh": "P3 广色域",
+  "aliases": ["Display P3", "广色域 CSS", "color(display-p3)"],
+  "category": "color",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "用 color(display-p3 …) 表达 sRGB 装不下的颜色:P3 的 Lab 色域体积约为 sRGB 的 1.5 倍;渐进增强三件套 = sRGB 兜底值 + @supports + @media (color-gamut: p3)。",
+    "en": "Express colors sRGB can't hold with color(display-p3 …): P3's Lab volume is ~1.5× sRGB; the progressive-enhancement trio = an sRGB fallback value + @supports + @media (color-gamut: p3)."
+  },
+  "origin": {
+    "zh": "W3C CSS Color 4 定义 display-p3 预定义色彩空间与 Lab 色域体积(sRGB 0.820M、display-p3 1.233M,≈1.5×),并给出 gamut mapping(降 chroma 保色相)算法族;`@media (color-gamut)` 取值 srgb/p3/rec2020 为包含关系,Baseline 2023-02(调研 06§3)。另一口径:Evil Martians 称 sRGB 仅覆盖人眼可见色约 35%,P3 再增 30%(度量不同,不可混用)。",
+    "en": "W3C CSS Color 4 defines the display-p3 predefined space and Lab volume (sRGB 0.820M, display-p3 1.233M ≈ 1.5×) plus the gamut-mapping family (reduce chroma, keep hue); @media (color-gamut) values srgb/p3/rec2020 nest inclusively, Baseline 2023-02 (research 06 §3). A second yardstick: Evil Martians put sRGB at ~35% of visible colors and P3 +30% (different metric — don't mix them)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "hue",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 145,
+      "cssVar": "--p3-hue",
+      "effect": {
+        "zh": "oklch 色相角。默认 145 = 绿区(Evil Martians 色相经验映射:红≈20/黄≈90/绿≈140/蓝≈220/紫≈320)——绿区是 P3 相对 sRGB 提升最显著的范围之一,demo 默认用它展示「sRGB 裁剪、P3 保留」。",
+        "en": "oklch hue angle. Default 145 = the green band (Evil Martians' empirical hue map: red≈20 / yellow≈90 / green≈140 / blue≈220 / purple≈320) — a range where P3 gains over sRGB are most visible, so the demo defaults here to show 'sRGB clips, P3 keeps'."
+      }
+    },
+    {
+      "type": "number",
+      "name": "chroma",
+      "min": 0,
+      "max": 0.4,
+      "step": 0.01,
+      "default": 0.3,
+      "cssVar": "--p3-chroma",
+      "effect": {
+        "zh": "oklch 色度 C。MDN:实用上限约 0.5(100% = 0.4);Evil Martians 实测受色域限制最大约 0.37(sRGB,P3 屏略高)。默认 0.3:在 L=0.8/绿区已越过 sRGB 上限——sRGB 分支必须降 chroma,P3 分支可原样保留。",
+        "en": "oklch chroma C. MDN: practical ceiling ≈0.5 (100% = 0.4); Evil Martians measured the gamut-bounded max ≈0.37 (sRGB, slightly higher on P3 screens). Default 0.3: at L=0.8 in the green band this already exceeds sRGB — the sRGB branch must reduce chroma while the P3 branch keeps it."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "p3", "label": { "zh": "渐进增强", "en": "Progressive P3" } },
+        { "value": "srgb", "label": { "zh": "仅 sRGB(对照)", "en": "sRGB only (control)" } }
+      ],
+      "default": "p3",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-mode)。p3 = 渐进增强三件套生效,右侧色块改写 color(display-p3 …);srgb = 对照组,关闭增强层——两块都停在 sRGB 分支,复现「不写增强规则时高饱和色被降 chroma」的观感。",
+        "en": "JS-type param (demo subscribes and toggles data-mode). p3 = the progressive trio active, the right swatch rewritten to color(display-p3 …); srgb = the control group with the enhancement layer off — both swatches sit on the sRGB branch, reproducing how an oversaturated color looks once chroma-reduced."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "@media (color-gamut) 与 color() 函数:CSS Color 4 组成部分,color-gamut 自 2023-02 起 Baseline「广泛可用」(MDN,调研 06§3);oklch() Baseline 2023-05(调研 06§1)。检测开关 @supports (color: color(display-p3 1 0 0)) 与 @media (color-gamut: p3) 是官方推荐组合。",
+      "en": "@media (color-gamut) and the color() function are CSS Color 4 features; color-gamut has been Baseline widely available since 2023-02 (MDN, research 06 §3); oklch() since Baseline 2023-05 (research 06 §1). The detection pair @supports (color: color(display-p3 1 0 0)) + @media (color-gamut: p3) is the officially recommended combo."
+    },
+    "baseline": "2023-02"
+  },
+  "fallback": {
+    "zh": "三件套本身就是回退设计:先写 sRGB 值(每台屏幕都能显示),再用 @supports/@media 叠加 P3 覆盖。越域颜色本身合法——浏览器会 gamut map 后显示(C4 规范的降 chroma 算法),但 Evil Martians 指出 Chrome/Safari 实际仍直接裁剪 RGB(可见地改变色相),重要颜色建议手写 P3 覆盖规则;配套 stylelint-gamut 可检测越域 P3 色并强制手动降级。",
+    "en": "The trio IS the fallback design: ship the sRGB value first (renderable everywhere), then layer the P3 override under @supports/@media. Out-of-gamut colors are legal — browsers gamut-map them (C4's chroma-reducing algorithms), but Evil Martians notes Chrome/Safari actually still clip RGB (visibly shifting hue), so hand-write P3 overrides for critical colors; stylelint-gamut detects out-of-gamut values and enforces the manual downgrade."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "品牌主色/强调色的「更鲜一点的版本」:sRGB 值兜底,P3 屏自动获得更高饱和", "en": "A punchier brand/accent color: sRGB value as the floor, P3 screens automatically get the extra saturation" },
+      { "zh": "渐变与插画背景(CSS Color 4 允许渐变按指定空间插值,P3 空间过渡更鲜)", "en": "Gradient and illustration backdrops (CSS Color 4 lets gradients interpolate in a named space; P3-space transitions stay vivid)" },
+      { "zh": "数据可视化分类色:色域扩容可在不改明度的前提下拉开色差", "en": "Categorical dataviz colors: the wider gamut separates hues without touching lightness" },
+      { "zh": "媒体富集页面(照片/视频周边的 UI 配色跟随内容色彩)", "en": "Media-rich pages where UI colors echo the content's colors" }
+    ],
+    "avoid": [
+      { "zh": "把「P3 更鲜」当唯一的信息编码——sRGB 屏与 P3 屏观感不一致,差异信息会丢失", "en": "Never encode information solely in 'the P3 extra vividness' — sRGB and P3 screens disagree and the signal is lost" },
+      { "zh": "只写 color(display-p3 …) 不留 sRGB 兜底:不支持 color() 的声明整条失效(三件套缺一不可)", "en": "Writing color(display-p3 …) with no sRGB fallback: unsupported browsers drop the whole declaration — the trio exists because each piece matters" },
+      { "zh": "在文字色上无脑推高 chroma:对比度按两个分支各自核对(WCAG AA 4.5:1),P3 覆盖不是豁免", "en": "Mindlessly maxing chroma on text colors: contrast must be checked per branch (WCAG AA 4.5:1) — the P3 override is not an exemption" }
+    ]
+  },
+  "a11y": {
+    "zh": "两个色域分支要各自过对比度:正文 ≥4.5:1、大字 ≥3:1、UI 组件边界 ≥3:1(WCAG 2.1 SC 1.4.3/1.4.11,调研 06§17);P3 覆盖改变的是饱和度而非明度时,同一 L 值保证明度对比不变(Evil Martians 固定 L 工作流)。demo 固定 L=0.8——研究口径:该明度任何色相配黑字都清晰。",
+    "en": "Both gamut branches must pass contrast independently: body ≥4.5:1, large text ≥3:1, UI boundaries ≥3:1 (WCAG 2.1 SC 1.4.3/1.4.11, research 06 §17); when the P3 override only raises saturation and not lightness, a shared L keeps lightness contrast unchanged (Evil Martians' fixed-L workflow). The demo pins L=0.8 — per research, any hue at that lightness pairs cleanly with black text."
+  },
+  "sources": [
+    "https://www.w3.org/TR/css-color-4/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/color-gamut",
+    "https://evilmartians.com/chronicles/oklch-in-css-a-utility-for-perceptually-uniform-color-systems"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一组品牌色实现 P3 渐进增强:sRGB 兜底值 + @supports (color: color(display-p3 1 0 0)) + @media (color-gamut: p3) 三件套,高饱和主色在 P3 屏上保留饱和度、sRGB 屏上自动降 chroma,并提供运行时色域徽标。",
+      "en": "Add P3 progressive enhancement to a brand palette: the sRGB fallback + @supports (color: color(display-p3 1 0 0)) + @media (color-gamut: p3) trio, keeping saturation on P3 screens and auto-reducing chroma on sRGB, plus a runtime gamut badge."
+    },
+    "acceptance": [
+      { "zh": "每个增强色先写 sRGB 值,再在 @supports 与 @media (color-gamut: p3) 内覆写 color(display-p3 …)", "en": "Every enhanced color declares the sRGB value first, then overrides with color(display-p3 …) inside @supports and @media (color-gamut: p3)" },
+      { "zh": "P3 坐标由 sRGB 兜底值转换而来,保证两个分支同一色相、同一明度", "en": "P3 coordinates are converted from the sRGB fallback so both branches share hue and lightness" },
+      { "zh": "越域颜色按 CSS Color 4 精神降 chroma 保色相,而不是等浏览器裁剪 RGB", "en": "Out-of-gamut colors are chroma-reduced with hue kept per CSS Color 4's spirit, not left to the browser's RGB clipping" },
+      { "zh": "用 matchMedia('(color-gamut: p3)') 暴露运行时色域徽标,并监听 change", "en": "Expose a runtime gamut badge via matchMedia('(color-gamut: p3)') and listen to its change event" },
+      { "zh": "两个分支的明度一致,文字对比度在任一分支都满足 WCAG AA", "en": "Both branches share lightness so text contrast passes WCAG AA on either one" }
+    ]
+  }
+}

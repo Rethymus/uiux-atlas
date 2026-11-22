@@ -47,7 +47,7 @@ export const ui = {
       aliases: "别名",
       officialDefault: "官方默认",
       paramEffectHint: "改动即时生效",
-      categories: { styles: "风格流派", materials: "材质与光影", motion: "动效与微交互", color: "色彩与主题", type: "排版", layout: "布局与响应式", components: "前端部件", icons: "图标体系", dataviz: "数据可视化" },
+      categories: { styles: "风格流派", materials: "材质与光影", motion: "动效与微交互", color: "色彩与主题", type: "排版", layout: "布局与响应式", components: "前端部件", icons: "图标体系", dataviz: "数据可视化", principles: "交互法则" },
       subgroups: { basic: "基础", form: "表单", feedback: "反馈", data: "数据", navigation: "导航", other: "其他" },
     },
     footer: {
@@ -135,7 +135,7 @@ export const ui = {
       aliases: "Aliases",
       officialDefault: "official default",
       paramEffectHint: "changes apply instantly",
-      categories: { styles: "Styles", materials: "Materials", motion: "Motion", color: "Color", type: "Typography", layout: "Layout", components: "Components", icons: "Icons", dataviz: "Data Viz" },
+      categories: { styles: "Styles", materials: "Materials", motion: "Motion", color: "Color", type: "Typography", layout: "Layout", components: "Components", icons: "Icons", dataviz: "Data Viz", principles: "Principles" },
       subgroups: { basic: "Basic", form: "Form", feedback: "Feedback", data: "Data", navigation: "Navigation", other: "Other" },
     },
     footer: {

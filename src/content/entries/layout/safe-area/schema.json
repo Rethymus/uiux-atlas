@@ -1,0 +1,113 @@
+{
+  "name": "Safe Area Insets",
+  "nameZh": "安全区 Safe Area",
+  "aliases": ["safe-area-inset", "env()", "viewport-fit", "异形屏适配"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "异形屏适配:viewport-fit=cover 铺满全屏后,用 env(safe-area-inset-top/right/bottom/left) 四向留边,让内容避开刘海与 Home 指示条。",
+    "en": "Notched-screen adaptation: after viewport-fit=cover fills the screen, env(safe-area-inset-top/right/bottom/left) reserves the four edges so content clears the notch and Home indicator."
+  },
+  "origin": {
+    "zh": "出自 WebKit《Designing Websites for iPhone X》与 CSS Environment Variables:viewport meta 新增 viewport-fit,取 auto(默认,自动内缩)或 cover(铺满全屏、配合 env() 自行留边);env(safe-area-inset-top|right|bottom|left) 可带回退值如 env(safe-area-inset-right, 1em);env() 于 iOS 11 以 constant() 名称引入,自 Safari Technology Preview 41 / iOS 11.2 beta 起改名 env()(调研 05§15);MDN env() 页还收录同族 titlebar-area-*(桌面 PWA 标题栏)与 viewport-segment-*(折叠屏)。",
+    "en": "From WebKit's \"Designing Websites for iPhone X\" and CSS Environment Variables: the viewport meta gains viewport-fit, either auto (default, automatic inset) or cover (fill the screen and self-pad via env()); env(safe-area-inset-top|right|bottom|left) takes optional fallbacks like env(safe-area-inset-right, 1em); env() shipped on iOS 11 as constant() and was renamed env() from Safari Technology Preview 41 / iOS 11.2 beta (research 05 §15); MDN's env() page also collects titlebar-area-* (desktop PWA title bars) and viewport-segment-* (foldables)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "insetTop",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 44,
+      "effect": {
+        "zh": "顶部安全区宽度(JS 型,demo 以此值模拟 env(safe-area-inset-top);桌面浏览器 env() 实测为 0,必须模拟才能演示)。默认 44px 是 iPhone 时代广泛引用的顶部 inset——调研 05§15 只记机制与 constant()→env() 时间线、未记数值,44/34px 为社区常见值(未证实)。",
+        "en": "The top safe-area width (JS-type; the demo simulates env(safe-area-inset-top) with it — desktop browsers report env() = 0, so simulation is the only way to demo). Default 44px is the widely cited iPhone-era top inset — research 05 §15 records the mechanism and the constant()→env() timeline but no numbers, so 44/34px are community values (unverified)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "insetBottom",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "default": 34,
+      "effect": {
+        "zh": "底部安全区宽度(JS 型,模拟 env(safe-area-inset-bottom))。默认 34px 对应 Home 指示条高度方向(社区常见值,未证实,同上);底部是操作栏最常被遮挡的方向。",
+        "en": "The bottom safe-area width (JS-type, simulating env(safe-area-inset-bottom)). Default 34px corresponds to the Home-indicator direction (community value, unverified, as above); the bottom edge is where action bars get covered most."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "viewportFit",
+      "options": [
+        { "value": "auto", "label": { "zh": "auto(默认,自动内缩)", "en": "auto (default, auto-inset)" } },
+        { "value": "cover", "label": { "zh": "cover(铺满全屏)", "en": "cover (fill the screen)" } }
+      ],
+      "default": "cover",
+      "effect": {
+        "zh": "viewport meta 的 viewport-fit(JS 型切换演示形态)。取值即 WebKit 官方记载(调研 05§15):auto 自动内缩(系统替你留边,内容不进危险区);cover 铺满全屏——必须配合 env() 自行留边,否则内容顶进刘海与 Home 指示条。",
+        "en": "The viewport meta's viewport-fit (JS-type, switching the demo posture). Values per WebKit's official docs (research 05 §15): auto insets automatically (the system pads for you; content stays out of danger zones); cover fills the screen — you must self-pad via env(), or content butts into the notch and Home indicator."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "applyEnv",
+      "options": [
+        { "value": "on", "label": { "zh": "应用 env() 留边", "en": "apply env() padding" } },
+        { "value": "off", "label": { "zh": "忽略 env()(事故演示)", "en": "ignore env() (accident demo)" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "JS 型参数(demo 切换是否按安全区留边)。off 档复刻最常见的事故:cover 模式下忽略 env(),页头文字顶进刘海、操作栏压进 Home 指示条——发布前必须在真机核对。",
+        "en": "JS-type param (the demo toggles whether edges are reserved). The off mode reenacts the most common accident: ignoring env() under cover, the header butts into the notch and the action bar hides under the Home indicator — check on real devices before shipping."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "env() 于 iOS 11 以 constant() 名称引入,自 Safari Technology Preview 41 / iOS 11.2 beta 起改名 env()(WebKit 官方,调研 05§15);四向 safe-area-inset-* 现代移动浏览器全线可用;同族 titlebar-area-*(桌面 PWA)与 viewport-segment-*(折叠屏)依平台而异——后者 MDN 标注实验性非 Baseline(调研 05§16),demo 未使用。",
+      "en": "env() shipped on iOS 11 as constant() and was renamed env() from Safari Technology Preview 41 / iOS 11.2 beta (WebKit, research 05 §15); the four safe-area-inset-* values work across modern mobile browsers; the sibling titlebar-area-* (desktop PWA) and viewport-segment-* (foldables) vary by platform — the latter is experimental/non-Baseline per MDN (research 05 §16) and unused in the demo."
+    }
+  },
+  "fallback": {
+    "zh": "级联回退:先写固定 padding,再写 calc(固定值 + env(safe-area-inset-*, 0px)) —— 不支持 env() 的环境按级联落到固定值;viewport-fit=cover 在不支持的环境中被忽略,自动回落 auto 的自动内缩。红线:env() 的回退值要显式写(如 env(safe-area-inset-left, 0px)),且关键操作永远不压屏幕四缘,留边缺失只是难看而非不可用。",
+    "en": "Cascade fallback: declare fixed padding first, then calc(fixed + env(safe-area-inset-*, 0px)) — engines without env() cascade down to the fixed value; viewport-fit=cover is ignored where unsupported, falling back to auto's automatic insets. Red line: always write env() fallbacks explicitly (e.g. env(safe-area-inset-left, 0px)) and never pin critical actions to the screen edges, so a missing inset is ugly rather than unusable."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "全屏沉浸式页面:视频播放器、地图、游戏——cover 铺满 + env() 四向留边", "en": "Full-screen immersive pages: video players, maps, games — cover plus env() padding on all four edges" },
+      { "zh": "PWA/移动 Web 的底部操作栏:calc(16px + env(safe-area-inset-bottom)) 防 Home 指示条压住按钮", "en": "PWA/mobile-web bottom action bars: calc(16px + env(safe-area-inset-bottom)) keeps the Home indicator off the buttons" },
+      { "zh": "桌面 PWA 标题栏适配:env(titlebar-area-*) 让内容避开自绘标题栏控件(MDN env() 页收录)", "en": "Desktop PWA title bars: env(titlebar-area-*) keeps content clear of custom title-bar controls (collected on MDN's env() page)" },
+      { "zh": "横屏安全区:left/right inset 在旋转后交接主责——左右留边与上下留边一套代码全照应", "en": "Landscape safety: left/right insets take over after rotation — one code path covers all four edges" }
+    ],
+    "avoid": [
+      { "zh": "viewport-fit=cover 却不写 env() 留边——内容顶进刘海与 Home 指示条(demo 的 off 档即此事故)", "en": "viewport-fit=cover without env() padding — content butts into the notch and Home indicator (the demo's off mode is exactly this accident)" },
+      { "zh": "只处理 top/bottom 忘掉 left/right——横屏时左右才是主危险区", "en": "Handling only top/bottom and forgetting left/right — in landscape those are the primary danger zones" },
+      { "zh": "把非全屏页面也设 cover——普通页面 auto 的自动内缩已够,cover 反而引入留边负担", "en": "Setting cover on non-immersive pages — auto's automatic insets already suffice, cover only adds padding chores" },
+      { "zh": "用固定魔法数字硬编码刘海高度——机型 inset 各不相同,必须读 env()", "en": "Hard-coding notch heights as magic numbers — insets differ per device; read env() instead" }
+    ]
+  },
+  "a11y": {
+    "zh": "安全区是可达性红线:被 Home 指示条或刘海压住的按钮不可点、被遮挡的文字不可读;留边后核对触控目标仍 ≥ 44×44px 方向(避免留边吃掉点击区域);刘海/指示条装饰为纯视觉元素,aria-hidden;demo 以模拟值演示——桌面浏览器 env() 实测为 0,真机验收不可省。",
+    "en": "Safe areas are an accessibility red line: buttons under the Home indicator or notch are untappable, covered text unreadable; after reserving edges, re-check touch targets stay ≥ 44×44px-ish (don't let insets eat tap areas); notch/indicator decorations are purely visual, aria-hidden; the demo simulates values — desktop browsers report env() = 0, so on-device verification is not optional."
+  },
+  "sources": [
+    "https://webkit.org/blog/7929/designing-websites-for-iphone-x/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/env"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻异形屏适配:viewport-fit=cover 的全屏页面,页头/内容/底部操作栏用 env(safe-area-inset-*) 四向留边避开刘海与 Home 指示条;附固定值 + calc(env()) 的级联回退。",
+      "en": "Replicate notched-screen adaptation: a viewport-fit=cover full-screen page whose header/content/bottom bar reserve all four edges via env(safe-area-inset-*), clearing the notch and Home indicator; include the fixed + calc(env()) cascade fallback."
+    },
+    "acceptance": [
+      { "zh": "viewport meta 带 viewport-fit=cover;CSS 用 env(safe-area-inset-top/right/bottom/left) 四向留边", "en": "The viewport meta carries viewport-fit=cover; CSS reserves all four edges with env(safe-area-inset-top/right/bottom/left)" },
+      { "zh": "env() 带显式回退值且固定 padding 声明在前(级联回退)", "en": "env() carries explicit fallbacks and fixed padding declarations come first (cascade fallback)" },
+      { "zh": "底部操作栏使用 calc(固定值 + env(safe-area-inset-bottom)) 而非裸 env()", "en": "The bottom action bar uses calc(fixed + env(safe-area-inset-bottom)), never bare env()" },
+      { "zh": "刘海/Home 指示条为纯装饰,aria-hidden,不进入可达性树", "en": "Notch/Home-indicator decorations are aria-hidden and excluded from the accessibility tree" },
+      { "zh": "关键操作不压屏幕四缘:留边缺失时功能仍可用(只是贴边)", "en": "Critical actions never pin to screen edges: with insets missing, functionality survives (just edge-hugging)" }
+    ]
+  }
+}

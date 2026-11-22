@@ -1,0 +1,54 @@
+## Structure & DOM
+
+The demo is an **APG 30-pattern browser**: a chip wall on the left plus a "three-section spec" card on the right:
+
+```html
+<div class="apg-chips" role="group" aria-label="APG pattern list">
+  <button class="apg-chip" aria-pressed="true">Button</button>
+  <!-- ×30 -->
+</div>
+<aside class="apg-card" aria-live="polite">
+  <h4>Button</h4>
+  <b>Keyboard</b> …
+  <b>roles</b> …
+  <b>states & properties</b> …
+</aside>
+```
+
+Key points:
+
+- The 30 pattern names come **verbatim** from the research 07 §34 list (Accordion … Window Splitter; Slider and Multi-Thumb listed separately make exactly 30);
+- Every card keeps the APG pattern page's fixed three-section structure: **keyboard interaction / roles / states & properties** (07 §34 verbatim);
+- Key hints cover only the six patterns verified in research 07 §36 (Button, Checkbox, Radio Group, Slider, Tabs, Dialog); the rest honestly read "see the APG pattern page" — **nothing invented**.
+
+## Styling & Parameters
+
+```tsx
+const visible = PATTERNS.map((p, i) => ({ p, i }))
+  .filter(({ p }) => group === "all" || p.group === group);
+```
+
+- `group` filters across five tiers (all / forms & input / navigation & menus / containers & disclosure / composite & feedback) — a **teaching grouping, not an official APG taxonomy** (the APG page doesn't group), stated as such in the schema and here;
+- `keyhint` toggles the key hints; the card is `aria-live="polite"` so switches reach screen readers;
+- Chips are real buttons with `aria-pressed` for selection — "selection ≠ focus" placed in both visuals and semantics (07 §35).
+
+## Motion & Interaction
+
+- Clicking a chip swaps the card content (no animation — for spec reading, instant switching is best); `aria-live` announces it;
+- Tab walks all chips with intact focus rings; the container has `role="group"` + label;
+- No looping animation; no reduced-motion handling needed.
+
+## Real-world examples
+
+- **The working draft for custom Tabs / Trees**: the APG's Tabs and Tree View pattern pages give the full tables for roving focus, aria-selected, and arrow-key behavior — most component-library docs list props, not keys; APG is the authoritative fill for that layer (07 §34/§35);
+- **Combobox's four autocomplete behaviors**: APG specifies list/manual/both/none separately — the spec source behind research 07 §5 (the combobox's four autocomplete behaviors);
+- **Dialog's Esc and trap conventions**: WebAIM's keyboard page (07 §36) and the APG Dialog pattern corroborate each other — "modal traps are legitimate, but Esc should usually release, focus returning to the opener" is now the de-facto standard for modal implementations (see the keyboard-navigation entry).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `group` | filtered groups of 6–9 chips scan faster | the all tier shows all 30 chips at once — the "pattern library" itself |
+| `keyhint` | on: verified keys readable directly; beyond the six patterns, deferred to the APG text | off: only the three-section structure remains, focusing the structure itself |
+
+The lesson: use APG as "check before you build, verify after" — treat the 30-pattern list as a **coverage checklist** for custom widgets: if your component is in the library, copy its three sections; if it isn't, then you may invent.

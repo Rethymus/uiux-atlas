@@ -1,0 +1,86 @@
+## Structure & DOM
+
+A drop cap targets the first glyph of the opening paragraph — no new DOM needed; it is pure CSS pseudo-element/property:
+
+```html
+<article class="feature">
+  <p>T— he opening paragraph starts with a single glyph, the rest is body copy…</p>
+  <p>Later paragraphs are untouched…</p>
+</article>
+```
+
+```css
+.feature > p:first-of-type::first-letter {
+  -webkit-initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines)); /* Safari 9–17 prefix */
+  initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));          /* the spec way */
+}
+```
+
+Key points:
+
+- `initial-letter` is a CSS Inline Layout property with two integers: **lines spanned** + **lines sunk**; once declared the browser wraps body text around the glyph automatically;
+- `::first-letter` is the traditional entry — enlarge the first glyph with `float: left`, works in every browser; it occupies a rectangle and never hugs the glyph outline;
+- The glyph remains part of the paragraph text: neither `::first-letter` nor `initial-letter` changes the DOM — copy, search and reading are unaffected.
+
+## Styling & Parameters
+
+Three parameters: lines / sink ride the `--dc-*` variables; technique is a JS-type param (toggles `data-technique`):
+
+```css
+/* Technique 1: spec way (Chrome/Edge 110+, Safari with -webkit-; Firefox auto-falls to technique 2) */
+.feature[data-technique="initial-letter"] > p:first-of-type::first-letter {
+  -webkit-initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));
+  initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));
+  font-weight: 700;
+  margin-right: 0.35em;
+}
+/* Technique 2: classic float fallback (every browser; size approximated from line count — community practice, unverified) */
+.feature[data-technique="float"] > p:first-of-type::first-letter {
+  float: left;
+  font-size: calc(var(--dc-lines) * 1.1em);
+  line-height: 0.85;
+  padding: 0.05em 0.12em 0 0;
+  font-weight: 700;
+}
+/* Browsers supporting neither initial-letter nor its prefix (Firefox) fall back to float */
+@supports not ((initial-letter: 3) or (-webkit-initial-letter: 3)) {
+  .feature[data-technique="initial-letter"] > p:first-of-type::first-letter {
+    float: left;
+    font-size: calc(var(--dc-lines) * 1.1em);
+    line-height: 0.85;
+    padding: 0.05em 0.12em 0 0;
+    font-weight: 700;
+  }
+}
+```
+
+Where the numbers come from:
+
+- **Support data** (BCD css/properties/initial-letter.json, fetched 2026-11-22): Chrome/Edge 110+ (2023-02); Firefox unsupported (bugzil.la/1223880); Safari 9+ with the `-webkit-` prefix, unprefixed unreleased (WebKit bug 229090); iOS Safari partial, no decimal values (bug 296785);
+- **The default of 3 lines**: a community convention (unverified); magazine practice clusters at 2–4 lines;
+- **The float size formula** (lines × 1.1em, line-height 0.85): community approximation (unverified) — only `initial-letter` has exact "line" semantics; float can only approximate.
+
+## Motion & Interaction
+
+Drop caps are static decoration; the interaction is comparing techniques:
+
+- Toggling technique in the demo contrasts the two rule sets live: under initial-letter the body wraps along the glyph's lower edge; under float the glyph owns a rectangular box the text wraps around;
+- Adjust lines / sink to see drop (sink = span) versus sunken (sink < span) forms;
+- A badge at the top probes this browser's actual initial-letter support live (`CSS.supports("initial-letter", "3")` plus the prefixed form) — Firefox users see an honest "auto-fell back to float" note;
+- No animation; `prefers-reduced-motion` needs no handling.
+
+## Real-world examples
+
+- **WordPress / Gutenberg editor**: the paragraph block ships a built-in "Drop cap" toggle that renders the enlarged first glyph with front-end CSS — a CMS turned this editorial tradition into a switch anyone can flip, the widest distribution channel drop caps have.
+- **Newspaper feature pages (New York Times-style long features)**: features open with an enlarged initial glyph the text wraps around — magazine language ported directly to the web; such pages typically still use float/pseudo-element approaches for maximum compatibility.
+- **E-book and magazine reading products**: a chapter-opener drop cap is the editorial signal for "sit down and read"; the ePub/reader ecosystem ships it in initial CSS, using the same ::first-letter / initial-letter mechanics as the web.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `lines` | a taller glyph and deeper wrap zone; past 5 lines the glyph/body ratio breaks and magazine convention is gone | below 3 lines the decoration fades; 2 lines is the compact book form |
+| `sink` | sink = lines is the standard drop; combos beyond lines get clamped by min() against invalid values | sink < lines turns sunken (glyph base below the first text line's base); 1 is the shallowest |
+| `technique` | initial-letter aligns to exact lines and hugs the glyph; float owns only a rectangle | float is consistent everywhere but its height is an approximation and the glyph shape never participates |
+
+Takeaway: the two techniques are not either/or — initial-letter is the exact form for supporting browsers, float is the approximation for the rest, and @supports joins them; the drop cap is always decoration, and readability lives in the body copy itself.

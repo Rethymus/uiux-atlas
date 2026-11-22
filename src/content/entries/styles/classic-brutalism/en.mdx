@@ -1,0 +1,73 @@
+## Structure & DOM
+
+Classic brutalism's DOM is "the plainest structure a browser will render": `h1` / `p` / `a` / `ul` / `table` carry the content directly, **no decoration layers, no card wrappers, no backdrop layers** — structure is the visual. Per 99designs: "brutalism describes a mindset more than a set of visual features"; on the Web that means "default, unstyled HTML".
+
+```html
+<main class="page">
+  <h1>THE BRUTALIST WEB</h1>
+  <hr />
+  <div class="box">
+    <h2>Manifesto</h2>
+    <ul><li>Content first</li><li>Links look like links</li><li>Performance is design</li></ul>
+  </div>
+  <table>…</table>
+  <a href="#">Default link</a>
+  <button class="btn">Submit Query</button>
+</main>
+```
+
+Key points:
+
+- Semantic tags are used bare; delete all the CSS and the page remains fully readable and navigable — that is the style's design promise, not a flaw;
+- The trio `border-radius: 0`, `box-shadow: none`, `transition: none` holds globally: zero radius, zero shadow, zero transition;
+- Uppercase headings (`text-transform: uppercase` with `letter-spacing: -0.02em`) and oversized type are the only two permitted "gestures".
+
+## Styling & Parameters
+
+Four parameters: two CSS declarations, a typeface switch and a hover-feedback switch:
+
+```css
+.page {
+  --cb-border: 2px;    /* solid black border (param; research range 1–2px) */
+  --cb-link: #0000EE;  /* browser default link blue (param; default IS the default) */
+  font-family: "Times New Roman", Times, Georgia, serif; /* system default */
+  background: #fff;
+  color: #000;
+}
+.page * { border-radius: 0; box-shadow: none; transition: none; }
+.box, .btn, th, td { border: var(--cb-border) solid #000; }
+a { color: var(--cb-link); text-decoration: underline; }   /* underline never stripped */
+.btn:hover { background: #000; color: #fff; }              /* hard invert, zero transition */
+```
+
+Where the numbers come from:
+
+- Border **1–2px solid black**, link blue **#0000EE**, hover **hard invert without transition**, the mono stack `ui-monospace/"JetBrains Mono"/Courier New`, body **≥16px**: all verbatim from research 03 §5;
+- System default fonts (Times New Roman lineage), black/white/gray monochrome, square rectangles, bare functionality, modular repetition: study 11 §6 (99designs + the brutalistwebsites.com manifesto);
+- Criterion split from neo-brutalism (study 11 §6 quick table; the four rows that define this entry): **shadows** — classic none (or bare borders) vs neo's zero-blur hard offset shadows; **color** — black/white/gray vs loud saturated blocks; **type** — system defaults vs experimental display faces; **core** — honest, unstyled HTML vs designed "roughness". The only shared traits are "square corners" and "black borders" — distant relatives.
+
+## Motion & Interaction
+
+Classic brutalism's motion spec is "no motion":
+
+- **Hard hover invert**: black↔white switches instantly, `transition: 0` — inversion is a state receipt, not an animation;
+- **Focus ring**: the browser's default `outline` stays, unremoved and unredrawn — the bare focus ring is part of the style;
+- No entrance animation, no scroll parallax, no easing curves; `prefers-reduced-motion` is trivially satisfied — there is no motion to exempt;
+- The red line: any urge to "add a little transition for polish" betrays the style — "abandon decoration" includes motion decoration.
+
+## Real-world examples
+
+- **Craigslist** — a classifieds directory kept near browser-default rendering for decades; the emblem of evergreen "functional brutalism" (research 03 §5).
+- **Hacker News** — system fonts, default-blue links and a lone orange badge; its traffic and age both prove "performance is design" can hold (research 03 §5).
+- **Gucci PF18 and A$AP Rocky's AWGE** — "style-driven brutalism" appearing in the brutalistwebsites.com gallery: luxury and hip-hop labels borrowing the bare page for contrast — a one-off gallery usage, not a long-term skin (research 03 §5; the same research notes style-driven work dates fast: demand peaked at 3.6% in March 2026, then fell).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `borderWidth` | past 2px it slides toward neo-brutalism's outline range (neo: 2–4px) and the style boundary blurs | at 0 containers lose their edges and it degrades from "manifesto" to "unfinished" |
+| `linkColor` | rebranding the link color breaks "links look like links"; purple #551A8B (the visited default) is the only legitimate side branch | the default blue IS the criterion; any customization discounts the bare-HTML feel |
+| `typeface` | — (enum: system is the barest; mono reads more Hacker News) | — (both faces are legitimate; the shared point is zero font downloads) |
+| `hoverInvert` | on = black↔white inversion, the loudest feedback | off = underline only, closer to pure default behavior; either way transitions must stay zero |
+
+Working ranges: border 1–2px, body ≥16px, black/white with gray allowed for secondary text. Keep one boundary rule in mind: **the moment a hard offset shadow (`4px 4px 0 #000`) or a saturated color block appears, you are writing neo-brutalism, not this** — the tell comes from research 03 §5 ("a 4px 4px 0 #000 hard shadow is the tell of neo-brutalism").

@@ -1,0 +1,79 @@
+## Structure & DOM
+
+The reskin DOM is 'one structure, two variable sheets': components never know the theme — the `data-theme` flip only rewrites CSS variables. View Transitions layers a **snapshot stage** on top: the old state is screenshotted underneath while the new state's screenshot is progressively unmasked by a circular `clip-path`.
+
+```html
+<body data-theme="light">
+  <button id="theme-toggle">Switch to dark</button>
+  <!-- ::view-transition-old(root)  ← old snapshot (auto-captured) -->
+  <!-- ::view-transition-new(root)  ← new snapshot, unmasked by the circle -->
+</body>
+```
+
+```js
+// Chrome's official docs example (verbatim-archived in research 11 §8):
+let lastClick;
+addEventListener('click', event => (lastClick = event));
+
+function themeToggle() {
+  if (!document.startViewTransition) { swapTheme(); return; } // graceful degradation (official)
+
+  const x = lastClick?.clientX ?? innerWidth / 2;
+  const y = lastClick?.clientY ?? innerHeight / 2;
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+  const transition = document.startViewTransition(() => swapTheme());
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+      { duration: 500, easing: 'ease-in', pseudoElement: '::view-transition-new(root)' },
+    );
+  });
+}
+```
+
+Key point: the swap itself (`data-theme`/`color-scheme` flip) is decoupled from the transition — with no API support there is zero functional loss; unlike the motion/view-transitions entry this is a **root-snapshot performance** with no element-level `view-transition-name`.
+
+## Styling & Parameters
+
+Theme sheets and transition params stay separate: `--tt-bg/--tt-fg/--tt-accent` carry the palette while `--tt-duration/--tt-easing` carry the animation (mirrored to `:root` by the demo — the `::view-transition` pseudo-element tree hangs under `<html>` and does not inherit from `.demo-stage`):
+
+```css
+[data-theme="light"] { --tt-bg: oklch(0.992 0.006 334); --tt-accent: #6750A4; } /* M3 baselines */
+[data-theme="dark"]  { --tt-bg: oklch(0.17 0.012 297);  --tt-accent: #D0BCFF; } /* accent = official */
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: var(--tt-duration); animation-timing-function: var(--tt-easing); }
+/* circle grade blocks the default cross-fade (docs form): animation: none; mix-blend-mode: normal; */
+```
+
+Where the numbers come from:
+
+- **duration 500ms + easing ease-in + the hypot farthest-corner formula + `::view-transition-new(root)`**: verbatim from Chrome's official docs theme-switch example (research 11 §8);
+- **0.3s**: the docs' example duration for the customized default cross-fade (`::view-transition-old/new(root) { animation-duration: 0.3s; }`) (research 11 §8);
+- Light-side `#FFFBFE`/`#1C1B1F`/`#6750A4` and dark-side `#D0BCFF`/`#381E72`: official M3 baseline role values (research 06 §7); the dark surface color is illustrative (the official dark surface value is not listed value-by-value in this research);
+- API support: Chrome/Edge 111, Safari 18, Firefox 144 (BCD, research 11 §8); the `light-dark()` pairing: Chrome/Edge 123, Firefox 120, Safari 17.5, Baseline 2024-05 (research 11 §8).
+
+## Motion & Interaction
+
+The timeline is 'snapshot → synchronous swap → unmask', and the parameters only touch the last beat:
+
+- **circle (official recipe)**: click coordinates captured → `startViewTransition` captures the old snapshot → `flushSync` flips `data-theme` synchronously inside the callback → new snapshot captured → after `transition.ready`, the `clip-path` circle expands over `::view-transition-new(root)` (default 500ms ease-in) — the accelerating curve makes the circle 'launch from the fingertip';
+- **crossfade**: no custom animation; the default cross-fade is merely re-timed via `animation-duration/timing-function`;
+- **direct (fallback control)**: skips the snapshot performance entirely, running `apply()` synchronously for an instant swap — all three grades automatically land here when the API is missing or reduced-motion is on;
+- **Three degradation paths**: ① a direct cut when `typeof document.startViewTransition !== 'function'` (the official form); ② `prefers-reduced-motion` via a `matchMedia` listener so live OS setting changes take effect; ③ a rejected `transition.ready` is swallowed by `.catch`, leaving the UI in the post-swap state;
+- One transition at a time: rapid clicks skip the previous transition to its end (official behavior); rendering is frozen during the transition — 500ms is the official reference ceiling (beyond it the freeze starts to drag).
+
+## Real-world examples
+
+- **The Chrome developer docs**: the origin of the circular recipe itself — the docs' built-in interactive demo is exactly 'click coordinates → circularly unmask the new theme', with the degradation and reduced-motion forms alongside (research 11 §8);
+- **web.dev's light-dark article companion**: the official teaching of the palette-side pairing — `:root { color-scheme: light dark }` + `light-dark()` two-value picks, which stacked under the transition yields 'a reskin performance with zero CSS churn' (Chrome/Edge 123, Firefox 120, Safari 17.5 across all three engines, Baseline 2024-05, research 11 §8);
+- **Developer blogs and personal portfolios**: the circular reskin appears widely in community tutorials, mostly rewrites of the same official recipe (editorial — specific products and adoption rates not individually verified; the recipe itself is verbatim from the Chrome docs above).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `duration` | a more leisurely reveal with a readable trajectory — but the rendering freeze grows with it; past 500ms it drags (the official reference is 500) | approaches a hard cut; 0ms equals the direct grade |
+| `easing` | an accelerating curve (the default ease-in mapping) gives the circle a 'launch' feel; overshooting curves let the reveal shrink back — disallowed here | two control points near the diagonal read as linear — constant-speed expansion feels mechanical; the crossfade grade prefers an overshoot-free curve like (0.4, 0, 0.2, 1) |
+| `reveal` → crossfade | no custom animation, only re-timing — the most conservative; no spatial narrative between themes | circle: strongest spatial continuity with a causal pointer to the click; direct: zero cost but a jarring reskin flash |
+| Swap frequency | frequent swaps freeze rendering and interrupt reading each time — never transition when auto-following the system theme | the manual toggle is the only fitting frequency |

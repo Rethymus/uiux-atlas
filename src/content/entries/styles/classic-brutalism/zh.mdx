@@ -1,0 +1,73 @@
+## 结构与 DOM
+
+经典粗野主义的 DOM 就是「浏览器会渲染的最普通结构」:`h1` / `p` / `a` / `ul` / `table` 直接承载内容,**没有装饰层、没有卡片包装、没有背景层**——结构即视觉。99designs 判据:「brutalism 更多描述一种心态而非视觉特征」,在 Web 上即「默认、未加修饰的 HTML」。
+
+```html
+<main class="page">
+  <h1>THE BRUTALIST WEB</h1>
+  <hr />
+  <div class="box">
+    <h2>Manifesto</h2>
+    <ul><li>内容优先</li><li>链接像链接</li><li>性能即设计</li></ul>
+  </div>
+  <table>…</table>
+  <a href="#">Default link</a>
+  <button class="btn">Submit Query</button>
+</main>
+```
+
+关键点:
+
+- 语义标签裸露使用,删除全部 CSS 后页面仍完全可读、可导航——这是本风格的设计承诺,不是缺陷;
+- `border-radius: 0`、`box-shadow: none`、`transition: none` 三件套全局成立:零圆角、零阴影、零过渡;
+- 全大写标题(`text-transform: uppercase` + `letter-spacing: -0.02em`)与超大字号是仅有的两处「姿态」。
+
+## 样式与参数
+
+四个参数:两条 CSS 声明、一个字体档开关、一个 hover 反馈开关:
+
+```css
+.page {
+  --cb-border: 2px;    /* 实心黑边框(参数,调研区间 1–2px) */
+  --cb-link: #0000EE;  /* 浏览器默认链接蓝(参数,默认即默认) */
+  font-family: "Times New Roman", Times, Georgia, serif; /* 系统默认字 */
+  background: #fff;
+  color: #000;
+}
+.page * { border-radius: 0; box-shadow: none; transition: none; }
+.box, .btn, th, td { border: var(--cb-border) solid #000; }
+a { color: var(--cb-link); text-decoration: underline; }   /* 下划线永不剥除 */
+.btn:hover { background: #000; color: #fff; }              /* 硬反色,零过渡 */
+```
+
+数值出处:
+
+- 边框 **1–2px 实心黑**、链接蓝 **#0000EE**、hover **硬反色无过渡**、等宽栈 `ui-monospace/"JetBrains Mono"/Courier New`、正文 **≥16px**:全部为调研 03§5 逐字记载;
+- 系统默认字体(Times New Roman 系)、黑白灰单色、直角矩形、裸功能、模块化重复:补研 11§6(99designs + brutalistwebsites.com 宣言);
+- 与新粗野主义判据差异(补研 11§6 速查表,本条目成立的四行):**阴影**——经典无(或裸边框)vs neo 无模糊硬阴影;**色彩**——黑白灰单色 vs 高饱和撞色;**字体**——系统默认字 vs 实验性展示字体;**核心**——诚实裸露的原生 HTML vs 设计过的「粗」。共同的只有「直角」与「黑边」两个远亲特征。
+
+## 动效与交互
+
+经典粗野主义的动效规范是「没有动效」:
+
+- **hover 硬反色**:黑↔白瞬时切换,`transition: 0`——反色是状态回执,不是动画;
+- **焦点环**保留浏览器默认 `outline`,不去除、不自绘——裸焦点环本身就是风格的一部分;
+- 无入场动画、无滚动视差、无缓动曲线;`prefers-reduced-motion` 对本风格天然成立——本来就没有任何运动需要豁免;
+- 判据红线:任何「加一点过渡会更精致」的冲动都是对风格的背叛——「摒弃装饰」包括摒弃动效装饰。
+
+## 真实产品案例
+
+- **Craigslist** — 数十年几乎保持浏览器级默认渲染的分类目录,「功能型粗野主义」常青的代表(调研 03§5)。
+- **Hacker News** — 系统字体 + 默认蓝链接 + 橙色徽标的极简裸页,流量与年龄都证明「性能即设计」可以成立(调研 03§5)。
+- **Gucci PF18 与 A$AP Rocky 的 AWGE** — 出现在 brutalistwebsites.com 画廊的「风格型粗野主义」:奢侈品牌与嘻哈厂牌借裸页做反差表达——画廊式的一次性用法,而非长期皮肤(调研 03§5;调研同时提示风格型易过时:需求 2026-03 达峰 3.6% 后回落)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `borderWidth` | >2px 逐步滑向新粗野主义的描边区间(neo 为 2–4px),风格边界开始模糊 | 0 时容器失去边界,退化为纯默认渲染——接近「未装修」而非「宣言」 |
+| `linkColor` | 改成品牌色即违背「链接像链接」;紫红 #551A8B(已访问默认色)是唯一合法旁支 | 保持默认蓝是判据本体;任何自定义都让「裸 HTML 感」打折 |
+| `typeface` | —(枚举:system 最「裸」,mono 的 Hacker News 感更重) | —(两档都是合法字面;共同点是零字体下载) |
+| `hoverInvert` | on=黑↔白反色,反馈最响亮 | off=仅下划线,更接近浏览器默认行为;两档都必须保持零过渡 |
+
+经验区间:边框 1–2px、正文 ≥16px、黑白二色为主(灰阶允许用于辅助文字)。风格边界记住一条:**一旦出现硬偏移阴影(`4px 4px 0 #000`)或高饱和色块,你写的就是新粗野主义,不是它**——判据口诀出自调研 03§5(「出现 4px 4px 0 #000 硬阴影即新粗野主义」)。

@@ -1,0 +1,88 @@
+{
+  "name": "prefers-contrast",
+  "nameZh": "对比度偏好适配",
+  "aliases": ["prefers-contrast 媒体查询", "高对比适配"],
+  "category": "principles",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "检测用户要求更高/更低对比的 CSS 媒体查询:no-preference / more / less / custom 四值;焦点环、分隔线、禁用态文字都应响应增强。",
+    "en": "The CSS media query detecting a requested contrast preference: no-preference / more / less / custom; focus rings, dividers and disabled text should all respond."
+  },
+  "origin": {
+    "zh": "MDN 官方特性(调研 07§38):取值 no-preference / more / less / custom——custom 与 forced-colors: active 的用户调色板对应;MDN 示例:命中 more 时把虚线 outline 换成高对比实线;Baseline:2022 年 5 月起全浏览器可用(07§38)。",
+    "en": "An MDN-documented feature (research 07 §38): values no-preference / more / less / custom — custom corresponds to the user palette of forced-colors: active; MDN's example swaps a dashed outline for a solid high-contrast one when more matches; Baseline: available across browsers since May 2022 (07 §38)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "auto", "label": { "zh": "跟随系统", "en": "Follow OS" } },
+        { "value": "more", "label": { "zh": "增强 more", "en": "More" } },
+        { "value": "less", "label": { "zh": "降低 less", "en": "Less" } },
+        { "value": "custom", "label": { "zh": "自定义 custom", "en": "Custom" } }
+      ],
+      "default": "auto",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后覆写 data-mode)。auto=挂真实 @media (prefers-contrast: …),随系统设置变化;more/less/custom=手动模拟四值——没有改系统设置时也能预览全部形态。",
+        "en": "JS-type param (the demo subscribes and overrides data-mode). auto = real @media (prefers-contrast: …) blocks that follow the OS setting; more/less/custom = manual simulation of the four values — preview every form without touching OS settings."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "ringWidth",
+      "unit": "px",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "cssVar": "--pc-ring",
+      "effect": {
+        "zh": "焦点环基础宽度。默认 2px;more 模式按 MDN 示例把虚线换实线并叠加此宽度,演示「焦点环响应对比度偏好」这一最常见落地。",
+        "en": "Base focus-ring width. Default 2px; in more mode, per MDN's example, the dashed ring becomes solid and thickens by this width — the most common application of the query."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Baseline 2022 年 5 月起全浏览器可用(调研 07§38,MDN 兼容表);更早浏览器忽略查询、拿到 no-preference 形态,无需 JS 回退。",
+      "en": "Baseline across browsers since May 2022 (research 07 §38, MDN compat table); older browsers ignore the query and get the no-preference form — no JS fallback needed."
+    }
+  },
+  "fallback": {
+    "zh": "查询不支持的浏览器自动落到 no-preference 形态(CSS 媒体查询天然降级);真正的降级设计是:more 形态的所有增强(实线焦点环、更深文本、更硬分隔线)在默认形态下也必须可用——增强不是补偿缺陷,而是放大可读性。",
+    "en": "Browsers without the query fall to the no-preference form automatically (media queries degrade natively); the real fallback design: every more-mode enhancement (solid focus ring, darker text, harder dividers) must also work in the default form — enhancement is amplifying legibility, not compensating for defects."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "焦点环:less/custom 下虚线 → more 下实线加粗(MDN 官方示例场景)", "en": "Focus rings: dashed under less/custom → solid and thicker under more (MDN's example scenario)" },
+      { "zh": "分隔线、边框、禁用态文字:more 时加深、加硬", "en": "Dividers, borders, disabled text: deepen and harden under more" },
+      { "zh": "图表网格线与次要文本:less 时可再降低,more 时须回到对比达标", "en": "Chart gridlines and secondary text: can go softer under less, must return to compliant contrast under more" }
+    ],
+    "avoid": [
+      { "zh": "在 more 模式仍保留低对比的灰色占位文本(违背用户明示偏好)", "en": "Keeping low-contrast gray placeholder text under more (against an explicit user preference)" },
+      { "zh": "用 prefers-contrast 重新定义整套配色——那是 forced-colors 的职责;custom 值对应其用户调色板(07§38)", "en": "Re-theming the whole palette via prefers-contrast — that's forced-colors' job; the custom value maps to its user palette (07 §38)" }
+    ]
+  },
+  "a11y": {
+    "zh": "这条查询本身就是无障碍特性:它把「用户声明偏好」变成 CSS 可响应的状态。落点:焦点环、分隔线、禁用态文字全部响应 more 增强(07§38 指导);四值中 custom 与 forced-colors: active 联动,处理 custom 时应同时检查 forced-colors 场景。",
+    "en": "The query is itself an accessibility feature: it turns a declared user preference into a CSS-reactive state. Apply it to focus rings, dividers, and disabled text, all enhanced under more (07 §38 guidance); the custom value couples with forced-colors: active — handling custom means checking the forced-colors scenario too."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-contrast/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个对比度偏好响应卡:含输入框/按钮/分隔线/禁用文本的表单卡,auto 档挂真实 @media (prefers-contrast: more/less) 块,其余三档用 data-mode 手动模拟;more 时焦点环虚线换实线加粗、文本加深、分隔线变硬。",
+      "en": "Build a contrast-preference responsive card: a form card with input/button/divider/disabled text; the auto tier mounts real @media (prefers-contrast: more/less) blocks while the other three tiers simulate via data-mode; under more the focus ring goes solid and thicker, text darkens, dividers harden."
+    },
+    "acceptance": [
+      { "zh": "四值(no-preference/more/less/custom)语义齐备,auto 档为真实媒体查询", "en": "All four values (no-preference/more/less/custom) covered; auto uses real media queries" },
+      { "zh": "more 形态:虚线 outline → 高对比实线并加粗(MDN 示例),文本与分隔线增强", "en": "more form: dashed outline → solid high-contrast, thicker (MDN's example); text and dividers enhanced" },
+      { "zh": "ringWidth 为 CSS 变量型参数(--pc-ring),驱动焦点环宽度", "en": "ringWidth is a CSS-var-type param (--pc-ring) driving ring width" },
+      { "zh": "custom 档演示 forced-colors 联动语义(说明性文本),不只是换个名字", "en": "The custom tier demonstrates the forced-colors coupling (explanatory text), not just a rename" },
+      { "zh": "默认形态下一切可读——增强形态只是放大,不是补偿", "en": "Everything readable in the default form — enhancement amplifies, never compensates" }
+    ]
+  }
+}

@@ -9,15 +9,24 @@ const root = resolve(scriptDir, "..");
 const dist = join(root, "dist");
 
 const EXPECTED = {
-  // styles 第 8 批:8 个风格史条目已落地(与 scripts/verify-entries.mjs 的 styles 同一清单)。
-  styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid", "flat-design", "skeuomorphism", "memphis-design", "swiss-international", "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome"],
-  materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api"],
-  // motion 第 8 批:8 个工艺/行为条目已落地(与 scripts/verify-entries.mjs 的 motion 同一清单);
+  // styles 第 8 批 8 个 + 第 9 批(b13)maximalism / classic-brutalism / spatial-ui 共 18 个
+  // (与 scripts/verify-entries.mjs 的 styles 同一清单);
   // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
-  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow"],
-  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation"],
-  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
-  layout: ["container-queries"],
+  styles: ["glassmorphism", "neumorphism", "claymorphism", "neo-brutalism", "minimalism", "cyberpunk", "bento-grid", "flat-design", "skeuomorphism", "memphis-design", "swiss-international", "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome", "maximalism", "classic-brutalism", "spatial-ui"],
+  materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api"],
+  // motion 第 8 批 8 个工艺/行为条目 + b14 批(动效补全)6 条 M3/Web 条目,共 25 个
+  // (与 scripts/verify-entries.mjs 的 motion 同一清单);
+  // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
+  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow", "m3-duration-tokens", "easing-pairs", "choreography", "parallax", "haptics-web", "page-transitions"],
+  // color 9 条基础 + b12-color 批(色彩与主题补全)5 条,共 14 个
+  // (与 scripts/verify-entries.mjs 的 color 同一清单)。
+  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation", "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces", "color-psychology-ui", "theme-transition"],
+  // type 3 条基础 + b11 批(排版补全)6 条,共 9 个
+  // (与 scripts/verify-entries.mjs 的 type 同一清单)。
+  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing", "measure-line-length", "wcag-text-spacing", "cjk-typography", "font-display-strategy", "text-wrap-balance", "drop-cap-initial"],
+  // layout container-queries + b10 批(布局补全)8 条,共 9 个
+  // (与 scripts/verify-entries.mjs 的 layout 同一清单)。
+  layout: ["container-queries", "auto-fit-minmax", "subgrid", "position-sticky", "safe-area", "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning"],
   // 第七分类 components:24 个 slug(与 scripts/verify-entries.mjs 的 COMPONENT_SLUGS 同一清单,
   // 六子分组序 basic/form/feedback/data/navigation/other)—— 批产已完成,缺失检查并入常规逐条全检。
   components: [
@@ -28,8 +37,8 @@ const EXPECTED = {
     "nav-menu", "tabs", "breadcrumb", "dropdown",
     "empty", "watermark",
   ],
-  // 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,6 slug)——
-  // 14 条已落地,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 同一清单;
+  // 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,8 slug)——
+  // 16 条已落地,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 同一清单;
   // 条目页检查并入常规逐条全检(与 components 批产收口同动作)。
   icons: [
     "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
@@ -38,11 +47,21 @@ const EXPECTED = {
   dataviz: [
     "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
     "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
+    "dataviz-chart-selection", "dataviz-color-ordering",
+  ],
+  // 第十分类 principles(交互法则与无障碍,15 slug)——15 条已全部落地,
+  // 与 scripts/verify-entries.mjs 的 PRINCIPLES_SLUGS 同一清单,并入常规逐条全检
+  // (条目页 zh 标记照通用规则 = nameZh ?? name,en = name)。
+  principles: [
+    "fitts-law", "hick-law", "millers-law", "jakobs-law", "peak-end-rule",
+    "doherty-threshold", "teslers-law", "gestalt-proximity", "gestalt-similarity-closure",
+    "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
+    "prefers-contrast", "keyboard-navigation",
   ],
 };
 
-// 分类页 zh 标记(components zh 页标题文案;icons/dataviz zh = 分类名逐字;en 页均为分类 id)
-const CATEGORY_ZH_MARKERS = { components: "前端部件", icons: "图标体系", dataviz: "数据可视化" };
+// 分类页 zh 标记(components zh 页标题文案;icons/dataviz/principles zh = 分类名逐字;en 页均为分类 id)
+const CATEGORY_ZH_MARKERS = { components: "前端部件", icons: "图标体系", dataviz: "数据可视化", principles: "交互法则" };
 
 const missing = [];
 const contentFails = [];
@@ -61,9 +80,15 @@ function checkPage(rel, mustContain, label) {
   }
 }
 
-// 名称类标记(zh = nameZh/name,en = name)经 Astro 文本渲染会做最小 HTML 转义
-// (如 "Stroke & Fill Icons" 落盘为 "Stroke &amp; Fill Icons"),按同样规则转义后再匹配。
-const asRenderedText = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// 名称类标记(zh = nameZh/name,en = name)经 Astro 文本渲染会做 HTML 转义
+// (覆盖 & < > " ' 五字符,如 "Stroke & Fill Icons" 落盘为 "Stroke &amp; Fill Icons",
+// "Fitts's Law" 落盘为 "Fitts&#39;s Law"),按同样规则转义后再匹配。
+const asRenderedText = (s) => s
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
 
 if (!existsSync(dist)) {
   console.error(`dist missing: ${dist} — run "pnpm -C uiux-atlas run build" first`);
@@ -106,7 +131,7 @@ for (const cat of Object.keys(EXPECTED)) {
   checkPage(join("en", cat, "index.html"), [cat], `en category ${cat}`);
 }
 
-// 条目页 ×2 ×97:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
+// 条目页 ×2 ×142:zh 页标记 = nameZh(缺省回退 name),en 页标记 = name
 for (const [cat, slugs] of Object.entries(EXPECTED)) {
   for (const slug of slugs) {
     const schemaPath = join(root, "src", "content", "entries", cat, slug, "schema.json");

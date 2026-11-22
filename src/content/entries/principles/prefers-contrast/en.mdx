@@ -1,0 +1,55 @@
+## Structure & DOM
+
+The demo is a **contrast-preference responsive card** (a form card: input / button / divider / disabled sample); the `mode` param switches between real media queries and manual simulation:
+
+```html
+<div class="pc-field" data-mode="auto">
+  <input class="pc-input" />       <!-- dashed border + dashed focus ring -->
+  <button class="pc-btn">Enable 2FA</button>
+</div>
+```
+
+Key points:
+
+- The `auto` tier mounts **real** `@media (prefers-contrast: more/less/custom)` blocks — flip the OS setting and the form responds;
+- The `more/less/custom` tiers simulate the same declarations via `data-mode` — every form is previewable without touching OS settings;
+- All four values land on concrete forms: no-preference default; more enhanced; less softened; custom switches to Canvas/Field/ButtonFace **system colors**, matching the forced-colors user palette.
+
+## Styling & Parameters
+
+```css
+/* MDN's example scenario: under prefers-contrast: more, a dashed outline becomes solid high-contrast (research 07 §38) */
+.pc-field[data-mode="more"] .pc-input:focus-visible,
+.pc-field[data-mode="more"] .pc-btn:focus-visible {
+  outline: calc(var(--pc-ring) + 1px) solid oklch(0.2 0 0);
+}
+@media (prefers-contrast: more) {
+  .pc-field[data-mode="auto"] .pc-card { border-color: oklch(0.25 0 0); }
+  /* …as above */
+}
+```
+
+- `mode` defaults to **auto**; the four values verbatim from MDN (research 07 §38): `no-preference / more / less / custom`;
+- `ringWidth` defaults to **2px** (cssVar `--pc-ring`): the base focus-ring width; the more form adds 1px and goes solid — "thicker" and "solid" are two separable enhancements;
+- The custom tier's system colors are a **semantic demonstration**: real implementations hand custom over to forced-colors; the demo previews that palette logic with the system keywords.
+
+## Motion & Interaction
+
+- Border/text enhancements transition border-color over 0.2s, minimally; no extra `prefers-reduced-motion` handling (the transition carries no information);
+- Tab to the input or button → the ring shows: dashed 2px in the default form, solid 3px in more — **one control, two focus feedbacks matched to preference strength**;
+- Switching mode never reloads: simulated tiers and real media queries don't interfere (every auto-tier declaration is nested under `[data-mode="auto"]`).
+
+## Real-world examples
+
+- **MDN's official example**: under `prefers-contrast: more`, a dashed outline becomes a solid high-contrast one — the direct source of this entry's focus-ring enhancement (research 07 §38);
+- **The focus-ring/divider/disabled-text trio**: 07 §38's guidance names these three targets verbatim — "focus rings, dividers, disabled text should all respond to this query with enhanced contrast" — implemented one by one here;
+- **Windows High Contrast and forced-colors**: the custom value corresponds to the user palette of `forced-colors: active` (07 §38) — for users migrating from OS-level high-contrast themes into the browser, `custom` is the bridge (editorial generalization of MDN semantics).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `mode` | to more: borders, text, dividers, focus rings all enhanced — when users *declare* more contrast, every secondary gray yields | to less: softened a notch; less is the user's *requested* softness, not a defect |
+| `ringWidth` | 8px makes the ring dramatic (teaching exaggeration) | 1px makes the default ring nearly invisible — exactly why more users need the enhancement |
+
+The lesson: `prefers-contrast` is done **per component**, not as a global re-theme (that's forced-colors' job); Baseline across browsers since May 2022 — use it freely, the degradation path is natively safe.

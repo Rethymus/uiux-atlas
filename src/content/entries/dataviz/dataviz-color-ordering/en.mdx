@@ -1,0 +1,63 @@
+## Structure & DOM
+
+"Data color ordering" answers a different question than the categorical palette (see dataviz-categorical-palette): the palette covers *which colors exist*, the ordering covers *which color series i gets, and who is the protagonist*. The demo is a 5-series line chart where series i takes palette slot i; the emphasis strategy only changes stroke color and weight:
+
+```html
+<div class="stage">
+  <svg viewBox="0 0 640 340" role="img" aria-label="Data color ordering demo">
+    <!-- Line of series i: stroke = palette[i] (official order)
+         Gray context: context strokes = var(--co-gray), focal keeps its palette color + heavier weight -->
+    <path class="line" stroke="#E69F00" />
+  </svg>
+  <div class="readout" role="status"><!-- order / focal / strategy / context-gray chips --></div>
+</div>
+```
+
+Key points:
+
+- **Order is contrast**: Carbon's official guidance is to use the 14-color categorical palette "strictly in order to maximize adjacent contrast"; Power BI's official docs confirm the theme `dataColors` array order *is* the series color order — a scrambled theme file scrambles every visual (research 08 §1.3/§4.2);
+- Okabe-Ito practice (official CUD page): light colors first (orange → sky blue → bluish green), the red/green confusable pair (vermillion / reddish purple) reserved for rare classes, capped at 8 classes with class 9 merged into 'Other';
+- Gray-context emphasis is *hierarchy*, not a *new color*: context series mute to gray and the focal series gains weight — never manufacture an Nth color via alpha or lightness variants.
+
+## Styling & Parameters
+
+Three JS-type params plus one CSS-variable param:
+
+```css
+/* context gray injected as --co-gray on .demo-stage, consumed by SVG strokes */
+.line-context { stroke: var(--co-gray, #B0B0B0); stroke-width: 1.5; }
+.line-accent  { /* color stays a palette value; only weight changes */ stroke-width: 3; }
+```
+
+| Parameter | Default | Where the numbers come from |
+| --- | --- | --- |
+| `order` | `official` | Carbon's in-order red line (official site verified) + Power BI dataColors order = assignment order (official docs verified); `shuffled` is a fixed demo scramble |
+| `accentSeries` | `2` | a demo-chosen example focal point, no official basis |
+| `emphasis` | `gray-context` | gray-context emphasis is community practice (Claus Wilke's color chapter, research 06 §19); no official numbers |
+| `contextGray` | `#B0B0B0` | common community value, unverified; injected as hex, no oklch() dependency |
+
+The colors themselves are Okabe-Ito's first five (R grDevices fixed values, source-verified): `#E69F00 #56B4E9 #009E73 #F0E442 #0072B2`. The demo's line chart starts its y axis at 20 — line charts may skip zero (FT citing ONS, see dataviz-chart-selection).
+
+## Motion & Interaction
+
+- Parameter changes redraw immediately with no transition — a color reassignment is a data-mapping change, not a cross-fade performance;
+- Chip state-color changes (background/border 0.2s) are disabled under `prefers-reduced-motion: reduce`;
+- In gray-context mode the focal series gets a line-end direct label (name + bold); in full-color mode five adjacent end values would collide, so the demo falls back to a legend — **direct labels suit a single focal point; equal-weight multi-series still needs a legend** (jfly objects to distant legends only where direct labels would fit);
+- Hover readouts use native `<title>` (series · color name · final month value); full tooltip rules live in dataviz-tooltip-legend.
+
+## Real-world examples
+
+- **Power BI report themes**: official docs confirm the `dataColors` array order is the series color order, and the theme JSON also carries `good/neutral/bad` semantic slots — ordering and semantic emphasis live on separate layers (official docs verified, research 08 §4.2).
+- **IBM Carbon**: the 14-color categorical palette must be used strictly in order to maximize adjacent contrast; the alert colors danger `#da1e28` / serious warning `#ff832b` / warning `#f1c21b` / success `#198038` are the official anchors for semantic emphasis; red line — no gradients in charts (Apache-2.0, official site verified, research 08 §1.3).
+- **ggplot2's gray canvas**: the official docs describe "The signature ggplot2 theme with a grey background and white gridlines" — the panel gray is parameterized as `col_mix(ink, paper, 0.92)` (theme-defaults.R L271, source-verified, research 08 §5.3), the textbook "gray backdrop makes data colors pop": a low-saturation canvas lets data colors stand out naturally.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `order` | shuffled pushes weakly-separated pairs (yellow / sky blue) into slots 1–2, dropping adjacent contrast below the official design intent | `official` maximizes adjacent contrast per the official ordering — the only recommended setting |
+| `accentSeries` | a late focal point (5) strains the traceability of five gray lines whose ends still need to be distinguishable | focal = 1 is the conventional read; give the emphasis slot to the story's protagonist, not slot inertia |
+| `emphasis` | `gray-context` focuses one line at the cost of whole-picture tracing; fall back to full-color when readers must verify every series | `full-color` keeps equal-weight comparison, but five saturated lines fight for attention |
+| `contextGray` | darker (→#666) strengthens hierarchy, but context lines start reading as a second datum | lighter (→#DDD) melts into the background; under 3:1 the context series disappears (WCAG SC 1.4.11) |
+
+Rules of thumb: take colors in official order, cap at 8 classes; emphasis is zero-sum — one protagonist per chart; hold the context gray at ≥3:1, and run dataviz-colorblind-safe's three-model simulation when unsure.

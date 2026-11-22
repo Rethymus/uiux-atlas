@@ -1,0 +1,104 @@
+{
+  "name": "Measure & Line Length",
+  "nameZh": "行长与可读性",
+  "aliases": ["measure", "line length", "行长", "栏宽", "65ch"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "用 ch 单位给正文栏定宽上限:平均行长保持 45–90 字符(含空格),过长难以垂直追踪回行,过短频繁换行切碎节奏。",
+    "en": "Cap body copy with the ch unit: keep average line length at 45–90 characters (incl. spaces) — too long strains vertical tracking, too short chops the rhythm."
+  },
+  "origin": {
+    "zh": "排版学经典议题(measure);Web 落地依赖 CSS ch 单位——「0」字形的宽度。已核实区间:Butterick《Practical Typography》建议平均行长 45–90 字符(含空格)、约 2–3 个字母表长度(调研 05§19);社区常说的「65ch 正文中值」未找到权威出处——未证实,本条目仅作演示默认。",
+    "en": "A classic typographic topic (measure); on the web it lands through the CSS ch unit — the width of the '0' glyph. Verified range: Butterick's Practical Typography recommends an average of 45–90 characters (incl. spaces), about 2–3 alphabets (research 05 §19). The oft-quoted '65ch body default' has no authoritative source — unverified, used here only as the demo default."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "measure",
+      "unit": "ch",
+      "min": 20,
+      "max": 120,
+      "step": 1,
+      "default": 65,
+      "cssVar": "--measure-width",
+      "effect": {
+        "zh": "正文列宽上限(以 ch 计)。已核实适读区间为平均 45–90 字符(Butterick);默认 65ch 落在区间中段,是社区常见惯例(未证实),恰便于双向演示。注意 ch 随字体变化:同一 ch 数在不同字体下物理宽度不同。",
+        "en": "Max body-column width in ch units. The verified readable band is 45–90 characters on average (Butterick); the default 65ch sits mid-band and is a community convention (unverified). Note that ch is font-dependent: the same ch count has different physical widths in different typefaces."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "fontSize",
+      "unit": "px",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--measure-font",
+      "effect": {
+        "zh": "正文字号。ch 是相对单位——字号变大,同样 ch 数的列物理宽度也变大;故行长(字符数)只由 measure 决定,栏的物理宽度由两者共同决定。默认 16px 为浏览器正文基字号。",
+        "en": "Body font size. ch is relative — a larger font size widens the same ch count, so character count per line is governed by measure alone while physical width depends on both. Default 16px is the browser's base body size."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "align",
+      "options": [
+        { "value": "left", "label": { "zh": "左对齐(不齐行)", "en": "Left-aligned (ragged right)" } },
+        { "value": "justify", "label": { "zh": "两端对齐(齐行)", "en": "Justified" } }
+      ],
+      "default": "left",
+      "cssVar": "--measure-align",
+      "effect": {
+        "zh": "text-align 取值。左对齐保留自然词间空隙;两端对齐把行长差异摊到空格里,窄栏 + 两端对齐易出「词间河流」。行长极长或极短时,对齐方式的缺陷都会被放大。",
+        "en": "The text-align value. Left alignment keeps natural word spaces; justification distributes line-length differences into the spaces — a narrow justified column invites 'rivers'. Extreme measures amplify both alignment's flaws."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "ch 单位属 CSS Values 基础单位,所有现代浏览器广泛可用(MDN);本条目无兼容性风险。文本换行测量用逐字符 span + offsetTop 实现,零依赖。",
+      "en": "The ch unit is a CSS Values basic unit, widely available in all modern browsers (MDN); no compatibility risk here. Line measurement is done with per-character spans + offsetTop, zero dependencies."
+    }
+  },
+  "fallback": {
+    "zh": "ch 单位不可用时,退回 max-width 的 em/px 上限或百分比宽度即可——行长约束的本质是「列宽上限」,单位只是度量口径;现代浏览器 ch 均可用,无需兜底。",
+    "en": "If ch is unavailable, fall back to an em/px max-width or a percentage — the essence of measure is a column-width cap; units are just the measuring stick. All modern browsers support ch, so no fallback is needed in practice."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "长文正文列(文章页、文档站、博客)——首要可读性约束就是行长", "en": "Long-form body columns (articles, docs, blogs) — measure is the primary readability constraint" },
+      { "zh": "配合流式字阶:clamp() 字号 + ch 上限一起写,窄屏自动收窄", "en": "Paired with fluid type: clamp() font-size plus a ch cap so narrow screens narrow automatically" },
+      { "zh": "多栏布局与卡片内文本块的宽度约束", "en": "Width caps for multi-column layouts and text blocks inside cards" },
+      { "zh": "设计令牌化:--measure: 65ch 一处声明,全文引用", "en": "As a design token: declare --measure: 65ch once, reference everywhere" }
+    ],
+    "avoid": [
+      { "zh": "把整个页面容器当正文列用——导航/页脚不是正文,不需要 65ch 约束", "en": "Treating the whole page container as body copy — nav/footer aren't body text and don't need the cap" },
+      { "zh": "超宽屏上不做任何上限,让正文行拉到 120+ 字符", "en": "No cap on ultrawide screens, letting lines stretch past 120 characters" },
+      { "zh": "表格、代码块等天然宽内容强行套 65ch——它们有自己的滚动/折叠策略", "en": "Force-capping naturally wide content (tables, code blocks) at 65ch — they have their own scroll/collapse strategies" },
+      { "zh": "只写像素宽度不写 ch——换字体/换字号后行长悄悄漂移", "en": "Pixel widths only — the real character measure silently drifts when typeface or size changes" }
+    ]
+  },
+  "a11y": {
+    "zh": "行长过长时,低视力用户与阅读障碍用户垂直追踪回行容易串行/丢行;WCAG SC 1.4.10 Reflow 要求 400% 缩放无双向滚动,给正文列设 ch 上限是满足它的通行手段之一(社区做法,本调研未逐字核对 SC 原文);WCAG 1.4.8 视觉呈现(AAA)对行宽另有约束,常被引用为不超过 80 字符(未逐字核对,建议查 SC 原文后引用)。",
+    "en": "Overlong lines make vertical tracking error-prone for low-vision and dyslexic readers; a ch cap on body columns is a common way to satisfy WCAG SC 1.4.10 Reflow (no two-dimensional scrolling at 400% zoom) — community practice, SC text not checked verbatim in this research. WCAG 1.4.8 Visual Presentation (AAA) adds width limits, commonly cited as ≤80 characters — not verified verbatim; consult the SC text before citing."
+  },
+  "sources": [
+    "https://practicaltypography.com/line-length.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为文章页正文列设置可读性栏宽:用 ch 单位声明 max-width 上限,使平均行长落在 45–90 字符(含空格),窄屏时列宽随容器收缩而不溢出。",
+      "en": "Set a readability measure for an article body: declare the max-width cap in ch units so the average line lands in 45–90 characters (incl. spaces), shrinking with the container on narrow screens without overflow."
+    },
+    "acceptance": [
+      { "zh": "正文列用 max-width: calc(var(--measure) * 1ch) 一类的 ch 上限,而不是硬编码 px", "en": "Body column caps via max-width: calc(var(--measure) * 1ch)-style ch expression, not hard-coded px" },
+      { "zh": "上限数值保证平均行长 45–90 字符,不要超过 90", "en": "The cap keeps average line length within 45–90 characters; never beyond 90" },
+      { "zh": "列宽用 min(100%, …) 包一层,窄屏时让位于容器", "en": "Wrap as min(100%, …) so narrow screens defer to the container" },
+      { "zh": "标题、导航、页脚不套同一上限——行长约束只属于正文", "en": "Headings, nav and footers don't inherit the cap — measure belongs to body copy only" },
+      { "zh": "换行策略交给浏览器,不用 <br> 手工断行", "en": "Let the browser wrap; no manual <br> line breaks" }
+    ]
+  }
+}

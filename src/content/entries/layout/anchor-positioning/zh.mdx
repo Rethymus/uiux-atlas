@@ -1,0 +1,73 @@
+## 结构与 DOM
+
+锚点 + 浮层两元素:**锚点声明 `anchor-name` 获得名字,浮层用 `position-anchor` 关联、用 `position-area` 在锚点周围的九宫格里选位**。浮层通常配 popover 语义管理焦点与关闭。
+
+```html
+<button class="help-btn" popovertarget="help-pop" aria-describedby="help-pop">帮助</button>
+
+<div class="help-pop" id="help-pop" popover>
+  …浮层内容…
+</div>
+```
+
+关键点:
+
+- 属性族(MDN 逐项核实,调研 11§1):`anchor-name`(命名锚点)、`position-anchor`(关联)、`anchor()/anchor-size()`(取锚点位置/尺寸)、`position-area`(声明式九宫格)、`position-try-fallbacks`/`position-try-order`/`@position-try`(溢出备选位置)、`position-visibility`(条件隐藏:always / anchors-visible / no-overflow)、`anchor-center`(相对锚点居中)、`anchor-scope`(限定查找范围)与全局属性 `anchor`;
+- 溢出换位与条件隐藏是定位之外的两个核心机制——浮层放不下自动翻面,锚点滚出视口自动隐藏;
+- anchor 只管位置:焦点管理、Esc 关闭、读屏播报归 popover/dialog 语义。
+
+## 样式与参数
+
+三个参数:area 为 JS 型(生成 position-area 声明与回退坐标),offset 为 CSS 型(--ap-offset),tryFallback 为 JS 型(生成/移除备选位置规则):
+
+```css
+.help-btn { anchor-name: --help-btn; }
+
+/* 写法 B(声明式,demo 采用):position-area + 溢出翻面 + 条件隐藏 */
+.help-pop {
+  position: fixed;
+  position-anchor: --help-btn;
+  position-area: bottom center;
+  margin-top: var(--ap-offset);        /* 8px:11§1 片段 A 的间距值 */
+  position-try-fallbacks: --pop-top;   /* 放不下则尝试上方 */
+  position-visibility: anchors-visible;
+}
+@position-try --pop-top { position-area: top center; }
+
+/* 写法 A(anchor() 函数式,同效): */
+.help-pop {
+  top: calc(anchor(bottom) + 8px);
+  left: anchor(center);
+  translate: -50%;
+}
+
+/* 特性检测 */
+@supports (anchor-name: --a) { /* 增强样式 */ }
+```
+
+数值出处:间距默认 8px 取自调研 11§1 片段(`calc(anchor(bottom) + 8px)`);属性族与机制描述为 MDN 模块页/参考页逐项核实(调研 11§1);支持数据:Chrome/Edge 125(2024-05)、Safari/iOS 26(WWDC25 预告;首个 beta 不含 position-visibility)、Firefox 147(2026-01-13 发布说明「Support for CSS anchor positioning was added」);增补(position-visibility、flip-x/flip-y、伪元素)为 Safari 26.2;zoom/transform 定位时序修正 Chrome 144 / Safari 27,Firefox 未支持(调研 11§1,BCD + 官方发布说明,2026-11-22 抓取)。
+
+## 动效与交互
+
+定位发生在**布局阶段**,换位瞬时:
+
+- 浮层出现/消失用 opacity 0.2s 过渡(配 popover 的 light dismiss);`prefers-reduced-motion` 下取消过渡;
+- `@position-try` 翻面是布局决策,瞬时完成、无位移动画;
+- demo 以 `CSS.supports('anchor-name: --a')` 检测并如实报告当前路径:原生 → 纯 CSS 锚定;不支持 → getBoundingClientRect 的 JS 回退(同一套 area 语义与翻面逻辑);
+- 浮层与按钮用 `aria-expanded` / `aria-describedby` 关联——定位之外,可达性关系自己声明。
+
+## 真实产品案例
+
+- **MDN CSS anchor positioning 模块页** —— 「将元素系在一起」的模块定义与 anchor()/position-area/@position-try 全家桶示范,是该特性最系统的用法参照(调研 11§1 来源)。
+- **Chrome for Developers 文档教程** —— Chromium 125 起可用的官方教程与示例,是最早的规模化用法指引(调研 11§1 来源)。
+- **WebKit WWDC25 与 Firefox 147 发布说明** —— 两家分别把锚点定位列为 Safari 26 新布局机制与 Firefox 147 新特性,官方口径一致推荐「tethering elements」场景(调研 11§1 来源)。
+
+## 参数敏感度
+
+| 参数 | 调大 / 换档会… | 调小 / 换档会… |
+| --- | --- | --- |
+| `area` | 换向(right/left)时浮层横移到锚点侧面;边缘处翻面方向随之变化 | bottom/top 居中是默认语义;四向都写一遍才能确认 @position-try 的翻面链路 |
+| `offset` | 间距变大:浮层远离锚点,视觉关联变弱;48px 时近乎脱钩 | 浮层贴住锚点;低于 4px 后紧贴无呼吸,阴影与描边糊在一起 |
+| `tryFallback` | on:溢出视口自动翻面(bottom center 放不下翻 top center),demo 右下角锚点即刻演示 | off:浮层可能被容器裁切——对照展示备选位置机制的价值 |
+
+经验要点:浮层一律配 popover 语义(anchor 管位置,可达性另算);默认 bottom center + @position-try 翻面是社区标准姿势(11§1 片段写法);依赖 zoom/transform 的场景等时序修正全覆盖再上;JS 回退不是可选项,是发布门槛。

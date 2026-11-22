@@ -1,0 +1,147 @@
+{
+  "name": "Spatial UI",
+  "nameZh": "空间 UI Spatial",
+  "aliases": ["空间 UI Spatial", "Spatial UI", "visionOS Style"],
+  "category": "styles",
+  "system": "apple",
+  "star": 3,
+  "tagline": {
+    "zh": "visionOS 设计语言的 Web 转译(平台范式借鉴):玻璃窗口浮于环境之上、深度即层级(少量大阴影)、注视即悬停(大热区+明确焦点环)、「最小沉浸级别」的动效纪律。",
+    "en": "visionOS's design language translated to the Web (a platform-paradigm borrowing): glass windows floating over an environment, depth-as-hierarchy (few large shadows), gaze-as-hover (big targets + clear focus rings), and the 'minimum immersion' motion discipline."
+  },
+  "origin": {
+    "zh": "Apple visionOS 设计语言,HIG《Designing for visionOS》官方章节(2026-11 官方 Markdown 接口抓取,补研 11§5);本条目性质为平台范式借鉴:visionOS 的空间/沉浸/透视/注视交互转译为 Web 手法,映射建议出自补研(非官方规范,经验值)。Web 侧官方锚点:Safari 26.2 起 visionOS 上 WebXR 支持 WebGPU(WebKit 博客)。",
+    "en": "Apple's visionOS design language, from the official HIG chapter 'Designing for visionOS' (fetched 2026-11 via the official Markdown endpoint; study 11 §5). This entry is a platform-paradigm borrowing: space/immersion/passthrough/gaze interaction translated into Web techniques, with the mapping being experiential advice from the study, not an official spec. Official Web-side anchor: Safari 26.2 enables WebGPU-backed WebXR on visionOS (WebKit blog)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "blur",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--sp-blur",
+      "effect": {
+        "zh": "窗口玻璃的背景模糊半径(backdrop-filter)。默认 20px 出自补研 11§5 可复用片段 blur(20px) saturate(1.4)——visionOS 系统玻璃的 Web 近似,经验值而非官方公布数值。",
+        "en": "Backdrop blur radius of the window glass (backdrop-filter). The 20px default comes from study 11 §5's reusable snippet blur(20px) saturate(1.4) — a Web approximation of visionOS system glass, an experiential value rather than an officially published number."
+      }
+    },
+    {
+      "type": "number",
+      "name": "saturation",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "unit": "×",
+      "default": 1.4,
+      "cssVar": "--sp-sat",
+      "effect": {
+        "zh": "背景饱和度补偿,与 blur 组成 blur(20px) saturate(1.4)。饱和补偿防止磨砂层「吸灰」,是补研 11§5 片段配方的一半;1.4 为经验值。",
+        "en": "Backdrop saturation compensation, paired with blur as blur(20px) saturate(1.4). Saturation keeps the frosted layer from looking ashy — it is half of study 11 §5's snippet recipe; 1.4 is an experiential value."
+      }
+    },
+    {
+      "type": "color",
+      "name": "fill",
+      "format": "oklch",
+      "default": "oklch(1 0 0 / 0.55)",
+      "cssVar": "--sp-fill",
+      "effect": {
+        "zh": "窗口玻璃填充。补研 11§5 片段原式为 color-mix(in oklab, Canvas 55%, transparent)——55% 的系统底色;此处参数化为固定色 + 55% alpha 的浅色场景近似(Canvas 语义无法进滑杆)。",
+        "en": "The window glass fill. Study 11 §5's snippet uses color-mix(in oklab, Canvas 55%, transparent) — 55% of the system canvas; parameterized here as a fixed color at 55% alpha for a light scene (the Canvas keyword cannot ride a slider)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "radius",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 24,
+      "cssVar": "--sp-radius",
+      "effect": {
+        "zh": "窗口圆角。默认 24px 出自补研 11§5 可复用片段——visionOS 窗口以大圆角「浮」在空间里,尖锐直角在空间隐喻中读作危险物。",
+        "en": "Window corner radius. The 24px default comes from study 11 §5's reusable snippet — visionOS windows 'float' with generous rounding; sharp corners read as dangerous objects in the spatial metaphor."
+      }
+    },
+    {
+      "type": "shadow",
+      "name": "shadow",
+      "default": [
+        {
+          "x": 0,
+          "y": 12,
+          "blur": 40,
+          "spread": 0,
+          "color": "rgba(0, 0, 0, 0.18)"
+        }
+      ],
+      "cssVar": "--sp-shadow",
+      "effect": {
+        "zh": "深度阴影(单层大阴影)。默认 0 12px 40px rgba(0,0,0,.18) 出自补研 11§5 片段;「深度即层级:用少量大阴影表达 z 轴,而非大量描边」——窗口越高越浮,阴影是空间中唯一的 z 轴语言。",
+        "en": "Depth shadow (one large soft layer). Default 0 12px 40px rgba(0,0,0,.18) from study 11 §5's snippet; 'depth is hierarchy: express the z-axis with few large shadows, not many outlines' — the higher the window floats, the softer and larger the shadow, the only z-axis language in the metaphor."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "immersion",
+      "options": [
+        { "value": "shared", "label": { "zh": "Shared Space 并排", "en": "Shared Space" } },
+        { "value": "full", "label": { "zh": "Full Space 独占", "en": "Full Space" } }
+      ],
+      "default": "shared",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-immersion)。对应 HIG 官方概念:默认 Shared Space 多应用并排,可选 Full Space 独占;HIG 原则「找到每个关键时刻所需的最小沉浸级别」。demo 中 shared=双窗口并排、环境全亮;full=主窗口居中放大、环境压暗沉浸。",
+        "en": "JS-type param (demo subscribes and toggles data-immersion). Maps the official HIG concepts: Shared Space (default, apps side by side) vs Full Space (exclusive); HIG principle: 'find the minimum level of immersion needed for each moment'. In the demo: shared = two windows side by side, environment fully lit; full = the main window grows centered while the environment dims."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "backdrop-filter:Chrome/Edge 76+(2019)、Firefox 103+(2022)、Safari 9+ 需 -webkit- 前缀,Safari 18(2024-09)起无前缀(调研 03§1);补研片段使用的 color-mix() 属现代基线特性,不支持时按 fallback 回退固定 rgba 填充。",
+      "en": "backdrop-filter: Chrome/Edge 76+ (2019), Firefox 103+ (2022), Safari 9+ with the -webkit- prefix, unprefixed since Safari 18 (2024-09) (research 03 §1); the study snippet's color-mix() is a modern-baseline feature — fall back to a fixed rgba fill where unsupported."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 backdrop-filter 时,把填充提高到接近不透明(0.9+),保留圆角、描边与阴影——窗口退化为实色面板,层级关系(阴影)不受影响,这就是玻璃层 @supports 回退的标准动作;不支持 color-mix 时直接使用参数化固定色。深度语言(阴影/缩放/位置)全部不依赖滤镜,任何浏览器都成立。",
+    "en": "Without backdrop-filter support, raise the fill toward opaque (0.9+) and keep radius, outline and shadow — the window degrades to a solid panel and the depth relation (the shadow) is untouched; the standard @supports fallback for glass layers. Where color-mix() is unsupported, use the parameterized fixed color directly. The depth language (shadow/scale/position) never depends on filters — it holds in every browser."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "面向 visionOS 浏览器的 Web 内容——Safari 26.2 起 WebXR 支持 WebGPU(WebKit 官方),玻璃窗口语言直接对应系统窗口", "en": "Web content aimed at visionOS browsers — Safari 26.2 brings WebGPU-backed WebXR (official WebKit), and the glass-window language maps directly onto system windows" },
+      { "zh": "需要「窗口浮层」隐喻的产品页:媒体播放器、悬浮控制条、次级面板", "en": "Product pages needing the 'floating window' metaphor: media players, floating controls, secondary panels" },
+      { "zh": "强环境感场景:照片查看器、地图、演示页——玻璃下透出的环境本身就是内容", "en": "Environment-heavy scenes: photo viewers, maps, presentation pages — the environment showing through the glass is itself the content" },
+      { "zh": "强调「深度层级」的产品导航:用阴影与缩放表达主次,替代密集描边", "en": "Product navigation that leans on depth hierarchy: express primary/secondary with shadows and scale instead of dense outlines" }
+    ],
+    "avoid": [
+      { "zh": "纯色/无环境背景——玻璃在平色底上失效,只剩一层淡色矩形(与 glassmorphism 同规则)", "en": "Flat, environment-free backdrops — glass collapses on flat color into a pale rectangle (same rule as glassmorphism)" },
+      { "zh": "信息密集的数据面板——玻璃稀释对比度,密集文字需要实底", "en": "Dense data panels — glass dilutes contrast; dense text needs a solid surface" },
+      { "zh": "全屏「沉浸」滥用:HIG 原则「找到每个关键时刻所需的最小沉浸级别——不要假设每个时刻都需要完全沉浸」", "en": "Full-screen 'immersion' abuse: HIG's principle — 'find the minimum level of immersion needed for each moment; don't assume every moment needs full immersion'" },
+      { "zh": "两侧极远位置与全屏视差:HIG 舒适性原则「内容置于视野内」「避免压倒性、突兀、过快或缺乏静止参照系的运动」", "en": "Far-edge placements and full-screen parallax: HIG ergonomics — 'keep content in the field of view' and 'avoid overwhelming, abrupt, overly fast motion without a static reference frame'" }
+    ]
+  },
+  "a11y": {
+    "zh": "注视即悬停的 Web 执行:给交互目标更大的 hover 热区与明确的 :focus-visible 焦点环——visionOS 用注视+间接手势,Web 的对应物是 hover/focus,二者都要求目标足够大、反馈足够亮。「最小沉浸级别」转译为动效纪律:过渡短促、尊重 prefers-reduced-motion、不用全屏视差(HIG:「避免压倒性、突兀、过快或缺乏静止参照系的运动」)。玻璃上文字按透出的最亮/最暗背景双极端核对 4.5:1(WCAG 2.1 SC 1.4.3)。",
+    "en": "The Web execution of gaze-as-hover: give targets a larger hover footprint and a clear :focus-visible ring — visionOS pairs gaze with indirect gestures; the Web counterparts are hover/focus, and both demand big targets and bright feedback. 'Minimum immersion' translates into motion discipline: short transitions, respect for prefers-reduced-motion, no full-screen parallax (HIG: 'avoid overwhelming, abrupt, overly fast motion without a static reference frame'). Check glass text against the brightest and darkest backdrop extremes for 4.5:1 (WCAG 2.1 SC 1.4.3)."
+  },
+  "sources": [
+    "https://developer.apple.com/design/human-interface-guidelines/designing-for-visionos",
+    "https://webkit.org/blog/17640/webkit-features-for-safari-26-2/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 Web 手法复刻 visionOS 空间窗口:带环境的背景上浮起玻璃窗口(blur 20px + saturate 1.4 + 55% 填充 + 1px 内亮描边),24px 大圆角,单层 0 12px 40px 大阴影表达深度;Shared Space 双窗并排与 Full Space 环境压暗两档可切,交互目标带大热区与明确焦点环。",
+      "en": "Replicate visionOS spatial windows with Web techniques: glass windows (blur 20px + saturate 1.4 + 55% fill + a 1px inner highlight) floating over an environmental backdrop, 24px rounding, one large 0 12px 40px shadow for depth; switchable between Shared Space (windows side by side) and Full Space (dimmed environment), with generous hover targets and clear focus rings."
+    },
+    "acceptance": [
+      { "zh": "玻璃配方严格使用参数快照值(blur/saturate/fill/radius/shadow),1px 内亮描边用 outline + 负 offset 实现", "en": "The glass recipe uses the exact parameter snapshot values (blur/saturate/fill/radius/shadow); the 1px inner highlight is outline with negative offset" },
+      { "zh": "深度只用「少量大阴影」表达,不出现密集描边或多层阴影堆叠", "en": "Depth is expressed with few large shadows only — no dense outlines, no stacked multi-layer shadows" },
+      { "zh": "沉浸分两档(Shared Space / Full Space),切换尊重 prefers-reduced-motion", "en": "Immersion has two levels (Shared Space / Full Space); switching respects prefers-reduced-motion" },
+      { "zh": "环境背景必须丰富(照片/多层渐变),纯色底上玻璃失效", "en": "The environment must be rich (photo or multi-stop gradient); glass breaks on flat color" },
+      { "zh": "提供 @supports 回退:不支持 backdrop-filter 时提高填充为实色窗口,保留阴影层级", "en": "Provide an @supports fallback: raise the fill to a solid window without backdrop-filter, keeping the shadow hierarchy" }
+    ]
+  }
+}

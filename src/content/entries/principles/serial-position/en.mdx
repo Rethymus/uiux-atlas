@@ -1,0 +1,50 @@
+## Structure & DOM
+
+The demo is a **free-recall experiment**: words shown one by one → hidden → typed back in any order → scored by position with a cumulative bar chart:
+
+```html
+<div class="sp-stage">苹果</div>       <!-- one word at a time, dwell ms each -->
+<input id="sp-in" placeholder="e.g. apple space-separated…" />
+<svg> <!-- hits per position, accumulated across rounds --> </svg>
+```
+
+Key points:
+
+- Each round draws `items` words in random order from a 12-word pool — **word content is not the variable, position is**; hits match by word then map back to their original slot;
+- Any-order recall with position scoring: free recall is the standard paradigm for the serial position effect;
+- Sequence playback and completion are announced via `aria-live`; the chart pairs per-position numeric text (dual-channel).
+
+## Styling & Parameters
+
+```tsx
+// items / dwell are JS-type params: the demo subscribes to the store
+pool.forEach((w, i) => {
+  timers.push(setTimeout(() => setCurrent({ word: w, idx: i }), dwell * i));
+});
+```
+
+- `items` defaults to **9**, `dwell` to **600ms**: both are demo teaching params (the effect itself is qualitative); 600ms leaves rehearsal time for primacy and working-memory freshness for recency;
+- Accumulation: each round adds its hit vector into a tally; the chart plots "times each position was recalled" — one round is noisy, the U shape stabilizes after 3+;
+- Scoring is exact word matching: synonyms/typos don't count (kept deliberately simple, stated as such).
+
+## Motion & Interaction
+
+- Words appear as **discrete swaps** (whole word in/out, no slide or fade): any entrance animation would contaminate the display-duration variable; this holds under `prefers-reduced-motion` too, since the demo has no animation to begin with;
+- The input auto-focuses inside the user-initiated flow; Enter scores;
+- "Reset" clears the tally so a new parameter set (items=6 vs 12) can accumulate fresh.
+
+## Real-world examples
+
+- **Two-ended bottom navs**: high-frequency entries at the far left and right (e.g. Home and Profile) — the mobile tab-bar embodiment of Laws of UX guidance "position key actions on the far left and right within navigation"; Laws of UX also records Apple, Electronic Arts, and Nike designs exploiting the effect;
+- **The mid-list sinkhole in menus**: low-frequency items (Settings, About) sink into the menu's middle while the ends stay high-frequency — 07 §29's "put the least important items in the middle" as practiced IA;
+- **Pagination endpoints in long lists**: the first item of page one and the last item of the last page are remembered best, making sort order and pagination product decisions rather than pure engineering (editorial corollary of 07 §29).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `items` | at 12 words the middle's forgetting is dramatic and the U deepens | at 6 nearly everyone recalls all — the curve flattens |
+| `dwell` | too long drags; too short (\<300ms) starves encoding and flattens the entire curve, drowning primacy/recency both | around 600ms, primacy (rehearsal time) and recency (live in working memory) both hold |
+| Rounds | more rounds smooth and stabilize the U; a single round is at the mercy of word difficulty | — |
+
+The lesson: the serial position effect is a **free IA lever** — the sorting decision (who leads, who closes) is itself design. But screen-reader users traverse linearly in DOM order: "the middle doesn't matter" doesn't hold, and key actions still need semantic priority.

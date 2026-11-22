@@ -1,0 +1,73 @@
+## Structure & DOM
+
+A parent/child two-level grid: **the parent grid defines the tracks, and the child declares subgrid to borrow them**. The child must first span several parent tracks (`grid-row: span 3` and friends) — that is what gives it tracks to inherit.
+
+```html
+<div class="cards">          <!-- parent grid: defines column tracks -->
+  <article class="card">     <!-- subgrid: spans 3 row tracks -->
+    <h6>Title</h6>           <!-- inner row 1 = shared parent row -->
+    <p>Body</p>              <!-- inner row 2 -->
+    <footer>Footer</footer>  <!-- inner row 3 -->
+  </article>
+  <article class="card">…</article>
+</div>
+```
+
+Key points:
+
+- `grid-template-rows: subgrid` / `grid-template-columns: subgrid` inherit the parent grid's track definitions (research 05 §4);
+- The spanned parent-track count must match the internal item count, or the layout overflows or folds;
+- subgrid **shares track geometry only** (sizes and gap included) — DOM semantics and screen-reader order are untouched;
+- Baseline Widely available since 2023-09 (MDN, research 05 §4) — all three engines ship it, so use it freely.
+
+## Styling & Parameters
+
+Two parameters: axis is JS-type (data-axis switches the rows/columns declarations), gap is CSS-type (--sg-gap):
+
+```css
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);   /* parent rules 3 column tracks */
+  gap: var(--sg-gap);                       /* 16px, official WebKit example (research 05 §5) */
+}
+
+/* row axis: card spans 3 parent row tracks, inner rows = shared tracks */
+.card { grid-row: auto / span 3; display: grid; }
+.card[data-mode="sub"] { grid-template-rows: subgrid; }
+.card[data-mode="ind"] { grid-template-rows: auto auto auto; }  /* fallback: independent tracks */
+
+/* column axis: card spans all parent column tracks, inner columns = table-wide alignment */
+.card { grid-column: 1 / -1; }
+.card[data-mode="sub"] { grid-template-columns: subgrid; }
+.card[data-mode="ind"] { grid-template-columns: auto auto auto; }
+
+@supports (grid-template-rows: subgrid) {
+  /* enhancement; unsupported engines stay on the ind fallback */
+}
+```
+
+Where the numbers come from: Baseline 2023-09 (MDN, research 05 §4); gap 16px from the official WebKit example (research 05 §5); the demo hard-codes no other layout values — every alignment comes from track inheritance.
+
+## Motion & Interaction
+
+Alignment changes are **track-geometry re-flow** — instantaneous:
+
+- The "Vary lengths" button cycles body-length presets: real DOM text drives the row heights, and in the subgrid panel the footers **stay flush** while the independent panel's footers drift with content — the entire difference between the panels;
+- axis toggles data-axis, switching both DOM and declarations between row/column modes, with no transition;
+- The status chip cross-fades over 0.25s, disabled under `prefers-reduced-motion`;
+- No fixed heights fake the alignment anywhere — alignment must come from track inheritance; that is the acceptance line.
+
+## Real-world examples
+
+- **The MDN Subgrid guide** — collects the canonical demonstrations of nested components aligning to a parent grid (cards, forms); the authoritative usage reference (research 05 §4 source).
+- **Design-system components plugging into the page grid** — inner tracks ARE the page tracks; form label columns and card footer rows are ruled by the page (community-consensus territory, editorial content, same territory as the MDN guide).
+- **Editorial cross-column layouts** — headline/deck/body layers sharing row tracks for baseline alignment (editorial content, based on subgrid's track-sharing capability).
+
+## Parameter Sensitivity
+
+| Parameter | Switching to the rows axis… | Switching to the columns axis… |
+| --- | --- | --- |
+| `axis` | cards sit side by side spanning 3 parent row tracks; title/body/footer rows are shared wall-wide, footers always flush | cards stack spanning all parent column tracks; label/value/action columns align table-wide, reading like a table |
+| `gap` | a larger parent gap scales card spacing and inner row spacing together (track definitions inherited) | gap changes apply to every row's three columns in lockstep — one rhythm table-wide |
+
+Working notes: subgrid's value comes entirely from "sharing the parent's tracks" — settle the parent's column count and row semantics first, then have components span the matching tracks; keep the independent fallback panel around so the cost of degradation is visible at a glance.

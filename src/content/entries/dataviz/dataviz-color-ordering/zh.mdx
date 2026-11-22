@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+「数据色序」与「分类色板」分工不同:色板(见 dataviz-categorical-palette)回答「有哪些颜色」,色序回答「第 i 个系列拿哪个颜色、谁是主角」。demo 是一张 5 系列折线图,系列 i 直接取色板第 i 槽,强调策略只改 stroke 的颜色与粗细:
+
+```html
+<div class="stage">
+  <svg viewBox="0 0 640 340" role="img" aria-label="数据色序与强调演示">
+    <!-- 系列 i 的折线:stroke = palette[i](官方顺序)
+         灰底彩突出:语境系列 stroke = var(--co-gray),焦点系列保持色板色 + 加粗 -->
+    <path class="line" stroke="#E69F00" />
+  </svg>
+  <div class="readout" role="status"><!-- 色序 / 焦点 / 策略 / 语境灰 徽标 --></div>
+</div>
+```
+
+关键点:
+
+- **顺序即对比**:Carbon 官方要求 14 色分类板「严格按序使用以最大化相邻对比」;Power BI 官方文档确认主题 `dataColors` 数组顺序即系列取色顺序——主题文件乱序,全报告跟着乱序(调研 08§1.3/§4.2);
+- Okabe-Ito 实践(CUD 官方页):亮色排前三(橙→天蓝→蓝绿),红绿混淆对(vermillion/reddish purple)留给低频类别,8 类封顶、第 9 类并「其他」;
+- 灰底彩突出是「层级」而非「新色」:语境系列压灰 + 焦点系列加粗,不用透明度/明度变体发明第 N 色。
+
+## 样式与参数
+
+三个 JS 型参数 + 一个 CSS 变量型参数:
+
+```css
+/* 语境灰经 .demo-stage 上的 --co-gray 注入,SVG stroke 消费 */
+.line-context { stroke: var(--co-gray, #B0B0B0); stroke-width: 1.5; }
+.line-accent  { /* 颜色仍取色板色,只加粗 */ stroke-width: 3; }
+```
+
+| 参数 | 默认 | 数值出处 |
+| --- | --- | --- |
+| `order` | `official` | Carbon 按序红线(官网已核)+ Power BI dataColors 顺序=取色顺序(官方 docs 已核);`shuffled` 为固定乱序演示映射 |
+| `accentSeries` | `2` | demo 选取的示例焦点,无官方依据 |
+| `emphasis` | `gray-context` | 灰底彩突出为社区通行策略(Claus Wilke 色彩章,调研 06§19);官方数值未记载 |
+| `contextGray` | `#B0B0B0` | 社区常见值,未证实;hex 注入,不依赖 oklch() |
+
+色值本身全部取自 Okabe-Ito 前 5 色(R grDevices 固化值,源码核验):`#E69F00 #56B4E9 #009E73 #F0E442 #0072B2`。demo 的折线图 y 轴从 20 起——折线图可不从零(FT 引 ONS,见 dataviz-chart-selection)。
+
+## 动效与交互
+
+- 参数切换即时重绘,无过渡动画——颜色重排是数据映射变化,不做成渐变演出;
+- 徽标状态色变化(background-color/border 0.2s)在 `prefers-reduced-motion: reduce` 下关闭;
+- 灰底彩突出模式下焦点系列线端直标(名称 + 加粗);全彩模式下 5 条线端点数值相邻,直标会互相压线,demo 回退图例——**直标适合单焦点,多系列等权还得图例**(jfly 原文反对的是「直标放得下却用远处图例」);
+- 悬停读数用原生 `<title>`(系列·色名·末月值);完整 tooltip 规范见 dataviz-tooltip-legend。
+
+## 真实产品案例
+
+- **Power BI 报告主题**:官方文档确认 `dataColors` 数组顺序即系列取色顺序,主题 JSON 还提供 `good/neutral/bad` 语义色位——色序与语义强调各占一层(官方 docs 已核,调研 08§4.2)。
+- **IBM Carbon**:14 色分类板要求严格按序取用以最大化相邻对比;告警色 danger `#da1e28` / serious warning `#ff832b` / warning `#f1c21b` / success `#198038` 是语义强调的官方锚点;红线:图表不支持渐变(Apache-2.0,官网已核,调研 08§1.3)。
+- **ggplot2 灰底画布**:官方文档自述 "The signature ggplot2 theme with a grey background and white gridlines"——面板灰底由 `col_mix(ink, paper, 0.92)` 参数化(theme-defaults.R L271,源码核验,调研 08§5.3),是「灰底衬彩」的教科书实现:低饱和底色让数据色天然突出。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `order` | 乱序后弱区分色对(黄/天蓝)被推进第 1、2 槽,相邻对比跌破官方排序的设计意图 | `official` 按官方排序最大化相邻对比,是唯一推荐档 |
+| `accentSeries` | 焦点后移(5)考验语境灰的可追踪性:5 条灰线的末端仍需可辨认 | 焦点取 1 最常规;强调位应留给叙事主角而非编号惯性 |
+| `emphasis` | `gray-context` 聚焦单线但牺牲全景追踪,核对全部数值时需回退全彩 | `full-color` 保留等权对比,但 5 条饱和线互相抢注意力 |
+| `contextGray` | 调深(→#666)层级感增强,但语境系列开始像第二条数据线 | 调浅(→#DDD)逐渐融入背景,\<3:1 时语境系列不可辨(WCAG SC 1.4.11) |
+
+经验法则:色序按官方排序、8 类封顶;强调是零和资源——一图一主角;语境灰守住 ≥3:1,拿不准就先过 dataviz-colorblind-safe 的三模型模拟。

@@ -1,0 +1,102 @@
+{
+  "name": "Keyboard Navigation",
+  "nameZh": "键盘导航全景",
+  "aliases": ["键盘无障碍", "焦点管理", "focus management"],
+  "category": "principles",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "Tab/Shift+Tab 在组件间移动,方向键在复合组件内移动(roving focus);焦点指示可见、焦点永不丢失、模态困焦必须可 Esc 释放并归还焦点。",
+    "en": "Tab/Shift+Tab moves between components, arrow keys move inside composites (roving focus); focus indicators stay visible, focus is never lost, and modal traps must release via Esc and return focus."
+  },
+  "origin": {
+    "zh": "W3C ARIA APG 键盘界面实践(调研 07§35)+ WebAIM 键盘无障碍惯例(07§36)。核心规则:Tab/方向键分工、焦点指示可见(默认 outline 轻易不要覆盖)、焦点必须持久存在(关闭对话框/删除列表项后设回触发按钮或后一项,否则焦点掉到 body)、焦点移动可预测(页面加载不要主动设初始焦点)、focus ≠ selection(二者视觉必须可区分);标准键位表:按钮 Enter/Space、checkbox Space、radio 方向键、对话框 Esc 困焦归还、滑块方向键+Home/End、tabs Tab 进出+方向键选择。WCAG Level A 要求焦点可移入也必须可用键盘移出(2.1.2)。",
+    "en": "W3C ARIA APG keyboard interface practices (research 07 §35) + WebAIM keyboard accessibility conventions (07 §36). Core rules: Tab vs arrows division of labor, visible focus indicators (never strip default outlines casually), persistent focus (after closing dialogs or deleting list items, set focus back to the trigger or the next item, or it drops to body), predictable focus movement (no initial focus on page load), focus ≠ selection (visually distinct); the key table: button Enter/Space, checkbox Space, radio arrows, dialog Esc/trap/return, slider arrows+Home/End, tabs Tab in/out + arrow selection. WCAG Level A requires focus to be able to leave via keyboard (2.1.2)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "scene",
+      "options": [
+        { "value": "toolbar", "label": { "zh": "工具栏(roving)", "en": "Toolbar (roving)" } },
+        { "value": "tabs", "label": { "zh": "标签页", "en": "Tabs" } },
+        { "value": "dialog", "label": { "zh": "对话框(困焦)", "en": "Dialog (trap)" } }
+      ],
+      "default": "toolbar",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换场景)。toolbar=roving tabindex+方向键;tabs=Tab 进出+方向键选择(面板预载,选中随焦点);dialog=Tab 困焦+Esc 释放+焦点归还触发按钮(07§35/§36 全套)。",
+        "en": "JS-type param (the demo subscribes and swaps scenes). toolbar = roving tabindex + arrows; tabs = Tab in/out + arrow selection (preloaded panel, selection follows focus); dialog = Tab trap + Esc release + focus returned to the opener (the full 07 §35/§36 set)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ring",
+      "options": [
+        { "value": "native", "label": { "zh": "浏览器默认 outline", "en": "Native outline" } },
+        { "value": "strong", "label": { "zh": "高对比粗环", "en": "High-contrast ring" } }
+      ],
+      "default": "native",
+      "effect": {
+        "zh": "焦点指示样式。native=不覆盖浏览器默认 outline(07§35:默认 outline 轻易不要覆盖);strong=3px 高对比实线(--kn-ring-width 驱动),演示自定义焦点环的合规形态(≥3:1 非文本对比,SC 1.4.11)。",
+        "en": "Focus indicator style. native = leave the browser default outline alone (07 §35: don't strip default outlines casually); strong = a 3px high-contrast solid ring (--kn-ring-width), the compliant form of custom focus rings (≥3:1 non-text contrast, SC 1.4.11)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "ringWidth",
+      "unit": "px",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 3,
+      "cssVar": "--kn-ring-width",
+      "effect": {
+        "zh": "strong 焦点环宽度。默认 3px:比常见 2px outline 更醒目;调大可测试焦点环在复杂背景上的可辨识度。",
+        "en": "Strong-ring width. Default 3px: more salient than the common 2px outline; raise it to test ring legibility over busy backgrounds."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "roving tabindex、focus-visible、dialog 困焦逻辑全部为 DOM/ARIA 标准能力,全现代浏览器可用;focus-visible 已 Baseline。",
+      "en": "Roving tabindex, :focus-visible, and the dialog trap logic are standard DOM/ARIA capabilities in all modern browsers; :focus-visible is Baseline."
+    }
+  },
+  "fallback": {
+    "zh": "没有浏览器特性需要回退;工程红线清单(07§35/§36):①禁 `outline:0/none` 移除焦点指示;②禁 `tabindex≥1`;③非交互元素不设 tabindex;④`<a>` 无 href 不可键盘访问;⑤关闭浮层必须归还焦点;⑥模态困焦必须 Esc 可释放(SC 2.1.2);⑦长页面配 skip link、正确标题层级、landmark。",
+    "en": "No browser feature to fall back; the engineering red-line list (07 §35/§36): ① never `outline:0/none` away the focus indicator; ② no `tabindex≥1`; ③ no tabindex on non-interactive elements; ④ `<a>` without href isn't keyboard-reachable; ⑤ closing overlays must return focus; ⑥ modal traps must release via Esc (SC 2.1.2); ⑦ long pages need skip links, heading hierarchy, landmarks."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自定义复合组件(radio group/tablist/menu/listbox/grid)的 roving focus 实现", "en": "Implementing roving focus in custom composites (radio group/tablist/menu/listbox/grid)" },
+      { "zh": "模态对话框:困焦 + Esc + 焦点归还三件套", "en": "Modal dialogs: trap + Esc + focus return, the trio" },
+      { "zh": "删除列表项/关闭面板后的焦点安置(设回触发者或后一项)", "en": "Focus placement after deleting items or closing panels (back to trigger or next item)" }
+    ],
+    "avoid": [
+      { "zh": "`outline: none` 不给替代焦点指示——WebAIM 明确禁忌", "en": "`outline: none` with no replacement indicator — an explicit WebAIM anti-pattern" },
+      { "zh": "页面加载主动抢初始焦点(除非页面只有一个几乎人人马上用的主功能)", "en": "Grabbing initial focus on page load (unless the page has one main function nearly everyone uses immediately)" },
+      { "zh": "「选中随焦点」用在未预载面板上(切换有延迟时必须分离二者)", "en": "'Selection follows focus' on non-preloaded panels (with loading lag, the two must decouple)" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目即无障碍本体:焦点指示必须可见(浏览器默认 outline 轻易不要覆盖;颜色/渐变在高对比模式下可能消失,SC 1.4.11 ≥3:1);焦点必须持久存在;focus(= document.activeElement)与 selection(= aria-selected=true)视觉与语义都必须可区分;键盘陷阱合法但 Esc 应能释放(SC 2.1.2);WebAIM 提醒:要在外接键盘的移动设备上实测。",
+    "en": "This entry IS accessibility: focus indicators must be visible (leave default outlines alone; color/gradients can vanish in high-contrast mode, SC 1.4.11 ≥3:1); focus must persist; focus (= document.activeElement) and selection (= aria-selected=true) must be distinct in both visuals and semantics; keyboard traps are legal but Esc should release (SC 2.1.2); WebAIM reminds: test on mobile devices with an external keyboard."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/",
+    "https://webaim.org/techniques/keyboard/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个键盘导航三场景演示(含 skip link 与按键日志):toolbar 演示 roving tabindex+方向键;tabs 演示 Tab 进出+方向键选择+focus≠selection 双视觉;dialog 演示 Tab 困焦+Esc 释放+焦点归还;每场景把「按键 → 效果」写进 aria-live 日志。",
+      "en": "Build a three-scene keyboard demo (with skip link and key log): toolbar for roving tabindex+arrows; tabs for Tab in/out + arrow selection + the focus≠selection dual visuals; dialog for Tab trap + Esc release + focus return; every scene logs 'key → effect' via aria-live."
+    },
+    "acceptance": [
+      { "zh": "三个场景的键位严格按 APG/WebAIM:工具栏方向键 roving;Tabs 方向键选择;对话框 Esc 归还焦点", "en": "Scene keys follow APG/WebAIM exactly: toolbar arrows rove; tabs arrows select; dialog Esc returns focus" },
+      { "zh": "skip link 在获得键盘焦点时可见,点击跳过重复块", "en": "The skip link becomes visible on keyboard focus and jumps past repeated blocks" },
+      { "zh": "ring 为 JS 型参数:native 不覆盖默认 outline,strong 用 --kn-ring-width 实线环", "en": "ring is a JS-type param: native keeps the default outline; strong draws a --kn-ring-width solid ring" },
+      { "zh": "focus ≠ selection:标签页上焦点环与选中填充同时可辨且不同", "en": "focus ≠ selection: on tabs, the focus ring and the selected fill are simultaneously distinguishable and different" },
+      { "zh": "按键日志经 aria-live 播报;所有交互均可纯键盘完成", "en": "The key log announces via aria-live; everything is keyboard-only operable" }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+## Structure & DOM
+
+A two-layer structure: a **scroll container** (an overflow-scrolling ancestor) plus **sticky elements** (headers/navs/sidebars declaring sticky). Sticky elements never leave document flow, so nothing after them shifts up.
+
+```html
+<div class="scroll-box">          <!-- nearest scrolling ancestor: the frame of reference -->
+  <section>
+    <h4 class="sticky-head">§1 Group header</h4>  <!-- position: sticky -->
+    <p>…</p><p>…</p>
+  </section>
+  <section>…</section>
+</div>
+```
+
+Key points:
+
+- `position: sticky; top: 20px;` — the element scrolls with its container, then parks at the offset threshold of its **nearest scrolling ancestor**, without leaving document flow (research 05 §7);
+- The sticky range is bounded by the **parent container**: once the parent scrolls past, the sticky element goes with it;
+- sticky only answers to the "nearest scrolling ancestor" — any `overflow: hidden/auto/scroll` in the ancestor chain hijacks it (see the demo's trap mode);
+- Baseline Widely available since 2015-07 (MDN position, research 05 §7).
+
+## Styling & Parameters
+
+Two parameters: top is CSS-type (--sticky-top), trap is JS-type (data-trap toggles the trap wrapper):
+
+```css
+.scroll-box {
+  height: 300px;
+  overflow-y: auto;          /* nearest scrolling ancestor */
+}
+.sticky-head {
+  position: sticky;
+  top: var(--sticky-top);    /* 20px, the example value from research 05 §7 */
+  background: <solid>;        /* must be solid, or content shows through from below */
+  transition: box-shadow 0.2s ease;
+}
+.sticky-head[data-stuck="true"] { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+
+/* trap mode: an overflow ancestor inserted between content and headers kills sticking */
+.trap { overflow: hidden; }
+```
+
+Where the numbers come from: `top: 20px` is the example recorded in research 05 §7; Baseline 2015-07 (MDN position, research 05 §7); the stuck shadow and solid background are demo-layer styling.
+
+## Motion & Interaction
+
+Sticking is a **state change**, not an animation:
+
+- The "scrolling → parked at threshold" switch is instantaneous; the demo drives its status chip from a real scroll listener (stuck when the header rectangle is within the threshold of the container top), never faked with timers;
+- The stuck moment deepens a shadow (0.2s box-shadow transition) as a status hint; disabled under `prefers-reduced-motion`;
+- The "Top" button scrolls instantly (`scrollTo` default behavior), adding no gratuitous smooth animation;
+- Dragging the top slider retunes the threshold live: 0px hugs the top (global-nav territory), larger values park headers lower.
+
+## Real-world examples
+
+- **The MDN Layout Cookbook** — collects Sticky footers (footer pinned on short pages, Grid/Flexbox) and the Split navigation recipe (research 05 §7).
+- **Group headers on long lists** — the Web twin of iOS grouped lists: scroll to a group and its header parks at the threshold (editorial content).
+- **Sticky table headers** — column names stay visible while long tables scroll; a universal back-office pattern (editorial content).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `top` | headers park lower: a larger observation window above the threshold, enough to stack cards; at 96px the sticky window eats nearly a third of the container | toward the top: 0px is global-nav form; stacked sticky layers need increasing thresholds (0/48/96px…) for every layer to stay visible |
+| `trap` | on: an overflow ancestor hijacks sticky — headers scroll away and the chip stays "not stuck", a visualization of the classic production accident | off: sticky works normally, headers park at the threshold with a shadow hint |
+
+Working notes: the sticky range = its parent container; sticky elements need a solid background; keep the ancestor chain overflow: visible up to the scroll container; design stacked-sticky thresholds and z-indexes on paper before coding.

@@ -1,0 +1,55 @@
+## Structure & DOM
+
+The demo stacks two panes: **Similarity** (a 6-row list whose first n rows are marked as one class) and **Closure** (four inward-mouthed discs squaring off an invisible square):
+
+```html
+<!-- Similarity: dual-channel marking -->
+<button class="gc-row" data-marked="true" data-cue="color">
+  <span class="gc-ico"></span> Item 1
+</button>
+
+<!-- Closure: a mouth cut by conic-gradient -->
+<span class="gc-pac" data-pos="tl" style="--gc-mouth: 24deg"></span>
+```
+
+Key points:
+
+- Similarity cues are **dual-channel by construction**: in color mode marked rows change both text and icon color; in shape mode icons morph from rounded squares to circles — the direct application of 07 §33 "mark same-function elements with color and shape";
+- The closure pane's key number is `--gc-mouth` (mouth angle): at 24° the four discs suffice for the brain to complete the central square (a Kanizsa-style illusory contour); past 60° completion collapses;
+- Marked rows are real `<button>`s (Tab-focusable); unmarked rows carry `tabIndex=-1` + `aria-disabled` — semantically "not clickable" aligned with visually "not one of us".
+
+## Styling & Parameters
+
+```css
+.demo-stage { --gc-mouth: 24deg; }
+.gc-pac {
+  background: conic-gradient(from var(--gc-rot), transparent var(--gc-mouth), oklch(0.45 0.05 260) var(--gc-mouth));
+}
+.gc-pac[data-pos="tl"] { --gc-rot: 135deg; } /* all four mouths face the center */
+```
+
+- `mouth` defaults to **24°**: the minimal teachable gap; range 0–90°, with 60° as the demo-defined collapse threshold;
+- `cue` (color/shape) and `marked` (1–6 rows) are JS-type params driving the list via the store;
+- The mouth uses conic-gradient rather than SVG: pure CSS, no child elements, sector angle as a plain variable; without support it degrades to full circles (the closure demo loses its mouths but stays readable).
+
+## Motion & Interaction
+
+- No looping animation; switching cue / marked re-renders the list instantly (no transition — grouping perception is an instantaneous perceptual event, and animation would mask it);
+- Hovering a marked row shows a faint background — the third confirmation of "clickable" (color + shape + hover);
+- The closure pane is static: the illusory contour is a perceptual phenomenon, not an animation; no `prefers-reduced-motion` handling needed.
+
+## Real-world examples
+
+- **The link underline convention**: the web's default link = blue + underline, dual-channel against body text — the oldest implementation of 07 §33 "keep links and navigation distinguishable from plain text"; minimalism that only tints blue clashes with SC 1.4.1 (editorial generalization);
+- **Loading spinners**: a broken ring in rotation reads as "one spinning circle" via closure — the universal loading semantics (application of 07 §31 closure; same family as the loading-feedback section in research 04 §2.2);
+- **Icon-family shape languages**: Material icons share one grid and stroke weight, antd icons one line style — same function shares shape, and a new icon "joins the family" and inherits the functional hint automatically (systematic application of 07 §33 "similar visuals for same function", editorial generalization).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `marked` | more marked rows: a bigger "same class" but less individual identity inside it | one marked row degenerates similarity into "oddball emphasis" (von Restorff's territory) |
+| `mouth` | ≥60° closure collapses: four separate pac-men, the square gone | at 0° the discs become full circles — no gap, no completion either (brokenness is required for completeness) |
+| `cue` | color is the faster perceptual channel but depends on color vision | shape survives color blindness — the demo's dual-channel insurance |
+
+The lesson: similarity answers "who is together", closure answers "broken still reads". Both carry one a11y red line — **essential semantics must not live only in the visual channel**: group semantically, and pair illusory contours with text.

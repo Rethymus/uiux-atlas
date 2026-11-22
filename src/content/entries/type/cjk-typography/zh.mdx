@@ -1,0 +1,71 @@
+## 结构与 DOM
+
+无特殊结构——中文正文就是普通段落,四个排版行为全部是容器/段落的 CSS 声明:
+
+```html
+<article class="cjk">
+  <p>段首缩进两字、两端对齐……</p>
+  <p>中西混排 Web、CSS 与数字 0 的间距……</p>
+</article>
+```
+
+```css
+.cjk { text-align: var(--cjk-align); }
+.cjk p {
+  text-indent: var(--cjk-indent);        /* 2em = 两个汉字宽 */
+  text-autospace: var(--cjk-autospace);      /* 中西自动间距 */
+  text-spacing-trim: var(--cjk-punct-trim);  /* 标点挤压(实验性) */
+}
+```
+
+关键点:
+
+- 汉字与标点的字框是**正方形**、各占一个字宽——这是所有中文排版规则(缩进、对齐、挤压)的几何前提(clreq 原文核对);
+- 行首行尾禁则(句号不出现在行首等)由浏览器断行引擎按 Unicode 线路breaking 自动处理,不要手工断行接管;
+- `text-autospace` / `text-spacing-trim` 是未知属性时解析器直接忽略,声明无副作用。
+
+## 样式与参数
+
+四个参数对应四条声明,全部经 `--cjk-*` 变量注入:
+
+```css
+.cjk { text-align: var(--cjk-align); }         /* justify | left */
+.cjk p {
+  text-indent: var(--cjk-indent);              /* em,默认 2 */
+  text-autospace: var(--cjk-autospace);        /* normal | no-autospace */
+  text-spacing-trim: var(--cjk-punct-trim);    /* normal | trim-start | space-first | space-all */
+}
+```
+
+数值出处:
+
+- **段首缩进 2 个汉字宽(2em)**:clreq 原文「段首缩进:以两个汉字宽为标准;多栏排版每栏字数少时有用一字缩进的变通」(调研 05§22);
+- **中西文间距 ≤ ¼ 汉字宽**:clreq「汉字与西文字母、阿拉伯数字之间使用不多于四分之一个汉字宽的字距或空白;西文出现在行首/行尾时不加」;行内调整可拉伸,最大到 ½ 字宽(调研 05§22);
+- **两端对齐原则**:「除段落末行外每行行尾应对齐」(调研 05§22);
+- **标点挤压**:clreq §6.3.2「标点符号的宽度调整」(2026-11-22 直接抓取核对);CSS 落地 text-spacing-trim 为实验性,Chrome/Edge 123+,Firefox/Safari 未支持(BCD @main 2026-11-22);
+- **text-autospace**:2025-11 起 Baseline Newly available(MDN,调研 05§23)。
+
+## 动效与交互
+
+排版行为是静态的,交互在于切换观察:
+
+- demo 提供中西混排与标点密集的中文样文,切换 autospace / indent / align / punctTrim 即时重排;
+- 「标点挤压」在支持的浏览器(Chrome/Edge 123+)可见行首引号、括号的半角化压缩;不支持的浏览器里该声明被忽略,demo 用 `CSS.supports()` 实时显示两个新属性的本浏览器支持态,避免误判;
+- 无动画;全部变化为即时重排(reflow),尊重 `prefers-reduced-motion` 无需额外处理。
+
+## 真实产品案例
+
+- **中文出版与电子书(Apple Books、微信读书等)**:段首缩进两字、标点挤压、行尾对齐是中文书籍排版的默认形态——clreq 整理的正是这套从活字时代延续到数字排版的规则。
+- **pangu.js 等文本层方案**:在 text-autospace 出现前,社区以脚本在中西文之间自动插空格(盘古之白)——它的流行反向印证了「引擎层自动间距」的需求;text-autospace 基线化后,文本层方案可逐步退役。
+- **微信公众号与知乎等中文社区文章**:与书籍不同,Web 社区文章多用「段距分段、不缩进」的排式——两种惯例并存,选哪种属于产品编辑决策,但**中西文间距与标点规则**在任何排式下都适用。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `autospace` | normal 时中西文间自动出现 ≤¼ 字宽间距,混排呼吸感变好 | no-autospace 后中西文粘连,混排密集文本可读性下降 |
+| `indent` | 超过 2em 后缩进挤占行宽,长段首行视觉突兀 | 0 时回到 Web 社区排式(以段距分段);1em 是多栏变通值 |
+| `align` | justify 让行尾整齐(中文代价低,字框方正);窄栏会拉出空洞 | left 行尾参差,但避免任何字距拉伸,阅读障碍用户更友好 |
+| `punctTrim` | trim-start 压缩行首标点留白,版面更紧(仅 Chrome/Edge 123+) | space-all 保持全角全宽(传统「全角式」),版面留白更多 |
+
+经验结论:缩进与对齐是排式选择(书籍式 vs 社区式),中西文自动间距与标点挤压是**任何排式都该开的引擎能力**——前者是审美,后者是正确性。

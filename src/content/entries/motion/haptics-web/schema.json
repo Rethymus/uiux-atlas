@@ -1,0 +1,102 @@
+{
+  "name": "Web Haptics (Vibration API)",
+  "nameZh": "触觉反馈 Vibration",
+  "aliases": ["振动反馈", "navigator.vibrate", "haptics", "Vibration API"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "navigator.vibrate(pattern) 是 Web 唯一的触觉通道:毫秒数或「振动/暂停交替」数组,0/空数组取消;需 sticky user activation,非 Baseline(iOS Safari 无效);段数语义可对齐 HIG 三类预设(Selection 单脉冲 / Success 两段 / Error 四段),但 ms 数值官方未给。",
+    "en": "navigator.vibrate(pattern) is the web's only haptic channel: a millisecond count or a vibrate/pause alternation array, canceled by 0 or an empty array; it needs sticky user activation and is not Baseline (iOS Safari: no-op). Pulse-count semantics can mirror HIG's three preset families (Selection single pulse / Success two pulses / Error four pulses), but the ms values are officially unspecified."
+  },
+  "origin": {
+    "zh": "MDN《Navigator.vibrate》(实抓,调研 04§5.2):pattern 为毫秒数或振动/暂停交替数组(文档示例 SOS 摩尔斯码 [100,30,100,…]);0/[] 取消;超长截断(上限依实现);需要 sticky user activation;非 Baseline、iOS Safari 无效;静音/勿扰下设备可能不振动。段数语义出自 Apple HIG《Playing haptics》(实抓,调研 04§2.3/§5.2):Notification success=两段脉冲、warning=两段、error=四段脉冲,Selection=单短脉冲,Impact 五档——HIG 只记载段数/类别,不记载毫秒值。",
+    "en": "MDN \"Navigator.vibrate\" (fetched, research 04 §5.2): pattern is a millisecond count or a vibrate/pause alternation array (docs example: SOS morse [100,30,100,…]); 0/[] cancels; overly long patterns are truncated (implementation-defined cap); sticky user activation required; not Baseline and a no-op on iOS Safari; devices may stay silent in muted/DND modes. Pulse-count semantics from Apple HIG \"Playing haptics\" (fetched, research 04 §2.3/§5.2): notification success = two pulses, warning = two, error = four pulses, selection = one short pulse, impact in five grades — HIG records counts/categories, never milliseconds."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "pulses",
+      "options": [
+        { "value": "1", "label": { "zh": "1 脉冲 · Selection 语义", "en": "1 pulse · Selection" } },
+        { "value": "2", "label": { "zh": "2 脉冲 · Success 语义", "en": "2 pulses · Success" } },
+        { "value": "4", "label": { "zh": "4 脉冲 · Error 语义", "en": "4 pulses · Error" } }
+      ],
+      "default": "2",
+      "effect": {
+        "zh": "段数(demo 订阅后构造 [on, off, …, on] 模式并播放)。语义对齐 HIG 预设类别:单脉冲=Selection(取值变化)、两段=Notification success、四段=Notification error——注意 HIG 只定义了段数/类别隐喻,毫秒编排是 demo 的演示值;具体波形(时长/强度)在 iOS 上由系统预设给出,Web 侧没有对应物。",
+        "en": "Pulse count (the demo subscribes, builds [on, off, …, on], and plays it). Semantics mirror HIG preset categories: one pulse = Selection (value changes), two = notification success, four = notification error — HIG defines only counts/categories; the millisecond arrangement is a demo value; the actual waveform (duration/intensity) comes from system presets on iOS, with no web counterpart."
+      }
+    },
+    {
+      "type": "number",
+      "name": "on",
+      "min": 20,
+      "max": 300,
+      "step": 10,
+      "default": 100,
+      "unit": "ms",
+      "effect": {
+        "zh": "单段振动时长(ms),进入 pattern 数组的奇数位。MDN 未给推荐值——100ms 为演示值,未证实;过短(≤20ms)多数设备难以感知,超长段会被浏览器截断(上限依实现)。",
+        "en": "Per-pulse vibration duration (ms), occupying the odd slots of the pattern array. MDN gives no recommended value — 100ms is a demo value, unverified; very short pulses (≤20ms) are hard to feel on most devices, and overly long ones get truncated (implementation-defined cap)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "off",
+      "min": 20,
+      "max": 300,
+      "step": 10,
+      "default": 60,
+      "unit": "ms",
+      "effect": {
+        "zh": "段间暂停时长(ms),pattern 数组的偶数位。MDN 未给推荐值——60ms 为演示值,未证实;暂停太短时多段模式糊成一次长振,「段数」的语义就丢了。",
+        "en": "The pause between pulses (ms), occupying the even slots of the pattern array. MDN gives no recommended value — 60ms is a demo value, unverified; pauses too short smear a multi-pulse pattern into one long buzz and the pulse-count semantics are lost."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "非 Baseline(MDN 页明确标注):部分主流浏览器不支持——iOS Safari 无效;Android 系浏览器可用;桌面浏览器即使暴露 API 也多无振动硬件。上限截断、静音/勿扰行为依实现(MDN 原文口径);具体版本矩阵本次调研未逐项核实。demo 做能力检测:无 navigator.vibrate 时以视觉脉冲示意并如实标注。",
+      "en": "Not Baseline (stated on the MDN page): some major browsers lack it — iOS Safari is a no-op; Android-family browsers support it; desktops may expose the API with no vibration hardware at all. Truncation caps and muted/DND behavior are implementation-defined (MDN's wording); the exact version matrix was not audited in this pass. The demo feature-detects: without navigator.vibrate it falls back to a visual pulse, honestly labeled."
+    }
+  },
+  "fallback": {
+    "zh": "三层如实降级:① 无 API(iOS Safari 等)或无振动硬件(桌面)→ 视觉脉冲动画示意,功能不变;② 需要 sticky user activation——必须在用户手势事件处理器内调用,demo 的播放按钮即此;③ 静音/勿扰模式下设备可能不振动(MDN 原文),届时视觉通道仍在。触觉不得是关键信息唯一渠道(HIG:与视觉/听觉同步)。",
+    "en": "Three honest fallback tiers: (1) no API (iOS Safari etc.) or no vibration hardware (desktops) → a visual pulse animation stands in, functionality unchanged; (2) sticky user activation — the call must sit inside a user-gesture handler, which the demo's play button is; (3) devices may stay silent in muted/DND modes (MDN), where the visual channel still carries. Haptics are never the sole channel for key information (HIG: sync with visual/audio)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "任务结果的物理确认:成功两段脉冲、失败四段——与视觉 toast 同步触发(HIG Notification 语义)", "en": "Physical confirmation of task results: two pulses for success, four for failure — fired in sync with the visual toast (HIG notification semantics)" },
+      { "zh": "取值变化的短促确认:picker/slider/分段控件单脉冲(HIG Selection 语义)", "en": "Short confirmation on value changes: a single pulse for pickers/sliders/segmented controls (HIG selection semantics)" },
+      { "zh": "物理隐喻:视图卡入位、重物相撞——Impact 五档(light/medium/heavy/rigid/soft)", "en": "Physical metaphors: a view snapping into place, heavy objects colliding — impact in five grades (light/medium/heavy/rigid/soft)" }
+    ],
+    "avoid": [
+      { "zh": "偶发之外的滥用——HIG 原文「勿滥用,偶发才刚刚好」;每次点击都振等于没有触觉", "en": "Anything beyond occasional use — HIG's own words: sparingly, or it stops registering; vibrating on every tap erases haptics altogether" },
+      { "zh": "把触觉当关键信息的唯一渠道——HIG:必须可关闭、与视觉/听觉强度匹配", "en": "Making haptics the sole carrier of key information — HIG: must be disableable and matched to visual/audio intensity" },
+      { "zh": "指望 iOS Safari 用户收到振动——API 在该平台无效(MDN),别把功能押在它上面", "en": "Expecting iOS Safari users to feel anything — the API is a no-op there (MDN); never bet functionality on it" },
+      { "zh": "相机/陀螺仪/麦克风工作时段叠加振动——HIG 提示振动可能干扰这些传感器", "en": "Stacking vibration while camera/gyroscope/microphone are active — HIG notes vibration can interfere with those sensors" }
+    ]
+  },
+  "a11y": {
+    "zh": "触觉必须可关闭且不得是关键信息唯一渠道(HIG 原文;Web 侧做法是振动与视觉反馈同时存在);播放必须由用户手势触发(sticky user activation);demo 的视觉脉冲让无振动硬件/不支持平台的用户获得同等信息;注意静音/勿扰下可能不振动(MDN)——信息不可依赖「振了」这一事件本身。",
+    "en": "Haptics must be disableable and never the sole channel for key information (HIG verbatim; the web practice is vibration plus a simultaneous visual state); playback must originate from a user gesture (sticky user activation); the demo's visual pulse gives users without vibration hardware or support the same information; devices may stay silent in muted/DND modes (MDN) — never depend on the vibration event itself to convey information."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate",
+    "https://developer.apple.com/design/human-interface-guidelines/playing-haptics.md"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "给一组操作接上 Vibration API 触觉:成功操作播两段脉冲、失败播四段、取值变化播单脉冲,pattern = [on, off, …, on](on/off 取快照值);必须在用户手势处理器内调用,并提供 vibrate(0) 取消;无 API/无硬件时以同步的视觉脉冲兜底。",
+      "en": "Wire Vibration API haptics into a set of actions: two pulses for success, four for failure, one for value changes, pattern = [on, off, …, on] from the snapshot values; call only inside user-gesture handlers, offer vibrate(0) to cancel, and fall back to a synchronized visual pulse when the API or hardware is missing."
+    },
+    "acceptance": [
+      { "zh": "pattern 由 on/off 毫秒值交替构造,末段不带暂停;取消用 vibrate(0) 或空数组", "en": "Patterns are built by alternating on/off ms values with no trailing pause; cancel via vibrate(0) or an empty array" },
+      { "zh": "只在用户手势事件处理器内调用(sticky user activation)", "en": "Calls happen only inside user-gesture handlers (sticky user activation)" },
+      { "zh": "段数语义对齐 HIG 类别(单脉冲 Selection / 两段 success / 四段 error),并如实标注 ms 值为演示值未证实", "en": "Pulse counts mirror HIG categories (one pulse Selection / two success / four error), with the ms values honestly labeled as demo values, unverified" },
+      { "zh": "不支持时(iOS Safari/无硬件)用同步视觉脉冲兜底,并在 UI 标注实际能力", "en": "Where unsupported (iOS Safari/no hardware), a synchronized visual pulse stands in and the UI labels the actual capability" },
+      { "zh": "振动永远与视觉反馈同发,不作为关键信息唯一渠道;提供关闭路径", "en": "Vibration always fires alongside visual feedback, never as the sole channel; a way to opt out exists" }
+    ]
+  }
+}

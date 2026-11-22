@@ -1,0 +1,53 @@
+## Structure & DOM
+
+The demo is an **8-moment experience journey curve** (inline SVG) plus two comparison bars:
+
+```html
+<svg viewBox="0 0 380 190">
+  <path class="pe-area" d="…" />
+  <path class="pe-curve" d="M26,150 L81,133 …" />
+  <circle class="pe-dot-peak" cx="81" cy="87" r="6" />  <!-- moment 3 = peak -->
+  <circle class="pe-dot-end"  cx="354" cy="150" r="6" /> <!-- moment 8 = end -->
+</svg>
+```
+
+Key points:
+
+- The 8 points come from a fixed baseline; only **moment 3 (peak)** and **moment 8 (end)** are overwritten by params — "the middle stays put" is itself the law's message: mid-journey tweaks barely touch memory;
+- The conclusion never relies on reading the chart: full average and peak-end prediction are presented **both** as bars and as text;
+- Preset buttons call `store.set("peak"/"ending", …)` — the panel sliders follow along, demo and panel share one store.
+
+## Styling & Parameters
+
+```tsx
+// peak / ending are JS-type params; presets write back into the store
+const journey = BASE.map((v, i) => (i === 2 ? peak : i === 7 ? ending : v));
+const avg = journey.reduce((a, b) => a + b, 0) / journey.length;
+const peakEnd = (peak + ending) / 2;
+```
+
+- `peak` defaults to **8**, `ending` to **2** (the "botched ending" preset): a high-start-low-finish journey with a memory prediction of 5.0 against a full average of 4.4 — the gap is the law made visible;
+- `(peak+end)/2` is the **textbook simplification**, not Kahneman's raw 1993 experimental formula — the panel and schema both say so verbatim;
+- Three presets: botched (8/2), smooth (5/4), surprise finale (6/9) — 6/9 predicts 7.5 against its own average of 5.0, quantifying "the ending has the highest ROI".
+
+## Motion & Interaction
+
+- Dragging params re-lays the curve with `transition: d 0.3s ease` (`d` transitions as a CSS property; where unsupported it snaps instantly, no compat risk); the two bars animate width in 0.3s sync;
+- Under `prefers-reduced-motion: reduce` both transitions drop and numbers update instantly;
+- Preset buttons carry no animation — clicks just write the store; the "surprise finale" button doesn't deliver a surprise itself, surprises belong to a real product's peak moment.
+
+## Real-world examples
+
+- **Mailchimp's send-success animation**: the high-five animation right after hitting Send turns "the end" into the journey's memory anchor — the peak-end showcase cited by Laws of UX and NN/g alike (research 07 §25);
+- **Uber's time-perception design**: research 07 §25 records Uber using time perception (minute-level ETAs, visible trip progress) to cut cancellations — deliberately dismantling the "waiting" negative peak;
+- **NN/g's ending checklist**: Lexie Kane's The Peak–End Rule article recommends designing the journey's closing moments deliberately — success pages, completion states, exit confirmations each deserve their own craft rather than an afterthought (research 07 §25 further reading).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `peak` | the prediction rises linearly; but the memory gain from 8→10 is far smaller than the gain of ending 2→9 (equal parameter weights) | a mediocre peak leaves a "flat" journey whose prediction hugs the average |
+| `ending` | at 6/9 the prediction hits 7.5 — same investment, highest memory payoff at the end | the botched ending: however high the peak, the ending drags memory down — exactly what the 8/2 default wants you to see |
+| `preset` | one click writes peak/ending and the sliders follow — three archetypal journeys on demand | custom keeps manual values; presets stop overriding |
+
+The lesson: with limited resources, **invest in the ending first, the peak second**, and the middle merely "must not rot"; removing negative peaks (waiting, errors) outranks stacking positive ones — negatives are remembered harder (research 07 §25).

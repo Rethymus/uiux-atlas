@@ -1,0 +1,120 @@
+{
+  "name": "M3 Tone Surfaces",
+  "nameZh": "M3 色调表面",
+  "aliases": ["surface-container 五档", "tone-based surfaces", "色调表面"],
+  "category": "color",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "Material 3 用五档 tone 化表面角色(surface container lowest / low / (container) / high / highest)取代「surface + elevation 叠加不透明度」:层级由色调值表达,与海拔解耦。",
+    "en": "Material 3 replaces 'surface + elevation opacity overlays' with five tonal surface roles (surface container lowest / low / (container) / high / highest): hierarchy is expressed as tone values, decoupled from elevation."
+  },
+  "origin": {
+    "zh": "M3 官方博客《Tone-based surface color in M3》(2023-02,调研 02§B7):废弃「surface + elevation 1–5 叠加不透明度」模型,改为 surface container lowest / low / (container) / high / highest 五档 tone 化角色;配套角色体系 26+ 官方 color role,角色成对设计保证最低 3:1 对比度(调研 02§B6)。底层机制:HCT 色调调色板,Tone 0–100 即 CIE L*,Android 为每个关键色生成 13 档(调研 06§5);表面家族取中性低色度调色板。",
+    "en": "The M3 blog post 'Tone-based surface color in M3' (2023-02, research 02 §B7) retires the 'surface + elevation 1–5 opacity overlay' model for five tonal roles — surface container lowest / low / (container) / high / highest; the companion system defines 26+ official color roles, paired to guarantee a minimum 3:1 contrast (research 02 §B6). The underlying machinery is the HCT tonal palette — Tone 0–100 is CIE L*, 13 steps per key color on Android (research 06 §5); the surface family draws from a neutral, low-chroma palette."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "light", "label": { "zh": "亮色", "en": "Light" } },
+        { "value": "dark", "label": { "zh": "深色", "en": "Dark" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换 data-mode)。亮色主题表面档位向高 tone(白)靠拢;深色主题层级靠「提亮」表达——更亮的档位读作更靠前(Android 文档 surface 角色随主题翻转色调,调研 06§7;暗色提亮惯例另见 Apple base/elevated,调研 06§14)。官方逐档 tone 值未在本调研中核实,demo 的 L 阶梯为演示值。",
+        "en": "JS-type param (demo subscribes and toggles data-mode). Light-theme surface tiers sit toward high tone (white); dark themes express hierarchy by brightening — a brighter tier reads as closer to the viewer (Android surface roles flip tone per theme, research 06 §7; the brightening convention also appears in Apple's base/elevated backgrounds, research 06 §14). The official per-tier tone values were not verified in this research; the demo's L ladder is illustrative."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "tier",
+      "options": [
+        { "value": "lowest", "label": { "zh": "lowest(最低档)", "en": "lowest" } },
+        { "value": "low", "label": { "zh": "low(低档)", "en": "low" } },
+        { "value": "container", "label": { "zh": "container(默认档)", "en": "container (default)" } },
+        { "value": "high", "label": { "zh": "high(高档)", "en": "high" } },
+        { "value": "highest", "label": { "zh": "highest(最高档)", "en": "highest" } }
+      ],
+      "default": "container",
+      "effect": {
+        "zh": "JS 型参数:高亮五档中被选中的表面角色。五个值逐字取自 M3 官方博客的五档命名(调研 02§B7);container 为无后缀默认档,页脚/背景类用 lowest、浮动组件(卡片/底栏/对话框)向 high/highest 走。",
+        "en": "JS-type param: highlights the selected surface role among the five tiers. The five values are verbatim from the M3 blog's tier naming (research 02 §B7); container is the unsuffixed default — lowest serves page/backdrop uses while floating components (cards, bottom bars, dialogs) climb toward high/highest."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "hue",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 320,
+      "cssVar": "--ts-hue",
+      "effect": {
+        "zh": "表面家族的色相(oklch 刻度)。默认 320 = 紫区(Evil Martians 色相经验映射:紫≈320°,调研 06§2)——向 M3 基线种子紫靠拢;注意 oklch 与 HCT 刻度不同(M3 基线 #6750A4 的 HCT 色相实测 ≈299,见 hct-tonal-palette 条目)。",
+        "en": "The surface family's hue (oklch scale). Default 320 = the purple band (Evil Martians' empirical hue map: purple≈320°, research 06 §2) — nodding toward M3's baseline seed purple; note oklch and HCT use different scales (the HCT hue of M3 baseline #6750A4 measures ≈299, see the hct-tonal-palette entry)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "chroma",
+      "min": 0,
+      "max": 0.1,
+      "step": 0.005,
+      "default": 0.02,
+      "cssVar": "--ts-chroma",
+      "effect": {
+        "zh": "表面家族的色度(中性低色度,演示值)。调高会得到「彩色表面」变体——品牌化表面,但会挤压 on-surface 文字的对比度余量;oklch C 实用上限约 0.5(MDN,调研 06§1),表面类应远低于该值。",
+        "en": "The surface family's chroma (neutral low-chroma, illustrative). Raising it yields the 'colored surface' variant — a branded surface that eats into on-surface text's contrast headroom; oklch C's practical ceiling is ≈0.5 (MDN, research 06 §1), and surfaces should stay well below it."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "平台设计概念而非浏览器特性:五档角色由 Android/M3 主题以 token 形式提供(Android 开发者文档,调研 06§7);tone-based surfaces 更新发布于 2023-02(m3.material.io 官方博客,调研 02§B7)。Web 落地手段是 CSS 自定义属性(全平台支持)。",
+      "en": "A platform design concept, not a browser feature: the five roles ship as tokens in Android/M3 themes (Android developer docs, research 06 §7); the tone-based surfaces update landed 2023-02 on the m3.material.io blog (research 02 §B7). On the web the delivery mechanism is CSS custom properties (universally supported)."
+    }
+  },
+  "fallback": {
+    "zh": "Web 近似的回退:每条表面变量写 var(--ts-surface-high, #f3f0f7) 带非空兜底值;不支持 color-mix/oklch 的环境退回预置 hex 主题表。深色环境若拿不到角色 token,用 @media (prefers-color-scheme: dark) 翻转同一组变量(调研 06§11 记载的传统策略)。",
+    "en": "Fallbacks for the web approximation: every surface variable carries a non-empty fallback — var(--ts-surface-high, #f3f0f7); environments without color-mix/oklch fall back to a preset hex theme sheet. When role tokens are unavailable in dark contexts, flip the same variable set under @media (prefers-color-scheme: dark) (the traditional strategy recorded in research 06 §11)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "同一界面的层级表达:页面底 → lowest,列表分区 → low,卡片容器 → container,悬浮面板 → high/highest", "en": "Expressing hierarchy in one screen: page base → lowest, list sections → low, card containers → container, floating panels → high/highest" },
+      { "zh": "暗色模式的层级:靠提亮而非阴影/描边——「前台呈现更亮」的系统惯例(Apple base/elevated 同构,调研 06§14)", "en": "Dark-mode hierarchy by brightening instead of shadows/outlines — the 'foreground renders brighter' system convention (mirrored in Apple's base/elevated, research 06 §14)" },
+      { "zh": "动态取色系统:壁纸换色时五档一起重映射,层级关系不变(Android Material You 的角色化用法,调研 06§6/§7)", "en": "Dynamic color systems: when the wallpaper changes the color, all five tiers remap together and hierarchy survives (Android Material You's role-based usage, research 06 §6/§7)" },
+      { "zh": "替代 elevation 阴影的扁平化设计:层级用色调差而不是投影,减少视觉噪音", "en": "Flat designs replacing elevation shadows: hierarchy via tonal difference instead of drop shadows, cutting visual noise" }
+    ],
+    "avoid": [
+      { "zh": "档位间距离过近——相邻档位小于感知可辨差时,层级信息消失(仍需维持与 on-surface 文字的 3:1 成对对比,调研 02§B6)", "en": "Tiers spaced too tightly — when adjacent tiers sit under the just-noticeable difference the hierarchy vanishes (while still holding the paired 3:1 contrast with on-surface text, research 02 §B6)" },
+      { "zh": "表面色度调高还叠大段正文——彩色表面吃掉文字对比度余量,正文 AA 4.5:1 优先(WCAG SC 1.4.3)", "en": "Raised surface chroma under long body text — the colored surface eats text contrast headroom; body-text AA 4.5:1 comes first (WCAG SC 1.4.3)" },
+      { "zh": "深色主题沿用亮色方向的阶梯(档位越高层级越暗)——与系统提亮惯例相反,层级会读反", "en": "Reusing the light-direction ladder in dark themes (higher tier = darker) — inverts against the brightening convention and reads as reversed hierarchy" },
+      { "zh": "把五档当装饰色带用——档位是层级语义,跨级跳用(如 lowest 直跳 highest)会破坏相邻档的层读", "en": "Treating the five tiers as decorative bands — tiers are hierarchy semantics; skipping levels (lowest straight to highest) breaks the adjacency reading" }
+    ]
+  },
+  "a11y": {
+    "zh": "M3 角色体系官方声明「角色成对设计保证最低 3:1 对比度」(调研 02§B6):每档表面须与其上的 on-surface 文字保持 WCAG 正文 4.5:1、组件边界 3:1(调研 06§17)。tone 即 CIE L*(调研 06§5),因此档位差是可感知明度差——demo 用 oklch L 近似该轴(不同刻度,演示值),并把每档的对比度读数留给文字色核对。深色档位提亮方向同时对低视力用户更友好:层级不依赖阴影感知。",
+    "en": "M3's role system officially states roles are 'paired to guarantee a minimum 3:1 contrast' (research 02 §B6): each tier must hold WCAG body 4.5:1 with its on-surface text and 3:1 at component boundaries (research 06 §17). Tone is CIE L* (research 06 §5), so tier gaps are perceptual lightness gaps — the demo approximates that axis with oklch L (a different scale; illustrative) and leaves per-tier text contrast to the on-color audit. The dark-theme brightening direction also helps low-vision users: hierarchy never depends on perceiving shadows."
+  },
+  "sources": [
+    "https://m3.material.io/blog/tone-based-surface-color-m3",
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors",
+    "https://github.com/material-foundation/material-color-utilities"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用五档 tone 化表面角色搭一个层级页面:lowest 承载页面底、low 分区、container 默认容器、high/highest 浮层;亮暗两套主题各自保持「层级=色调差」,深色方向靠提亮,每档配 on-surface 文字并核对对比度。",
+      "en": "Build a layered page on five tonal surface roles: lowest carries the page base, low the sections, container the default containers, high/highest the floats; both themes keep 'hierarchy = tonal gap' with the dark direction brightening, and every tier pairs an on-surface text whose contrast is checked."
+    },
+    "acceptance": [
+      { "zh": "五档命名逐字使用 surface-container-lowest / low / (container) / high / highest", "en": "Use the tier names verbatim: surface-container-lowest / low / (container) / high / highest" },
+      { "zh": "层级由表面色调差表达,不依赖投影或描边", "en": "Hierarchy comes from surface tonal gaps, not from shadows or outlines" },
+      { "zh": "深色主题档位方向为「越高层级越亮」,与亮色主题相反", "en": "Dark themes invert the ladder: higher tier = brighter, opposite of light" },
+      { "zh": "每档表面配 on-surface 文字色,逐档核对 WCAG AA(正文 4.5:1、边界 3:1)", "en": "Each tier pairs an on-surface color audited per tier against WCAG AA (body 4.5:1, boundaries 3:1)" },
+      { "zh": "五档变量全部带非空兜底值,并支持 prefers-color-scheme 自动翻转", "en": "All five tier variables carry non-empty fallbacks and respond to prefers-color-scheme" }
+    ]
+  }
+}

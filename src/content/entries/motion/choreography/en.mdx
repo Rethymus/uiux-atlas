@@ -1,0 +1,64 @@
+## Structure & DOM
+
+Choreography lives in **one semantic container + N children**: the container animates nothing; each child declares the same entrance animation, differing only in `animation-delay` (growing with its index) and the shared `--ch-from` start offset:
+
+```html
+<ul class="list"><!-- semantic container: animation never changes the accessibility tree -->
+  <li style="--i: 0">…</li>
+  <li style="--i: 1">…</li>
+  <li style="--i: 2">…</li>
+</ul>
+```
+
+Key points:
+
+- What staggers is the **start**, not the duration: every child runs its full 250ms; item i starts at i × stagger;
+- `--i` is written by the template/JS; a pure-CSS alternative is hand-written `:nth-child` rules — equivalent;
+- The whole group shares **one entering direction** (`--ch-from`); direction is group-level semantics, not per-item flourishes;
+- Lists keep ul/li semantics: animating only opacity/transform leaves the accessibility tree complete from frame one, so screen readers get every item immediately.
+
+## Styling & Parameters
+
+Both `stagger` and `direction` are JS-type params (the demo subscribes and inlines the delay and `--ch-from`); duration/curve are fixed to M3's official pairs:
+
+```css
+.item {
+  animation: enter 250ms cubic-bezier(0, 0, 0, 1) both;  /* std-decel 250ms: entering (official pair) */
+  animation-delay: calc(var(--i) * var(--stagger, 40ms));
+}
+@keyframes enter {
+  from { opacity: 0; transform: var(--ch-from, translateY(14px)); }
+  to   { opacity: 1; transform: none; }
+}
+/* Exit: reverse-order stagger, 200ms std-accel cubic-bezier(0.3, 0, 1, 1) (official pair) */
+.item.exit { animation-name: exit; animation-duration: 200ms; animation-timing-function: cubic-bezier(0.3, 0, 1, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .item { --ch-from: none; }  /* drop displacement, keep the stagger rhythm (opacity-only fade) */
+}
+```
+
+Where the numbers come from: enter std-decel 250ms / exit std-accel 200ms are M3's official pairing table (research 04 §1.4); "enters outlast exits" is the same official rule. No official stagger interval exists — the demo default of 40ms is a common community value, unverified; direction semantics come from M3's "Transition patterns" Enter/exit mode (notifications from the top, drawers from the side, sheets/keyboards from the bottom, research 04 §3.3).
+
+## Motion & Interaction
+
+- **Two buttons, two orchestrations**: entrances stagger in natural order; exits stagger in reverse (last item leaves first) — reverse exits pull the gaze from the tail back to the origin, pairing with "exits are faster";
+- **Total spread = stagger × (n−1)**, labeled live by the demo; decide "when must the last item land" first, then back out the stagger;
+- **Direction is the spatial model**: one direction per group, and it must match the content's real origin (lists from below, notifications from above, drawers from a side — official M3 semantics);
+- **Versus JS orchestration**: Motion's delay/stagger is the library expression of the same idea (with negative delay = start mid-flight, research 04 §1.3) — see stagger-orchestration; the pure-CSS version has zero dependencies and no hydration cost;
+- **Performance**: animate only opacity and transform (compositor properties, web.dev baseline, research 04 §1.5); never stagger long lists (>20 items) whole — below the fold switch to scroll-triggered reveals (see scroll-driven-animations);
+- **reduced-motion**: drop displacement, keep the stagger rhythm (opacity-only fade) — large translations are vestibular triggers (research 04 §6.1).
+
+## Real-world examples
+
+- **Directional snackbar/toast expansion**: M3 officially describes snackbars expanding directionally by position — upward from the bottom, downward from the top (Android system behavior, research 04 §3.3), the canonical product application of "direction = spatial model";
+- **System notifications and drawers**: notifications from the top, drawers from a side edge, sheets/keyboards from the bottom — M3 "Transition patterns"' official summary of Android's entering directions (research 04 §3.3);
+- **Google Search's transition-as-choreography**: Luke W documents Google Search merging the loading indicator into the transition itself ("the page slides in as the transition") to create a sense of immediacy (research 04 §2.2) — directional entrance plus fast content presentation.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `stagger` | stronger roll-call feel, the group reads as item-by-item confirmation; past 80ms × 5 items the last one waits 400ms+ — never put critical content at the tail | approaching simultaneous; 0 = a single synchronized entrance, choreography gone (only direction remains) |
+| `direction` | switching direction switches the spatial hint: up = content arriving, down = notification landing, sideways = panel traffic; a wrong direction fights the origin | fade removes displacement and keeps only rhythm — the reduced-motion fallback and the most conservative choreography |
+
+Selection rule of thumb: direction is decided by the content's real origin (never inverted); stagger is backed out from "when may the last item land"; take the official 250ms enter / 200ms exit pairs as-is instead of lengthening them.

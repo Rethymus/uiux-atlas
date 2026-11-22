@@ -1,0 +1,70 @@
+## Structure & DOM
+
+Spatial UI is an "environment + floating windows" two-layer structure: an **abstract environment** (multi-stop radial gradients simulating indoor light) floods the scene, and one or two **glass windows** float above it with generous rounding — hierarchy expressed entirely through depth language, never dense outlines or card stacks.
+
+```html
+<div class="scene">
+  <div class="env" aria-hidden="true"></div>   <!-- environment: light-blob gradients -->
+  <div class="scrim" aria-hidden="true"></div> <!-- Full Space immersion veil -->
+  <section class="win win-main">…</section>    <!-- glass window: content on a translucent base -->
+  <aside class="win win-side">…</aside>
+</div>
+```
+
+Key points:
+
+- Windows are **sibling layers** of the environment; `backdrop-filter` blurs the light blobs showing through — the richer the environment, the more convincing the glass (same rule as glassmorphism);
+- Depth is hierarchy: z-axis relations use **one large soft shadow + scale + position** — the study's criterion "few large shadows, not many outlines";
+- Immersion has two levels: `data-immersion="shared"` (default, side by side, environment lit) and `"full"` (exclusive, veiled and dimmed) — mapping the official HIG concepts Shared Space / Full Space.
+
+## Styling & Parameters
+
+Six parameters: five CSS variables (blur/saturation/fill/radius/shadow) plus an immersion level (JS-type):
+
+```css
+.win {
+  background-color: var(--sp-fill);    /* oklch(1 0 0 / 0.55) ≈ the snippet's Canvas 55% */
+  backdrop-filter: blur(var(--sp-blur)) saturate(var(--sp-sat)); /* 20px × 1.4 */
+  -webkit-backdrop-filter: blur(var(--sp-blur)) saturate(var(--sp-sat));
+  border-radius: var(--sp-radius);     /* 24px */
+  box-shadow: var(--sp-shadow);        /* 0 12px 40px rgba(0,0,0,.18), single layer */
+  outline: 1px solid rgb(255 255 255 / 0.25);  /* 1px inner highlight */
+  outline-offset: -1px;
+}
+.scene[data-immersion="full"] .scrim { opacity: 1; }   /* environment dims */
+.scene[data-immersion="full"] .win-main { scale: 1.08; } /* main window grows */
+```
+
+Where the numbers come from (study 11 §5 reusable snippet; **experiential — a Web translation, not officially published Apple values**):
+
+- `blur(20px) saturate(1.4)`, `border-radius: 24px`, `box-shadow: 0 12px 40px rgb(0 0 0 / .18)`, `outline: 1px solid rgb(255 255 255 / .25)` with negative offset, `color-mix(in oklab, Canvas 55%, transparent)`: all from study 11 §5's glass-card snippet; fill is parameterized as a fixed color at 55% alpha (the Canvas keyword cannot ride a slider, noted as an approximation);
+- Official HIG points (fetched 2026-11 via the official Markdown endpoint): Space is "a limitless canvas"; Shared Space (apps side by side) is the default with optional Full Space exclusivity; "find the minimum level of immersion needed for each moment"; content places itself relative to the head and stays in the field of view; gaze + indirect gestures; system dynamic scaling keeps content legible at any distance;
+- Official Web-side anchor: from Safari 26.2, WebXR on visionOS supports WebGPU (WebKit blog).
+
+## Motion & Interaction
+
+The spatial motion discipline comes from HIG ergonomics: "avoid overwhelming, abrupt, overly fast motion without a static reference frame":
+
+- **Immersion switch**: the veil cross-fades over 0.4s while windows translate/scale over the same 0.4s — compositor-only properties, windows "move" rather than jump; under `prefers-reduced-motion` every switch is instant;
+- **Gaze-as-hover** (Web translation): targets get a generous footprint (pill buttons, ample padding) and hover blooms a white halo (`::after` expanded 6px) — visionOS's gaze-hover maps to hover/focus on the Web, and the feedback must out-shout desktop conventions;
+- **Focus ring**: a 2px solid white ring with offset, shown on `:focus-visible` — in spatial interaction the focus ring stands in for the gaze and must never be stripped;
+- Entrance: windows fade in (0.5s, opacity only) with a 0.08s cascade; beyond that the environment never moves — the environment is the static reference frame, windows are what move.
+
+## Real-world examples
+
+- **visionOS system windows (Shared Space)** — the default form described in the HIG: app windows float side by side in a shared space while system dynamic scaling keeps them legible at any distance; the prototype of glass windows + generous rounding + one large soft shadow (study 11 §5, official HIG chapter).
+- **visionOS Digital Crown × Passthrough** — the immersion mechanism recorded in the HIG: live camera passthrough with the Crown continuously adjusting how much comes through; the demo's "side by side / exclusive" switch discretizes the two ends of that continuum (study 11 §5, official HIG chapter).
+- **Safari on visionOS WebXR (WebGPU)** — per the official WebKit blog: from Safari 26.2, WebXR on visionOS gains WebGPU support, letting web content render spatially inside the browser — the direction this entry's Web translation plugs straight into (study 11 §5; WebKit blog).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `blur` | thicker glass, less legible environment; past 30px sampling cost climbs | thinner glass; under 10px the "floating frost" read of a spatial window disappears |
+| `saturation` | environment colors shine through more vividly — the glass looks "alive" | under 1.0 the frosted layer turns ashy (the 1.4 default exists to counter exactly that) |
+| `fill` | whiter and more solid — better text legibility, weaker sense of space | airier and crisper; under 40% alpha text contrast starts riding the environment unpredictably |
+| `radius` | more "spatial window"; visionOS defaults its windows to generous rounding | square corners read as dangerous objects in the spatial metaphor; under 16px it degrades into a plain card |
+| `shadow` | stronger float; large blur with small offset is what reads as "hovering above" | no shadow and the window glues to the environment — the z-axis language fails |
+| `immersion` | full = exclusive immersion, dimmed environment, grown window — note HIG's "minimum immersion" principle: not every moment needs full | shared = the default side-by-side form with a lit environment, the multi-tasking posture |
+
+Working ranges: blur 16–24px, saturate 1.3–1.5, fill 50–60% alpha, radius 20–28px, a single shadow in the 0 12px 40px class. Three disciplines run through everything: the environment must be rich (glass breaks on flat color), depth goes in shadows not outlines, and immersion takes the minimum necessary level (HIG principle).

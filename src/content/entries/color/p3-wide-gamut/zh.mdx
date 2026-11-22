@@ -1,0 +1,61 @@
+## 结构与 DOM
+
+广色域不改变 DOM 结构——它是**同一处取色点的两次声明**:基础层是每台屏幕都能显示的 sRGB 值,增强层叠在 `@supports` + `@media` 双重守卫之内。
+
+```html
+<button class="brand-accent">主操作</button>
+```
+
+```css
+.brand-accent { color: oklch(0.8 0.24 145); }          /* 1) sRGB 兜底 */
+@supports (color: color(display-p3 1 0 0)) {           /* 2) 语法守卫 */
+  @media (color-gamut: p3) {                           /* 3) 屏幕守卫 */
+    .brand-accent { color: color(display-p3 0.511 0.903 0.463); }
+  }
+}
+```
+
+关键点:
+
+- 三件套缺一不可:`@supports` 探测 color() 语法,`@media (color-gamut: p3)` 探测屏幕能力(取值 srgb/p3/rec2020 为包含关系,p3 包含 srgb);
+- P3 坐标应由 sRGB 兜底值转换而来,保证两个分支同色相、同明度——只是饱和度上限不同;
+- `color-gamut` Baseline 2023-02、`oklch()` Baseline 2023-05(MDN,调研 06§3)。
+
+## 样式与参数
+
+参数经 `--p3-hue` / `--p3-chroma` 注入,demo 内固定 L=0.8(Evil Martians:该明度任何色相配黑字都清晰),把色相与色度暴露成滑杆:
+
+```css
+.accent-srgb  { color: oklch(0.8 var(--p3-chroma-srgb) var(--p3-hue)); }
+.accent-p3    { color: color(display-p3 r g b); }  /* 坐标 = f(oklch L C H) */
+```
+
+数值出处:
+
+- **Lab 色域体积**(CSS Color 4 §10):sRGB 0.820M、display-p3 1.233M ≈ **1.5×**、a98-rgb 1.310M、rec2020 2.042M、prophoto-rgb 2.896M;
+- 另一口径(Evil Martians):sRGB 仅覆盖人眼可见色约 **35%**,P3 再增 **30%**——两种口径度量不同,不可混用;
+- oklch 色度 C:实用上限约 **0.5**(MDN,且 100% = 0.4 而非 1);受色域限制实测最大约 **0.37**(sRGB,P3 屏略高);
+- 色相经验映射(Evil Martians):红≈20°、黄≈90°、绿≈140°、蓝≈220°、紫≈320°——demo 默认 145°(绿区)正是 P3 增益最直观的范围。
+
+## 动效与交互
+
+色域本身无动效,demo 的交互是**证据链**:
+
+- **色域徽标**:运行时 `matchMedia('(color-gamut: p3)')` 检测当前屏幕并监听 `change`——外接显示器热插拔时徽标实时更新;
+- **对照组开关**(JS 型参数 `mode`):切到「仅 sRGB」撤下增强层,复现「不写三件套时高饱和色被降 chroma」的观感;
+- **降 chroma 可视化**:sRGB 分支按 CSS Color 4 gamut mapping 的精神二分降 chroma、保色相保明度,默认参数下色块上直接标出 `0.30 → 0.252` 的钳制过程(P3 坐标 0.385 0.924 0.321,由本条目内嵌 CSS Color 4 官方矩阵转换,离线 roundtrip 验证);P3 屏上右块保留原饱和度,sRGB 屏上浏览器把右块 gamut map 后与左块近似——两台屏幕看到的是同一份代码的两种命运;
+- 无自主动画,不涉 `prefers-reduced-motion`。
+
+## 真实产品案例
+
+- **Tailwind CSS v4(2025-01)**:默认调色板整体从 rgb 换成 oklch,公告名就叫 "Modernized P3 color palette"——在原受限于 sRGB 处更鲜艳且不破坏 v3 平衡;透明度用 `color-mix(in oklab, …)`(调研 06§4);
+- **Radix Colors**:官方宣称按 APCA 定对比目标的同时支持 P3 广色域发布(调研 06§8)——色阶以广色域交付、按需降级的同构做法;
+- **oklch.com / stylelint-gamut 工具链**:Evil Martians 官方选色器带色域「洞」可视化,stylelint-gamut 检测越域 P3 色并强制 `@media (color-gamut: p3)` 手动降级(调研 06§2)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `hue` | 转向蓝区(≈220°)时 P3 增益同样显著;跨区时注意各色相的 sRGB 上限不同 | 回到黄绿区(90–140°)sRGB 追赶较快,两分支差异收窄 |
+| `chroma` | 越过该色相的 sRGB 上限后,sRGB 分支被钳制、P3 分支继续保留——差距拉开;>0.37 已越过 Evil Martians 实测的实用上限 | 两分支趋同;0 = 灰阶,色域毫无意义 |
+| `mode` → srgb | 对照组:增强层撤下,两块都停在降 chroma 的 sRGB 分支 | p3 档是推荐姿势:同一份代码,P3 屏自动获得增益 |

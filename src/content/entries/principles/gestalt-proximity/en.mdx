@@ -1,0 +1,58 @@
+## Structure & DOM
+
+The demo is a **3 × 4 array** of 12 elements with two spacing tiers, between and within groups:
+
+```html
+<div class="gp-board"> <!-- gap: var(--gp-gap) -->
+  <div class="gp-group"> <!-- gap: var(--gp-inner) -->
+    <span class="gp-cell">1</span>
+    <span class="gp-cell">2</span>
+    <span class="gp-cell">3</span>
+    <span class="gp-cell">4</span>
+  </div>
+  <!-- ×3 groups -->
+</div>
+```
+
+Key points:
+
+- **No container border or background at all** — group perception arises purely from the spacing difference, the single variable proximity isolates;
+- The uniform control: same elements, one gap everywhere — the disappearance of grouping proves the spacing *difference* is the signal;
+- Groups are two nested `flex` + `gap` levels; changing spacing only rewrites CSS variables, the DOM never moves.
+
+## Styling & Parameters
+
+```css
+.demo-stage {
+  --gp-gap: 36px;   /* between groups */
+  --gp-inner: 10px; /* within groups */
+}
+.gp-board { display: flex; gap: var(--gp-gap); }
+.gp-group { display: flex; gap: var(--gp-inner); }
+```
+
+- `gap` defaults to 36px, `inner` to 10px (ratio 3.6:1) — demo teaching geometry, not a law figure; the Gestalt laws are qualitative and research 07 §31 gives no numbers;
+- The verdict rule (demo-defined): `gap ≥ 2 × inner` scores "grouping holds", otherwise "collapsing" — a teaching approximation;
+- `layout` is a JS-type param: uniform equalizes every gap to `inner` as the negative control.
+
+## Motion & Interaction
+
+- Dragging the sliders animates spacing via a 0.2s `gap` transition (the `gap` property is animatable); dropped under `prefers-reduced-motion`;
+- The readout panel shows the live ratio and the "holds/collapsing" verdict;
+- Below 480px the array stacks vertically with the two-tier structure intact.
+
+## Real-world examples
+
+- **Form field grouping**: the three address lines sit together with generous whitespace before "Payment" — the checkout-page convention of spacing-only grouping with no rules drawn (generalized from 07 §31 "form field grouping"; no product named in research);
+- **Search-result clusters**: inside one result (title/snippet/link) tight, between results airy — search engines make "one cluster = one result" legible through spacing alone (generalized from 07 §31 "search-result clusters");
+- **Division of labor with Common Region**: when a group needs strongly-bound semantics (a card's button cluster), the standard practice adds a border/background (Gestalt Common Region, 07 §32) — spacing handles light grouping, containers handle heavy grouping.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `gap` | wider separation, stronger grouping; past ~60px the three groups read as three invisible cards and more adds nothing | as gap approaches inner, grouping collapses into 12 scattered dots — the death of the difference signal |
+| `inner` | pulling inner toward gap collapses grouping too; too-loose intra-group spacing re-reads "4 elements" as "4 small groups" | tighter intra-group spacing strengthens the "one block" feel; under ~4px elements fuse |
+| `layout` | uniform is the negative control: zero difference, zero grouping | grouped restores the two-tier structure |
+
+Working range: between:within ≥ 2:1 is the teaching floor for legible grouping; real products usually run 3–4:1. And the engineering floor stands — **strongly-bound groups never rely on spacing alone**; stack Common Region and semantic grouping (fieldsets/lists) for the complete answer.

@@ -1,0 +1,117 @@
+{
+  "name": "WCAG Text Spacing",
+  "nameZh": "WCAG 文字间距",
+  "aliases": ["text spacing", "文字间距", "SC 1.4.12", "行高字距"],
+  "category": "type",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "WCAG 成功准则 1.4.12:用户覆写行高 1.5 倍、段距 2 倍、字距 0.12 倍、词距 0.16 倍字号时,内容不得失效——排版不要锁死这四个比率。",
+    "en": "WCAG SC 1.4.12: when users override line height to 1.5×, paragraph spacing 2×, letter spacing 0.12× and word spacing 0.16× of the font size, content must not break — don't hard-lock these four ratios."
+  },
+  "origin": {
+    "zh": "出自 W3C WCAG 成功准则 1.4.12 Text Spacing(WCAG 2.1 引入、2.2 沿用),四比率为:行高 ≥1.5×、段距 ≥2×、字距 ≥0.12×、词距 ≥0.16× 字号;不改变其他属性时内容必须可用(W3C 理解文档原文一手核对,调研 05§18)。",
+    "en": "From the W3C WCAG Success Criterion 1.4.12 Text Spacing (introduced in WCAG 2.1, carried into 2.2): line height ≥1.5×, paragraph spacing ≥2×, letter spacing ≥0.12×, word spacing ≥0.16× the font size; content must remain usable with no other property changed (verified against the W3C Understanding document, research 05 §18)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "lineHeight",
+      "min": 1,
+      "max": 2.5,
+      "step": 0.05,
+      "default": 1.5,
+      "cssVar": "--ts-line-height",
+      "effect": {
+        "zh": "无单位行高(CSS unitless line-height)。WCAG 阈值:≥1.5。默认 1.5 恰为阈值,也是正文行高的常见惯例;无单位写法让行高随字号级联。",
+        "en": "Unitless line height. WCAG threshold: ≥1.5. The default 1.5 is exactly the threshold and the common body-copy convention; the unitless form cascades with font size."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "paragraphGap",
+      "unit": "em",
+      "min": 0,
+      "max": 3,
+      "step": 0.05,
+      "default": 1,
+      "cssVar": "--ts-para-gap",
+      "effect": {
+        "zh": "段间距(margin-block-end)。WCAG 阈值:≥2em(字号的 2 倍)。默认 1em 为常见段落留白惯例(未证实),低于阈值——按钮一键可验证阈值形态。",
+        "en": "Paragraph spacing (margin-block-end). WCAG threshold: ≥2em (twice the font size). The 1em default is the common paragraph-gap convention (unverified) and sits below the threshold — the demo button previews the threshold form."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "letterSpacing",
+      "unit": "em",
+      "min": 0,
+      "max": 0.3,
+      "step": 0.005,
+      "default": 0,
+      "cssVar": "--ts-letter-spacing",
+      "effect": {
+        "zh": "字距(letter-spacing)。WCAG 阈值:≥0.12em(字号的 0.12 倍)。默认 0(浏览器默认排版)。负字距(标题紧排)在用户覆写场景下同样不得破坏内容。",
+        "en": "Letter spacing. WCAG threshold: ≥0.12em (0.12× font size). Default 0 (browser default). Tight negative tracking must equally not break content under user overrides."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "wordSpacing",
+      "unit": "em",
+      "min": 0,
+      "max": 0.3,
+      "step": 0.005,
+      "default": 0,
+      "cssVar": "--ts-word-spacing",
+      "effect": {
+        "zh": "词距(word-spacing)。WCAG 阈值:≥0.16em(字号的 0.16 倍)。默认 0。CSS 语义上 word-spacing 作用于词分隔符(空格),对无空格分词的中文正文基本无效。",
+        "en": "Word spacing. WCAG threshold: ≥0.16em (0.16× font size). Default 0. Per CSS semantics word-spacing acts on word separators (spaces), so it has little effect on space-less CJK body text."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "本条目只用 line-height / margin / letter-spacing / word-spacing 四个基础属性,全部广泛可用;「成功准则」约束的是行为而非属性——任何浏览器与用户代理都能按 1.4.12 覆写这些值。",
+      "en": "This entry only uses four basic properties — line-height, margin, letter-spacing, word-spacing — all widely available; the success criterion constrains behavior, not properties: any user agent can override these values per 1.4.12."
+    }
+  },
+  "fallback": {
+    "zh": "无需特性回退;工程侧的「兜底」是不锁死:避免对行高/段距/字距写 !important、避免固定高度裁剪文本(overflow: hidden 的一行式截断)、避免文本容器定高——用户代理覆写间距后内容仍完整可见。",
+    "en": "No feature fallback needed; the engineering 'fallback' is simply not locking: avoid !important on line-height/spacing, avoid fixed-height text clipping (single-line overflow: hidden truncation), and avoid fixed-height text containers so content stays fully visible after user-agent overrides."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "正文排版基线:行高 1.5、段距适度的默认值,让覆写空间天然存在", "en": "Body-copy baseline: line-height 1.5 with moderate paragraph gaps leaves override headroom by default" },
+      { "zh": "组件库的排版令牌:四个比率全部走变量,可被用户样式覆写", "en": "Design-system type tokens: all four ratios as variables, overridable by user styles" },
+      { "zh": "文本密集界面(文档、阅读器、表单说明文字)的无障碍验收", "en": "Accessibility acceptance for text-dense UIs (docs, readers, form helper text)" },
+      { "zh": "CI 中的间距锁定检查:grep 掉 !important 的行高与定高文本容器", "en": "CI checks against spacing locks: grepping out !important line-heights and fixed-height text containers" }
+    ],
+    "avoid": [
+      { "zh": "行高/字距写死 !important 或内联样式,用户代理无法覆写", "en": "Hard-locking line-height/letter-spacing with !important or inline styles user agents can't override" },
+      { "zh": "单行定高容器(height: 1.5em + overflow: hidden)——覆写行高后文字被裁掉", "en": "Single-line fixed-height boxes (height: 1.5em + overflow: hidden) — overridden line-height clips the text" },
+      { "zh": "把文本放进固定高度弹层/卡片,行高一涨就溢出裁剪", "en": "Text in fixed-height popovers/cards that clip once line-height grows" },
+      { "zh": "只在默认形态下验收排版,不测「四比率全开」形态", "en": "Accepting typography only at defaults, never testing the all-four-overrides form" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目本身就是无障碍准则:1.4.12 属 AA 级。验收方法是「用户视角覆写」——把行高设为 1.5、段距 2、字距 0.12、词距 0.16(均以字号为倍数),内容无截断、无重叠、无功能失效即通过;WCAG 官方理解文档提供书签工具可一键注入四比率做快速检查(调研 05§18)。注意词距对无空格分词的中文无效,中文站重点核对行高与段距。",
+    "en": "This entry IS the accessibility rule: SC 1.4.12 is Level AA. Accept by overriding from the user's seat — set line height 1.5, paragraph spacing 2, letter spacing 0.12, word spacing 0.16 (all multiples of font size); pass means no truncation, no overlap, no broken function. The W3C Understanding document ships a bookmarklet that injects the four ratios for quick checks (research 05 §18). Word spacing doesn't apply to space-less CJK — for Chinese sites focus on line height and paragraph spacing."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为正文排版实现「可覆写的间距基线」:行高、段距、字距、词距全部走 CSS 变量并给出满足 WCAG 1.4.12 阈值的形态,任何属性都不用 !important 锁死。",
+      "en": "Build an overridable spacing baseline for body copy: line height, paragraph gap, letter spacing and word spacing all through CSS variables with a form meeting the WCAG 1.4.12 thresholds, nothing locked with !important."
+    },
+    "acceptance": [
+      { "zh": "行高使用无单位数值,且支持达到 1.5 的覆写形态", "en": "Unitless line-height supporting the 1.5 override form" },
+      { "zh": "段距可达 2em(字号的 2 倍)而不破坏布局", "en": "Paragraph gap can reach 2em (2× font size) without breaking layout" },
+      { "zh": "字距 0.12em / 词距 0.16em 覆写下无文本截断、无控件失效", "en": "No clipping or broken controls under 0.12em letter / 0.16em word spacing overrides" },
+      { "zh": "文本容器不得定高裁剪:不用固定 height + overflow: hidden 收正文", "en": "No fixed-height clipping containers: body text never inside fixed height + overflow: hidden" },
+      { "zh": "四个间距值全部经 CSS 变量声明,禁止 !important", "en": "All four spacing values declared via CSS variables; !important forbidden" }
+    ]
+  }
+}

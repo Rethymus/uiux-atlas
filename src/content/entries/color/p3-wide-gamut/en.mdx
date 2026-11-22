@@ -1,0 +1,61 @@
+## Structure & DOM
+
+Wide gamut changes nothing about the DOM — it is **two declarations at the same pick point**: a base sRGB value every screen can render, plus an enhancement layer wrapped in a double guard of `@supports` + `@media`.
+
+```html
+<button class="brand-accent">Primary action</button>
+```
+
+```css
+.brand-accent { color: oklch(0.8 0.24 145); }          /* 1) sRGB fallback */
+@supports (color: color(display-p3 1 0 0)) {           /* 2) syntax guard */
+  @media (color-gamut: p3) {                           /* 3) screen guard */
+    .brand-accent { color: color(display-p3 0.511 0.903 0.463); }
+  }
+}
+```
+
+Key points:
+
+- All three pieces matter: `@supports` probes the color() syntax, `@media (color-gamut: p3)` probes the screen (values srgb/p3/rec2020 nest inclusively — p3 contains srgb);
+- P3 coordinates should be converted from the sRGB fallback so both branches share hue and lightness — only the saturation ceiling differs;
+- `color-gamut` is Baseline 2023-02 and `oklch()` Baseline 2023-05 (MDN, research 06 §3).
+
+## Styling & Parameters
+
+Parameters are injected through `--p3-hue` / `--p3-chroma`; the demo pins L=0.8 (Evil Martians: any hue at that lightness pairs cleanly with black text) and exposes hue and chroma as sliders:
+
+```css
+.accent-srgb  { color: oklch(0.8 var(--p3-chroma-srgb) var(--p3-hue)); }
+.accent-p3    { color: color(display-p3 r g b); }  /* coords = f(oklch L C H) */
+```
+
+Where the numbers come from:
+
+- **Lab volume** (CSS Color 4 §10): sRGB 0.820M, display-p3 1.233M ≈ **1.5×**, a98-rgb 1.310M, rec2020 2.042M, prophoto-rgb 2.896M;
+- A second yardstick (Evil Martians): sRGB covers only ~**35%** of visible colors and P3 adds **30%** — different metrics, never mix them;
+- oklch chroma C: practical ceiling ≈ **0.5** (MDN, and 100% = 0.4, not 1); gamut-bounded measured max ≈ **0.37** (sRGB, slightly higher on P3 screens);
+- Empirical hue map (Evil Martians): red≈20°, yellow≈90°, green≈140°, blue≈220°, purple≈320° — the demo's default 145° (green band) is where the P3 gain is most visible.
+
+## Motion & Interaction
+
+Gamut has no motion of its own; the demo's interactions form an **evidence chain**:
+
+- **Gamut badge**: a runtime `matchMedia('(color-gamut: p3)')` probe with a `change` listener — the badge updates live when displays are hot-plugged;
+- **Control switch** (JS-type param `mode`): switching to "sRGB only" removes the enhancement layer, reproducing how an oversaturated color looks once chroma-reduced without the trio;
+- **Chroma-reduction made visible**: the sRGB branch reduces chroma (hue and lightness kept) via binary search in the spirit of CSS Color 4 gamut mapping, printing the clamp `0.30 → 0.252` on the swatch; the P3 coordinates 0.385 0.924 0.321 come from the CSS Color 4 official matrices embedded in this demo (verified offline by roundtrip); on P3 screens the right swatch keeps full saturation, while on sRGB screens the browser gamut-maps it toward the left — one code path, two fates;
+- No self-driven animation, so `prefers-reduced-motion` does not apply.
+
+## Real-world examples
+
+- **Tailwind CSS v4 (2025-01)**: the whole default palette moved from rgb to oklch, announced as "Modernized P3 color palette" — more vivid where v3 was sRGB-bounded, without breaking v3 balance; alpha via `color-mix(in oklab, …)` (research 06 §4);
+- **Radix Colors**: officially states it targets APCA contrast while shipping P3 wide-gamut values (research 06 §8) — the same-shaped approach of publishing wide-gamut scales with a downgrade path;
+- **oklch.com / stylelint-gamut toolchain**: Evil Martians' official picker visualizes the gamut "hole", and stylelint-gamut flags out-of-gamut P3 colors and enforces the manual `@media (color-gamut: p3)` downgrade (research 06 §2).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hue` | toward blue (≈220°) the P3 gain is just as visible; watch each band's distinct sRGB ceiling when sweeping | back to yellow-green (90–140°) sRGB catches up and the branch gap narrows |
+| `chroma` | past the hue's sRGB ceiling the sRGB branch clamps while P3 keeps going — the gap opens; >0.37 exceeds Evil Martians' measured practical max | the branches converge; 0 = grayscale and gamut means nothing |
+| `mode` → srgb | the control: enhancement layer off, both swatches sit on the chroma-reduced sRGB branch | p3 is the recommended posture: one code path, P3 screens get the gain for free |

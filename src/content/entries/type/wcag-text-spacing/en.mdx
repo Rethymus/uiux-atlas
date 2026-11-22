@@ -1,0 +1,69 @@
+## Structure & DOM
+
+No special structure — put text in normal flow and the key is **don't lock it down**:
+
+```html
+<div class="prose">
+  <p>A paragraph…</p>
+  <p>Another…</p>
+</div>
+```
+
+```css
+.prose p {
+  line-height: var(--ts-line-height);   /* unitless, overridable */
+  margin-block-end: var(--ts-para-gap); /* paragraph gap */
+  letter-spacing: var(--ts-letter-spacing);
+  word-spacing: var(--ts-word-spacing);
+}
+```
+
+Key points:
+
+- No `!important`, no fixed-height clipping — 1.4.12 requires that content stays usable after user-agent overrides, and locked styles fail by construction;
+- Give text containers `min-height` instead of `height` so a taller line-height never clips;
+- Single-line truncation (`white-space: nowrap` + `overflow: hidden`) conflicts with 1.4.12 by nature — don't use it on meaningful text.
+
+## Styling & Parameters
+
+The four ratios (line height / paragraph gap / letter spacing / word spacing) are injected through `--ts-*` variables:
+
+```css
+.prose p {
+  line-height: var(--ts-line-height);        /* number, unitless; threshold 1.5 */
+  margin-block-end: var(--ts-para-gap);      /* em; threshold 2em */
+  letter-spacing: var(--ts-letter-spacing);  /* em; threshold 0.12em */
+  word-spacing: var(--ts-word-spacing);      /* em; threshold 0.16em */
+}
+```
+
+Where the numbers come from (verified against the WCAG 2.2 Understanding document, research 05 §18):
+
+- Line height ≥ **1.5**× font size; paragraph spacing ≥ **2**×; letter spacing ≥ **0.12**×; word spacing ≥ **0.16**×;
+- The premise is "content must remain usable with no other property changed" — the four ratios are **user-override values**, not design defaults; defaults stay a typographic decision (commonly 1.5 line-height, 1em paragraph gap — the latter a common convention, unverified);
+- Per CSS semantics word-spacing acts on word separators (spaces), so space-less CJK body text is barely affected; letter spacing does apply to CJK.
+
+## Motion & Interaction
+
+Spacing itself has no motion; the interaction lives in "overriding":
+
+- The demo's four sliders simulate user-agent overrides and show each ratio's pass/fail state against the WCAG threshold (✓/✗ badges with threshold values);
+- The "Set to WCAG thresholds" button writes the four values (1.5 / 2em / 0.12em / 0.16em) into the parameter panel at once; "Reset" returns to typographic defaults;
+- The verdict is an instant numeric comparison with no animation — if the demo text clips or overlaps under overrides, that maps directly to how a real site fails 1.4.12.
+
+## Real-world examples
+
+- **The official WCAG toolchain**: the W3C Understanding document ships a bookmarklet that injects the four ratios into any page to watch for breakage — the official acceptance path for 1.4.12 (research 05 §18).
+- **The GOV.UK Design System**: the UK government design system specifies body line-height and paragraph spacing and has long treated "text reflows under user styles" as its accessibility baseline — a representative public-sector implementation of 1.4.12.
+- **Reader modes and OS text sizing**: browser reader modes and iOS/Android system-wide text scaling are, in effect, user overrides of page spacing — sites that leave override headroom for the four ratios survive these modes intact.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `lineHeight` | taller line boxes; dense lists/tables may overflow — fixed-height containers clip | below 1.5 misses the threshold; near 1 lines fuse together and reading gets hard |
+| `paragraphGap` | clearer paragraph boundaries; past 3em the page turns sparse and scrolling gets costly | below 2em misses the threshold; at 0 paragraphs fuse into blocks |
+| `letterSpacing` | passes the threshold at 0.12em; beyond that words visually fall apart and narrow containers wrap more | 0 is the browser default; negative tracking hurts readability and must still remain usable under overrides |
+| `wordSpacing` | passes the threshold at 0.16em; word gaps visibly widen in English | 0 is the default; little visual change for CJK body text (a CSS semantics limit) |
+
+Takeaway: the four thresholds are an **acceptance form**, not a design default — defaults are free, but every default must survive being overridden up to the thresholds.

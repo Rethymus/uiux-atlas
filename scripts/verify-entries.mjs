@@ -20,8 +20,8 @@ const COMPONENT_SLUGS = [
   "empty", "watermark",
 ];
 
-// 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,6 slug)。
-// 14 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components 批产收口同动作);
+// 第八/第九分类 icons(图标体系,8 slug)与 dataviz(数据可视化,8 slug)。
+// 16 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components 批产收口同动作);
 // 条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
 const ICONS_SLUGS = [
   "icon-stroke-fill", "icon-grid-24", "icon-optical-sizing", "icon-aria-accessible",
@@ -30,15 +30,28 @@ const ICONS_SLUGS = [
 const DATAVIZ_SLUGS = [
   "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
   "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
+  "dataviz-chart-selection", "dataviz-color-ordering",
+];
+
+// 第十分类 principles(交互法则与无障碍,15 slug)。
+// 15 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components/icons/dataviz
+// 批产收口同动作);条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
+const PRINCIPLES_SLUGS = [
+  "fitts-law", "hick-law", "millers-law", "jakobs-law", "peak-end-rule",
+  "doherty-threshold", "teslers-law", "gestalt-proximity", "gestalt-similarity-closure",
+  "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
+  "prefers-contrast", "keyboard-navigation",
 ];
 
 const EXPECTED = {
   // styles 第 8 批:8 个风格史条目已落地,自本轮起并入缺失强制校验(与 icons/dataviz 同动作)。
+  // styles 第 9 批(b13):maximalism / classic-brutalism / spatial-ui 落地后并入(同动作)。
   styles: [
     "glassmorphism", "neumorphism", "claymorphism", "neo-brutalism",
     "minimalism", "cyberpunk", "bento-grid",
     "flat-design", "skeuomorphism", "memphis-design", "swiss-international",
     "editorial-magazine", "frutiger-aero", "y2k-retro-futurism", "holographic-chrome",
+    "maximalism", "classic-brutalism", "spatial-ui",
   ],
   materials: [
     "backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials",
@@ -46,23 +59,40 @@ const EXPECTED = {
     "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api",
   ],
   // motion 第 8 批:8 个工艺/行为条目已落地,自本轮起并入缺失强制校验(与 styles 第 8 批同动作)。
+  // b14 批(动效补全):6 条 M3/Web 动效条目并入同一强制校验。
   motion: [
     "motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens",
     "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture",
     "skeleton-loading", "stagger-orchestration", "linear-easing",
     "press-feedback", "toast-spring", "overlay-entrance",
     "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow",
+    "m3-duration-tokens", "easing-pairs", "choreography", "parallax",
+    "haptics-web", "page-transitions",
   ],
   color: [
     "oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color",
     "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast",
     "gradient-interpolation",
+    // b12-color 批(色彩与主题补全):5 条(调研 06 色彩与主题 + 11 补研),落地即并入缺失强制校验。
+    "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces",
+    "color-psychology-ui", "theme-transition",
   ],
-  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing"],
-  layout: ["container-queries"],
+  // type b11 批(排版补全):6 条排版条目并入同一强制校验。
+  type: [
+    "fluid-type-scale", "variable-fonts", "fluid-spacing",
+    "measure-line-length", "wcag-text-spacing", "cjk-typography",
+    "font-display-strategy", "text-wrap-balance", "drop-cap-initial",
+  ],
+  // layout b10 批(布局补全):8 条(调研 05§一§二 + 11 补研),落地即并入缺失强制校验。
+  layout: [
+    "container-queries",
+    "auto-fit-minmax", "subgrid", "position-sticky", "safe-area",
+    "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning",
+  ],
   components: COMPONENT_SLUGS,
   icons: ICONS_SLUGS,
   dataviz: DATAVIZ_SLUGS,
+  principles: PRINCIPLES_SLUGS,
 };
 
 const SUBGROUP_IDS = new Set(["basic", "form", "feedback", "data", "navigation", "other"]);
@@ -109,6 +139,9 @@ ok(`components: ${(actual.components ?? []).length}/${COMPONENT_SLUGS.length} en
 ok(
   `icons: ${(actual.icons ?? []).length}/${ICONS_SLUGS.length}, dataviz: ${(actual.dataviz ?? []).length}/${DATAVIZ_SLUGS.length} entries present (missing-check enforced)`,
 );
+ok(
+  `principles: ${(actual.principles ?? []).length}/${PRINCIPLES_SLUGS.length} entries present (missing-check enforced)`,
+);
 
 // ---------- 单条目检查 ----------
 function isBilingual(v, path) {
@@ -117,8 +150,11 @@ function isBilingual(v, path) {
   if (typeof v.en !== "string" || !v.en.trim()) problems.push(`${path}.en empty`);
 }
 
-// 单条目检查:EXPECTED 全部分类(components/icons/dataviz 均已并入,与其他分类同规则)
-for (const [cat, slugs] of Object.entries(EXPECTED)) {
+// 单条目检查:EXPECTED 全部分类(components/icons/dataviz/principles 均已并入,与其他分类同规则;
+// 清单外 slug 与缺失条目均由上方集合比对统一报告)
+const checkList = EXPECTED;
+
+for (const [cat, slugs] of Object.entries(checkList)) {
   for (const slug of slugs) {
     const id = `${cat}/${slug}`;
     const dir = join(entriesRoot, cat, slug);

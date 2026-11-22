@@ -1,0 +1,69 @@
+## 结构与 DOM
+
+三层结构:**viewport meta**(声明 cover)→ **全屏容器**(铺满屏)→ **内容层**(按 env() 四向留边)。安全区不是布局系统,是四个环境变量。
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<div class="app">                 <!-- 铺满全屏 -->
+  <header class="app-header">页头</header>   <!-- 顶部留边避开刘海 -->
+  <main>…</main>
+  <footer class="app-bar">操作栏</footer>     <!-- 底部留边避开 Home 指示条 -->
+</div>
+```
+
+关键点:
+
+- `viewport-fit` 取 `auto`(默认,系统自动内缩)或 `cover`(铺满全屏,自行留边)——WebKit 官方记载(调研 05§15);
+- `env(safe-area-inset-top | right | bottom | left)` 四向各一个值,可带回退:`env(safe-area-inset-right, 1em)`(调研 05§15);
+- `env()` 于 iOS 11 以 `constant()` 名称引入,自 Safari Technology Preview 41 / iOS 11.2 beta 起改名 `env()`(调研 05§15);
+- 横屏时 left/right inset 交接主责——四向都要写,不是只写上下。
+
+## 样式与参数
+
+四个参数:insetTop / insetBottom 为 JS 型(桌面浏览器 env() 实测为 0,demo 以滑杆值模拟);viewportFit / applyEnv 为 JS 型开关:
+
+```css
+/* 级联回退:固定值在前,calc(env()) 在后 */
+.app {
+  padding: 16px;                                          /* 不支持 env() 时的落点 */
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.app-bar {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); /* 底部操作栏 */
+}
+
+/* 特性检测(env() 求值不支持时回退 0) */
+@supports (padding: env(safe-area-inset-top)) { /* 增强样式 */ }
+```
+
+数值出处:`viewport-fit` 两取值与 `env()` 改名时间线为 WebKit 官方记载(调研 05§15);demo 的 44px/34px 为 iPhone 时代广泛引用值——调研只记机制未记数值,属社区常见值(未证实);16px 基础 padding 为演示基准值。
+
+## 动效与交互
+
+留边是**静态几何**,旋转与机型变化时数值跳变:
+
+- 旋转屏幕时 top/bottom 与 left/right inset 互换,留边瞬时重排——不要给 padding 写长过渡,旋转瞬间会看到内容滑移;
+- demo 拖动滑杆模拟 inset 变化:页头与操作栏同步让位;切 applyEnv=off 复刻「cover 不留边」事故(文字顶进刘海、按钮压进指示条);
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭;
+- 真机验收不可省:各机型 inset 不同,桌面模拟只是演示。
+
+## 真实产品案例
+
+- **Apple《Designing Websites for iPhone X》(WebKit 官方博客)** —— `env(safe-area-inset-*)` 与 `viewport-fit` 的原始出处与官方教程(调研 05§15 来源)。
+- **桌面 PWA 标题栏** —— 同族环境变量 `env(titlebar-area-*)` 让 Web 应用内容避开自绘标题栏控件(MDN env() 页收录,调研 05§15)。
+- **全屏沉浸式页面(视频播放器/地图)** —— cover 铺满 + env() 四向留边是这类页面的标准姿势(社区通用做法,编辑性内容)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `insetTop` | 页头下移更多:留边吃掉内容高度;超过实际刘海深度是浪费空间 | 页头顶近刘海:低于机型真实值时标题被遮——必须读 env() 而非猜 |
+| `insetBottom` | 操作栏抬高:远离 Home 指示条,更安全但更占空间 | 操作栏压向指示条:低于真实值时按钮不可点——可达性事故 |
+| `viewportFit` | cover:页面铺满全屏,视觉沉浸,但留边责任移交给你 | auto:系统自动内缩,内容永不进危险区;代价是全屏媒体两侧留黑边 |
+| `applyEnv` | on:内容按 inset 让位,控件全部可点可读 | off:cover 下的典型事故形态——刘海压标题、指示条压按钮 |
+
+经验要点:永远「固定值 + calc(env())」双写;四向全写不省略;cover 只给真正的全屏沉浸页;发布前真机核对刘海机与打孔机各一台。

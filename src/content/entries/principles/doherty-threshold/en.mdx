@@ -1,0 +1,55 @@
+## Structure & DOM
+
+The demo is an **approval queue**: 5 pending cards; clicking "Approve" triggers a simulated server confirmation whose feedback strategy is set by `feedback`:
+
+```html
+<div class="dt-item" data-state="working">
+  <span class="dt-title">Expense #A-1024 working…</span>
+  <button class="dt-approve" disabled>Approve</button>
+</div>
+<span class="dt-live" aria-live="polite"></span> <!-- state announcer -->
+```
+
+Key points:
+
+- Three strategies share one latency source (`delay`): `wait` disables the button with "working…"; `optimistic` instantly shows "✔ recorded (confirming in background)" then flips to "approved" — a two-phase structure, not an instant jump; `skeleton` swaps the title for a shimmering skeleton block;
+- The panel shows completion count and last latency live, turning green "within Doherty" at `delay≤400ms`;
+- A visually hidden `aria-live="polite"` region announces every state change to screen readers.
+
+## Styling & Parameters
+
+```css
+.demo-stage { --dt-delay: 700ms; } /* injected by DemoStage; the demo's setTimeout reads the store */
+.dt-skel {
+  background: linear-gradient(90deg, … );
+  background-size: 200% 100%;
+  animation: dt-shimmer 1.1s linear infinite; /* dropped under reduced motion */
+}
+```
+
+- `delay` defaults to **700ms**: deliberately past the threshold so the wait is visible; Doherty & Thadani 1982 set \<400ms (the previous standard was 2000ms, Laws of UX verbatim);
+- `feedback` has three settings — `wait` / `optimistic` / `skeleton` — matching the three perceived-performance exits in 07 §27;
+- The `delay ≤ 400` test is the demo's convention; real systems measure 400ms across the whole "user action → perceptible feedback" path, network and rendering included.
+
+## Motion & Interaction
+
+- Approving all five in a row lets you feel the **cadence**: at ≤400ms the next click needs no slowdown; at 700ms hesitation appears; past 1500ms users wander to other cards — exactly the productivity loss Doherty studied;
+- The skeleton shimmer is a 1.1s linear `background-position` loop (compositor-friendly gradient shift); dropped under `prefers-reduced-motion: reduce`, leaving a static gray block;
+- Optimistic phase 1 reads "✔ recorded (confirming in background)" to stay distinguishable from final "approved" — an optimistic state must be identifiable, or rollback can't be discussed (the demo always succeeds; real code must handle failure undo);
+- All state changes are announced via `aria-live`, never color-only.
+
+## Real-world examples
+
+- **Likes and saves in social apps**: the count increments and the heart lights up instantly (optimistic UI) with silent background confirmation — "reversible actions go optimistic first" is the de-facto standard across social apps (generalized from 07 §27 perceived performance; no single product named in research);
+- **Skeleton screens on content platforms**: first paint renders gray block skeletons that fill with data — layout stabilizes early and interactivity feels earlier (the common implementation of 07 §27 "perceived performance");
+- **NN/g's three response-time limits**: 0.1s feels instant, 1s keeps the thought flow, 10s loses attention — complementary to Doherty's 400ms, forming the full waiting-tier strategy (0.1–1s status feedback, 1–10s progress indicators) (research 07 §18/§27).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `delay` | past 1000ms plain waiting is barely acceptable and click cadence collapses; 2000ms is the pre-Doherty old standard | ≤400ms turns the badge green; 0ms completes instantly — real systems still add network and rendering |
+| `feedback` | optimistic drives felt waiting toward zero but must ship with rollback; for reversible actions | wait is the control group — switch back to wait to measure the perceived difference |
+| `skeleton` | skeletons make waiting tangible and stabilize layout; beyond 10s they aren't enough — escalate to progress bars (the three limits) | — |
+
+The lesson: 400ms is the **cadence** threshold (NN/g's limits are the **tiered** thresholds — complementary). Frontend can only optimize "the feeling of waiting"; tasks truly beyond 10s need cancel, progress, and a crafted completion state (see peak-end-rule).

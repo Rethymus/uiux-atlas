@@ -1,0 +1,92 @@
+{
+  "name": "M3 Duration Tokens",
+  "nameZh": "M3 时长令牌",
+  "aliases": ["时长分档", "duration tokens", "md.sys.motion.duration"],
+  "category": "motion",
+  "system": "m3",
+  "star": 2,
+  "tagline": {
+    "zh": "Material 3 官方时长四档 16 令牌:short 50–200ms(小工具类)、medium 250–400ms、long 450–600ms、extra-long 700–1000ms;按转场覆盖面积选档,>600ms 仅限无用户输入的环境类转场。",
+    "en": "Material 3's four duration tiers with 16 tokens: short 50–200ms (small utilities), medium 250–400ms, long 450–600ms, extra-long 700–1000ms; pick by transition coverage, and anything past 600ms is for ambient transitions without user input only."
+  },
+  "origin": {
+    "zh": "M3《Motion easing & duration tokens》(tokens-specs 页,Jina 实抓,调研 04§1.4):md.sys.motion.duration.short1–4 = 50/100/150/200ms、medium1–4 = 250/300/350/400ms、long1–4 = 450/500/550/600ms、extra-long1–4 = 700/800/900/1000ms;官方示例:选择控件 short4 200ms + Standard、FAB→Sheet medium4 400ms、Card→全屏 long2 500ms + Emphasized。",
+    "en": "M3's \"Motion easing & duration tokens\" page (tokens-specs, fetched via Jina, research 04 §1.4): md.sys.motion.duration.short1–4 = 50/100/150/200ms, medium1–4 = 250/300/350/400ms, long1–4 = 450/500/550/600ms, extra-long1–4 = 700/800/900/1000ms; official examples: selection controls at short4 200ms + Standard, FAB→Sheet at medium4 400ms, Card→fullscreen at long2 500ms + Emphasized."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "tier",
+      "options": [
+        { "value": "short", "label": { "zh": "short 50–200ms", "en": "short 50–200ms" } },
+        { "value": "medium", "label": { "zh": "medium 250–400ms", "en": "medium 250–400ms" } },
+        { "value": "long", "label": { "zh": "long 450–600ms", "en": "long 450–600ms" } },
+        { "value": "XL", "label": { "zh": "extra-long 700–1000ms", "en": "extra-long 700–1000ms" } }
+      ],
+      "default": "short",
+      "effect": {
+        "zh": "时长四档(demo 订阅后重播采样动画)。官方按转场覆盖面积选档:小面积 200ms、大面积 500ms;选择控件归 short、FAB→Sheet 归 medium、Card→全屏归 long;extra-long 700–1000ms 档官方明确仅用于无用户输入的环境类转场。",
+        "en": "The four duration tiers (the demo subscribes and replays a sample animation). Officially tiered by transition coverage: small areas 200ms, large areas 500ms; selection controls live in short, FAB→Sheet in medium, Card→fullscreen in long; the extra-long 700–1000ms tier is officially for ambient transitions without user input only."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "step",
+      "options": [
+        { "value": "1", "label": { "zh": "1(档内最短)", "en": "1 (shortest in tier)" } },
+        { "value": "2", "label": { "zh": "2", "en": "2" } },
+        { "value": "3", "label": { "zh": "3", "en": "3" } },
+        { "value": "4", "label": { "zh": "4(档内最长)", "en": "4 (longest in tier)" } }
+      ],
+      "default": "4",
+      "effect": {
+        "zh": "档内序号,对应官方令牌名 short1–4 / medium1–4 / long1–4 / extra-long1–4。demo 默认 short4 = 200ms,即官方选择控件示例档(200ms + Standard easing);medium4 = 400ms 对应官方 FAB→Sheet 示例,long2 = 500ms 对应官方 Card→全屏 + Emphasized 示例。",
+        "en": "The index within the tier, matching official token names short1–4 / medium1–4 / long1–4 / extra-long1–4. The demo defaults to short4 = 200ms, the official selection-control example (200ms + Standard easing); medium4 = 400ms maps to the official FAB→Sheet example and long2 = 500ms to the official Card→fullscreen + Emphasized example."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "时长令牌是设计规范值而非 Web API,demo 以 CSS animation 承载(各浏览器对 CSS animation 的支持本次调研未逐项核验);同页官方配对表中的 Emphasized 曲线在 CSS 无等价贝塞尔(官方标注 N/A,以 Standard 兜底,调研 04§1.4)。",
+      "en": "Duration tokens are design-spec values, not a Web API; the demo hosts them in CSS animation (per-browser CSS animation support was not audited in this research pass). The Emphasized curve from the same page's pairing table has no CSS bezier equivalent (officially marked N/A, Standard as fallback, research 04 §1.4)."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时不要按令牌时长播放位移类转场——直接呈现终态(等价 0ms 直切);降级语义与官方「动效可取消」原则一致(HIG,调研 04§1.6)。时长档位仍可保留给 opacity 类微动效。",
+    "en": "Under prefers-reduced-motion, do not play displacement transitions at token durations — render the final state directly (equivalent to a 0ms hard cut); this matches the official \"motion is cancellable\" principle (HIG, research 04 §1.6). Tier values can still serve opacity-only micro-motions."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "选择控件(开关/复选/单选)的状态过渡——官方示例 short4 200ms + Standard", "en": "Selection-control state transitions — the official example short4 200ms + Standard" },
+      { "zh": "容器转场选档:FAB→Sheet 用 medium4 400ms,Card→全屏用 long2 500ms + Emphasized(官方示例)", "en": "Container transitions: FAB→Sheet at medium4 400ms, Card→fullscreen at long2 500ms + Emphasized (official examples)" },
+      { "zh": "按转场覆盖面积缩放时长:小面积 200ms、大面积 500ms(M3 官方准则)", "en": "Scaling duration by transition coverage: small areas 200ms, large areas 500ms (official M3 guidance)" },
+      { "zh": "无用户输入的环境类转场(加载氛围、环境反馈)可用 extra-long 档 700–1000ms", "en": "Ambient transitions without user input (loading atmosphere, environmental feedback) may use extra-long 700–1000ms" }
+    ],
+    "avoid": [
+      { "zh": ">600ms 的时长用在用户输入触发的转场上——官方明确超出即属环境类,用户会觉得迟滞", "en": "Durations past 600ms on user-initiated transitions — officially those belong to ambient only; users will read them as sluggish" },
+      { "zh": "为「显得精致」整体上调档位——退出类转场应比进入更快(官方示例进入 500ms / 退出 200ms)", "en": "Raising every tier to look refined — exits should be faster than enters (official example: enter 500ms / exit 200ms)" },
+      { "zh": "把 extra-long 档当作「重要 = 更久」的强调手段——时长应跟随面积与注意力,不是权重", "en": "Using extra-long as \"important = slower\" emphasis — duration tracks area and attention, not weight" }
+    ]
+  },
+  "a11y": {
+    "zh": "时长档位不豁免 prefers-reduced-motion:reduce 时位移类转场直出终态(前庭安全,MDN);动效不得是传达关键信息的唯一渠道(HIG:需可辅以 haptics/音频);进入比退出更长的官方原则把注意力还给下一任务,对认知负荷友好。",
+    "en": "Duration tiers never waive prefers-reduced-motion: under reduce, displacement transitions render their final state directly (vestibular safety, MDN); motion must not be the sole channel for key information (HIG: pair with haptics/audio); the official enter-longer-than-exit rule hands attention back to the next task, which is cognitively friendly."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/easing-and-duration/tokens-specs",
+    "https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "把 Material 3 时长令牌落到一组 UI 过渡上:按转场覆盖面积选择 short/medium/long/extra-long 档与档内序号,以 CSS 变量 --md-duration 注入 transition/animation,选择控件用 short4 200ms + Standard,容器转场用 medium4 400ms 或 long2 500ms。",
+      "en": "Ground Material 3 duration tokens in a set of UI transitions: pick tier (short/medium/long/extra-long) and step by transition coverage, inject via a --md-duration variable, use short4 200ms + Standard for selection controls and medium4 400ms or long2 500ms for container transitions."
+    },
+    "acceptance": [
+      { "zh": "时长数值严格取官方令牌表(50/100/150/200;250/300/350/400;450/500/550/600;700/800/900/1000ms)", "en": "Durations come strictly from the official token table (50/100/150/200; 250/300/350/400; 450/500/550/600; 700/800/900/1000ms)" },
+      { "zh": "用户输入触发的转场不超 600ms;extra-long 档只出现在无输入的环境转场", "en": "User-initiated transitions never exceed 600ms; extra-long appears only on ambient, input-free transitions" },
+      { "zh": "选择控件过渡使用 200ms + Standard easing(cubic-bezier(0.2, 0, 0, 1))的官方配档", "en": "Selection-control transitions use the official 200ms + Standard easing pairing (cubic-bezier(0.2, 0, 0, 1))" },
+      { "zh": "退出转场时长 ≤ 进入转场(官方进入 500ms / 退出 200ms 的不对称原则)", "en": "Exit durations ≤ enter durations (official asymmetry: enter 500ms / exit 200ms)" },
+      { "zh": "prefers-reduced-motion: reduce 时直出终态,不按时长播放位移转场", "en": "Under prefers-reduced-motion: reduce, render the final state directly instead of playing displacement transitions" }
+    ]
+  }
+}

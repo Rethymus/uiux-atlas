@@ -1,0 +1,103 @@
+{
+  "name": "Theme Transition",
+  "nameZh": "主题切换过渡",
+  "aliases": ["圆形扩散主题切换", "startViewTransition 换肤", "clip-path circle reveal"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "用 document.startViewTransition + clip-path: circle() 把换肤做成从点击坐标扩散的圆形揭示:旧快照在下、新快照被圆形裁剪揭开,扩散半径到视口最远角;无 API 或 reduced-motion 时优雅降级为直接切换。",
+    "en": "Turn a theme swap into a circular reveal from the click coordinates with document.startViewTransition + clip-path: circle(): the old snapshot below, the new snapshot unmasked by an expanding circle out to the farthest viewport corner; no API or reduced-motion gracefully degrades to a hard cut."
+  },
+  "origin": {
+    "zh": "Chrome 官方文档的主题切换示例(调研 11§8 逐字收编):startViewTransition 包住换肤回调,transition.ready 后对 `::view-transition-new(root)` 做 clip-path 圆形扩散动画(duration 500、easing ease-in、半径 = hypot(点击点到最远水平/垂直角));文档同时给出降级写法 `if (!document.startViewTransition) { swapTheme(); return; }` 与自定义默认交叉淡化(animation-duration 0.3s)、以及 prefers-reduced-motion 包裹建议。API 支持:Chrome/Edge 111、Safari 18、Firefox 144(BCD,调研 11§8)。",
+    "en": "Chrome's official docs theme-switch example (verbatim-archived in research 11 §8): startViewTransition wraps the swap callback; after transition.ready, a clip-path circle expansion animates `::view-transition-new(root)` (duration 500, easing ease-in, radius = hypot to the farthest horizontal/vertical corner); the docs also give the degradation `if (!document.startViewTransition) { swapTheme(); return; }`, the custom default cross-fade (animation-duration 0.3s), and a prefers-reduced-motion wrapping recommendation. API support: Chrome/Edge 111, Safari 18, Firefox 144 (BCD, research 11 §8)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "duration",
+      "unit": "ms",
+      "min": 0,
+      "max": 1000,
+      "step": 50,
+      "default": 500,
+      "cssVar": "--tt-duration",
+      "effect": {
+        "zh": "扩散动画时长。默认 500ms 取自 Chrome 官方文档主题切换示例的逐字值(调研 11§8);文档自带的交叉淡化对照写法为 0.3s。0ms 读作直切。注意换肤期间页面渲染冻结,时长越长冻结体感越重(见 motion/view-transitions 条目同款结论)。",
+        "en": "Reveal duration. Default 500ms is the verbatim value of Chrome's docs theme-switch example (research 11 §8); the docs' cross-fade counterpart uses 0.3s. 0ms reads as a hard cut. Rendering is frozen during the transition — longer durations extend the perceived freeze (same conclusion as the motion/view-transitions entry)."
+      }
+    },
+    {
+      "type": "cubicBezier",
+      "name": "easing",
+      "default": [0.42, 0, 1, 1],
+      "cssVar": "--tt-easing",
+      "effect": {
+        "zh": "扩散缓动。默认 (0.42, 0, 1, 1) 即关键字 ease-in 的标准映射——Chrome 文档示例逐字使用 easing: 'ease-in'(调研 11§8);文档同页的交叉淡化自定义示例用 0.3s 时长。加速曲线让圆从点击点「启动」而非「漂移」,过冲曲线会让圆形揭示回缩,慎用。",
+        "en": "Reveal easing. Default (0.42, 0, 1, 1) is the standard mapping of the keyword ease-in — the Chrome docs example uses easing: 'ease-in' verbatim (research 11 §8); the docs' cross-fade customization example pairs 0.3s. An accelerating curve makes the circle 'launch' from the click point rather than drift; overshooting curves make the reveal shrink back — avoid them here."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "reveal",
+      "options": [
+        { "value": "circle", "label": { "zh": "圆形扩散(官方配方)", "en": "Circle reveal (official recipe)" } },
+        { "value": "crossfade", "label": { "zh": "默认交叉淡化", "en": "Default cross-fade" } },
+        { "value": "direct", "label": { "zh": "直接切换(降级对照)", "en": "Hard cut (fallback control)" } }
+      ],
+      "default": "circle",
+      "effect": {
+        "zh": "JS 型参数。circle = 官方配方:旧快照置底、新快照按 clip-path circle 从点击坐标展开;crossfade = 不做自定义动画,只按 duration/easing 调默认交叉淡化(文档写法:animation-duration 覆写);direct = 模拟降级路径,apply 同步执行瞬间换态。三种模式在无 API/reduced-motion 时都自动落到 direct。",
+        "en": "JS-type param. circle = the official recipe: old snapshot pinned below, new snapshot unmasked by a clip-path circle growing from the click coordinates; crossfade = no custom animation, just the default cross-fade re-timed via duration/easing (the docs' animation-duration override); direct = simulating the degradation path, apply runs synchronously for an instant swap. All three modes fall back to direct when the API is missing or reduced-motion is on."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "document.startViewTransition 同文档视图过渡:Chrome/Edge 111、Safari 18、Firefox 144(BCD view-transition-name.json,调研 11§8);::view-transition-new(root) 伪元素与 clip-path 动画随 API 同代支持。降级写法是官方示例自带的一部分——不支持时直接换肤,功能零损失。",
+      "en": "document.startViewTransition same-document transitions: Chrome/Edge 111, Safari 18, Firefox 144 (BCD view-transition-name.json, research 11 §8); the ::view-transition-new(root) pseudo-element and clip-path animation ship with the same API generation. The degradation path is part of the official example — without support the theme swaps directly with zero functional loss."
+    }
+  },
+  "fallback": {
+    "zh": "官方降级链:① 不支持 startViewTransition → `if (!document.startViewTransition) { swapTheme(); return; }` 直接换肤(官方示例逐字,调研 11§8);② prefers-reduced-motion → 跳过快照动画,直接换肤(文档建议包一层媒体查询);③ 快照动画中途异常 → transition.ready promise 拒绝,界面仍停留在换肤后的新状态。demo 三路全实现。",
+    "en": "The official degradation chain: ① no startViewTransition → `if (!document.startViewTransition) { swapTheme(); return; }` and swap directly (verbatim from the official example, research 11 §8); ② prefers-reduced-motion → skip the snapshot animation and swap directly (the docs recommend wrapping in the media query); ③ a snapshot animation failing mid-flight → transition.ready rejects while the UI still rests in the post-swap state. The demo implements all three."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "用户触发的手动换肤开关(主题切换按钮)——圆形扩散从指尖发起,因果指向明确(官方示例场景)", "en": "User-triggered manual theme toggles — the circle launches from the fingertip with a clear causal pointer (the official example's scenario)" },
+      { "zh": "换肤与 light-dark()/data-theme 变量翻转联动:CSS 侧零改动,过渡只是「快照表演」", "en": "Pairing the swap with light-dark()/data-theme variable flips: CSS untouched, the transition is merely a 'snapshot performance'" },
+      { "zh": "给配色敏感的界面(仪表盘、编辑器)一个空间连续的换肤,替代生硬的全屏闪变", "en": "Giving color-sensitive UIs (dashboards, editors) a spatially continuous reskin instead of a harsh full-screen flash" },
+      { "zh": "同一配方可用于任何「全局状态翻转」:紧凑/宽松密度、色盲模式切换(语义色换表场景,见 semantic-token-layers)", "en": "The same recipe fits any global state flip: compact/comfortable density, colorblind-mode switching (the semantic-sheet swap, see semantic-token-layers)" }
+    ],
+    "avoid": [
+      { "zh": "高频/自动触发的换肤——每次过渡都冻结渲染并打断阅读;自动跟随系统主题时不要加过渡", "en": "High-frequency or automatic reskins — each transition freezes rendering and interrupts reading; don't add one when following the system theme automatically" },
+      { "zh": "reduced-motion 用户身上强加扩散——系统要求减少动效时必须走直接切换(文档的媒体查询包裹建议)", "en": "Forcing the reveal on reduced-motion users — when the OS asks for less motion, the swap must be direct (the docs' media-query wrapping recommendation)" },
+      { "zh": "时长拉满 1000ms——冻结体感随时长线性增长,官方参考值 500ms、交叉淡化 0.3s,再长就开始拖沓", "en": "Maxing duration to 1000ms — perceived freeze grows linearly; the official reference values are 500ms and 0.3s for the cross-fade, beyond which it drags" },
+      { "zh": "把圆形扩散当页面路由过渡——它与 motion/view-transitions 的元素级 morph 是两回事;换肤是 root 快照表演,元素级衔接请看该条目", "en": "Using the circle reveal as a page-route transition — it is a root-snapshot performance, distinct from the element-level morph in motion/view-transitions; for element hand-offs see that entry" }
+    ]
+  },
+  "a11y": {
+    "zh": "三条底线:① reduced-motion 必须直达直切(demo 监听 matchMedia 变化,动态系统设置也即时生效);② 换肤本身不得丢失信息——过渡只是快照表演,底层状态同步完成(apply 在快照回调内同步执行);③ 新旧两套主题各自满足对比度红线(正文 4.5:1、边界 3:1,调研 06§17)——demo 亮侧用 M3 官方基线 #FFFBFE/#1C1B1F/#6750A4,暗侧 accent 用官方 #D0BCFF/#381E72;④ 前庭安全:扩散动画以点击点为圆心向外,不做缩放/视差,减少运动敏感风险。",
+    "en": "Four baselines: ① reduced-motion must land as a hard cut (the demo listens to matchMedia changes, so live OS setting changes take effect immediately); ② the swap must not lose information — the transition is a snapshot performance while the underlying state commits synchronously (apply runs inside the snapshot callback); ③ both themes must hold contrast on their own (body 4.5:1, boundaries 3:1, research 06 §17) — the demo's light side uses official M3 baselines #FFFBFE/#1C1B1F/#6750A4 and the dark accent the official #D0BCFF/#381E72; ④ vestibular safety: the reveal radiates outward from the click point with no scaling/parallax, lowering motion-sensitivity risk."
+  },
+  "sources": [
+    "https://developer.chrome.com/docs/web-platform/view-transitions",
+    "https://developer.chrome.com/docs/web-platform/view-transitions/same-document",
+    "https://web.dev/articles/light-dark",
+    "https://github.com/mdn/browser-compat-data/blob/main/css/properties/view-transition-name.json"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现圆形扩散主题切换:主题按钮点击后用 document.startViewTransition 包住 data-theme 翻转,transition.ready 后对 ::view-transition-new(root) 做 clip-path circle 从点击坐标到视口最远角的扩散动画(500ms ease-in);无 API、reduced-motion 或选择降级档时直接切换。",
+      "en": "Implement the circular theme reveal: a theme button wraps a data-theme flip in document.startViewTransition, then after transition.ready animates ::view-transition-new(root) with a clip-path circle from the click coordinates to the farthest viewport corner (500ms ease-in); no API, reduced-motion, or the degradation grade falls through to a hard cut."
+    },
+    "acceptance": [
+      { "zh": "换肤回调在 startViewTransition 内同步完成(flushSync 或等效手段),保证快照捕捉到新状态", "en": "The swap commits synchronously inside startViewTransition (flushSync or equivalent) so the snapshot captures the new state" },
+      { "zh": "扩散半径 = Math.hypot(max(x, innerWidth-x), max(y, innerHeight-y)),从点击坐标展开(官方公式)", "en": "The radius = Math.hypot(max(x, innerWidth-x), max(y, innerHeight-y)), expanding from the click coordinates (official formula)" },
+      { "zh": "circle 档阻断默认交叉淡化(::view-transition-old/new(root) animation: none; mix-blend-mode: normal)", "en": "The circle grade blocks the default cross-fade (::view-transition-old/new(root) animation: none; mix-blend-mode: normal)" },
+      { "zh": "三路降级齐备:无 API 直切、reduced-motion 直切(监听 matchMedia 变化)、transition.ready 异常不影响换肤", "en": "All three degradations in place: no-API hard cut, reduced-motion hard cut (listening to matchMedia changes), and transition.ready failures never block the swap" },
+      { "zh": "亮暗两套主题各自通过 WCAG AA 对比度(正文 4.5:1、边界 3:1)", "en": "Both themes pass WCAG AA contrast independently (body 4.5:1, boundaries 3:1)" }
+    ]
+  }
+}

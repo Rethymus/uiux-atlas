@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+一层结构:**网格容器 + 一组平级条目**,没有断点、没有媒体查询。容器宽度变化时,`repeat()` 的自动重复关键字在布局层面重新解析列数,条目按序流入。
+
+```html
+<ul class="wall">
+  <li class="card">…</li>
+  <li class="card">…</li>
+  <!-- 条目数量任意 -->
+</ul>
+```
+
+关键点:
+
+- `repeat(auto-fit, minmax(250px, 1fr))` 被 CSS-Tricks 称为「CSS Grid 中的顶级技巧之一」(调研 05§3 原文核对);
+- **auto-fill** 按容器尽量多排列并**保留空轨道**;**auto-fit** 将已有轨道**拉伸填满空间(回收空轨道)**——两者只在「条目数 < 轨道数」时产生可见差异(调研 05§3);
+- 轨道关键字不限于 `1fr`:还可用 `minmax(10px, 1fr)`、`min-content`、`max-content` 让列宽跟随内容(调研 05§3);
+- 轨道数 = `⌊(容器宽 + gap) / (min + gap)⌋`,gap 参与计算。
+
+## 样式与参数
+
+五个参数:三个 CSS 型(--af-min / --af-gap / --af-width)+ 两个 JS 型(mode 经 data-mode 切换字面量、itemCount 控制条目数):
+
+```css
+.wall {
+  display: grid;
+  gap: var(--af-gap);                                   /* 16px,WebKit 官方示例(调研 05§5) */
+  grid-template-columns: repeat(auto-fill, minmax(var(--af-min), 1fr)); /* auto-fill 档 */
+}
+.wall[data-mode="auto-fit"] {
+  grid-template-columns: repeat(auto-fit, minmax(var(--af-min), 1fr));  /* auto-fit 档 */
+}
+```
+
+数值出处:
+
+- `minmax(250px, 1fr)` —— CSS-Tricks 经典配方(调研 05§3);
+- `gap: 16px` —— WebKit 官方示例声明(调研 05§5);
+- 轨道关键字族 `minmax(10px, 1fr)` / `min-content` / `max-content` —— 调研 05§3;
+- 演示容器 800px 为本条目演示基准值(配 250px 恰好解析 3 条轨道),生产宽度来自真实容器。
+
+## 动效与交互
+
+列数变化是**布局重排**,瞬时完成:
+
+- 拖动宽度/最小轨道滑杆时,列数离散跳变(每跨过一条 `min + gap` 阈值 ±1 列),无过渡——列数不可动画,强行过渡只会闪烁;
+- demo 的**轨道标尺**按同一公式解析轨道结构:auto-fit 模式下被回收的轨道标记为「回收 0px」,直观对照两种关键字;
+- 入场淡入只动 `opacity/translate`,`prefers-reduced-motion: reduce` 时取消;
+- 状态徽标颜色切换带 0.25s 过渡,PRM 下关闭。
+
+## 真实产品案例
+
+- **CSS-Tricks《Complete Guide to Grid》** —— 把 `repeat(auto-fit, minmax(250px, 1fr))` 收录为「顶级技巧」,是无断点卡片墙的事实标准配方(调研 05§3 原文核对)。
+- **BentoGrids 画廊站** —— 收录的 bento 设计以命名区域或 auto-fit 流式网格拼装不等尺寸卡片:间距一致、行列跨度不对称(调研 05§9)。
+- **Jen Simmons《Designing Intrinsic Layouts》(An Event Apart DC 2019)** —— 内在式设计的核心技术抓手即 auto-fit 流式网格与 min-content / max-content 关键字,「让内容与容器自身尺寸驱动设计而非硬编码断点」(调研 05§10,演讲存档核对)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `minTrack` | 每条轨道更宽:同容器下列数减少;360px 时 800px 容器只剩 2 列 | 列数增多;低于 120px 后一屏塞下过多轨道,文字挤压不可读 |
+| `gap` | 间隙挤占轨道预算:同宽度下列数减少,呼吸感变强 | 列数增多;过小后卡片粘连,网格感消失 |
+| `width` | 容器变宽:跨过 `min + gap` 阈值时列数 +1(离散跳变) | 容器变窄:列数递减至 1;触到 minmax 下限后出现横向滚动 |
+| `mode` | auto-fit 档:空轨道被回收,条目拉伸填满,无空档 | auto-fill 档:空轨道保留占位,轨道位置稳定、卡组可预留空槽 |
+| `itemCount` | 条目变多:填满所有轨道后换行,两个关键字表现趋同 | 条目变少:少于轨道数时 auto-fit 回收空轨道、auto-fill 留空档——差异最直观 |
+
+经验区间:`minmax(250px, 1fr)` 是配方标准形态(调研 05§3);生产中 minTrack 按内容酌情 160–320px(经验值,未证实);`gap: 16px` 取自 WebKit 官方示例(调研 05§5)。

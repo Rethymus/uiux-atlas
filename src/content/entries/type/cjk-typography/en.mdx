@@ -1,0 +1,71 @@
+## Structure & DOM
+
+No special structure — Chinese body copy is ordinary paragraphs; the four typographic behaviors are all CSS declarations on the container/paragraphs:
+
+```html
+<article class="cjk">
+  <p>Two-em indent, justified lines…</p>
+  <p>Mixed CJK-Latin spacing around Web, CSS and the digit 0…</p>
+</article>
+```
+
+```css
+.cjk { text-align: var(--cjk-align); }
+.cjk p {
+  text-indent: var(--cjk-indent);        /* 2em = two character widths */
+  text-autospace: var(--cjk-autospace);      /* auto CJK-Latin spacing */
+  text-spacing-trim: var(--cjk-punct-trim);  /* punctuation squeeze (experimental) */
+}
+```
+
+Key points:
+
+- Han characters and punctuation occupy **square** glyph boxes, one character width each — the geometric premise behind every Chinese typesetting rule (indent, justification, squeeze) (verified from clreq);
+- Line-start/end rules (no full stop opening a line, etc.) are handled by the browser's breaking engine per Unicode line-breaking — never take over with manual breaks;
+- `text-autospace` / `text-spacing-trim` are ignored harmlessly by the parser where unknown.
+
+## Styling & Parameters
+
+Four parameters map to four declarations, injected through `--cjk-*` variables:
+
+```css
+.cjk { text-align: var(--cjk-align); }         /* justify | left */
+.cjk p {
+  text-indent: var(--cjk-indent);              /* em, default 2 */
+  text-autospace: var(--cjk-autospace);        /* normal | no-autospace */
+  text-spacing-trim: var(--cjk-punct-trim);    /* normal | trim-start | space-first | space-all */
+}
+```
+
+Where the numbers come from:
+
+- **Paragraph indent of two character widths (2em)**: clreq states "paragraph indent: two character widths is standard; multi-column layouts with few characters per column may use one width as a variant" (research 05 §22);
+- **CJK-Latin spacing ≤ ¼ character width**: clreq requires spacing between Han characters and Latin letters/Arabic digits to be no more than a quarter character width, skipped when Latin sits at line edges; inline adjustment may stretch it up to ½ width (research 05 §22);
+- **Justification principle**: "every line except the last aligns at the line end" (research 05 §22);
+- **Punctuation squeeze**: clreq §6.3.2 "Punctuation Width Adjustment" (fetched and verified 2026-11-22); its CSS landing, text-spacing-trim, is experimental — Chrome/Edge 123+, Firefox/Safari unsupported (BCD @main 2026-11-22);
+- **text-autospace**: Baseline 2025 Newly available since 2025-11 (MDN, research 05 §23).
+
+## Motion & Interaction
+
+The typographic behaviors are static; the interaction is switching and observing:
+
+- The demo ships Chinese sample text dense in CJK-Latin mixing and punctuation; toggling autospace / indent / align / punctTrim re-flows instantly;
+- "Punctuation squeeze" shows half-width-compressed line-start quotes and brackets on supporting browsers (Chrome/Edge 123+); elsewhere the declaration is ignored — the demo uses `CSS.supports()` to report live support for both new properties so results aren't misread;
+- No animation; every change is an immediate reflow, and `prefers-reduced-motion` needs no extra handling.
+
+## Real-world examples
+
+- **Chinese publishing and e-books (Apple Books, WeChat Read, etc.)**: two-em indents, punctuation squeeze and justified line ends are the default shape of Chinese book typesetting — the very rules clreq codified, carried over from movable type into digital layout.
+- **Text-layer scripts like pangu.js**: before text-autospace, the community scripted automatic spaces between CJK and Latin ("the pangu gap") — its popularity is the demand signal for engine-level spacing, and with autospace now Baseline those scripts can retire.
+- **Chinese community articles (WeChat Official Accounts, Zhihu)**: unlike books, web-community articles typically use paragraph spacing without indents — both conventions coexist as product-editorial choices, but **CJK-Latin spacing and punctuation rules** apply under either style.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `autospace` | normal shows ≤¼-width gaps between CJK and Latin, giving mixed text breathing room | no-autospace glues CJK and Latin together; dense mixed text loses readability |
+| `indent` | past 2em indents eat line width and long paragraphs look odd | 0 switches to the community web style (spacing instead of indents); 1em is the multi-column variant |
+| `align` | justify squares off line ends (cheap for Chinese, square boxes); narrow columns stretch holes | left keeps a ragged edge but avoids any spacing stretch — friendlier to dyslexic readers |
+| `punctTrim` | trim-start compresses line-start punctuation padding for a tighter page (Chrome/Edge 123+ only) | space-all keeps full-width padding (the traditional full-width style) with more whitespace |
+
+Takeaway: indent and alignment are style choices (book-style vs community-style); CJK-Latin auto spacing and punctuation squeeze are engine capabilities any style should enable — the former pair is aesthetics, the latter is correctness.

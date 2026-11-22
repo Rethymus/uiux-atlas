@@ -1,0 +1,79 @@
+## 结构与 DOM
+
+换肤的 DOM 是「一套结构、两张变量表」:组件不感知主题,`data-theme` 翻转的只是 CSS 变量;View Transitions 在这之上叠加一个**快照层**——旧状态截图置底、新状态截图被圆形 `clip-path` 逐步揭开。
+
+```html
+<body data-theme="light">
+  <button id="theme-toggle">切到深色</button>
+  <!-- ::view-transition-old(root)  ← 旧快照(浏览器自动截图) -->
+  <!-- ::view-transition-new(root)  ← 新快照,被圆形 clip-path 揭开 -->
+</body>
+```
+
+```js
+// Chrome 官方文档示例(调研 11§8 逐字):
+let lastClick;
+addEventListener('click', event => (lastClick = event));
+
+function themeToggle() {
+  if (!document.startViewTransition) { swapTheme(); return; } // 优雅降级(官方写法)
+
+  const x = lastClick?.clientX ?? innerWidth / 2;
+  const y = lastClick?.clientY ?? innerHeight / 2;
+  const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+  const transition = document.startViewTransition(() => swapTheme());
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+      { duration: 500, easing: 'ease-in', pseudoElement: '::view-transition-new(root)' },
+    );
+  });
+}
+```
+
+关键点:换肤本身(`data-theme`/`color-scheme` 翻转)与过渡解耦——不支持 API 时功能零损失;与 motion/view-transitions 条目不同,这里是 **root 快照表演**,不涉及元素级 `view-transition-name`。
+
+## 样式与参数
+
+主题表与过渡参数分离:`--tt-bg/--tt-fg/--tt-accent` 管配色,`--tt-duration/--tt-easing` 管动画(经 demo 镜像到 `:root`——`::view-transition` 伪元素树挂在 `<html>` 下,不继承 `.demo-stage` 的变量):
+
+```css
+[data-theme="light"] { --tt-bg: oklch(0.992 0.006 334); --tt-accent: #6750A4; } /* M3 基线 */
+[data-theme="dark"]  { --tt-bg: oklch(0.17 0.012 297);  --tt-accent: #D0BCFF; } /* accent=官方基线 */
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: var(--tt-duration); animation-timing-function: var(--tt-easing); }
+/* circle 档阻断默认交叉淡化(文档写法):animation: none; mix-blend-mode: normal; */
+```
+
+数值出处:
+
+- **duration 500ms + easing ease-in + hypot 最远角公式 + `::view-transition-new(root)`**:Chrome 官方文档主题切换示例逐字(调研 11§8);
+- **0.3s**:文档同页自定义默认交叉淡化的示例时长(`::view-transition-old/new(root) { animation-duration: 0.3s; }`)(调研 11§8);
+- 亮侧 `#FFFBFE`/`#1C1B1F`/`#6750A4`、暗侧 `#D0BCFF`/`#381E72`:M3 官方基线角色值(调研 06§7);暗侧表面色为演示值(官方暗 surface 值未在本调研逐值列出);
+- API 支持:Chrome/Edge 111、Safari 18、Firefox 144(BCD,调研 11§8);换肤配色联动的 `light-dark()`:Chrome/Edge 123、Firefox 120、Safari 17.5,Baseline 2024-05(调研 11§8)。
+
+## 动效与交互
+
+时间线是「截图 → 同步换肤 → 揭开」三拍,参数只动最后一拍:
+
+- **circle(官方配方)**:点击坐标存入变量 → `startViewTransition` 截旧快照 → 回调内 `flushSync` 同步翻转 `data-theme` → 截新快照 → `transition.ready` 后对 `::view-transition-new(root)` 跑 `clip-path` 圆形扩散(默认 500ms ease-in)——加速曲线让圆「从指尖发射」;
+- **crossfade**:不做自定义动画,默认交叉淡化被 `animation-duration/timing-function` 覆写为参数值;
+- **direct(降级对照)**:跳过快照表演,`apply()` 同步执行瞬间换态——三档在「无 API」或「reduced-motion」时全部自动落到这一档;
+- **三路降级**:①`typeof document.startViewTransition !== 'function'` 直切(官方写法);②`prefers-reduced-motion` 监听 `matchMedia` 变化、动态生效;③`transition.ready` reject 时 `.catch` 吞掉,界面停留在换肤后状态;
+- 同一时刻仅一个视图过渡:连点时新过渡把旧过渡跳到结尾(官方行为);换肤期间渲染冻结,500ms 是官方参考上限(再长冻结体感变重)。
+
+## 真实产品案例
+
+- **Chrome 官方开发者文档**:圆形扩散配方的出处本身——文档内置的交互式演示即为「点击坐标→圆形揭开新主题」,并同步给出降级与 reduced-motion 写法(调研 11§8);
+- **web.dev《light-dark》配套示例**:换肤配色联动的官方教学——`:root { color-scheme: light dark }` + `light-dark()` 双值取色,与视图过渡叠用即「零 CSS 改动的换肤表演」(Chrome/Edge 123、Firefox 120、Safari 17.5 三引擎齐备,Baseline 2024-05,调研 11§8);
+- **开发者博客与个人作品集的主题开关**:「圆形扩散换肤」在社区教程中广泛出现,多基于同一官方配方改写(编辑性总结——具体产品与采用率未逐一核实;配方本身逐字出自 Chrome 文档,见上)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `duration` | 揭开更从容、扩散轨迹可辨;但渲染冻结期随之变长,>500ms 开始拖沓(官方参考即 500) | 趋近直切;0ms 等价 direct 档 |
+| `easing` | 加速曲线(默认 ease-in 映射)让圆有「发射感」;过冲曲线会让圆形揭示回缩露馅,禁用 | 两控制点趋近对角线读作 linear——匀速扩散显机械;crossfade 档建议配 (0.4, 0, 0.2, 1) 类无过冲曲线 |
+| `reveal` → crossfade | 不做自定义动画只调时序——最保守,主题间无空间叙事 | circle:空间连续性最强、因果指向点击点;direct:零开销,但「换肤闪变」突兀 |
+| 换肤频率 | 高频切换时每次都冻结渲染并打断阅读——自动跟随系统主题时禁用过渡 | 手动开关是唯一合适频率 |

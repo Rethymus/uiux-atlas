@@ -1,0 +1,94 @@
+{
+  "name": "Easing-Duration Pairs",
+  "nameZh": "缓动-时长配对",
+  "aliases": ["官方配对表", "easing and duration pairing", "M3 emphasized/standard"],
+  "category": "motion",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "M3 官方六组缓动-时长配对:Emphasized 500ms(屏内起止)/ Emph-decel 400ms(进入)/ Emph-accel 200ms(永久退出)/ Standard 300ms(屏内起止)/ Std-decel 250ms(进入)/ Std-accel 200ms(退出),按过场类型直接查表选型。",
+    "en": "M3's six official easing-duration pairs: Emphasized 500ms (both ends on-screen) / Emph-decel 400ms (enter) / Emph-accel 200ms (permanent exit) / Standard 300ms (both ends on-screen) / Std-decel 250ms (enter) / Std-accel 200ms (exit) — a lookup table keyed by transition type."
+  },
+  "origin": {
+    "zh": "M3《Applying easing and duration》官方配对表(Jina 实抓,调研 04§1.4):Emphasized 500 / Emphasized decelerate 400 / Emphasized accelerate 200 / Standard 300 / Standard decelerate 250 / Standard accelerate 200(ms)。CSS 数值取 tokens-specs 页:emph-decel cubic-bezier(0.05,0.7,0.1,1)、emph-accel cubic-bezier(0.3,0,0.8,0.15)、standard cubic-bezier(0.2,0,0,1)、std-decel cubic-bezier(0,0,0,1)、std-accel cubic-bezier(0.3,0,1,1);Emphasized 本体在 CSS 无等价贝塞尔(官方标注 N/A,以 Standard 兜底;Android 用多段 pathInterpolator 实现)。",
+    "en": "The official pairing table from M3's \"Applying easing and duration\" (fetched via Jina, research 04 §1.4): Emphasized 500 / Emphasized decelerate 400 / Emphasized accelerate 200 / Standard 300 / Standard decelerate 250 / Standard accelerate 200 (ms). CSS values from the tokens-specs page: emph-decel cubic-bezier(0.05,0.7,0.1,1), emph-accel cubic-bezier(0.3,0,0.8,0.15), standard cubic-bezier(0.2,0,0,1), std-decel cubic-bezier(0,0,0,1), std-accel cubic-bezier(0.3,0,1,1); Emphasized itself has no CSS bezier equivalent (officially N/A, Standard as fallback; Android implements it with a multi-segment pathInterpolator)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "pair",
+      "options": [
+        { "value": "emphasized-500", "label": { "zh": "Emphasized 500ms · 屏内起止", "en": "Emphasized 500ms · on-screen" } },
+        { "value": "emph-decel-400", "label": { "zh": "Emph decel 400ms · 进入", "en": "Emph decel 400ms · enter" } },
+        { "value": "emph-accel-200", "label": { "zh": "Emph accel 200ms · 永久退出", "en": "Emph accel 200ms · permanent exit" } },
+        { "value": "standard-300", "label": { "zh": "Standard 300ms · 屏内起止", "en": "Standard 300ms · on-screen" } },
+        { "value": "std-decel-250", "label": { "zh": "Std decel 250ms · 进入", "en": "Std decel 250ms · enter" } },
+        { "value": "std-accel-200", "label": { "zh": "Std accel 200ms · 退出", "en": "Std accel 200ms · exit" } }
+      ],
+      "default": "emphasized-500",
+      "effect": {
+        "zh": "六组官方配对(demo 订阅后以该组时长+曲线重播滑块)。语义:屏内起止→Emphasized(快起缓停,大面积)或 Standard(小面积);进入→Decelerate(峰值速度起、缓停);永久退出→Accelerate(静止起、峰值速度止,暗示不可找回);临时退出(drawer/sheet)→Emphasized。",
+        "en": "The six official pairs (the demo subscribes and replays a slider with that duration + curve). Semantics: on-screen both ends → Emphasized (fast start, gentle stop, large area) or Standard (small area); entering → Decelerate (peaks speed early, settles gently); permanent exit → Accelerate (starts at rest, ends at peak speed, signaling irretrievability); temporary exits (drawer/sheet) → Emphasized."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "travel",
+      "unit": "px",
+      "min": 40,
+      "max": 240,
+      "step": 10,
+      "default": 120,
+      "cssVar": "--ep-travel",
+      "effect": {
+        "zh": "采样滑块的水平行程(CSS 变量型)。行程越长,曲线的加速/减速段在视觉上越可辨——同一条 accelerate 曲线在 40px 上几乎读不出「静止起步」,在 200px 上则一目了然。默认 120px 为演示值。",
+        "en": "Horizontal travel of the sample slider (CSS-variable type). Longer travel makes the curve's acceleration/deceleration visible — the same accelerate curve is unreadable at 40px but obvious at 200px. The 120px default is a demo value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "六组曲线落地全用 CSS cubic-bezier(),属 CSS Easing Functions 既有特性(MDN easing-function 页,调研 04§1.1 实抓),各现代浏览器可用;本次调研未逐浏览器核验版本矩阵。Emphasized 本体官方标注 CSS 无等价(以 Standard 兜底),demo 对 emphasized-500 组同样按官方口径使用 Standard 曲线。",
+      "en": "All six curves land as CSS cubic-bezier(), part of the long-standing CSS Easing Functions (MDN easing-function page, fetched in research 04 §1.1), available in modern browsers; the per-browser version matrix was not audited in this pass. Emphasized itself is officially without a CSS equivalent (Standard fallback) — the demo follows that for the emphasized-500 pair too."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 时过场直出终态,不播放位移;功能与信息不损失。曲线层面:Emphasized 无 CSS 等价贝塞尔,降级即官方兜底方案 Standard cubic-bezier(0.2,0,0,1);需要更贴近官方曲线时,Android 侧用多段 pathInterpolator(0.05,0 … 1,1)。",
+    "en": "Under prefers-reduced-motion: reduce, transitions render the final state directly without displacement; function and information are unaffected. For curves: Emphasized has no CSS bezier, so the fallback is officially Standard cubic-bezier(0.2,0,0,1); Android gets closer to the official curve with a multi-segment pathInterpolator (0.05,0 … 1,1)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "进入屏幕的元素:Decelerate 族(峰值速度起、缓停)——Std-decel 250ms 小件 / Emph-decel 400ms 大件", "en": "Elements entering the screen: the Decelerate family (peak speed early, gentle stop) — Std-decel 250ms for small items / Emph-decel 400ms for large" },
+      { "zh": "永久退出屏幕的元素:Accelerate 族(静止起、峰值速度止)200ms——官方语义「暗示不可找回」", "en": "Elements permanently leaving the screen: the Accelerate family (rest to peak speed) at 200ms — officially \"signals it cannot be recalled\"" },
+      { "zh": "屏内起止的转场:大面积 Emphasized 500ms、小面积 Standard 300ms", "en": "Transitions with both ends on-screen: Emphasized 500ms for large areas, Standard 300ms for small" },
+      { "zh": "临时退出(drawer/sheet 停在屏缘,暗示可召回):官方指定 Emphasized", "en": "Temporary exits (drawer/sheet parked at the screen edge, recallable): officially Emphasized" }
+    ],
+    "avoid": [
+      { "zh": "永久退出误用 Decelerate——缓停的收尾暗示「还会回来」,与「已删除」矛盾", "en": "Decelerate on permanent exits — the gentle stop implies \"it will come back\", contradicting deletion" },
+      { "zh": "进入误用 Accelerate——从静止加速进入让新内容显得被甩进来,且收尾生硬", "en": "Accelerate on entrances — accelerating in from rest makes new content look flung in with a harsh landing" },
+      { "zh": "把 Emphasized 硬凑成单段贝塞尔还声称「官方曲线」——官方明确标注 CSS 无等价,只能 Standard 兜底或多段逼近", "en": "Faking Emphasized with a single cubic-bezier while claiming it is \"the official curve\" — officially N/A in CSS; only Standard fallback or multi-segment approximation" },
+      { "zh": "高频控件叠加 500ms 大曲线——HIG:高频交互避免加动效(调研 04§1.6)", "en": "Stacking a 500ms curve on high-frequency controls — HIG: avoid motion on frequent interactions (research 04 §1.6)" }
+    ]
+  },
+  "a11y": {
+    "zh": "配对表不豁免 prefers-reduced-motion:reduce 时位移过场直出终态(MDN 前庭安全);Accelerate「不可找回」的语义不能只靠动效传达,需配视觉状态变化;动效不得是关键信息唯一渠道(HIG:可辅以 haptics/音频,可取消)。",
+    "en": "The pairing table never waives prefers-reduced-motion: under reduce, displacement transitions render the final state (MDN vestibular safety); the Accelerate \"irretrievable\" meaning must not ride on motion alone — pair it with visual state changes; motion is never the sole channel for key information (HIG: complement with haptics/audio, keep cancellable)."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration",
+    "https://m3.material.io/styles/motion/easing-and-duration/tokens-specs"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "按 M3 官方配对表为一批转场选型:屏内起止取 Emphasized 500ms(大面积)或 Standard 300ms,进入取 Decelerate 400/250ms,永久退出取 Accelerate 200ms;CSS 侧用官方贝塞尔值(cubic-bezier(0.05,0.7,0.1,1) 等),Emphasized 用 Standard 兜底。",
+      "en": "Select transitions per M3's official pairing table: both ends on-screen take Emphasized 500ms (large) or Standard 300ms, entrances take Decelerate 400/250ms, permanent exits take Accelerate 200ms; in CSS use the official bezier values (cubic-bezier(0.05,0.7,0.1,1) etc.) with Standard as the Emphasized fallback."
+    },
+    "acceptance": [
+      { "zh": "六组配对的时长严格取官方表(500/400/200/300/250/200ms)", "en": "Pair durations come strictly from the official table (500/400/200/300/250/200ms)" },
+      { "zh": "曲线值逐字取官方 CSS 标注:std cubic-bezier(0.2,0,0,1)、std-decel (0,0,0,1)、std-accel (0.3,0,1,1)、emph-decel (0.05,0.7,0.1,1)、emph-accel (0.3,0,0.8,0.15)", "en": "Curve values match the official CSS notes verbatim: std cubic-bezier(0.2,0,0,1), std-decel (0,0,0,1), std-accel (0.3,0,1,1), emph-decel (0.05,0.7,0.1,1), emph-accel (0.3,0,0.8,0.15)" },
+      { "zh": "Emphasized 组不伪造单段「官方曲线」,按官方口径以 Standard 兜底并注明", "en": "The Emphasized pair is not faked with a single \"official\" bezier — Standard fallback per official guidance, with a note" },
+      { "zh": "过场类型与曲线语义一致:进入 decel、永久退出 accel、临时退出 emphasized", "en": "Transition type matches curve semantics: enter decel, permanent exit accel, temporary exit emphasized" },
+      { "zh": "prefers-reduced-motion: reduce 时直出终态,不播位移过场", "en": "Under prefers-reduced-motion: reduce, render the final state directly without playing displacement transitions" }
+    ]
+  }
+}

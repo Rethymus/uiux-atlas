@@ -1,0 +1,131 @@
+{
+  "name": "auto-fit / auto-fill + minmax",
+  "nameZh": "auto-fit 流式网格",
+  "aliases": ["auto-fill", "minmax", "无断点网格", "流式响应网格"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "一行声明替代全部断点:repeat(auto-fit, minmax(250px, 1fr)) 让网格按容器宽度自动增减列数;auto-fill 保留空轨道、auto-fit 回收空轨道拉伸填满。",
+    "en": "One declaration replaces every breakpoint: repeat(auto-fit, minmax(250px, 1fr)) grows and shrinks the column count with the container; auto-fill keeps empty tracks, auto-fit collapses them and stretches the rest."
+  },
+  "origin": {
+    "zh": "出自 CSS Grid Layout 的自动重复(auto-fill / auto-fit)与 minmax() 轨道:CSS-Tricks《Complete Guide to Grid》称之为「CSS Grid 中的顶级技巧之一」;auto-fill 尽量多排列(允许空轨道),auto-fit 将已有轨道拉伸填满空间(丢弃空轨道);轨道关键字还可用 minmax(10px, 1fr)、min-content、max-content(调研 05§3,原文抓取核对)。",
+    "en": "From CSS Grid Layout's auto-repeat (auto-fill / auto-fit) with minmax() tracks: CSS-Tricks' Complete Guide to Grid calls repeat(auto-fit, minmax(250px, 1fr)) \"one of the top tricks in CSS Grid\"; auto-fill packs as many tracks as fit (allowing empty ones), auto-fit stretches occupied tracks to fill (dropping empty ones); tracks can also use minmax(10px, 1fr), min-content, max-content (research 05 §3, verified against the source)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "minTrack",
+      "unit": "px",
+      "min": 100,
+      "max": 360,
+      "step": 5,
+      "default": 250,
+      "cssVar": "--af-min",
+      "effect": {
+        "zh": "minmax() 轨道最小宽度。默认 250px 取自调研 05§3 记载的经典配方 repeat(auto-fit, minmax(250px, 1fr));容器每多出一段「min + gap」宽度就多容纳一列,这是无断点网格的全部机制。",
+        "en": "The minmax() track minimum. Default 250px is the classic recipe recorded in research 05 §3: repeat(auto-fit, minmax(250px, 1fr)); each extra (min + gap) of container width admits one more column — the entire mechanism of the breakpoint-free grid."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--af-gap",
+      "effect": {
+        "zh": "轨道间距。默认 16px 取自 WebKit 官方示例(调研 05§5 记载的 grid 示例声明 gap: 16px)。gap 参与「能塞几列」的计算:间隙越大,同宽度下列数越少。",
+        "en": "Track gap. Default 16px from the official WebKit example (research 05 §5 records gap: 16px in the grid declaration). The gap participates in the column-fit math: larger gaps mean fewer columns for the same width."
+      }
+    },
+    {
+      "type": "number",
+      "name": "width",
+      "unit": "px",
+      "min": 220,
+      "max": 960,
+      "step": 10,
+      "default": 800,
+      "cssVar": "--af-width",
+      "effect": {
+        "zh": "演示容器宽度(CSS 型,注入 --af-width)。800px 为本条目演示基准值——配 250px 最小轨道恰好解析出 3 条轨道,便于观察空轨道行为;生产中宽度来自真实容器。",
+        "en": "Demo container width (CSS-type, injected as --af-width). 800px is this entry's demo baseline — with a 250px track minimum it resolves to exactly 3 tracks, making empty-track behavior easy to observe; in production the width comes from the real container."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "auto-fill", "label": { "zh": "auto-fill(保留空轨道)", "en": "auto-fill (keep empty tracks)" } },
+        { "value": "auto-fit", "label": { "zh": "auto-fit(回收空轨道)", "en": "auto-fit (collapse empty tracks)" } }
+      ],
+      "default": "auto-fit",
+      "effect": {
+        "zh": "JS 型参数(demo 切换 data-mode 重写 repeat() 关键字)。auto-fill 按容器尽量多排列并保留空轨道;auto-fit 把没有条目的轨道回收为 0 并拉伸剩余轨道——条目数少于轨道数时两者才有可见差异。",
+        "en": "JS-type param (the demo toggles data-mode to rewrite the repeat() keyword). auto-fill packs as many tracks as fit and keeps empty ones; auto-fit collapses item-less tracks to 0 and stretches the rest — the two keywords only differ visibly when there are fewer items than tracks."
+      }
+    },
+    {
+      "type": "number",
+      "name": "itemCount",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "渲染的条目数(JS 型)。默认 2:在 800px 容器(3 条轨道)下,少于轨道数的条目数正是 auto-fill 与 auto-fit 产生可见差异的场景——一条轨道空置 vs 被回收拉伸。",
+        "en": "How many items render (JS-type). Default 2: in the 800px container (3 tracks), an item count below the track count is exactly where auto-fill and auto-fit visibly diverge — one track sits empty vs gets collapsed and stretched."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS Grid(含 repeat(auto-fill/auto-fit, minmax()) 与 min-content/max-content 关键字)为 Baseline Widely available:MDN 记载 grid-template-areas 同模块基线自 2017-10(调研 05§2/§3)。",
+      "en": "CSS Grid (including repeat(auto-fill/auto-fit, minmax()) and the min-content/max-content keywords) is Baseline Widely available: MDN records the module-wide baseline since 2017-10 for grid-template-areas (research 05 §2/§3)."
+    },
+    "baseline": "Baseline Widely available (2017-10)"
+  },
+  "fallback": {
+    "zh": "所有支持 Grid 的浏览器都原生支持本配方,无需回退;不支持 Grid 的极老环境会忽略网格声明,条目按块级元素纵排——保持单列可读即可。auto-fill 与 auto-fit 的取舍不是兼容性回退,而是语义选择:占位卡组用 auto-fill(轨道位置稳定),内容卡组用 auto-fit(无空档)。",
+    "en": "Every Grid-capable browser supports this recipe natively — no fallback needed; on ancient non-Grid engines the declarations are ignored and items stack as blocks — a readable single column is fine. The auto-fill vs auto-fit choice is semantic, not a compatibility fallback: use auto-fill for slot-based grids (track positions stay stable) and auto-fit for content grids (no empty slots)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "无断点卡片墙:博客列表、作品集、设置卡组——容器多宽都自动成形", "en": "Breakpoint-free card walls: blog lists, portfolios, settings card groups — they form themselves at any width" },
+      { "zh": "bento 网格的基础拼装——调研 05§9:以命名区域或 auto-fit 流式网格拼装不等尺寸卡片", "en": "The base layer of bento grids — research 05 §9: assemble mixed-size cards from named areas or the auto-fit fluid grid" },
+      { "zh": "设计系统的自适应栅格容器:一份栅格吃下侧栏/主栏/弹窗等各种宿主", "en": "Design-system adaptive grid containers: one grid serves sidebars, main columns and dialogs" },
+      { "zh": "内容驱动轨道:min-content / max-content 关键字让列宽跟随内容而非猜测值(调研 05§3)", "en": "Content-driven tracks: min-content / max-content keywords size columns by content instead of guesses (research 05 §3)" }
+    ],
+    "avoid": [
+      { "zh": "必须精确控制每行列数的版面——改用 repeat(N, 1fr) 或命名区域,auto-repeat 的列数由容器决定", "en": "Layouts needing an exact per-row column count — use repeat(N, 1fr) or named areas; auto-repeat lets the container decide" },
+      { "zh": "条目高度差异巨大且顺序敏感的信息流——考虑瀑布流条目(masonry-columns / grid-lanes)", "en": "Feeds with wildly varied heights and sensitive order — consider masonry entries (masonry-columns / grid-lanes)" },
+      { "zh": "minTrack 过小(<120px)让一屏塞下过多轨道,文字挤压不可读", "en": "minTrack too small (<120px) crams too many tracks per screen and squeezes text below readability" },
+      { "zh": "视觉设计依赖「第 N 个条目落在第几列」的规律——auto-repeat 的列数随容器变化,位置不可承诺", "en": "Designs that rely on \"item N lands in column X\" — auto-repeat column count varies with the container, so positions can't be promised" }
+    ]
+  },
+  "a11y": {
+    "zh": "自动换列只改视觉位置、不改 DOM 顺序——读屏与 Tab 顺序始终等于 DOM 顺序(WCAG 1.3.2 语义顺序);若视觉重要度与 DOM 顺序不一致,用 order 或显式 grid-column 调整并同步 DOM 顺序;空轨道是纯视觉概念,不产生空白焦点目标;条目内交互控件保持可达且不依赖 hover。",
+    "en": "Re-flowing columns changes visual positions only, never DOM order — screen-reader and Tab order always follow the DOM (WCAG 1.3.2 Meaningful Sequence); when visual priority differs from DOM order, adjust with order or explicit grid-column and keep the DOM order coherent; empty tracks are purely visual and create no blank focus targets; interactive controls inside items stay reachable and hover-independent."
+  },
+  "sources": [
+    "https://css-tricks.com/snippets/css/complete-guide-grid/",
+    "https://webkit.org/blog/17660/introducing-css-grid-lanes/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用 repeat(auto-fit, minmax()) 复刻一块无断点卡片墙:容器宽度任意变化时列数自动增减,条目少于轨道数时空轨道被回收、剩余轨道拉伸填满,无媒体查询。",
+      "en": "Replicate a breakpoint-free card wall with repeat(auto-fit, minmax()): the column count grows and shrinks with the container, empty tracks collapse when items run out, and remaining tracks stretch — no media queries."
+    },
+    "acceptance": [
+      { "zh": "grid-template-columns: repeat(auto-fit, minmax(Npx, 1fr)) 严格使用参数快照值,不自行调整", "en": "grid-template-columns: repeat(auto-fit, minmax(Npx, 1fr)) uses the exact parameter snapshot values" },
+      { "zh": "提供 auto-fill 对照说明:空轨道保留(位置稳定)vs 回收(拉伸填满)", "en": "Include the auto-fill contrast: empty tracks kept (stable positions) vs collapsed (stretch to fill)" },
+      { "zh": "轨道间距使用快照 gap 值;不出现媒体查询断点", "en": "Track gap uses the snapshot value; no media-query breakpoints anywhere" },
+      { "zh": "条目 DOM 顺序与视觉顺序一致,交互控件可 Tab 聚焦", "en": "Item DOM order matches visual order; interactive controls are Tab-focusable" },
+      { "zh": "轨道最小值先给固定 px,再用 minmax() 表达,避免内容溢出轨道", "en": "Declare a fixed px floor before minmax() so content cannot overflow its track" }
+    ]
+  }
+}

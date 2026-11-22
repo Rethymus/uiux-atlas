@@ -1,0 +1,60 @@
+## Structure & DOM
+
+No special structure — `text-wrap` is a normal CSS property declared directly on heading and body elements:
+
+```html
+<h2 class="headline">Headings wrap into a few even lines, no lonely last word</h2>
+<p class="body">Long body paragraph…</p>
+```
+
+```css
+.headline { text-wrap: balance; } /* short text: even lines (≤6 lines in Chromium) */
+.body     { text-wrap: pretty; }  /* long body: orphan prevention */
+```
+
+Key points:
+
+- `text-wrap` is a shorthand = `text-wrap-mode` (wrap/nowrap) + `text-wrap-style` (auto/balance/stable/pretty etc.) (MDN);
+- `balance` **applies only to blocks with a limited number of lines** — headings, buttons, pull quotes; on long body copy it no-ops past the line cap (≤6 lines in Chromium, ≤10 in Firefox);
+- `pretty` is the long-copy tool: a slower but better algorithm whose goal is minimizing orphans.
+
+## Styling & Parameters
+
+Three parameters injected through `--tw-*` variables:
+
+```css
+.demo h2 { text-wrap: var(--tw-heading); max-width: calc(var(--tw-width) * 1ch); }
+.demo p  { text-wrap: var(--tw-body);   max-width: calc(var(--tw-width) * 1ch); }
+```
+
+Where the numbers come from (research 11 §2, verified from MDN/BCD):
+
+- Per-value support: **balance** = Chrome/Edge 114, Firefox 121, Safari 17.5; **pretty** = Chrome/Edge 117, Safari 26 (announced at WWDC25: "even out the ragged edge… prevent short last lines"), **Firefox unsupported**;
+- The shorthand overall is Baseline widely available since 2024-03;
+- Line cap: balance applies to ≤6 lines in Chromium, ≤10 in Firefox (MDN text);
+- Official guidance: short text (headings, pull quotes) gets balance; long body gets pretty (with a performance cost — use only when typography beats speed); editable content gets stable.
+
+## Motion & Interaction
+
+The wrapping strategy has no motion; the interaction is "narrow until the phenomenon appears":
+
+- The demo splits the heading into per-character spans grouped by `offsetTop`, showing each line's character count and last-line share live — under balance the lines converge; under auto the last line tends to a lone word;
+- Dragging width down (24–40ch) forces multi-line headings and orphans, contrasting balance / pretty / stable / auto;
+- Badges at the top use `CSS.supports("text-wrap", "…")` to report **this browser's** actual support for balance and pretty — on Firefox you'll see pretty honestly marked "unsupported (auto fallback)";
+- Every change is an instant reflow with no animation; `prefers-reduced-motion` needs no handling.
+
+## Real-world examples
+
+- **Tailwind CSS**: since v3.4 the framework ships `text-balance` and `text-pretty` utilities mapping to `text-wrap: balance/pretty` — the wrapping strategy entered the default vocabulary of mainstream frameworks, one class name away in any new project.
+- **The Chrome for Developers / web.dev tutorials**: when Chrome 114 shipped balance, the official articles personally demonstrated the "balance for headings, pretty for body" pairing and codified "stable for editable content" — that pairing became the community default from then on.
+- **Firefox and Safari's catch-up cadence**: Firefox 121 completed balance; Safari 26 finally added pretty (WebKit's WWDC25 note framing it as orphan prevention) — all three engines converging on "balance for headings, pretty for body" shows the division of labor is now a cross-browser consensus.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `headingWrap` | balance converges heading lines and de-orphans the last line; past 6 lines (Chromium) it no-ops to auto | auto restores greedy breaking: fill the first line, orphan the last |
+| `bodyWrap` | pretty redistributes breakpoints to avoid one-two-word last lines; measurable cost on long copy | auto breaks fastest but one-word paragraph endings are common |
+| `width` | past ~60ch headings fit on one line and balance has nothing to do | under 24ch only a few characters fit per line — no algorithm rescues a too-narrow container |
+
+Takeaway: balance and pretty are not rivals but a short-text/long-text division of labor — balance for headings, pretty for body, stable for editable content, and not one declaration more.

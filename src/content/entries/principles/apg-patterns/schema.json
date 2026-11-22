@@ -1,0 +1,88 @@
+{
+  "name": "WAI-ARIA APG Patterns",
+  "nameZh": "WAI-APG 模式总览",
+  "aliases": ["ARIA Authoring Practices", "APG 模式库"],
+  "category": "principles",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "W3C ARIA Authoring Practices 提供 30 个组件模式;每个模式给出键盘交互与 ARIA roles/states/properties 三段规范,是自定义组件实现的第一参照。",
+    "en": "The W3C ARIA Authoring Practices provides 30 component patterns; each ships keyboard interaction plus ARIA roles/states/properties in three sections — the first reference for building custom components."
+  },
+  "origin": {
+    "zh": "W3C WAI-ARIA Authoring Practices Guide(APG)模式库,调研 07§34 记载 30 个模式:Accordion、Alert、Alert Dialog、Breadcrumb、Button、Carousel、Checkbox、Combobox、Dialog、Disclosure、Feed、Grid、Landmarks、Link、Listbox、Menu/Menubar、Menu Button、Meter、Radio Group、Slider(含 Multi-Thumb)、Spinbutton、Switch、Table、Tabs、Toolbar、Tooltip、Tree View、Treegrid、Window Splitter(Slider 与 Multi-Thumb 分列后恰为 30);每个模式给出键盘交互与 ARIA roles/states/properties 三段规范。",
+    "en": "The W3C WAI-ARIA Authoring Practices Guide (APG) pattern library; research 07 §34 lists 30 patterns: Accordion, Alert, Alert Dialog, Breadcrumb, Button, Carousel, Checkbox, Combobox, Dialog, Disclosure, Feed, Grid, Landmarks, Link, Listbox, Menu/Menubar, Menu Button, Meter, Radio Group, Slider (incl. Multi-Thumb), Spinbutton, Switch, Table, Tabs, Toolbar, Tooltip, Tree View, Treegrid, Window Splitter (Slider and Multi-Thumb listed separately make exactly 30); each pattern ships keyboard interaction plus roles/states/properties in three sections."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "group",
+      "options": [
+        { "value": "all", "label": { "zh": "全部 30 个", "en": "All 30" } },
+        { "value": "forms", "label": { "zh": "表单与输入", "en": "Forms & input" } },
+        { "value": "navigation", "label": { "zh": "导航与菜单", "en": "Navigation & menus" } },
+        { "value": "containers", "label": { "zh": "容器与披露", "en": "Containers & disclosure" } },
+        { "value": "composite", "label": { "zh": "复合与反馈", "en": "Composite & feedback" } }
+      ],
+      "default": "all",
+      "effect": {
+        "zh": "模式分组过滤(教学分组,非 APG 官方分类;APG 页面本身不分组)。点选任一模式查看它的「三段规范」卡片与已证实的键位提示。",
+        "en": "Group filter for the patterns (a teaching grouping, not an official APG taxonomy; the APG page itself doesn't group). Click any pattern for its 'three-section spec' card and verified key hints."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "keyhint",
+      "options": [
+        { "value": "on", "label": { "zh": "显示键位提示", "en": "Show key hints" } },
+        { "value": "off", "label": { "zh": "隐藏", "en": "Hide" } }
+      ],
+      "default": "on",
+      "effect": {
+        "zh": "键位提示显隐。提示内容仅取调研 07§36 已证实的键位表(Button=Enter/Space、Checkbox=Space、Radio=方向键组内移动、Slider=方向键+Home/End、Tabs=Tab 进出+方向键选择、Dialog=Esc 关闭/困焦/焦点归还),其余模式显示「详见 APG 模式页」。",
+        "en": "Show or hide key hints. Hints carry only the verified key table from research 07 §36 (Button=Enter/Space, Checkbox=Space, Radio=arrows within group, Slider=arrows+Home/End, Tabs=Tab in/out + arrow selection, Dialog=Esc close/trap/focus return); all other patterns read 'see the APG pattern page'."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 DOM 交互;演示本身可作为 APG 的一个微型实现参照(卡片为可聚焦按钮,焦点环完整)。",
+      "en": "Pure DOM interaction; the demo is itself a miniature APG reference implementation (focusable card buttons with intact focus rings)."
+    }
+  },
+  "fallback": {
+    "zh": "APG 是规范文档,无浏览器特性可降级;工程出口是:自定义组件动手前先查模式页的键盘交互段,实现后用「只插键盘」走一遍(见 keyboard-navigation 条目)。",
+    "en": "APG is a spec document — nothing to degrade; the engineering exit: read the pattern page's keyboard section before building a custom widget, then walk it keyboard-only (see the keyboard-navigation entry)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自定义复合组件(radio group、tabs、tree)动手前的第一份规范", "en": "The first spec to read before building composite widgets (radio group, tabs, tree)" },
+      { "zh": "组件库文档缺失键盘段时,以 APG 为权威补充", "en": "The authoritative supplement when a component library's docs lack a keyboard section" },
+      { "zh": "评审自定义控件:对照模式页逐条核 roles/states/properties", "en": "Reviewing custom widgets: check roles/states/properties against the pattern page item by item" }
+    ],
+    "avoid": [
+      { "zh": "拿 ARIA 属性当「自动补键盘行为」的魔法——ARIA 只声明语义,行为要作者实现(07§35)", "en": "Treating ARIA attributes as magic that auto-provides keyboard behavior — ARIA declares semantics; authors implement behavior (07 §35)" },
+      { "zh": "混用多个模式(A dialog 混 menu 行为)而不回查规范", "en": "Mixing patterns (a dialog with menu behavior) without re-checking the spec" }
+    ]
+  },
+  "a11y": {
+    "zh": "本条目自身就是无障碍话题:演示卡片是真实按钮、有可见焦点环、分组有 group 标签;键位提示仅收录调研已证实内容,未证实的以「详见 APG 模式页」如实让位。",
+    "en": "This entry is about accessibility itself: demo cards are real buttons with visible focus rings and labeled groups; key hints carry only verified content, deferring to 'see the APG pattern page' where unverified."
+  },
+  "sources": [
+    "https://www.w3.org/WAI/ARIA/apg/patterns/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个 APG 30 模式浏览面板:30 个模式芯片(可聚焦按钮)按教学分组过滤,点选任一模式弹出「键盘交互 / roles / states & properties」三段规范卡片,已证实键位直接给,未证实键位标注「详见 APG 模式页」。",
+      "en": "Build an APG 30-pattern browser: 30 focusable pattern chips with a teaching-group filter; selecting one opens a 'keyboard interaction / roles / states & properties' spec card, verified keys given directly, unverified ones deferred to 'see the APG pattern page'."
+    },
+    "acceptance": [
+      { "zh": "group 为 JS 型参数,五档过滤即时生效", "en": "group is a JS-type param, five filter tiers take effect instantly" },
+      { "zh": "30 个模式名逐字来自调研 07§34 清单(Slider 与 Multi-Thumb 分列)", "en": "The 30 pattern names come verbatim from the research 07 §34 list (Slider and Multi-Thumb listed separately)" },
+      { "zh": "三段规范卡片结构固定:键盘交互 / roles / states & properties", "en": "The spec card keeps a fixed three-section structure: keyboard / roles / states & properties" },
+      { "zh": "键位提示只收录调研 07§36 已证实的六个模式,其余让位给 APG 原文", "en": "Key hints cover only the six patterns verified in research 07 §36; the rest defer to the APG text" },
+      { "zh": "芯片为真实按钮,焦点环可见,分组容器带 aria 标签", "en": "Chips are real buttons with visible focus rings; group containers carry ARIA labels" }
+    ]
+  }
+}

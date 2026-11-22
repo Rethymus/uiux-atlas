@@ -1,0 +1,67 @@
+## Structure & DOM
+
+Duration tokens are not a DOM structure but a **tier-selection table**: first classify the transition (how much area it covers, entering or exiting, user-initiated or not), then pick a token from the four official tiers. The DOM itself only needs an element to host the transition:
+
+```html
+<!-- Selection-control transition: short4 = 200ms -->
+<button class="chip" style="--md-duration: 200ms">…</button>
+
+<!-- Container transitions: FAB→Sheet = medium4 400ms; Card→fullscreen = long2 500ms -->
+<div class="sheet" style="--md-duration: 400ms">…</div>
+```
+
+Key points:
+
+- Official token names are `md.sys.motion.duration.{tier}{n}`, four tiers with four steps each: short1–4, medium1–4, long1–4, extra-long1–4;
+- Tiers are **semantic**, not a continuous scale: selection controls belong to short (official example 200ms + Standard), FAB→Sheet to medium (400ms), Card→fullscreen to long (500ms + Emphasized);
+- The demo replays a sample card at the selected token so switching tiers in the panel compares feel directly.
+
+## Styling & Parameters
+
+Both enum params (tier / step) are JS-type; the demo subscribes, converts to ms, and injects the animation duration. The easing stays Standard `cubic-bezier(0.2, 0, 0, 1)`:
+
+```css
+.sample {
+  animation: enter var(--md-duration, 200ms) cubic-bezier(0.2, 0, 0, 1) both;
+}
+@keyframes enter {
+  from { opacity: 0.25; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+```
+
+The official token table (research 04 §1.4, tokens-specs page):
+
+| Tier | Tokens | Values | Official example |
+| --- | --- | --- | --- |
+| short | short1–4 | 50 / 100 / 150 / 200ms | Selection controls = short4 200ms + Standard |
+| medium | medium1–4 | 250 / 300 / 350 / 400ms | FAB→Sheet = medium4 400ms |
+| long | long1–4 | 450 / 500 / 550 / 600ms | Card→fullscreen = long2 500ms + Emphasized |
+| extra-long | extra-long1–4 | 700 / 800 / 900 / 1000ms | Ambient transitions without user input only |
+
+Companion official guidance: scale duration by transition coverage (small areas 200ms, large areas 500ms); enters are longer than exits (example: enter 500ms / exit 200ms); anything past 600ms is for ambient transitions without user input.
+
+## Motion & Interaction
+
+- **Retier replays**: any tier/step change remounts the sample card so the animation replays at the new duration — same easing, only duration moves, making "unhurried vs sluggish" directly comparable;
+- **>600ms warning**: selecting the extra-long tier surfaces the official note that it serves ambient, input-free transitions only;
+- **Enter/exit asymmetry**: exits should take the same tier or lower (official example: 200ms), handing attention to the next task;
+- **Performance**: animate only `opacity/transform` (web.dev baseline, research 04 §1.5);
+- **reduced-motion**: under reduce the final state renders directly instead of playing displacement transitions; tiers still serve opacity-only micro-motions.
+
+For pairing tiers with curves see the easing-pairs entry (the official table binds them into six pairs); for a small-control selection example see press-feedback.
+
+## Real-world examples
+
+- **Selection controls (official M3 example)**: switches, checkboxes and radios uniformly take short4 200ms + Standard easing — the official note on the tokens page and the de-facto baseline for small state changes;
+- **FAB→Sheet (official M3 example)**: the FAB-to-Sheet container transition takes medium4 400ms, and Card→fullscreen takes long2 500ms + Emphasized — the official demonstrations of "tier by coverage";
+- **Enter/exit asymmetry (official guidance)**: the enter 500ms / exit 200ms example ratio comes from M3 guidance, and Android/iOS system transitions consistently exit faster than they enter (see page-transitions).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `tier` | larger-area transitions spread out more leisurely; extra-long (700–1000ms) may only serve ambient transitions — on user input it reads as sluggish | snappier transitions; short (50–200ms) fits small controls, but large-area transitions will feel abrupt |
+| `step` | slower within the tier, blurring toward the next tier (short4 200ms already feels close to medium's 250ms floor) | faster within the tier, approaching the previous tier's ceiling; 50ms-level differences are barely perceptible on small controls |
+
+Selection rule of thumb: first ask "how much area, and who triggers it" — area picks the tier, input caps the ceiling (>600ms is off-limits for user input), the step fine-tunes; enters always outlast exits.

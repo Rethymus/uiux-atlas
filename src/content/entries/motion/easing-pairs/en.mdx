@@ -1,0 +1,66 @@
+## Structure & DOM
+
+The pairing table is a **lookup card for selection**: classify the transition first (both ends on-screen / entering / permanent exit / temporary exit) — the type directly determines the curve family and duration; the DOM has no special structure:
+
+```html
+<div class="panel"><!-- any element hosting the transition --></div>
+```
+
+Key points:
+
+- The six pairs cover four transition kinds: **both ends on-screen** (Emphasized 500 for large areas / Standard 300 for small), **entering** (Emph-decel 400 / Std-decel 250), **exiting** (Emph-accel 200 permanent / Std-accel 200);
+- Temporary exits (drawer/sheet parked at the screen edge, recallable) officially take Emphasized alone — the "parked at the edge" pose itself hints "recallable";
+- The demo replays one sample slider with the selected pair: duration and curve switch together, making all six feel-comparable on one screen.
+
+## Styling & Parameters
+
+`pair` is a JS-type param (the demo subscribes and replays with that duration + bezier); `travel` is a CSS variable (`--ep-travel`) controlling travel distance:
+
+```css
+.slider {
+  translate: var(--ep-travel, 120px) 0;      /* resting position */
+  animation: slide both;                      /* duration and curve injected inline per pair */
+}
+@keyframes slide {
+  from { translate: 0 0; opacity: 0.35; }
+  to   { translate: var(--ep-travel, 120px) 0; opacity: 1; }
+}
+
+/* Official curve CSS values (tokens-specs page, research 04 §1.4):
+   emphasized (no CSS equivalent → Standard fallback)  cubic-bezier(0.2, 0, 0, 1)
+   emphasized decelerate                              cubic-bezier(0.05, 0.7, 0.1, 1)
+   emphasized accelerate                              cubic-bezier(0.3, 0, 0.8, 0.15)
+   standard                                           cubic-bezier(0.2, 0, 0, 1)
+   standard decelerate                                cubic-bezier(0, 0, 0, 1)
+   standard accelerate                                cubic-bezier(0.3, 0, 1, 1) */
+```
+
+The official pairing table ("Applying easing and duration", research 04 §1.4): Emphasized 500ms both ends on-screen; Emphasized decelerate 400ms entering; Emphasized accelerate 200ms permanent exit; Standard 300ms both ends on-screen; Standard decelerate 250ms entering; Standard accelerate 200ms exiting.
+
+Note: **Emphasized itself has no CSS bezier equivalent** (officially marked N/A) — on the web, fall back to Standard per official guidance; Android approximates it with a multi-segment pathInterpolator (`M 0,0 C 0.05,0 … 1,1`). Do not fabricate a single-segment "official curve".
+
+## Motion & Interaction
+
+- **Look up, don't tune**: transition type → pair is a deterministic mapping; the demo's replay button A/Bs all six at the same travel;
+- **Curve semantics must not invert**: Decelerate's gentle stop = "settling in"; Accelerate's peak-speed ending = "gone for good" — a permanent exit on decel implies "it will come back";
+- **Travel affects legibility**: the same accelerate curve is unreadable at 40px ("starts at rest" invisible); raise `travel` and the acceleration/deceleration phases become obvious;
+- **Enters outlast exits**: in the six-pair table every enter tier (400/250ms) is longer than the exit tier (200ms) — exits need less attention (official guidance);
+- **Performance**: animate only `translate/opacity` (compositor properties, web.dev baseline, research 04 §1.5);
+- **reduced-motion**: under reduce the final state renders directly without displacement transitions.
+
+The 16-token duration table lives in m3-duration-tokens; the math of bezier control points in cubic-bezier; landing these pairs on SPA route/whole-page transitions via the View Transitions API in view-transitions.
+
+## Real-world examples
+
+- **Android system animation**: the Emphasized curve ships on Android as a multi-segment pathInterpolator (`M 0,0 C 0.05,0 … 1,1`) — the official acknowledgment that a single CSS bezier cannot express it, and the source of the "Standard fallback" stance (research 04 §1.4);
+- **M3 component transitions**: M3 uses the same table to govern drawer/sheet temporary exits (Emphasized) and inter-screen enters/exits (decel 400 / accel 200); Material-family component libraries default to values from this table (research 04 §1.4, §3.3);
+- **Enter/exit asymmetry**: the official enter 500ms / exit 200ms example takes both ends of the pairing table — Android/iOS system forward/backward transitions consistently exit faster (research 04 §1.4, §3.3; see page-transitions).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `pair` | Emphasized family (500/400/200ms): more expressive for large areas, with a pronounced fast-start-gentle-stop posture | Standard family (300/250/200ms): snappier utility transitions, but flat and hasty on large areas |
+| `travel` | longer travel makes the acceleration/deceleration phases visible; past 200px the 200ms tier reads as a "flash" | shorter travel makes curve differences indistinguishable — pair selection degenerates to picking a duration only |
+
+Selection rule of thumb: type first (on-screen / entering / permanent exit / temporary exit), area picks Emphasized or Standard, permanent exits always accelerate; in CSS, remember Standard covers Emphasized.

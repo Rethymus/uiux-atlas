@@ -1,0 +1,65 @@
+## 结构与 DOM
+
+五档表面是**角色体系**,不是五个 CSS 类:每档一个语义角色,组件按「层级地位」领角色,亮暗主题各配一张 tone 映射表。
+
+```html
+<main class="page">                      <!-- surface-container-lowest -->
+  <section class="section">…</section>   <!-- surface-container-low -->
+  <article class="card">…</article>      <!-- surface-container -->
+  <footer class="dock">…</footer>        <!-- surface-container-high -->
+  <dialog class="sheet">…</dialog>       <!-- surface-container-highest -->
+</main>
+```
+
+```css
+[data-theme="light"] .card { background-color: var(--ts-surface-container); }
+[data-theme="dark"]  .card { background-color: var(--ts-surface-container); } /* 同一角色,换映射表 */
+```
+
+关键点:
+
+- M3 官方博客(2023-02)废弃「surface + elevation 1–5 叠加不透明度」,改为 surface container **lowest / low / (container) / high / highest** 五档 tone 化角色——层级与海拔解耦(调研 02§B7);
+- 角色成对设计:每档表面与它的 on-surface 文字/图标成对,官方声明保证最低 3:1 对比度(调研 02§B6);
+- 深色主题不是「换投影」,是**换方向**:层级靠提亮表达,更亮的档读作更靠前(与 Apple base/elevated 惯例同构,调研 06§14)。
+
+## 样式与参数
+
+底层机制是 HCT 色调调色板:Tone 0–100 即 CIE L*,固定色相与色度、只沿 tone 展开(Android 每个关键色 13 档,调研 06§5);表面家族取中性低色度列。demo 用 oklch L 作 tone 的工程近似(不同刻度),`--ts-hue` / `--ts-chroma` 为 CSS 变量型参数:
+
+```css
+.ts-card { background-color: oklch(var(--ts-l) var(--ts-chroma) var(--ts-hue)); }
+/* demo 阶梯(演示值):亮色 0.985→0.87 降 L;深色 0.06→0.22 升 L(提亮=前进) */
+```
+
+数值出处:
+
+- 五档命名与「与 elevation 解耦」:M3 官方博客 tone-based-surface-color-m3(调研 02§B7);
+- Tone 0–100 = CIE L*、13 档调色板、核心 5 板(Primary/Secondary/Tertiary/Neutral/Error):material-color-utilities 与 Android 文档(调研 06§5);
+- M3 基线参考值(demo 亮色 on-surface 即由此换算):surface `#FFFBFE`、on-surface `#1C1B1F`、亮 primary `#6750A4`、暗 primary `#D0BCFF`(≈tone 80)(调研 06§7);
+- **官方逐档 tone 值未在本调研中核实**——社区常引用「亮色 lowest≈tone 100 / low 96 / container 90 / high 92 / highest 94,暗色 4/10/12/17/22」之类的表格,属社区常见值,未证实;demo 采用单调演示阶梯,不冒认该表。
+
+## 动效与交互
+
+五档表面是静态角色系统,动效只发生在「选中与切换」:
+
+- **tier 参数**:被选中的档位卡片右移 6px + 描边浮现,0.25s ease;`prefers-reduced-motion` 时取消位移与过渡;
+- **mode 参数**:亮暗两套 L 阶梯整体翻转(亮色降 L / 深色升 L),背景色 0.25s 过渡——同一份组件 DOM,换映射表即换主题;
+- 档位差本身就是「动效的替代品」:M3 用色调差取代 elevation 阴影动画,滚动/悬浮时不需要逐帧重算投影;
+- 无自主动画;色度调高得到的「彩色表面」上,文字对比度须按 WCAG AA 逐档核对(正文 4.5:1,调研 06§17)。
+
+## 真实产品案例
+
+- **Android 12+ 系统界面(Material You)**:动态取色后五档表面角色随壁纸重映射,系统设置、通知面板、底部面板的层级全部由 tone 档位承载——tone-based surfaces 更新的官方主场(调研 02§B7/06§6);
+- **Material Theme Builder**(Figma 插件/网页版,goo.gle/material-theme-builder-web):官方工具把种子色展开为整套 color role(含 surface 家族五档),导出亮暗两套 token(调研 06§7);
+- **Radix Colors 步 1–3**:12 步色阶把「app 背景(步 1)→ 次级背景(步 2)→ 组件表面(步 3)」写进步位语义——与五档表面同构的 web 端层级做法(调研 06§8;类比属编辑性整理)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `mode` → dark | 档位方向翻转:越高层级越亮(提亮=前进);阴影消失,层级全靠色调差 | light:档位向白收敛,层级差靠微降 L 表达 |
+| `chroma` | 表面变「彩色」,品牌感上升;挤压 on-surface 文字对比度余量,正文 4.5:1 先告急 | 回到中性灰阶——M3 表面家族的默认形态(演示值 0.02) |
+| `hue` | 表面整体偏向该色相;跨色相时注意与 accent 角色的区分度 | 0°/中性色相时表面读作纯灰,层级最安静 |
+| `tier` | high/highest 档读作「浮起」——对话框、底栏、悬浮按钮的归属档 | lowest 读作「退后」——页面底、嵌入式背景的归属档 |
+
+经验区间(演示值口径):中性表面 chroma ≤0.03;相邻档 L 差 ≥0.03 才可辨;深色档位跨度可略大于亮色(暗环境明度敏感度更低,Apple HIG 暗色对比底线 4.5:1、小字力争 7:1,调研 06§13)。

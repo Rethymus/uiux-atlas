@@ -1,0 +1,63 @@
+## Structure & DOM
+
+font-display lives inside the `@font-face` rule — it is not a normal CSS property — governing how text renders while the font file loads:
+
+```html
+<link rel="preload" href="/fonts/brand.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+```css
+@font-face {
+  font-family: "Brand";
+  src: url("/fonts/brand.woff2") format("woff2");
+  font-display: swap; /* one of auto | block | swap | fallback | optional */
+}
+
+body { font-family: "Brand", Georgia, serif; } /* metrically close fallback */
+```
+
+Key points:
+
+- Three periods (MDN): **block** (font not ready, text invisible) → **swap** (font not ready, fallback visible) → **failure** (treated as failed);
+- The fallback in the `font-family` stack is not decoration — it is exactly what the swap period shows, and its metrics decide layout shift;
+- Self-host first (web.dev practice); `preload` discovers the font earlier but competes with other critical resources.
+
+## Styling & Parameters
+
+Two parameters drive the demo state machine: display (enum) plus simulated network latency. The five-value period table (web.dev, verified from source):
+
+| Value | Block period | Swap period |
+| --- | --- | --- |
+| `auto` | browser-defined | browser-defined |
+| `block` | 2–3 seconds | infinite |
+| `swap` | 0ms | infinite |
+| `fallback` | 100ms | 3 seconds |
+| `optional` | 100ms | none |
+
+Where the numbers come from: MDN font-display (five-value semantics) + web.dev font-best-practices (the numbers table), both verified from source (research 05 §21); `auto`'s concrete periods are not published uniformly across browsers — MDN's "browser-defined" wording is the source of truth. The demo takes the upper bound for block (3s) and simulates auto as 100ms labeled "browser-defined".
+
+## Motion & Interaction
+
+The demo simulates a full load with a state machine equivalent to the numbers table:
+
+- "Reload" runs one timeline pass (0–3.5s) per current params: block segment (text invisible/placeholder) → swap segment (fallback Georgia) → the arrival point (switch to the demo webfont look) or failure;
+- Dragging the simulated-latency slider moves the font's arrival time: swap waits forever; fallback gives up after 3s; optional gives up at 100ms (no swap this page);
+- Under `prefers-reduced-motion: reduce` the timeline doesn't sweep — the state machine advances once to the final outcome for those params;
+- Phase transitions are implemented directly from the numbers table, not decorative animation — every invisible/swap moment you see is a row of that table.
+
+## Real-world examples
+
+- **The Google Fonts CSS API**: its served CSS carries `font-display: swap` by default (a stable, long-standing behavior) — plug in and you get "fallback visible immediately, swap when ready," the largest-scale distribution of the FOUT strategy.
+- **Next.js `next/font`**: self-hosts fonts at build time, generates the `@font-face` with `font-display` automatically, and aligns fallback metrics (size-adjust et al.) — the official goal is eliminating swap-period layout shift.
+- **Vercel's website (Geist)**: research 05 §25 verified Geist ships as an npm package (`npm i geist`) loaded on demand — self-hosting plus framework-injected `@font-face` is the standard loading path for such engineering font packages.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `display` → block | the longest block period, 2–3s: slow networks leave users staring at blanks — the worst FOIT cost | — (it is the longest-block tier) |
+| `display` → swap | fallback shows at 0ms; the font lands no matter how slow, with a possible shift at swap time | — |
+| `display` → fallback / optional | shorter swap periods lock the fallback in sooner on slow networks; optional has none at all | a 100ms block is imperceptible; fast networks still swap normally |
+| `loadDelay` | past the swap cap: fallback/optional keep the fallback forever while swap/block eventually land the font | under 100ms all tiers converge — fast networks hide strategy differences |
+
+Takeaway: choosing a strategy is choosing what users see on the worst network — swap for body (content first), fallback/optional for brand faces (layout stability first).

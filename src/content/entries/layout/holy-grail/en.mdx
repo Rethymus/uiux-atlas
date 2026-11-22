@@ -1,0 +1,76 @@
+## Structure & DOM
+
+Four semantic blocks plus one grid container: **header / side / main / footer each declare `grid-area: <name>`, and the container composes the skeleton from grid-template-areas strings**. DOM order is fixed; visual position is decided by the strings.
+
+```html
+<div class="page">
+  <header>…</header>   <!-- grid-area: header -->
+  <aside>…</aside>     <!-- grid-area: side -->
+  <main>…</main>       <!-- grid-area: main -->
+  <footer>…</footer>   <!-- grid-area: footer -->
+</div>
+```
+
+Key points:
+
+- Each string generates one row, each cell one column, and **same-name tokens merge into a named area** referenceable by grid-placement properties (research 05 §2);
+- The classic three-column is `"header header" "sidebar main" "footer footer"` — three strings compose the whole page;
+- The MDN Layout Cookbook has **no dedicated Holy Grail page** (verified absent in research 05 §2) — "Holy Grail" is a practice nickname, and the standard implementation is grid-template-areas;
+- Re-ordering = editing the string: sidebar flipping and mobile stacking with zero DOM changes;
+- DOM order stays constant and screen-reader order never follows the visual re-order (WCAG 1.3.2) — a sidebar-first DOM is an information-architecture decision, paired with a skip-to-main-content link.
+
+## Styling & Parameters
+
+Three parameters: layout is JS-type (area strings are not reliably CSS-variable friendly, so the demo subscribes and rewrites — same convention as the container-queries entry); gap / sideWidth are CSS-type:
+
+```css
+.page {
+  display: grid;
+  gap: var(--hg-gap);                    /* 16px, demo baseline (community value, unverified) */
+  grid-template-columns: var(--hg-side) 1fr;  /* 200px sidebar baseline, main takes the rest */
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header header"
+    "side   main"
+    "footer footer";
+}
+.page > header { grid-area: header; }
+.page > aside  { grid-area: side; }
+.page > main   { grid-area: main; }
+.page > footer { grid-area: footer; }
+
+/* mobile stacking: swap one string, zero DOM changes */
+@media (max-width: 640px) {
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "main" "side" "footer";
+  }
+}
+```
+
+Where the numbers come from: Baseline 2017-10 (MDN grid-template-areas, research 05 §2); the classic `"header header" "sidebar main" "footer footer"` string is the wording recorded in research 05 §2; gap 16px and sidebar 200px are demo baselines (community values, unverified).
+
+## Motion & Interaction
+
+Skeleton re-ordering is a **string swap** — instantaneous:
+
+- Switching the three modes (desktop-left / desktop-right / stacked) changes only the areas string and column definition; the four blocks never move — "re-order by editing the string" is the entire selling point of named areas;
+- The demo readout shows the active grid-template-areas declaration live, string and layout side by side;
+- Area strings must be **rectangular** (equal token counts per row) or the whole declaration fails — all three demo modes are 2×2 / 1×4 rectangles;
+- The status chip cross-fades over 0.25s, disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **The MDN grid-template-areas reference** — same-name token merging and one-row-per-string semantics ARE the standard Holy Grail path; MDN has no Holy Grail page (verified absent, research 05 §2), and practice implements it with this property (research 05 §2 source).
+- **Docs/blog/admin page skeletons** — header + sidebar + main + footer is the Holy Grail's modern form; MDN's own docs site uses exactly this skeleton (editorial content).
+- **CSS-Tricks' Complete Guide to Grid** — the authoritative reference for composing page skeletons from named-area strings (the guide is collected in research 05 §2/§3).
+
+## Parameter Sensitivity
+
+| Parameter | Up / switching forward… | Down / switching back… |
+| --- | --- | --- |
+| `layout` | desktop-right swaps main/side with zero DOM changes; stacked re-orders a single column as header→main→side→footer | desktop-left is the classic form; narrow containers falling to stacked is the fallback, fully readable |
+| `gap` | airier skeleton; crisper block boundaries; too large eats the main column's vertical space | denser layout; too small and blocks glue together, losing hierarchy |
+| `sideWidth` | wider sidebar squeezes the main column; at 280px the main column's measure suffers on narrow containers | narrower sidebar frees the main column; 120px only fits icon navs, text navs wrap |
+
+Working notes: order the DOM by information architecture (usually header → sidebar → main → footer) and leave visual re-ordering to the strings; add a skip-to-main link when the sidebar comes first in the DOM; maintain area strings and track definitions together — rectangle validation is where typos live.

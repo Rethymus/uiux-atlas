@@ -1,0 +1,100 @@
+{
+  "name": "Law of Proximity",
+  "nameZh": "格式塔·接近性",
+  "aliases": ["邻近原则", "接近原则"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "相邻的元素被感知为一组:间距本身就是分组语法。组内间距小、组间间距大,关系不用一条线就成立。",
+    "en": "Elements near each other are perceived as a group: spacing itself is grouping grammar. Tight inside, loose outside — relationships hold without a single line."
+  },
+  "origin": {
+    "zh": "格式塔心理学分组原则之一:相邻元素被感知为一组(Jon Yablonski,Laws of UX;调研 07§31)。调研 07§31 同时列出格式塔分组五类:Proximity、Similarity、Continuity、Closure、Connectedness;指导:用间距建立元素间关系(表单字段分组、列表条目间距、搜索结果簇),邻近帮助用户更快理解与组织信息。",
+    "en": "One of the Gestalt grouping principles: elements near each other are perceived as a group (Jon Yablonski, Laws of UX; research 07 §31). Research 07 §31 also lists the five Gestalt grouping laws — Proximity, Similarity, Continuity, Closure, Connectedness; guidance: build relationships with spacing (form field groups, list item spacing, search-result clusters)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 0,
+      "max": 96,
+      "step": 2,
+      "default": 36,
+      "cssVar": "--gp-gap",
+      "effect": {
+        "zh": "组与组之间的间距。默认 36px 对三组×4 元素的布局已明显大于组内;调到与组内间距相等时,分组感知崩解——「间距差」才是分组信号,不是绝对值。",
+        "en": "Spacing between groups. Default 36px clearly exceeds the intra-group gap for a 3×4 layout; equalize it with the inner gap and group perception collapses — the spacing *difference* is the grouping signal, not the absolute value."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "inner",
+      "unit": "px",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "default": 10,
+      "cssVar": "--gp-inner",
+      "effect": {
+        "zh": "组内元素间距。默认 10px:与 36px 组间形成约 1:3.6 的对比;把 inner 拉大到接近 gap,三组会退化成 12 个散点。",
+        "en": "Spacing between elements inside a group. Default 10px: a ~1:3.6 contrast against the 36px group gap; drag inner up toward gap and the three groups dissolve into 12 scattered dots."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "layout",
+      "options": [
+        { "value": "grouped", "label": { "zh": "三组分组", "en": "Grouped" } },
+        { "value": "uniform", "label": { "zh": "均匀网格", "en": "Uniform grid" } }
+      ],
+      "default": "grouped",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换布局)。uniform=所有间隙统一(对照组):同样的 12 个元素,没有任何分组感知——接近性的「阴性对照」。",
+        "en": "JS-type param (the demo subscribes and swaps layout). uniform = one gap everywhere (control condition): the same 12 elements with zero group perception — proximity's negative control."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 CSS flex/grid 间距,全现代浏览器可用。",
+      "en": "Pure CSS flex/grid gaps; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "间距没有兼容性问题,工程红线是:分组信号不能只靠间距单通道——高风险分组(如「同时删除这组」)要叠加共同区域(边框/背景,见格式塔·共同区域原则)与语义分组(fieldset/列表,SC 1.3.1)。窄屏空间不足时优先保住「组间 > 组内」的差,必要时压缩绝对值。",
+    "en": "Spacing has no compat issues; the engineering floor: never let spacing be the only grouping channel — high-stakes groups (e.g. 'delete this set together') stack Common Region (border/background) and semantic grouping (fieldset/lists, SC 1.3.1). On cramped narrow screens, protect the 'between > within' difference first, compressing absolute values if needed."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单字段分组:相关字段靠近,组间留白", "en": "Form field grouping: related fields close, whitespace between groups" },
+      { "zh": "列表与搜索结果簇:条目内紧凑、条目间疏朗", "en": "Lists and search-result clusters: tight within items, airy between" },
+      { "zh": "卡片内元素层级:标题-正文-操作靠间距分层", "en": "In-card hierarchy: title/body/actions layered by spacing alone" }
+    ],
+    "avoid": [
+      { "zh": "全部等距的「均匀网格」承载本该分组的对象", "en": "Uniform all-equal spacing carrying content that needs grouping" },
+      { "zh": "只用间距表达强绑定操作(如批量删除组),不加容器或语义分组", "en": "Spacing-only signaling for strongly-bound actions (batch delete groups) without a container or semantics" }
+    ]
+  },
+  "a11y": {
+    "zh": "视觉分组必须同时是语义分组:字段组用 fieldset/legend,相关列表用列表元素——读屏用户没有「间距」可感知(WCAG SC 1.3.1 信息与关系)。间距只服务视觉通道,语义通道要另行送达。",
+    "en": "Visual grouping must also be semantic grouping: fieldsets with legends, real list elements for lists — screen-reader users cannot perceive 'spacing' (WCAG SC 1.3.1 Info and Relationships). Spacing serves the visual channel; the semantic channel must deliver separately."
+  },
+  "sources": [
+    "https://lawsofux.com/law-of-proximity/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个接近性对照实验:12 个元素排成 3 组×4,组间/组内间距两个滑块独立可调;另设「均匀网格」对照组;让用户亲眼看到间距差消失时分组感知崩解。",
+      "en": "Build a proximity experiment: 12 elements in 3 groups of 4 with independent between/within spacing sliders, plus a uniform-grid control; let the user watch group perception collapse as the spacing difference vanishes."
+    },
+    "acceptance": [
+      { "zh": "gap 与 inner 为 CSS 变量型参数(--gp-gap / --gp-inner),拖动即时生效", "en": "gap and inner are CSS-var-type params (--gp-gap / --gp-inner), effective live" },
+      { "zh": "layout 为 JS 型参数:grouped 用两级间距,uniform 全部等距", "en": "layout is a JS-type param: grouped uses two spacing tiers, uniform one gap everywhere" },
+      { "zh": "元素内容保持不变,只有间距变化——隔离「间距」这一个变量", "en": "Element content stays identical; only spacing changes — isolating the one variable" },
+      { "zh": "面板标注当前 gap:inner 比值,提示分组感知的强弱", "en": "The panel shows the current gap:inner ratio as a proxy for grouping strength" },
+      { "zh": "分组语义同步:演示仅视觉;真实实现需 fieldset/列表等语义分组", "en": "Semantic grouping noted: the demo is visual only; real code needs fieldsets/lists" }
+    ]
+  }
+}

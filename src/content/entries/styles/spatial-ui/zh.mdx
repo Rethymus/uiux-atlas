@@ -1,0 +1,70 @@
+## 结构与 DOM
+
+空间 UI 是「环境 + 沉浮窗口」两层结构:**抽象环境**(多层径向渐变模拟室内光斑)铺满场景,一到两块**玻璃窗口**以大圆角浮于其上,层级完全靠深度语言表达——不做密集描边,不做卡片堆叠。
+
+```html
+<div class="scene">
+  <div class="env" aria-hidden="true"></div>   <!-- 环境:光斑渐变 -->
+  <div class="scrim" aria-hidden="true"></div> <!-- Full Space 沉浸垫层 -->
+  <section class="win win-main">…</section>    <!-- 玻璃窗口:内容在实底语义层 -->
+  <aside class="win win-side">…</aside>
+</div>
+```
+
+关键点:
+
+- 窗口是环境的**兄弟层**,`backdrop-filter` 模糊的是身后透出的环境光斑——环境越丰富,玻璃越立体(与 glassmorphism 同规则);
+- 深度即层级:z 轴关系只用**单层大阴影 + 缩放 + 位移**表达,补研判据「用少量大阴影,而非大量描边」;
+- 沉浸分两档:`data-immersion="shared"`(默认并排,环境全亮)与 `"full"`(独占,垫层压暗)——对应 HIG 官方概念 Shared Space / Full Space。
+
+## 样式与参数
+
+六个参数:五条 CSS 变量(blur/saturation/fill/radius/shadow)加一个沉浸档位(JS 型):
+
+```css
+.win {
+  background-color: var(--sp-fill);    /* oklch(1 0 0 / 0.55) ≈ 片段的 Canvas 55% */
+  backdrop-filter: blur(var(--sp-blur)) saturate(var(--sp-sat)); /* 20px × 1.4 */
+  -webkit-backdrop-filter: blur(var(--sp-blur)) saturate(var(--sp-sat));
+  border-radius: var(--sp-radius);     /* 24px */
+  box-shadow: var(--sp-shadow);        /* 0 12px 40px rgba(0,0,0,.18) 单层 */
+  outline: 1px solid rgb(255 255 255 / 0.25);  /* 1px 内亮描边 */
+  outline-offset: -1px;
+}
+.scene[data-immersion="full"] .scrim { opacity: 1; }   /* 环境压暗 */
+.scene[data-immersion="full"] .win-main { scale: 1.08; } /* 主窗放大 */
+```
+
+数值出处(补研 11§5 可复用片段,**经验值——Web 转译映射,非 Apple 官方公布数值**):
+
+- `blur(20px) saturate(1.4)`、`border-radius: 24px`、`box-shadow: 0 12px 40px rgb(0 0 0 / .18)`、`outline: 1px solid rgb(255 255 255 / .25)` + 负 offset、`color-mix(in oklab, Canvas 55%, transparent)`:全部出自补研 11§5 的玻璃卡片片段;fill 参数化为固定色 + 55% alpha(Canvas 语义无法进滑杆,已注明近似);
+- HIG 官方要点(2026-11 官方 Markdown 接口抓取):Space 是 "a limitless canvas";默认 Shared Space 多应用并排、可选 Full Space 独占;「找到每个关键时刻所需的最小沉浸级别」;内容自动相对头部放置、置于视野内;支持注视 + 间接手势;系统 dynamic scaling 保证远近可读;
+- Web 侧官方锚点:Safari 26.2 起 visionOS 上 WebXR 支持 WebGPU(WebKit 博客)。
+
+## 动效与交互
+
+空间隐喻的动效纪律来自 HIG 舒适性原则:「避免压倒性、突兀、过快或缺乏静止参照系的运动」:
+
+- **沉浸切换**:垫层 0.4s opacity 渐变、窗口 translate/scale 同步 0.4s——只用合成器属性,窗口「移动」而非「跳变」;`prefers-reduced-motion` 时全部改为瞬时切换;
+- **注视即悬停**(Web 转译):交互目标用大热区(胶囊按钮、充裕 padding),hover 展开一圈白色光圈(`::after` 外扩 6px)——visionOS 注视悬停的 Web 对应物是 hover/focus,反馈必须比桌面惯例更醒目;
+- **焦点环**:2px 白色实线 + offset,`:focus-visible` 触发——空间交互里焦点是「注视」的替身,绝不能剥除;
+- 入场:窗口淡入(0.5s,只动 opacity),带 0.08s 级联;除此之外环境层永不动——环境是静止参照系,动的是窗口。
+
+## 真实产品案例
+
+- **visionOS 系统窗口(Shared Space)** — HIG 官方描述的默认形态:多应用窗口在共享空间中并排悬浮,系统 dynamic scaling 保证窗口无论远近都保持可读大小;这是玻璃窗口 + 大圆角 + 单层大阴影的原型(补研 11§5,HIG 官方章节)。
+- **visionOS 数字表冠 × Passthrough** — HIG 记载的沉浸调节机制:外部摄像头实时视频透出,表冠连续调节透视多寡;demo 的「并排/独占」切换即该连续谱的两端离散化(补研 11§5,HIG 官方章节)。
+- **Safari on visionOS 的 WebXR(WebGPU)** — WebKit 官方博客记载:Safari 26.2 起 visionOS 上的 WebXR 获得 WebGPU 支持,Web 内容开始能在浏览器内获得空间渲染能力——本条目的 Web 转译手法与该方向直接衔接(补研 11§5;WebKit 博客)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `blur` | 玻璃更「厚」,环境更不可辨;>30px 采样开销上升 | 玻璃变薄;低于 10px 失去空间窗的「悬浮磨砂」读感 |
+| `saturation` | 透出的环境色更艳,玻璃更「活」 | 1.0 以下磨砂层开始发灰发闷(配方默认 1.4 就是为了抵灰) |
+| `fill` | 更白更实,文字可读性变好但「空间感」减弱 | 更透更脆;低于 40% alpha 时文字对比随环境波动不可控 |
+| `radius` | 更「空间窗」;visionOS 以大圆角为窗口默认姿态 | 直角在空间隐喻中读作危险物;低于 16px 退化为普通卡片 |
+| `shadow` | 悬浮感更强;模糊半径大而偏移小才是「上方悬浮」 | 阴影消失则窗口贴死在环境上,z 轴层级语言失效 |
+| `immersion` | full=独占沉浸,环境压暗、主窗放大——注意 HIG「最小沉浸级别」原则:不是每个时刻都需要 full | shared=默认并排,环境全亮,多任务语境成立 |
+
+经验区间:blur 16–24px、saturate 1.3–1.5、fill 50–60% alpha、radius 20–28px、阴影单层 0 12px 40px 量级。三条纪律贯穿始终:环境要丰富(纯色底上玻璃失效)、深度用阴影不用描边、沉浸取最小必要档(HIG 原则)。

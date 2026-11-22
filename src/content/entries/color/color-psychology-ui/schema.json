@@ -1,0 +1,117 @@
+{
+  "name": "UI Color Psychology",
+  "nameZh": "UI 色彩心理",
+  "aliases": ["色彩情绪", "暖冷色策略", "色彩行为学"],
+  "category": "color",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "色彩对情绪与行为的影响属编辑性经验总结(本调研未系统证实):暖色相常关联紧迫与行动、冷色相常关联信任与冷静、高饱和=高唤起、高明度=轻。工程上可控的是 oklch 三轴——明度定对比度、色度定唤起强度、色相定情绪域。",
+    "en": "Color's effects on mood and behavior are an editorial body of lore (not systematically verified in this research): warm hues are associated with urgency and action, cool hues with trust and calm, high chroma with arousal, high lightness with lightness of mood. What engineering actually controls is the oklch triad — lightness sets contrast, chroma sets arousal, hue sets the mood domain."
+  },
+  "origin": {
+    "zh": "无单一出处——色彩心理学的「红=紧迫/蓝=信任」叙事属设计业界通行说法,本次调研未取得一手实证来源,全部按编辑性内容标注(未证实)。调研中可证实的相邻事实:60-30-10 里强调色承担「焦点/行动号召」职责(hype4,调研 06§9);暗色模式避免过度饱和,对比过高造成视觉疲劳(hype4,调研 06§9);APCA 专门章节讨论浅色底长时间阅读疲劳(调研 06§18);M3 暗色 accent 提亮降饱和(#6750A4→#D0BCFF,调研 06§7/§14)。",
+    "en": "No single origin — the 'red = urgency / blue = trust' narrative is industry lore with no first-hand evidence in this research, so it is marked editorial (unverified) throughout. Verifiable adjacent facts: in 60-30-10 the accent owns 'focus / call to action' (hype4, research 06 §9); dark modes avoid oversaturation since too-high contrast fatigues (hype4, research 06 §9); APCA dedicates a section to light-background long-reading fatigue (research 06 §18); M3 dark accents brighten and desaturate (#6750A4→#D0BCFF, research 06 §7/§14)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "hue",
+      "unit": "deg",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "default": 20,
+      "cssVar": "--psy-hue",
+      "effect": {
+        "zh": "情绪域(oklch 色相)。刻度映射取自 Evil Martians 色相经验值(调研 06§2):红≈20/黄≈90/绿≈140/蓝≈220/紫≈320。默认 20 = 红区——「暖色关联紧迫/行动」为编辑性说法(未证实);demo 按色相自动判定暖冷带并切换对应注释文案(注释本身标注编辑性)。",
+        "en": "The mood domain (oklch hue). The scale mapping is Evil Martians' empirical values (research 06 §2): red≈20 / yellow≈90 / green≈140 / blue≈220 / purple≈320. Default 20 = the red band — 'warm hues relate to urgency/action' is editorial (unverified); the demo auto-detects the warm/cool band from hue and swaps the annotation copy (itself labeled editorial)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "chroma",
+      "min": 0,
+      "max": 0.25,
+      "step": 0.01,
+      "default": 0.17,
+      "cssVar": "--psy-chroma",
+      "effect": {
+        "zh": "唤起强度(oklch 色度)。默认 0.17 取自 Evil Martians 头像工作流的示例值(L=0.8 C=0.17,调研 06§2)。「高饱和=高唤起、低饱和=稳重」为编辑性说法(未证实);可证实的约束:暗色模式避免过度饱和(hype4,调研 06§9),oklch C 实用上限约 0.5(MDN,调研 06§1)。",
+        "en": "Arousal intensity (oklch chroma). Default 0.17 comes from Evil Martians' avatar-workflow example (L=0.8 C=0.17, research 06 §2). 'High chroma = arousal, low chroma = gravitas' is editorial (unverified); verifiable constraints: dark modes avoid oversaturation (hype4, research 06 §9), and oklch C's practical ceiling ≈0.5 (MDN, research 06 §1)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "lightness",
+      "min": 0.6,
+      "max": 0.95,
+      "step": 0.01,
+      "default": 0.87,
+      "cssVar": "--psy-light",
+      "effect": {
+        "zh": "明度基调(oklch L)。默认 0.87 踩在 Evil Martians 的可验证规则上——「L≥87% 的背景配黑字对比度都好」(调研 06§2);demo 内嵌 WCAG 公式实时计算对比度验证该规则。「高明度=轻快、低明度=厚重」的情绪关联为编辑性说法(未证实)。",
+        "en": "The lightness register (oklch L). Default 0.87 stands on Evil Martians' verifiable rule — 'backgrounds at L≥87% pair well with black text at any hue' (research 06 §2); the demo verifies the rule live with an embedded WCAG formula. The mood association 'high L = buoyant, low L = weighty' is editorial (unverified)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "textColor",
+      "options": [
+        { "value": "black", "label": { "zh": "黑字(研究口径)", "en": "Black text (research pick)" } },
+        { "value": "white", "label": { "zh": "白字(对照)", "en": "White text (control)" } }
+      ],
+      "default": "black",
+      "effect": {
+        "zh": "JS 型参数:切换情绪卡文字色并重算对比度。默认黑字——L≥0.87 背景配黑字对比度都好(Evil Martians,调研 06§2);白字是对照组,同明度下比值显著更低,用于演示「文字色选择由对比度决定,而非情绪偏好」。",
+        "en": "JS-type param: flips the mood card's text color and recomputes contrast. Default black — backgrounds at L≥0.87 pair well with black text (Evil Martians, research 06 §2); white is the control with a notably lower ratio at the same lightness, demonstrating that text color is chosen by contrast, not mood preference."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "方法论而非浏览器特性。参数化载体为 oklch()(Baseline 2023-05,调研 06§1)与 CSS 自定义属性(全平台);对比度计算用 WCAG 2.1 相对亮度公式(调研 06§17),与浏览器无关。",
+      "en": "A methodology, not a browser feature. The parameterized vehicle is oklch() (Baseline 2023-05, research 06 §1) plus CSS custom properties (universal); contrast math uses the WCAG 2.1 relative-luminance formula (research 06 §17), browser-independent."
+    }
+  },
+  "fallback": {
+    "zh": "情绪注释与对比度读数都是增强层:JS 不可用时 oklch 三变量仍有静态 CSS 兜底值(与 schema 默认一致),文字色默认黑字保证 L=0.87 背景可读;不支持 oklch() 的旧浏览器会丢弃整条 background 声明——先写一层 sRGB 近似 hex 再用 @supports 覆写(渐进增强,调研 06§3 同款三件套)。",
+    "en": "The mood annotation and contrast readout are enhancement layers: without JS the oklch trio still carries static CSS fallbacks matching the schema defaults, and the default black text keeps the L=0.87 surface readable; browsers without oklch() drop the whole background declaration — ship an approximate sRGB hex first and override under @supports (the progressive trio from research 06 §3)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "CTA 与关键操作的强调色:强调色承担「焦点/行动号召」职责是 60-30-10 的可验证分工(hype4,调研 06§9)", "en": "Accents for CTAs and key actions: the accent owning 'focus / call to action' is 60-30-10's verifiable division of labor (hype4, research 06 §9)" },
+      { "zh": "品牌情绪板与营销页的色相域选择:按暖冷带组织候选色相(demo 的暖冷判定即此用法)", "en": "Hue-domain picks for brand moodboards and marketing pages: organize candidate hues by warm/cool bands (the demo's warm/cool detection is exactly this)" },
+      { "zh": "长文阅读底色:APCA 专门讨论浅色底长时间阅读疲劳(调研 06§18)——阅读界面慎用高 L 差组合", "en": "Long-reading surfaces: APCA dedicates a section to light-background long-reading fatigue (research 06 §18) — be careful with high-L pairings in reading UIs" },
+      { "zh": "暗色主题的强调色:提亮降饱和的系统惯例(M3 #6750A4→#D0BCFF 官方基线,调研 06§7)", "en": "Dark-theme accents: the brighten-and-desaturate system convention (M3's official #6750A4→#D0BCFF baselines, research 06 §7)" }
+    ],
+    "avoid": [
+      { "zh": "把「红=紧迫」当因果定律写进需求——色彩心理叙事未获系统证实,只能当假设,A/B 验证后再放大", "en": "Writing 'red = urgency' into requirements as causal law — the lore is not systematically verified; treat it as a hypothesis and A/B it before scaling" },
+      { "zh": "用情绪色替代状态语义(错误红/成功绿)——色盲用户不可辨;状态须另有图标/文字承载(调研 06§19)", "en": "Letting mood colors replace status semantics (error red / success green) — indistinguishable for colorblind users; status needs icons/text too (research 06 §19)" },
+      { "zh": "情绪优先压过对比度红线——正文 AA 4.5:1 是硬约束(WCAG SC 1.4.3,对比度不得四舍五入,调研 06§17)", "en": "Letting mood override the contrast floor — body AA 4.5:1 is a hard constraint (WCAG SC 1.4.3, ratios never rounded, research 06 §17)" },
+      { "zh": "暗色主题沿用亮色饱和度——「暗色避免过度饱和」有可验证出处(hype4,调研 06§9),M3 官方基线也演示了降饱和方向", "en": "Carrying light-theme saturation into dark themes — 'dark modes avoid oversaturation' has a verifiable source (hype4, research 06 §9), and M3's official baselines demonstrate the desaturation direction" }
+    ]
+  },
+  "a11y": {
+    "zh": "对比度是硬约束,情绪是软叙事:正文 ≥4.5:1、大字 ≥3:1、UI 组件边界 ≥3:1(WCAG 2.1 SC 1.4.3/1.4.11,阈值不得四舍五入,调研 06§17);demo 内嵌 WCAG 公式实时计算黑/白字的比值并通过/失败判定。可验证的明度规则:L=0.8 配黑字清晰、L≥0.87 背景配黑字对比度都好(Evil Martians,调研 06§2)。情绪色调不得作为唯一信息编码;APCA 若替代 WCAG 判定,注意其非对称性(浅底疲劳章节,调研 06§18)。",
+    "en": "Contrast is the hard constraint; mood is the soft narrative: body ≥4.5:1, large text ≥3:1, UI boundaries ≥3:1 (WCAG 2.1 SC 1.4.3/1.4.11, thresholds never rounded, research 06 §17); the demo embeds the WCAG formula computing black/white ratios live with pass/fail verdicts. Verifiable lightness rules: L=0.8 pairs cleanly with black text, and backgrounds at L≥0.87 always pass with black (Evil Martians, research 06 §2). Mood hues must never be the sole information encoding; if APCA replaces WCAG verdicts, respect its asymmetry (the light-background fatigue section, research 06 §18)."
+  },
+  "sources": [
+    "https://hype4.academy/articles/design/60-30-10-rule-in-ui",
+    "https://github.com/Myndex/SAPC-APCA",
+    "https://evilmartians.com/chronicles/oklch-in-css-a-utility-for-perceptually-uniform-color-systems"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个色彩情绪探针卡:oklch(明度/色度/色相) 三滑杆驱动卡面,实时计算黑/白字的 WCAG 对比度并通过/失败判定,按色相自动切换暖冷情绪注释(全部标注编辑性、未证实),可证实的数值规则(强调色=CTA、暗色降饱和、L≥0.87 配黑字)单独列出。",
+      "en": "Build a color-mood probe card: three oklch sliders (lightness/chroma/hue) drive the card face, black/white WCAG contrast is computed live with pass/fail verdicts, warm/cool mood annotations auto-swap by hue band (all labeled editorial, unverified), and the verifiable numeric rules (accent = CTA, dark-mode desaturation, L≥0.87 with black) are listed separately."
+    },
+    "acceptance": [
+      { "zh": "卡面颜色由 oklch(L C H) 三个独立参数驱动,默认 L=0.87/C=0.17/H=20(研究口径)", "en": "The card face is driven by three independent oklch(L C H) params with defaults L=0.87/C=0.17/H=20 (research picks)" },
+      { "zh": "黑/白字对比度用 WCAG 2.1 公式实时计算,显示比值与 AA 判定(阈值不得四舍五入)", "en": "Black/white contrast is computed live with the WCAG 2.1 formula, showing ratio and AA verdict (never rounding)" },
+      { "zh": "每条情绪断言都带「编辑性总结,未证实」标注,与可验证规则分区呈现", "en": "Every mood claim carries an 'editorial, unverified' label, presented in a zone separate from verifiable rules" },
+      { "zh": "暖冷带按色相自动判定(红≈20/黄≈90/绿≈140/蓝≈220/紫≈320 的映射口径)", "en": "Warm/cool bands auto-detect from hue (the red≈20/yellow≈90/green≈140/blue≈220/purple≈320 mapping)" },
+      { "zh": "默认黑字;切白字时同公式重算,展示同明度下的比值落差", "en": "Default black text; switching to white recomputes with the same formula, showing the ratio drop at equal lightness" }
+    ]
+  }
+}

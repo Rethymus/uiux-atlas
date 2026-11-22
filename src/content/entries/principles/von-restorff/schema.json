@@ -1,0 +1,87 @@
+{
+  "name": "Von Restorff Effect",
+  "nameZh": "冯·雷斯托夫效应",
+  "aliases": ["隔离效应", "Isolation Effect", "oddball effect"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "相似物体中与众不同者最易被记住。让关键动作视觉凸显——但强调要有节制,且不能只靠颜色。",
+    "en": "Among similar objects, the one that differs is the one remembered. Make key actions visually distinctive — with restraint, and never by color alone."
+  },
+  "origin": {
+    "zh": "德国精神科与儿科医生 Hedwig von Restorff(1906–1962)1933 年实验发现:同类列表中混入一个孤立异类项,该项的记忆显著改善(Jon Yablonski,Laws of UX;调研 07§30)。lawsofux 指导:重要信息与关键动作要视觉凸显;强调要有节制,避免互相争夺、避免被误认为广告;不要只靠颜色做对比(照顾色觉障碍);用动效强调时考虑运动敏感用户。",
+    "en": "German psychiatrist and pediatrician Hedwig von Restorff (1906–1962) found in 1933 that an isolated item in a list of similar items is remembered far better (Jon Yablonski, Laws of UX; research 07 §30). Laws of UX guidance: make key info and actions visually distinctive; use restraint so emphases don't compete or read as ads; never rely on color alone (color-vision deficiencies); weigh motion-sensitive users when emphasizing with motion."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "tiles",
+      "unit": "块",
+      "min": 6,
+      "max": 16,
+      "step": 2,
+      "default": 12,
+      "effect": {
+        "zh": "网格块数(6–16,取偶数)。默认 12:异类的「背景相似度」足够高,隔离效应明显;6 块时任务过易。",
+        "en": "Grid tile count (6–16, even). Default 12: enough background similarity for a clear isolation effect; 6 tiles make the task trivial."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "cue",
+      "options": [
+        { "value": "color", "label": { "zh": "颜色", "en": "Color" } },
+        { "value": "shape", "label": { "zh": "形状", "en": "Shape" } },
+        { "value": "motion", "label": { "zh": "动效", "en": "Motion" } }
+      ],
+      "default": "color",
+      "effect": {
+        "zh": "异类的隔离线索。color=强调色填充;shape=圆形 vs 方形;motion=缓慢脉冲(1.4s 循环,命中 prefers-reduced-motion 时自动退化为加粗描边——07§30「用动效强调要考虑运动敏感用户」)。",
+        "en": "Isolation cue of the oddball. color = accent fill; shape = circle vs square; motion = a slow pulse (1.4s loop; under prefers-reduced-motion it degrades to a thicker outline — 07 §30 'weigh motion-sensitive users')."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 CSS 网格与动画,全现代浏览器可用;conic/动画退化路径同 gestalt 条目。",
+      "en": "Pure CSS grid and animations; all modern browsers; degradation as in the Gestalt entries."
+    }
+  },
+  "fallback": {
+    "zh": "「异类」的降级序列:动效强调 → 位移/缩放动画;reduced-motion → 描边加粗;色彩不可用 → 形状差。工程红线:同时只允许一个异类——多个异类互相争夺,强调全部失效(07§30「强调要有节制」)。",
+    "en": "The oddball's degradation ladder: motion emphasis → position/scale animation; reduced-motion → thicker outline; unavailable color → shape difference. Engineering floor: only one oddball at a time — multiple oddballs compete and all emphasis dies (07 §30 'use restraint')."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "主按钮:页面唯一的强调色块,一屏一个(呼应每屏一个 Primary,07§15/§30)", "en": "The primary button: the page's only accent block, one per screen (cf. one Primary per screen, 07 §15/§30)" },
+      { "zh": "关键状态徽章(如「新」「必填」):短时且克制的异类", "en": "Key state badges ('New', 'Required'): brief, restrained oddballs" },
+      { "zh": "价格/权益中的关键项:异类让「必看」从扫读中跳出", "en": "The key line among prices/perks: an oddball that leaps out of a skim" }
+    ],
+    "avoid": [
+      { "zh": "一屏多个强调色块互相争夺——全部失效(07§30)", "en": "Multiple accent blocks competing on one screen — all fail (07 §30)" },
+      { "zh": "只靠颜色做异类(色觉障碍用户丢失信号,SC 1.4.1)", "en": "Color-only oddballs (color-blind users lose the signal, SC 1.4.1)" },
+      { "zh": "闪烁式强调——运动敏感用户的不适源(07§30/SC 2.2.2 精神)", "en": "Flashing emphasis — a vestibular irritant (07 §30, in the spirit of SC 2.2.2)" }
+    ]
+  },
+  "a11y": {
+    "zh": "异类信号必须多通道:颜色 + 形状 + (可选)动效,demo 三种线索可切换对比;闪烁动画遵循 3 次/秒内阈值(SC 2.3.1),demo 用 1.4s 慢脉冲;reduced-motion 下降级为描边加粗,信号不消失。",
+    "en": "Oddball signals must be multi-channel: color + shape + (optionally) motion — the demo switches all three; flashes stay under the 3-per-second threshold (SC 2.3.1) and the demo pulses slowly at 1.4s; under reduced-motion it degrades to a thicker outline so the signal never vanishes."
+  },
+  "sources": [
+    "https://lawsofux.com/von-restorff-effect/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个异类记忆测试:网格先全部展示 2.5 秒,其中恰有一个异类(颜色/形状/动效三种线索可切换);随后全部遮罩,用户点击异类位置;按线索分别累计正确率,体感隔离效应。",
+      "en": "Build an oddball memory test: the grid shows for 2.5s with exactly one oddball (color/shape/motion cues switchable); everything masks, the user clicks the oddball's position; accuracy tallied per cue to feel the isolation effect."
+    },
+    "acceptance": [
+      { "zh": "tiles 与 cue 使用参数快照值;每轮异类位置随机但恰有一个", "en": "tiles and cue use the exact parameter snapshot; one oddball per round at a random position" },
+      { "zh": "展示 2.5s → 遮罩 → 点击应答 → 立即反馈对/错并自动进入下一轮", "en": "Show 2.5s → mask → click answer → instant right/wrong feedback, auto next round" },
+      { "zh": "motion 线索用 1.4s 慢脉冲;prefers-reduced-motion 下自动退化为加粗描边", "en": "The motion cue pulses slowly at 1.4s; under prefers-reduced-motion it degrades to a thicker outline" },
+      { "zh": "按线索分组统计:颜色/形状/动效各自的正确数/总数", "en": "Per-cue stats: color/shape/motion each with correct/total counts" },
+      { "zh": "遮罩后所有块视觉等同,位置信息只能来自记忆", "en": "After masking all tiles look identical; position info can only come from memory" }
+    ]
+  }
+}

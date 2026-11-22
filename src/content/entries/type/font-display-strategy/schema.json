@@ -1,0 +1,92 @@
+{
+  "name": "Font Loading Strategy",
+  "nameZh": "字体加载策略",
+  "aliases": ["font-display", "FOUT", "FOIT", "字体加载", "block/swap/fallback/optional"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "@font-face 的 font-display 决定字体加载期间文本怎么显示:五档取值对应「封锁期/交换期」两段时间参数——web.dev 数值表:fallback 100ms/3s、optional 100ms/无交换。",
+    "en": "@font-face's font-display decides how text renders while fonts load: five values map to block/swap period lengths — the web.dev table: fallback 100ms/3s, optional 100ms/no swap."
+  },
+  "origin": {
+    "zh": "font-display 是 @font-face 描述符(MDN 一手核对,调研 05§21):三个时间周期——封锁期(不显示后备字)、交换期(显示后备字)、失败期(按失败处理);五个取值 auto/block/swap/fallback/optional。数值表(web.dev font-best-practices 一手核对):Block=封锁 2–3 秒+交换无限;Swap=0ms+无限;Fallback=100ms+3 秒;Optional=100ms+无。Baseline Widely available 自 2020-01。工程惯例(同文):优先自托管;preload 提前发现字体但挤占其他资源;后备字体度量不兼容会致布局偏移(CLS)。",
+    "en": "font-display is an @font-face descriptor (verified from MDN, research 05 §21): three periods — block (no fallback shown), swap (fallback shown), failure; five values auto/block/swap/fallback/optional. The numbers table (verified from web.dev font-best-practices): Block = 2–3s block + infinite swap; Swap = 0ms + infinite; Fallback = 100ms + 3s; Optional = 100ms + none. Baseline Widely available since 2020-01. Practice (same source): self-host first; preload discovers fonts earlier but competes with other resources; metric-incompatible fallbacks cause layout shift (CLS)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "display",
+      "options": [
+        { "value": "auto", "label": { "zh": "auto(浏览器自定义)", "en": "auto (browser-defined)" } },
+        { "value": "block", "label": { "zh": "block(封锁 2–3s,交换无限)", "en": "block (2–3s block, infinite swap)" } },
+        { "value": "swap", "label": { "zh": "swap(0ms,交换无限)", "en": "swap (0ms, infinite swap)" } },
+        { "value": "fallback", "label": { "zh": "fallback(100ms,交换 3s)", "en": "fallback (100ms, 3s swap)" } },
+        { "value": "optional", "label": { "zh": "optional(100ms,无交换)", "en": "optional (100ms, no swap)" } }
+      ],
+      "default": "swap",
+      "effect": {
+        "zh": "font-display 取值。JS 型参数——font-display 是 @font-face 描述符而非普通属性,不能经 CSS 变量在常规样式里生效,demo 以等价状态机模拟其周期行为。默认 swap:0ms 封锁 + 无限交换,是最常见的工程选择(FOUT 可接受、字体最终一定换上);web.dev 数值表其余档:封锁 2–3 秒(block)、100ms/3 秒(fallback)、100ms/无交换(optional)。",
+        "en": "The font-display value. A JS-type param — font-display is an @font-face descriptor, not a normal property, so it can't ride a CSS variable in regular styles; the demo simulates the period behavior with an equivalent state machine. Default swap: 0ms block + infinite swap, the most common engineering choice (FOUT accepted, the font always lands). web.dev table for the rest: 2–3s block (block), 100ms/3s (fallback), 100ms/no swap (optional)."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "loadDelay",
+      "unit": "ms",
+      "min": 0,
+      "max": 3000,
+      "step": 50,
+      "default": 600,
+      "effect": {
+        "zh": "模拟网络延迟:字体在「开始加载后第 N 毫秒」到达。演示参数,非规范值——拖动它观察同一 font-display 在快/慢网络下的不同结局(如 fallback 在 3s 交换期后放弃,optional 在 100ms 后直接放弃)。",
+        "en": "Simulated network latency: the font arrives N ms after loading starts. A demo parameter, not a spec value — drag it to see how one font-display behaves differently on fast/slow networks (fallback gives up after the 3s swap; optional gives up at 100ms)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "font-display:Baseline Widely available(自 2020-01 起,MDN,调研 05§21);Chrome/Edge、Firefox、Safari 均支持五档取值。FontFace API 的 display 描述符提供等价的运行时能力(demo 用状态机模拟,不依赖该 API 的版本差异)。",
+      "en": "font-display: Baseline Widely available (since 2020-01, MDN, research 05 §21); Chrome/Edge, Firefox and Safari all support the five values. The FontFace API's display descriptor offers equivalent runtime capability (the demo uses a state machine, avoiding per-version API differences)."
+    }
+  },
+  "fallback": {
+    "zh": "font-display 不支持的极老浏览器按默认行为(接近 auto/block)处理,文本始终可见,无需修复;真正的兜底发生在字体之外:字体栈里放度量兼容的系统后备字体,把 FOUT/交换期的布局偏移压到最小;再配合 <link rel=\"preload\">(注意会挤占其他资源)。",
+    "en": "Ancient browsers without font-display fall back to near-default (auto/block-like) behavior with text always visible — nothing to fix. The real fallback lives outside the font: a metrically compatible system font in the stack minimizes FOUT/swap layout shift, plus <link rel=\"preload\"> (mind that it competes with other resources)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "正文字体:swap 或 auto——FOUT 可接受,保证字体最终换上", "en": "Body fonts: swap or auto — FOUT is acceptable and the font always lands" },
+      { "zh": "非关键展示字体(装饰标题、图标字体):optional——网络慢就永远用后备,零布局偏移", "en": "Non-critical display faces (decorative headings, icon fonts): optional — slow network keeps the fallback forever, zero layout shift" },
+      { "zh": "品牌关键但可短暂缺席的标题字体:fallback——100ms 内到达才换,否则整页用后备", "en": "Brand-critical but skippable heading faces: fallback — swap only if arrived within 100ms+3s, else the fallback stays" },
+      { "zh": "配合 prefers-reduced-data 预留省流降级(标准已定,实现待落地,调研 11§3)", "en": "Paired with prefers-reduced-data for a save-data degradation (standard set, no implementation yet, research 11 §3)" }
+    ],
+    "avoid": [
+      { "zh": "正文用 block——2–3 秒不可见文本(FOIT)直接伤害阅读与 SEO 体验", "en": "block for body text — 2–3s of invisible text (FOIT) hurts reading and SEO alike" },
+      { "zh": "把 optional 用在「必须出现」的品牌字体上——慢网络下它永远不换上", "en": "optional on a must-show brand face — on slow networks it never swaps in" },
+      { "zh": "只声明 font-display 不管后备字体度量——交换时布局跳动的 CLS 代价", "en": "Declaring font-display but ignoring fallback metrics — the swap-time layout shift shows up as CLS" },
+      { "zh": "对同一字体家族混用多个 display 策略而不区分场景", "en": "Mixing display strategies within one family without distinguishing scenarios" }
+    ]
+  },
+  "a11y": {
+    "zh": "封锁期(block 2–3s、auto 不确定)意味着文本对所有人不可见——屏幕阅读器通常仍可访问 DOM,但低视力用户的放大镜/高对比场景看到的是空白;交换期后备字体与 webfont 的字宽差异会造成文本重排,配度量兼容后备(size-adjust/ascent-override 等)可消除;optional 的「永不交换」策略对可读性最安全,但品牌字形不可依赖。",
+    "en": "Block periods (2–3s for block, undefined for auto) mean text invisible to everyone — screen readers may still reach the DOM, but magnifier/high-contrast users see blank space. Fallback-vs-webfont width differences reflow text during swap; metrically compatible fallbacks (size-adjust/ascent-override etc.) remove that. optional's never-swap stance is the safest for readability, but the brand glyph can't be relied on."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display",
+    "https://web.dev/articles/font-best-practices"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为站点制定字体加载策略:自托管 webfont、声明恰当的 font-display 档位、配置度量兼容的后备字体栈,把不可见文本与交换期布局偏移都压到最低。",
+      "en": "Set a site font-loading strategy: self-host the webfont, declare the right font-display tier, and pair a metrically compatible fallback stack to minimize both invisible text and swap-time layout shift."
+    },
+    "acceptance": [
+      { "zh": "每个 @font-face 显式声明 font-display,不用浏览器默认 auto 赌运气", "en": "Every @font-face declares font-display explicitly; no gambling on the auto default" },
+      { "zh": "正文字体用 swap;装饰/非关键字体考虑 optional", "en": "Body faces use swap; decorative/non-critical faces consider optional" },
+      { "zh": "字体自托管(同源或受控 CDN),并评估是否值得 preload", "en": "Fonts self-hosted (same-origin or controlled CDN); preload evaluated, not assumed" },
+      { "zh": "后备字体度量兼容(字宽/x 高接近),交换期无显著布局偏移", "en": "Metrically compatible fallback (close widths/x-height); no significant shift at swap time" },
+      { "zh": "字体加载失败时页面完全可用——后备字体栈完整覆盖", "en": "Full usability on load failure — the fallback stack covers everything" }
+    ]
+  }
+}

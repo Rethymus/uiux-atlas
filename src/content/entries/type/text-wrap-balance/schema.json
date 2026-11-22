@@ -1,0 +1,109 @@
+{
+  "name": "text-wrap balance & pretty",
+  "nameZh": "text-wrap 平衡换行",
+  "aliases": ["text-wrap", "balance", "pretty", "平衡换行", "防孤行"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "text-wrap 简写属性的两个样式值:balance 让各行字数尽量均衡(短文本专用,Chromium ≤6 行/Firefox ≤10 行),pretty 用更慢更优的算法给长正文防孤行。",
+    "en": "Two style values of the text-wrap shorthand: balance evens out line lengths (short text only — ≤6 lines in Chromium, ≤10 in Firefox), while pretty runs a slower, better algorithm to prevent orphans in long body copy."
+  },
+  "origin": {
+    "zh": "CSS Text Module Level 4 的 text-wrap 简写(text-wrap-mode + text-wrap-style)。MDN 原文:balance「使各行字符数尽量均衡,仅对行数有限的文本块生效(Chromium ≤6 行,Firefox ≤10 行)」;pretty「使用更慢但更优的算法,面向正文排版,把孤行(orphan)减到最少」;官方用法指引:短文本(标题、引语)用 balance,长正文用 pretty,可编辑内容用 stable(调研 11§2,MDN 原文引述)。",
+    "en": "The text-wrap shorthand from CSS Text Level 4 (text-wrap-mode + text-wrap-style). MDN: balance 'evens out the number of characters per line, applying only to blocks with a limited number of lines (≤6 in Chromium, ≤10 in Firefox)'; pretty 'uses a slower but better algorithm aimed at body copy, minimizing orphans'; the official guidance: balance for short text (headings, pull quotes), pretty for long body copy, stable for editable content (research 11 §2, quoting MDN)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "headingWrap",
+      "options": [
+        { "value": "balance", "label": { "zh": "balance(均衡各行)", "en": "balance (even lines)" } },
+        { "value": "pretty", "label": { "zh": "pretty(防孤行算法)", "en": "pretty (orphan prevention)" } },
+        { "value": "stable", "label": { "zh": "stable(已排行为基准)", "en": "stable (keep earlier lines)" } },
+        { "value": "auto", "label": { "zh": "auto(浏览器默认)", "en": "auto (browser default)" } }
+      ],
+      "default": "balance",
+      "cssVar": "--tw-heading",
+      "effect": {
+        "zh": "标题的 text-wrap-style。默认 balance——短文本专用:各行字数尽量均衡,消灭「标题末行一个字」的尴尬;注意行数上限(Chromium ≤6 行,Firefox ≤10 行),超限回退 auto 行为。官方指引:标题、引语等短文本用 balance。",
+        "en": "The heading's text-wrap-style. Default balance — built for short text: evens line lengths and kills the 'one-word last line' embarrassment; mind the line cap (≤6 Chromium, ≤10 Firefox) beyond which it falls back to auto behavior. Official guidance: balance for headings and pull quotes."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "bodyWrap",
+      "options": [
+        { "value": "pretty", "label": { "zh": "pretty(防孤行算法)", "en": "pretty (orphan prevention)" } },
+        { "value": "balance", "label": { "zh": "balance(均衡各行)", "en": "balance (even lines)" } },
+        { "value": "stable", "label": { "zh": "stable(已排行为基准)", "en": "stable (keep earlier lines)" } },
+        { "value": "auto", "label": { "zh": "auto(浏览器默认)", "en": "auto (browser default)" } }
+      ],
+      "default": "pretty",
+      "cssVar": "--tw-body",
+      "effect": {
+        "zh": "正文的 text-wrap-style。默认 pretty——面向长正文的更慢更优算法,把孤行(段落末行只有一两个词)减到最少;MDN 提示有性能代价,「仅在排版优于速度时使用」。Firefox 至今未支持 pretty(BCD),不受支持时回退 auto,无需修复。",
+        "en": "The body's text-wrap-style. Default pretty — the slower, better algorithm for long-form copy that minimizes orphans (last lines of one or two words); MDN notes a performance cost, 'use only when typography beats speed'. Firefox doesn't support pretty yet (BCD); unsupported browsers fall back to auto harmlessly."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "width",
+      "unit": "ch",
+      "min": 24,
+      "max": 90,
+      "step": 1,
+      "default": 30,
+      "cssVar": "--tw-width",
+      "effect": {
+        "zh": "演示列宽(ch)——收窄到 24–40ch 才能逼出多行标题与孤行现象;真实站点标题通常天然 1–3 行,无需此参数。默认 30ch 为演示值,非规范值。",
+        "en": "Demo column width in ch — narrowing to 24–40ch is what forces multi-line headings and visible orphans; real sites' headings are naturally 1–3 lines and need no such cap. The 30ch default is a demo value, not a spec value."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "text-wrap 简写属性整体 Baseline 2024-03 起广泛可用(BCD/MDN)。分值支持:balance=Chrome/Edge 114、Firefox 121、Safari 17.5;pretty=Chrome/Edge 117、Safari 26(WWDC25 预告),Firefox 未支持(BCD @main,调研 11§2)。不支持即回退 auto,纯增强。",
+      "en": "The text-wrap shorthand overall is Baseline widely available since 2024-03 (BCD/MDN). Per value: balance = Chrome/Edge 114, Firefox 121, Safari 17.5; pretty = Chrome/Edge 117, Safari 26 (announced at WWDC25), Firefox unsupported (BCD @main, research 11 §2). Unsupported browsers fall back to auto — pure enhancement."
+    }
+  },
+  "fallback": {
+    "zh": "优雅降级即「什么都不做」:不支持的浏览器按 auto 换行,页面完全正常;无需 @supports 回退块。若想在支持浏览器叠加增强,可写 @supports (text-wrap: balance) 层叠;Firefox 对 pretty 的缺失是常态(BCD 未支持),其 auto 断行已足够好。",
+    "en": "Graceful degradation means doing nothing: unsupported browsers wrap with auto and the page is perfectly fine; no @supports fallback block needed. For layered enhancement, wrap overrides in @supports (text-wrap: balance); Firefox's missing pretty is the norm (BCD: unsupported) and its auto breaking is already good."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "所有标题(h1–h6)与引语默认 balance——一行 CSS 消灭参差行尾", "en": "All headings (h1–h6) and pull quotes default to balance — one CSS line ends ragged headings" },
+      { "zh": "长文正文与卡片摘要用 pretty 防孤行(支持 pretty 的浏览器)", "en": "Long body copy and card summaries use pretty against orphans (where pretty is supported)" },
+      { "zh": "多语言站点的标题:balance 对中/英/混排都有效,免手工断行", "en": "Multilingual headings: balance works across CJK/Latin/mixed without manual breaks" },
+      { "zh": "按钮、导航项、标签等短文本:balance 让两行按钮均衡折行", "en": "Buttons, nav items, tags: balance evens two-line wrapping of short labels" }
+    ],
+    "avoid": [
+      { "zh": "对长正文用 balance——行数超限(Chromium ≤6 行)后失效,且计算浪费", "en": "balance on long body copy — beyond the line cap (≤6 in Chromium) it no-ops and wastes computation" },
+      { "zh": "对可编辑内容(输入框、contenteditable)用 balance/pretty——官方指引是 stable", "en": "balance/pretty on editable content (inputs, contenteditable) — official guidance is stable" },
+      { "zh": "把 pretty 当性能无关的默认写进海量列表项——MDN 明示有性能代价", "en": "Sprinkling pretty across huge list items as if free — MDN states it carries a performance cost" },
+      { "zh": "以 balance 替代响应式字号/栏宽设计——它均衡的是行,不是修复过窄的容器", "en": "Using balance as a substitute for fluid type/column design — it evens lines, it can't fix a too-narrow container" }
+    ]
+  },
+  "a11y": {
+    "zh": "balance/pretty 都是纯换行策略,不改变文本内容,对屏幕阅读器透明;消灭标题末行孤字与正文孤行,帮助阅读障碍与低视力用户维持行间追踪(短末行是回行错误的高发点);注意 balance 不改变对比度或字号——行本身的可读性仍由行高与字号决定;stable 对可编辑内容的稳定性也是无障碍编辑体验的一部分。",
+    "en": "balance/pretty are pure line-breaking strategies that never change the text itself — transparent to screen readers. Killing one-character heading last-lines and one-word body orphans helps dyslexic and low-vision readers keep vertical tracking (short last lines are where line-swap errors peak). balance does not change contrast or size — line readability still comes from line-height and font-size. stable's predictability for editable content is part of accessible editing too."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap",
+    "https://github.com/mdn/browser-compat-data/blob/main/css/properties/text-wrap.json"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为页面建立换行策略:标题与短文本默认 text-wrap: balance,长正文用 text-wrap: pretty,Firefox 等不支持场景自然回退 auto。",
+      "en": "Establish a wrapping strategy: headings and short text default to text-wrap: balance, long body copy to text-wrap: pretty, with unsupported browsers falling back to auto naturally."
+    },
+    "acceptance": [
+      { "zh": "标题 h1–h6 统一声明 text-wrap: balance", "en": "Headings h1–h6 uniformly declare text-wrap: balance" },
+      { "zh": "正文段落用 text-wrap: pretty,且仅在排版收益处使用", "en": "Body paragraphs use text-wrap: pretty, applied only where typography wins over speed" },
+      { "zh": "可编辑内容(textarea/contenteditable)保持默认或 stable", "en": "Editable content (textarea/contenteditable) stays default or stable" },
+      { "zh": "不用 <br>/&nbsp; 手工修孤行——交给换行策略", "en": "No <br>/&nbsp; hand-fixes for orphans — leave it to the wrapping strategy" },
+      { "zh": "Firefox(无 pretty)与旧浏览器回退 auto 后排版正常", "en": "Layout stays correct on Firefox (no pretty) and older browsers at auto" }
+    ]
+  }
+}

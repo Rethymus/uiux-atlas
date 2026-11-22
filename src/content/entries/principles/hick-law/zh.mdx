@@ -1,0 +1,54 @@
+## 结构与 DOM
+
+演示是一个**选择反应时实验**:N 个候选目标按钮排成圆环,每轮随机高亮一个,测量「高亮出现 → 点击命中」的时间:
+
+```html
+<div class="hk-ring">
+  <button class="hk-target" data-active="false">1</button>
+  <button class="hk-target" data-active="true">2</button>
+  <!-- N 个 -->
+</div>
+```
+
+关键点:
+
+- N 由参数 `choices` 控制(2–8),改参数即重排;被高亮的目标用 **3px 绿描边 + 「点我 Hit」标签**双通道标记,不只靠颜色(SC 1.4.1);
+- 误点不结束当前轮——错误计数与计时并存,「决策慢」与「决策错」是两个数据;
+- 统计表按 N 分组记中位反应时与样本数,跨 N 对比就在右侧面板里完成。
+
+## 样式与参数
+
+```tsx
+// choices / pause 是 JS 型参数:demo 订阅 store 驱动
+const [choices, setChoices] = useState(() => store.get("choices") as number);
+useEffect(() => store.subscribe(() => {
+  setChoices(store.get("choices") as number);
+  setPause(store.get("pause") as number);
+}), [store]);
+```
+
+- `choices` 默认 **4**:demo 教学起点,而非定律结论;Hick-Hyman 定律的经典形式 **RT = a + b·log₂(N)**(Hick & Hyman 1952),demo 让你亲手测出自己的 a、b;
+- `pause` 默认 800ms:两轮间隔,是 demo 节奏参数(调太短会把上一轮的犹豫混进下一轮的计时);
+- 高亮标记:3px 描边 + 文字标签——「点我」提示同时服务读屏(按钮文本语义不变,仍是数字)。
+
+## 动效与交互
+
+- 每轮:高亮出现(`opacity` 0.45→1 + 描边切换,0.12s)即开始计时;命中 → 高亮熄灭,`pause` 毫秒后下一轮;
+- **误点**:错误 +1,高亮保持、计时继续——不惩罚、不打断,让数据自己说话;
+- 改 `choices` 立即按新 N 重排圆环(改 N 会结束当前轮,点任意目标重新开始);
+- 无循环动画,无 reduced-motion 需求;所有目标均为真实按钮,可 Tab 逐一聚焦(键位惯例见 keyboard-navigation 条目)。
+
+## 真实产品案例
+
+- **Google 首页**:lawsofux 举的第一例——把输入一个关键词所需的决策压到最少,移除一切可能分心或要求额外决策的内容,是「响应时间关键处减选项」的极致版;
+- **Apple TV 遥控器**:lawsofux 第二例——遥控器本身只承载极少的按键,把复杂度转嫁给电视界面,信息在菜单里被组织并渐进披露;
+- **Slack 渐进式 onboarding**:调研 07§23 的原例——新手进来只保留消息输入框,先跟着 Slackbot 学会发消息,再逐步解锁其余功能,避免「一进来就被全功能淹没」。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `choices` | 决策变慢:中位 RT 随 N 对数上升,「N=8 的中位 − N=2 的中位」就是你的 b·log₂ 差值 | 决策加快;N=2 是纯简单反应时(几乎只剩 a) |
+| `pause` | 两轮间隔拉长,实验节奏变慢,统计积累变缓 | 低于 ~400ms 时上一轮决策时间可能混入下一轮,样本变脏 |
+
+经验区间:教学对比用 N=2 对 N=8;单 N 样本 ≥5 个再读中位数;记住定律的反面告诫——**不要简化到失真**(be careful not to simplify to the point of abstraction),减的是决策成本,不是功能。

@@ -1,0 +1,64 @@
+## Structure & DOM
+
+Color psychology is not a DOM structure — it is a **content-strategy layer**: the same card DOM expresses mood through color parameters and annotation copy. The hard constraint (contrast) and the soft narrative (mood) are presented in separate zones, neither impersonating the other:
+
+```html
+<div class="mood-card">        <!-- card face: driven by oklch(L C H) -->
+  <h3>Title</h3>
+  <p>Body</p>
+  <button class="cta">Call to action</button>
+</div>
+<aside class="annotation">     <!-- annotation zone: editorial claims + verifiable rules, apart -->
+  …
+</aside>
+```
+
+Key points:
+
+- 'Mood' ultimately reduces to three engineering quantities: **lightness** (sets contrast and the light/dark register), **chroma** (sets saturation/arousal intensity), **hue** (sets the warm/cool domain);
+- Every mood claim must carry an 'editorial, unverified' label — this research found no first-hand evidence for color-psychology assertions;
+- Verifiable rules are listed separately: the accent owns 'focus / call to action' (hype4's 60-30-10), dark modes avoid oversaturation (hype4), and backgrounds at L≥0.87 always pass with black text (Evil Martians).
+
+## Styling & Parameters
+
+The card face is driven by `--psy-light` / `--psy-chroma` / `--psy-hue`; text color is a JS-type param (black/white, recomputing contrast on switch):
+
+```css
+.mood-card {
+  background-color: oklch(var(--psy-light) var(--psy-chroma) var(--psy-hue));
+  /* defaults L=0.87 C=0.17 H=20: every default has a source (below) */
+  color: #000;
+}
+```
+
+Where the numbers come from:
+
+- `L=0.87`: stands on Evil Martians' verifiable rule 'backgrounds at L≥87% pair well with black text' (the demo verifies it live with an embedded WCAG formula); adjacent rules: L=0.8 pairs cleanly with black at any hue, and the avatar-derived example uses L=0.8 C=0.17 (research 06 §2);
+- `C=0.17`: the same Evil Martians example value; oklch C's practical ceiling ≈0.5, and 100% = 0.4 (MDN, research 06 §1);
+- `H=20`: Evil Martians' empirical hue map red≈20/yellow≈90/green≈140/blue≈220/purple≈320 (the demo's warm/cool detection uses this yardstick: ≤90° warm, >90° cool) (research 06 §2);
+- Contrast formula: WCAG 2.1 relative luminance (L = 0.2126R+0.7152G+0.0722B, thresholds 4.5:1/3:1, never rounded) (research 06 §17);
+- **The readout is an sRGB approximation**: the demo clamps out-of-gamut linear values into 0–1 (what browsers actually do when clipping); on P3 screens the true rendering of high-chroma faces is decided by the browser's gamut mapping, so the live ratio may drift slightly from the readout.
+
+## Motion & Interaction
+
+Every interaction in the demo is an **evidence chain**; there is no self-driven animation:
+
+- **Three sliders**: dropping lightness pushes the contrast readout under 4.5 into a red 'fail' state; crossing 90° of hue swaps the warm/cool annotation copy; raising chroma keeps the 'dark modes avoid oversaturation' notice on screen (verifiable constraints render first);
+- **Black/white text switch** (JS-type param): black and white ratios sit side by side at equal lightness — text color is chosen by contrast, not by mood preference;
+- Card background/text transition 0.25s ease, disabled under `prefers-reduced-motion`;
+- The annotation zone is permanently dashed and dimmed, visually separated from the hard-data zone — mood narrative never impersonates engineering conclusions.
+
+## Real-world examples
+
+- **Spotify**: the canonical 60-30-10 case — black 60 (large areas) / dark gray 30 (components) / vivid green 10 (play button and logo accent); the green accent owns 'action/focus' duty, not mood decoration (LogRocket example, research 06 §9);
+- **Material 3 dark theme**: the official baselines brighten and desaturate the accent from light `#6750A4` to dark `#D0BCFF` (≈tone 80) — the verifiable official landing of 'oversaturation/high contrast fatigues in dark mode' (research 06 §7/§9/§14);
+- **Neo-Brutalism**: a production case of high-saturation 'loud' blocks + bold borders as an attention strategy; HubSpot adds the accessibility warning — pale colors with subtle shadows are a nightmare for low-vision users, and abandoning common navigation patterns raises cognitive load (research 11 §6).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `lightness` | a brighter face — inside the verifiable rule zone (L≥0.87) black always clears 4.5:1; mood-wise 'buoyant' (editorial) | drops under 4.5:1 and flags red; 0.6–0.87 is the classic 'mood over contrast' failure zone; 0.8 is the proven floor where black text still reads |
+| `chroma` | stronger saturation/arousal (editorial); in dark contexts it violates the 'avoid oversaturation' constraint; the contrast readout drifts with hue | grays out — the arousal narrative disappears but contrast is most stable; 0 is the safest grade |
+| `hue` | crossing 90° swaps the warm/cool band and the whole annotation copy; black/white ratios differ per hue (same L does not guarantee same contrast) | stopping at red 20° (the default) is the 'urgency/action' narrative slot (editorial) |
+| `textColor` → white | the white control: noticeably lower ratio at equal lightness, usually an outright fail — showing that 'white pops more' is an illusion | black is the default and recommendation: the steadiest pick inside the research yardstick |

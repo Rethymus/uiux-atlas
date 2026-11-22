@@ -1,0 +1,56 @@
+## Structure & DOM
+
+The demo is a **one task, two paradigms** comparison panel: the task is fixed as "enable night mode + set volume to minimum", and `variant` swaps the panel:
+
+```html
+<div class="jk-panel" data-variant="familiar">
+  <div class="jk-row">
+    <label for="jk-night">Night mode</label>
+    <button role="switch" aria-checked="false" />
+  </div>
+  <input type="range" id="jk-vol" />
+</div>
+```
+
+Key points:
+
+- The familiar paradigm: label left, a `role="switch"` on row-right, a left-quiet/right-loud slider, primary action bottom-right — all conventional mental models;
+- The alien paradigm: night mode hidden as an unlabeled 🌙 icon, the slider flipped with `direction: rtl` (quiet end on the right), the primary action demoted to a gray corner text `↩ some-text`;
+- The alien panel is a **deliberate anti-pattern exhibit**: every control keeps its `aria-label` and keyboard operability — the accessibility floor never moves; only familiarity is sacrificed.
+
+## Styling & Parameters
+
+```tsx
+// variant / hint are JS-type params: the demo subscribes to the store
+const [variant, setVariant] = useState(() => store.get("variant") as string);
+useEffect(() => store.subscribe(() => {
+  setVariant(store.get("variant") as string);
+  setHint(store.get("hint") as string);
+}), [store]);
+```
+
+- Completion test: night on && volume minimal (`volume===0` in familiar; `volume===100` with the reversed slider in alien) — the "correct operation" differs per paradigm, which is exactly the point;
+- Timing runs from Start until the test passes; misclicks only count task-irrelevant controls in the alien panel (e.g. `↩ some-text`);
+- "Hide hint" enables the fair experiment: with no guidance the paradigm gap widens.
+
+## Motion & Interaction
+
+- The switch knob uses a 0.15s `translate` transition — the familiar switch semantics include its motion semantics;
+- On completion the task area shows `✔ done in x.xs`; each paradigm keeps its best time side by side in the right panel;
+- Switching `variant` resets the round (the two paradigms disagree on volume semantics; mixed runs pollute the timing);
+- No looping animation and no reduced-motion difference (transitions are very short and carry no essential information).
+
+## Real-world examples
+
+- **YouTube's 2017 redesign**: replaced the long-standing layout with a brand-new structure, met heavy backlash, briefly shipped an official "restore the old version" entry, then rolled back parts of the change over the following months — the textbook case recorded by Laws of UX (research 07 §28);
+- **iOS and Android bottom tab bars**: the controls differ but the paradigm is shared — high-frequency navigation at the bottom, ~5 items, icon plus label; any app that breaks it (hiding "Profile" behind a top-left avatar) pays in churn (editorial generalization of the "expectations transfer" conclusion, 07 §28);
+- **NN/g heuristic #4, consistency and standards**: Nielsen lists "follow platform conventions" as its own heuristic, with Jakob's Law as its psychological footnote — consistent within the product and with the platform (research 07 §21/§28).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `variant` | alien: unlabeled icon + reversed slider + demoted primary; first completion usually takes several times longer than familiar | familiar: the conventional paradigm — complements fast even with hints hidden |
+| `hint` | hide: fair comparison — with no guidance, all the "guessing" cost lands in the timer | show: guidance absorbs part of the paradigm gap; good for learning the rules first |
+
+The lesson: the anti-pattern is not "impossible", it's "slower and more frustrating" — Jakob's Law punishes transfer cost, not ability. The right way to redesign is to hand users an escape (YouTube 2017's "restore old version"), not to discard every familiar cue at once.

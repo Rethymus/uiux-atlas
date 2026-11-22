@@ -1,0 +1,142 @@
+{
+  "name": "Maximalism",
+  "nameZh": "极繁主义",
+  "aliases": ["极繁主义", "More is More", "Horror Vacui"],
+  "category": "styles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "More is more:≥5 色相对撞、多字体多朝向排版、≥3 层图案叠印、边距收缩——把每一寸表面占满的「有序混乱」,极简主义的反面。",
+    "en": "More is more: ≥5 clashing hues, multi-family multi-orientation type, ≥3 layered patterns, collapsed margins — an 'ordered chaos' that fills every inch, the antithesis of minimalism."
+  },
+  "origin": {
+    "zh": "艺术史术语由 Robert Pincus-Witten 用于描述 1970 年代末新表现主义(Julian Schnabel、David Salle)(Wikipedia);网页语境经 1980 年代 Memphis 集团结晶为设计哲学,2015 年前后 Instagram 视觉文化触发对极简白空间的反弹,疫情后成为主流选择(调研 03§8)。",
+    "en": "The art-history term was coined by Robert Pincus-Witten for late-1970s Neo-Expressionism (Julian Schnabel, David Salle) (Wikipedia); on the web it crystallized as a design philosophy via the 1980s Memphis Group, rebounded against minimal white space around 2015 with Instagram visual culture, and went mainstream after the pandemic (research 03 §8)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "hues",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 5,
+      "effect": {
+        "zh": "每屏色相数。补研 11§7 建议 ≥5(主色:辅色:点缀 ≈ 40/40/20,点缀允许高饱和撞色)——经验值,无官方数值标准;对照极简的 1–2 色预算(本库 minimalism 条目)。八枚基准色 hex 为本条目基准设定,调研未记载具体色值。",
+        "en": "Hue count per screen. Study 11 §7 recommends ≥5 (main:aux:accent ≈ 40/40/20, accents may clash at full saturation) — an experiential value, no official standard; contrast with minimalism's 1–2 hue budget (see our minimalism entry). The eight baseline hexes are this entry's own picks; the research records no official swatches."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "fontMix",
+      "options": [
+        { "value": "trio", "label": { "zh": "三族混排", "en": "Three families" } },
+        { "value": "duo", "label": { "zh": "双族对照", "en": "Two families" } }
+      ],
+      "default": "trio",
+      "effect": {
+        "zh": "字体族数:trio=衬线展示标题 × 无衬线正文 × 等宽眉题(极繁混排,补研建议『标题用对比字族』);duo=单族无衬线两级(极简常规,作对照)。调研 03§8 列「字体族数/字号/朝向」为可参数化变量,未附数值;3 族为条目基准。",
+        "en": "Family count: trio = serif display headline × sans body × mono eyebrow (the maximalist mix; study 11 §7 suggests 'contrast families for headlines'); duo = one sans in two weights (the minimal default, for comparison). Research 03 §8 lists 'family count/size/orientation' as parameterizable with no numbers; 3 families is this entry's baseline."
+      }
+    },
+    {
+      "type": "number",
+      "name": "layers",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "装饰层叠数。补研 11§7 建议 ≥3 层(底纹图案 + 描边贴纸 + 亮色块),元素间允许叠印与轻微旋转;≤1 层即退化回极简。demo 内 1=波点底纹、2=斜纹场、3–5=三张贴纸、6=顶部斜彩带。",
+        "en": "Decoration layer count. Study 11 §7 recommends ≥3 layers (background pattern + outlined stickers + bright blocks), allowing overprint and slight rotation; ≤1 layer collapses back to minimalism. In the demo: 1 = dot field, 2 = stripe field, 3–5 = three stickers, 6 = top diagonal ribbon."
+      }
+    },
+    {
+      "type": "number",
+      "name": "typeScale",
+      "min": 1,
+      "max": 2,
+      "step": 0.01,
+      "unit": "×",
+      "default": 1.333,
+      "cssVar": "--mx-step",
+      "effect": {
+        "zh": "字阶跳跃比率,经 --mx-step 驱动标题字号(calc 链)。极简基准 1.125–1.25(major second–major third),极繁建议 ≥1.333(perfect fourth,补研 11§7)——层级响亮,标题撞进视线。",
+        "en": "Type-scale step, driving headline size through --mx-step (calc chain). Minimal baseline is 1.125–1.25 (major second–third); maximalist advice is ≥1.333 (perfect fourth, study 11 §7) — loud hierarchy that shoves headlines into view."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "default": 12,
+      "cssVar": "--mx-gap",
+      "effect": {
+        "zh": "版面缝隙(边距收缩),经 --mx-gap 驱动卡片内距与元素间距。补研 11§7 建议压缩至常规的 0.5–0.75 倍但不为 0——保留呼吸缝;默认 12px 即常规 24px 的一半。对照极简的 8px 大留白刻度。",
+        "en": "Layout gap (margin collapse), driving card padding and element spacing via --mx-gap. Study 11 §7 advises 0.5–0.75× the conventional gap but never 0 — keep a breathing seam; the 12px default is half of a conventional 24px. Compare minimalism's generous 8px scale."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "tilt",
+      "unit": "deg",
+      "min": 0,
+      "max": 8,
+      "step": 0.5,
+      "default": 2,
+      "cssVar": "--mx-tilt",
+      "effect": {
+        "zh": "贴纸/卡片旋转上限(± 度),经 --mx-tilt 驱动叠印倾角。补研 11§7 建议 ±2°;0° 退化为对齐网格,过大(>4°)开始读作失误而非叠印。",
+        "en": "Sticker/card rotation cap (± degrees), driving overprint tilt via --mx-tilt. Study 11 §7 advises ±2°; 0° collapses to an aligned grid, and past ~4° it starts reading as a mistake rather than overprint."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "零新特性门槛:装饰层全部为 CSS 渐变 + 内联 SVG,文字用常规系统字体栈,所有现代浏览器一致渲染。",
+      "en": "No modern-feature floor: decorations are pure CSS gradients plus inline SVG, text uses ordinary system font stacks — every modern browser renders it identically."
+    }
+  },
+  "fallback": {
+    "zh": "装饰层逐层可弃:任一层渲染失败只会损失密度,不损失信息——正文永远坐在纯色底上。不认识 repeating-gradient 的老引擎退化为纯色块;字体栈逐级回退系统字体,密度堆在装饰层而非文字上。",
+    "en": "Every decoration layer is expendable: if any layer fails to render you lose density, not information — body text always sits on a solid fill. Engines without repeating-gradient degrade to flat blocks; font stacks fall back level by level. Density lives in decoration, never in the text."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "品牌快闪/活动/节日营销页——单页封面,读者停留短、需要情绪冲击", "en": "Brand drops, campaigns, seasonal specials — single cover pages where dwell time is short and emotional punch matters" },
+      { "zh": "时尚、音乐与潮流文化:巡演海报页、专辑落地页、潮牌 lookbook", "en": "Fashion, music and street culture: tour poster pages, album landing pages, lookbooks" },
+      { "zh": "创意作品集与插画师主页——个人风格的宣言式表达", "en": "Creative portfolios and illustrator homepages — manifesto-style personal statements" },
+      { "zh": "印刷物数字化:杂志专题、海报档案——原语言就是高密度纸面", "en": "Print digitized: magazine features, poster archives — the source language is already dense paper" }
+    ],
+    "avoid": [
+      { "zh": "数据密集界面:仪表盘、表单、后台——图案场会吞掉数据可读性", "en": "Data-dense UI: dashboards, forms, admin panels — pattern fields swallow data legibility" },
+      { "zh": "长文阅读页——正文行宽被装饰挤压,违背 45–75ch 红线", "en": "Long-form reading — decorations squeeze the measure, breaking the 45–75ch red line" },
+      { "zh": "关键任务路径:支付、错误提示、设置——撞色与叠印增加认知负担", "en": "Critical task paths: checkout, error states, settings — clashing hues and overprint add cognitive load" },
+      { "zh": "小屏弱网:多层背景与渐变合成开销大,移动端密度失控", "en": "Small screens on slow networks: multi-layer backgrounds cost compositing time and density gets unmanageable" }
+    ]
+  },
+  "a11y": {
+    "zh": "密度纪律:装饰层全部 aria-hidden 且不承载信息;正文保持 45–75ch 行宽,文字放大一倍不出现滚动(补研 11§7 引 WCAG 1.4.8);行高可压至 1.25 但不再低。撞色只出现在装饰与 marker 划线上,正文恒为高对比墨色;含文字的色块逐块核对 4.5:1(WCAG 2.1 SC 1.4.3)。",
+    "en": "Density discipline: every decoration layer is aria-hidden and carries no information; body text keeps a 45–75ch measure and survives a 200% zoom without scrolling (study 11 §7, citing WCAG 1.4.8); line-height may compress to 1.25 and no further. Clashing hues live in decoration and marker strokes only — body text stays high-contrast ink; check any text-on-color block at 4.5:1 (WCAG 2.1 SC 1.4.3)."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Maximalism",
+    "https://design-styles.enlighten-media.net/pages/maximalism/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻一张极繁主义拼贴页:≥5 色相对撞、三族字体混排(衬线展示标题×无衬线正文×等宽眉题)、≥3 层图案叠印(底纹+贴纸+色块)、缝隙压缩与 ±2° 叠印旋转——正文仍在 45–75ch 内可读。",
+      "en": "Replicate a maximalist collage page: ≥5 clashing hues, a three-family type mix (serif display headline × sans body × mono eyebrow), ≥3 printed-over layers (background pattern + stickers + color blocks), collapsed gaps and ±2° overprint tilt — with body copy still readable inside a 45–75ch measure."
+    },
+    "acceptance": [
+      { "zh": "每屏色相 ≥5 且存在至少一对高饱和撞色", "en": "≥5 hues per screen with at least one high-saturation clash" },
+      { "zh": "装饰层 ≥3 层、允许 ±2° 叠印旋转,全部 aria-hidden 不拦截交互", "en": "≥3 decoration layers with ±2° overprint tilt, all aria-hidden and non-interactive" },
+      { "zh": "正文行宽 45–75ch、放大一倍不出现滚动——密度不得侵入正文", "en": "Body measure 45–75ch and no scroll at 200% zoom — density must never invade the text" },
+      { "zh": "字体至少两族对比(展示体×正文体),眉题可用等宽第三族", "en": "At least two contrasting families (display × text), a mono third family allowed for eyebrows" },
+      { "zh": "prefers-reduced-motion 时取消入场动效,页面直出终态", "en": "Under prefers-reduced-motion, drop entrance animation and render the final state directly" }
+    ]
+  }
+}

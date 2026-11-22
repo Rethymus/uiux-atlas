@@ -1,0 +1,65 @@
+## Structure & DOM
+
+Measure needs no new structure — it is just a `max-width` cap on the **body-column container**, declared in `ch` units (the width of the "0" glyph) so character count becomes a directly writable quantity:
+
+```html
+<article class="prose">
+  <h1>Headings are not capped</h1>
+  <p>Body paragraphs are the constrained element…</p>
+</article>
+```
+
+```css
+.prose p {
+  max-width: min(100%, calc(var(--measure-width) * 1ch)); /* 65ch default */
+  font-size: var(--measure-font);                          /* ch scales with size */
+}
+```
+
+Key points:
+
+- The constraint applies to **body paragraphs**, not the page container — headings, nav and footers have their own width strategies;
+- The `min(100%, …)` wrapper lets narrow screens defer to the container without horizontal scrolling;
+- `ch` is a relative unit: a larger font size widens the same ch count — **character measure is governed by measure alone; physical width depends on font size and typeface**.
+
+## Styling & Parameters
+
+Three parameters, all injected through `--measure-*` variables:
+
+```css
+.prose p {
+  max-width: min(100%, calc(var(--measure-width) * 1ch)); /* dimension, unit ch */
+  font-size: var(--measure-font);                          /* dimension, unit px */
+  text-align: var(--measure-align);                        /* left | justify */
+}
+```
+
+Where the numbers come from:
+
+- **45–90 characters (incl. spaces)**: the verified recommendation from Butterick's Practical Typography, about 2–3 alphabets; longer lines strain vertical tracking (research 05 §19);
+- **65ch default**: a community convention (unverified) sitting mid-band, convenient for demonstrating both directions;
+- The traditional "45–75 characters" saying differs from Butterick's 45–90; this entry follows the verified source, 45–90 (research 05 §19 note).
+
+## Motion & Interaction
+
+Measure is a purely static constraint with no motion; the only "moving" part in the demo is live measurement:
+
+- The demo splits the sample text into per-character spans, groups them by `offsetTop` to count each line's characters, and derives **longest / average line** readings with a needle on a 45–90 band;
+- Changing measure / fontSize / align re-runs the measurement immediately (a ResizeObserver covers window resizes);
+- The verdict copy applies to Latin text only — no verified per-character guidance for CJK lines exists in this research, so the Chinese sample shows wrapping behavior without a pass/fail verdict.
+
+## Real-world examples
+
+- **Wikipedia (Vector 2022 skin)**: adds a maximum width to the article content on wide screens so long lines no longer stretch across the viewport — measure control landing at global-website scale.
+- **Long-form platforms like Medium / Substack**: article pages use a single narrow column clearly narrower than the available page width, paired with generous line-height — the standard shape of commercial "narrow column, long read" products.
+- **E-book readers such as Kindle**: text reflows to the device width while keeping the measure readable — content reflows to the column, and the measure stays controlled.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `measure` | past 90 characters vertical tracking gets hard; line-swap errors climb | below 45 characters wrapping gets choppy; justified narrow columns invite "rivers" |
+| `fontSize` | physical column width grows with it (character measure unchanged); mobile wrapping strategy may shift | physical width shrinks; small type plus long lines hurts both readability axes at once |
+| `align` | justify pushes unevenness into word spaces — narrow columns show light/dark "rivers" | left keeps natural spacing and a ragged edge — the rag is the acceptable default |
+
+Working ranges: body columns 45–90 characters; the demo default of 65ch is a community convention (unverified). Decide measure first, then type size — doing it backwards makes "how wide is 65ch" drift with the typeface.

@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+font-display 写在 `@font-face` 规则里,不是普通 CSS 属性——它约束的是「字体文件加载期间文本怎么渲染」:
+
+```html
+<link rel="preload" href="/fonts/brand.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+```css
+@font-face {
+  font-family: "Brand";
+  src: url("/fonts/brand.woff2") format("woff2");
+  font-display: swap; /* 五档之一:auto | block | swap | fallback | optional */
+}
+
+body { font-family: "Brand", Georgia, serif; } /* 后备字体度量尽量兼容 */
+```
+
+关键点:
+
+- 三个时间周期(MDN):**封锁期**(字体未到、文本不可见)→ **交换期**(字体未到、后备字可见)→ **失败期**(按加载失败处理);
+- `font-family` 栈里的后备字体不是摆设——交换期显示的就是它,度量差异决定布局偏移;
+- 自托管优先(web.dev 工程惯例);`preload` 能提前发现字体文件,但会挤占其他关键资源。
+
+## 样式与参数
+
+两档参数决定 demo 状态机:display(枚举)+ 模拟网络延迟。五档的周期数值表(web.dev,原文核对):
+
+| 取值 | 封锁期(block) | 交换期(swap) |
+| --- | --- | --- |
+| `auto` | 浏览器自定义 | 浏览器自定义 |
+| `block` | 2–3 秒 | 无限 |
+| `swap` | 0ms | 无限 |
+| `fallback` | 100ms | 3 秒 |
+| `optional` | 100ms | 无 |
+
+数值出处:MDN font-display(五档语义)+ web.dev font-best-practices(数值表),均原文一手核对(调研 05§21);`auto` 的具体周期浏览器未公开统一数值——以 MDN「浏览器自定义」口径为准。demo 的封锁期时长取上界:block 用 3s,auto 演示按 100ms 处理并标注「浏览器自定义」。
+
+## 动效与交互
+
+demo 用一个与数值表等价的状态机模拟完整加载过程:
+
+- 「重新加载」按当前参数跑一轮时间轴(0–3.5s):封锁段(文本隐形/占位块)→ 交换段(后备字 Georgia)→ 字体到达点(切到演示 webfont 形态)或失败;
+- 拖动「模拟网络延迟」滑杆改变字体到达时刻:swap 永远等到字体;fallback 在 3s 后放弃;optional 在 100ms 后放弃(本页不再换);
+- `prefers-reduced-motion: reduce` 时不播放时间轴扫动,直接呈现该组参数的最终结局(状态机一次推进到位);
+- 状态机的相位判定完全按数值表实现,不是装饰动画——demo 里看到的每一次隐形/换字都是表上的一行。
+
+## 真实产品案例
+
+- **Google Fonts CSS API**:其下发的 CSS 默认带 `font-display: swap`(该服务多年稳定行为)——接入即获得「后备字立即可见、字体到了就换」的默认策略,是 FOUT 策略全球规模最大的分发。
+- **Next.js `next/font`**:构建期自托管字体并自动生成带 `font-display` 的 `@font-face`,同时用度量调整(size-adjust 一类)对齐后备字体,官方目标就是消灭交换期布局偏移。
+- **Vercel 官网(Geist 字体)**:调研 05§25 核对其 Geist 字体以 npm 包 `npm i geist` 分发、按需加载——自托管 + 框架级 @font-face 注入是这类工程字体包的标准加载路径。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `display` → block | 封锁期最长 2–3s:网络慢时用户盯着空白,FOIT 代价最大 | —(它是封锁期最长的档) |
+| `display` → swap | 0ms 立即显示后备字;字体无论多慢最终都会换上,换字瞬间可能有布局跳动 | — |
+| `display` → fallback / optional | 交换期越短,慢网下越早「锁死」后备字体;optional 连交换期都没有 | 100ms 封锁几乎无感;快网下字体仍能正常换上 |
+| `loadDelay` | 超过交换期上限后:fallback/optional 永远用后备,swap/block 等到字体 | 低于 100ms 时四档行为趋同——快网络掩盖策略差异 |
+
+经验结论:策略选择的本质是「最坏网络下你愿意让用户看什么」——正文选 swap(内容第一),品牌字体选 fallback/optional(布局稳定第一)。

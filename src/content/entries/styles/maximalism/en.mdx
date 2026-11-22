@@ -1,0 +1,79 @@
+## Structure & DOM
+
+Maximalism is a "layered decoration + one readable card" structure: a **pattern field floods the whole scene** (color blobs, dots, stripes and stickers printed over each other), every decoration is an `aria-hidden` backdrop, and the only semantic container is one double-outlined poster card — **the decoration never yields; the card stands out on its own outline and paper fill**.
+
+```html
+<div class="scene">
+  <div class="layer-blobs" aria-hidden="true"></div>  <!-- clashing blobs -->
+  <div class="layer-dots" aria-hidden="true"></div>   <!-- l1 dot field -->
+  <div class="layer-stripes" aria-hidden="true"></div><!-- l2 stripe field -->
+  <span class="sticker" aria-hidden="true">More ★</span><!-- l3+ stickers -->
+  <article class="card">
+    <p class="eyebrow">Eyebrow (third mono family)</p>
+    <h3>Headline (serif display × marker strokes)</h3>
+    <p>Body (45–75ch, always ink)</p>
+  </article>
+</div>
+```
+
+Key points:
+
+- Decoration layers are stacked siblings of the scene, `aria-hidden="true"` and non-interactive — density never adds a single focusable element;
+- The card's hierarchy trio: mono eyebrow → big-step headline → 45ch body, with all seams collapsed through `--mx-gap`;
+- Stickers and the card take `--mx-tilt` overprint rotation — the "order" comes from one shared parameter set, the "chaos" from the stacking.
+
+## Styling & Parameters
+
+Six parameters: three JS-type (hue count / family mix / layer count) and three CSS-variable ones (type step / gap / tilt):
+
+```css
+.scene {
+  --mx-step: 1.333;  /* type-scale step (param) */
+  --mx-gap: 12px;    /* collapsed gap (param) */
+  --mx-tilt: 2deg;   /* overprint rotation (param) */
+}
+.card {
+  rotate: var(--mx-tilt);
+  border: 3px double currentColor;      /* double outline: the overprint skeleton */
+  gap: var(--mx-gap);
+}
+.card h3 { font-size: clamp(1.6rem, calc(var(--mx-step) * var(--mx-step) * 1.25rem), 3.2rem); }
+.mark  { box-shadow: inset 0 -0.22em 0 var(--mk); }  /* clashes live on strokes only */
+```
+
+Where the numbers come from (side-by-side with minimalism; both columns from study 11 §7):
+
+- **Hues per screen**: minimal 1–2 → maximalist advice **≥5** (main:aux:accent ≈ 40/40/20, accents may clash at full saturation) — experiential, no official standard;
+- **Type-scale step**: minimal baseline 1.125–1.25 → maximalist advice **≥1.333** (perfect fourth);
+- **Decoration layers**: minimal ≤1 → maximalist **≥3** (background pattern + stickers + blocks), overprint and ±2° rotation allowed;
+- **Gap**: **0.5–0.75× the conventional spacing, never 0** — the 12px default is half of 24px, keeping a breathing seam (contrast minimalism's generous 8px scale);
+- Body line-height may compress to 1.25 while the measure stays 45–75ch (WCAG 1.4.8 first) — density goes into decoration, never the text;
+- The eight baseline hexes (#e63946/#ff8c42/#ffd60a/#2a9d8f/#1b9aaa/#3557ff/#7b2ff7/#ff5da2) are this entry's own picks; the research records no official swatches.
+
+## Motion & Interaction
+
+Maximalist motion is "paper landing", not "interface transition":
+
+- **Entrance**: the card lands once, 0.45s `cubic-bezier(0.22, 1, 0.36, 1)`, animating only `opacity/scale` — rotation belongs to the parameter, not the animation frames;
+- **Sticker hover**: the tilt deepens one step (2×) over 0.2s — a hint that the overprint can be nudged;
+- **Shuffle**: rotates the baseline palette by one position to re-deal the clash relations — an instant switch with no transition (like pulling a different silkscreen); layer toggles switch the same way, density changes deserve no intermediate states;
+- Under `prefers-reduced-motion: reduce`, entrance and hover transitions are dropped — decoration may sit still, information never depended on motion.
+
+## Real-world examples
+
+- **Diko** — full-page collage with oversized bleeding type, teal-red clash and a marquee footer; the web specimen of "typographic density + no dominant color" (research 03 §8).
+- **Ellen Porteus portfolio** — a floral motif flooding the entire viewport; a personal manifesto of "deliberately filling every inch of surface" (research 03 §8).
+- **Glitche** — a glitch-art asset and work platform that keeps brand recognition through high-frequency clashing hues and overprinted graphics (research 03 §8).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `hues` | clash relations grow exponentially; past 6 the field starts to read as noise and needs the unifying ink outline to hold it | approaches a two-color poster; at 2 only the "typographic density" pillar remains |
+| `fontMix` | — (enum: trio is the maximalist answer, serif display carrying the most historical weight) | duo collapses into minimal typography with only decoration holding the style |
+| `layers` | the fullest paper, the strongest "printed-over stack" read; 6 is the recognizable ceiling, beyond that layers blur each other | peels off layer by layer; at 1 only the background pattern remains and the style is unrecognizable |
+| `typeScale` | headlines shove into view; 1.5+ approaches poster shouting and long titles overflow the card | flattens hierarchy; at 1.0 eyebrow and headline share one step and the "loud" pillar is gone |
+| `gap` | approaches a conventional layout, weakening the "filled surface" read | seams vanish, stickers glue to the card and read as mistakes; 0 is beyond the red line |
+| `tilt` | rowdier overprint; past 4° it reads as a layout error rather than intent | returns to an aligned grid; at 0° only flat stacking is left, no overprint |
+
+Working ranges: hues 5–6, layers 3–5, type step 1.333–1.5, gap 10–16px, tilt ±2°. There is exactly one red line: **decoration may stack forever, but body copy always sits on a solid fill, inside 45–75ch, surviving a 200% zoom without scrolling** (study 11 §7, citing WCAG 1.4.8).

@@ -1,0 +1,91 @@
+{
+  "name": "Subgrid",
+  "nameZh": "子网格 Subgrid",
+  "aliases": ["grid-template-rows: subgrid", "grid-template-columns: subgrid", "轨道继承"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "嵌套组件继承父网格的轨道:grid-template-rows/columns: subgrid 让卡片内部的行/列直接使用父网格轨道,跨卡片的标题与页脚水平对齐不再依赖魔法数字。",
+    "en": "Nested components inherit the parent grid's tracks: grid-template-rows/columns: subgrid makes a card's internal rows/columns BE the parent's tracks, so titles and footers align across cards without magic numbers."
+  },
+  "origin": {
+    "zh": "出自 CSS Grid Layout Module Level 2:`grid-template-columns: subgrid` / `grid-template-rows: subgrid` 继承父网格轨道定义,用于嵌套组件对齐父网格;MDN 标注 Baseline Widely available(自 2023-09 起,调研 05§4)。",
+    "en": "From CSS Grid Layout Module Level 2: grid-template-columns: subgrid / grid-template-rows: subgrid inherit the parent grid's track definitions so nested components align to the parent grid; MDN marks it Baseline Widely available (since 2023-09, research 05 §4)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "axis",
+      "options": [
+        { "value": "rows", "label": { "zh": "行轴 rows(跨卡对齐行)", "en": "rows (align rows across cards)" } },
+        { "value": "columns", "label": { "zh": "列轴 columns(跨行对齐列)", "en": "columns (align columns across rows)" } }
+      ],
+      "default": "rows",
+      "effect": {
+        "zh": "JS 型参数(demo 切换 data-axis 与对应 DOM)。rows:三张卡片各跨越父网格 3 条行轨道并声明 grid-template-rows: subgrid,标题/正文/页脚三个内部行成为共享轨道——正文长短不齐页脚也水平对齐;columns:每行卡片跨越父网格 3 条列轨道声明 grid-template-columns: subgrid,标签/值/操作三列全表对齐。",
+        "en": "JS-type param (the demo toggles data-axis and its matching DOM). rows: each card spans 3 parent row tracks and declares grid-template-rows: subgrid, so its title/body/footer rows become shared tracks — footers stay aligned no matter how uneven the bodies are; columns: each row-card spans 3 parent column tracks with grid-template-columns: subgrid, aligning the label/value/action columns across the whole table."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 8,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--sg-gap",
+      "effect": {
+        "zh": "父网格轨道间距。默认 16px 取自 WebKit 官方示例(调研 05§5 记载 grid 示例声明 gap: 16px);subgrid 继承父网格的轨道定义,间距与轨道尺寸一并继承。",
+        "en": "Parent grid track gap. Default 16px from the official WebKit example (research 05 §5 records gap: 16px in the grid declaration); subgrid inherits the parent's track definitions — gaps and track sizes come along with them."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "Baseline Widely available 自 2023-09(MDN,调研 05§4);Chrome 117(2023-09)补齐后全线可用——具体版本号以 MDN Baseline 日期为准,调研正文只记 Baseline 日期。",
+      "en": "Baseline Widely available since 2023-09 (MDN, research 05 §4); usable everywhere after Chrome 117 (2023-09) closed the gap — the version number is given per the Baseline date, as the research text itself only records the Baseline date."
+    },
+    "baseline": "Baseline Widely available (2023-09)"
+  },
+  "fallback": {
+    "zh": "@supports (grid-template-rows: subgrid) 检测后增强;不支持的环境回退为独立嵌套网格(每张卡片自算三行)——内容完整可读,只是页脚不再跨卡对齐。demo 的右侧对照面板(independent)就是这个回退形态,可直接向利益相关者演示降级代价。",
+    "en": "Enhance behind @supports (grid-template-rows: subgrid); unsupported engines fall back to independent nested grids (each card sizes its own three rows) — content stays fully readable, only cross-card footer alignment is lost. The demo's right-hand comparison panel (independent) IS that fallback, ready to show stakeholders the degraded shape."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "卡片墙的跨卡对齐:标题占第 1 行、正文若干行、页脚恒定对齐在最后一行", "en": "Cross-card alignment in card walls: titles on row 1, bodies spanning rows, footers locked to the last row" },
+      { "zh": "表单/数据表的列对齐:label / value / action 三列贯穿所有行,由父网格统一裁定", "en": "Column alignment for forms/data tables: label / value / action columns ruled by the parent grid across every row" },
+      { "zh": "设计系统组件接入页面级网格:组件内部轨道即页面轨道,不再各自为政", "en": "Design-system components plugging into the page grid: inner tracks ARE the page tracks, no more independent sizing" },
+      { "zh": "杂志式排版的跨栏基线对齐(标题/导语/正文分层共享行轨道)", "en": "Editorial baseline alignment across columns (headline/deck/body layers sharing row tracks)" }
+    ],
+    "avoid": [
+      { "zh": "子网格轨道数与父网格对不上(跨越的轨道数 < 内部条目数)——布局会溢出或折叠,先对齐 span 数", "en": "Track-count mismatch (spanned tracks < internal items) — the layout overflows or folds; align span counts first" },
+      { "zh": "仅需一维排布的场景——Flexbox 更简单,subgrid 只在需要共享父网格轨道时才有意义", "en": "One-dimensional arrangements — Flexbox is simpler; subgrid only pays off when parent tracks must be shared" },
+      { "zh": "深层级嵌套的网格套网格——每层 subgrid 都共享祖先轨道,改动一层会波及全树,层级控制在两层", "en": "Deep grids-within-grids — every subgrid shares ancestor tracks, so one change ripples through the tree; keep it to two levels" },
+      { "zh": "不支持环境的唯一布局方案——必须保留独立网格回退(见 fallback)", "en": "As the only layout on unsupported engines — always keep the independent-grid fallback (see fallback)" }
+    ]
+  },
+  "a11y": {
+    "zh": "subgrid 只共享轨道几何,不改变 DOM 语义——读屏顺序仍按文档流;跨卡对齐依赖视觉位置,信息本身不得只靠对齐传达(标签与值要在同一 DOM 子树内配对);键盘焦点顺序随 DOM,与共享轨道无关;对照演示中两侧面板分别可达,tab 顺序明确。",
+    "en": "subgrid shares track geometry only, never DOM semantics — screen-reader order still follows document flow; alignment is visual, so information must never be conveyed by alignment alone (pair each label with its value inside one DOM subtree); keyboard focus order follows the DOM, untouched by shared tracks; in the comparison demo both panels are separately reachable with a clear tab order."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid",
+    "https://webkit.org/blog/17660/introducing-css-grid-lanes/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻 subgrid 跨卡对齐卡片墙:父网格定义 3 条列轨道,三张卡片各跨 3 条行轨道并声明 grid-template-rows: subgrid,正文长短不齐时标题与页脚仍水平对齐;并排一个 independent 对照面板展示无 subgrid 的回退形态。",
+      "en": "Replicate a subgrid-aligned card wall: the parent grid defines 3 column tracks, three cards each span 3 row tracks with grid-template-rows: subgrid, and titles and footers stay aligned regardless of body length; pair it with an independent comparison panel showing the no-subgrid fallback."
+    },
+    "acceptance": [
+      { "zh": "子网格声明 grid-template-rows: subgrid(或 columns)且跨越的父轨道数与内部条目数一致", "en": "The subgrid declares grid-template-rows: subgrid (or columns) with spanned parent tracks matching its internal item count" },
+      { "zh": "对照面板使用独立轨道(grid-template-rows: auto …),页脚错位可见", "en": "The comparison panel uses independent tracks (grid-template-rows: auto …) with visibly misaligned footers" },
+      { "zh": "间距使用参数快照值;@supports 检测包裹增强样式", "en": "Gap uses the snapshot value; enhancement styles wrapped in @supports" },
+      { "zh": "axis=columns 时子网格跨越父网格全部列轨道(grid-column: 1 / -1)", "en": "For axis=columns the subgrid spans all parent column tracks (grid-column: 1 / -1)" },
+      { "zh": "文本内容变化通过真实 DOM 文本驱动,不用固定高度伪造对齐", "en": "Content variation drives real DOM text, never fixed heights faking the alignment" }
+    ]
+  }
+}

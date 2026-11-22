@@ -1,0 +1,105 @@
+{
+  "name": "CSS Grid Lanes",
+  "nameZh": "Grid Lanes 瀑布流",
+  "aliases": ["grid-lanes", "css-grid-3", "瀑布流(曾名 masonry)", "grid lanes layout"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "CSS Grid Level 3 的泳道布局:display: grid-lanes 让条目逐个放入列轨道、另一轴依次堆叠,自动进入剩余空间最多的列——Pinterest 式瀑布流的原生实现。",
+    "en": "CSS Grid Level 3's lanes: display: grid-lanes drops items into column tracks one by one, stacking along the other axis and always entering the column with the most remaining space — a native Pinterest-style masonry."
+  },
+  "origin": {
+    "zh": "出自 CSSWG CSS Grid Layout Module Level 3 草案:Grid lanes layout 定义为常见 Web 设计模式——条目逐个放入列轨道,另一轴内依次堆叠;未显式放置的条目进入「剩余空间最多的列」;新增属性 fit-tolerance(normal | <length-percentage> | infinite);新 display 值 grid-lanes / inline-grid-lanes。WebKit 官方示例语法:display: grid-lanes; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; 可在 Safari Technology Preview 234 试用(WebKit 2025-12-19 官宣,调研 05§5);item-flow/item-* 统一提案已被放弃(基于 2026-01-21 Working Draft 的 Recent Changes,调研 05§5);Safari 27.2 仍在微调属性命名(调研 11§4B)。",
+    "en": "From the CSSWG CSS Grid Layout Module Level 3 draft: Grid lanes layout is defined as a common Web design pattern — items drop into column tracks one by one, stacking along the other axis; unplaced items enter 'the column with the most remaining space'; the new fit-tolerance property (normal | <length-percentage> | infinite); new display values grid-lanes / inline-grid-lanes. WebKit's official syntax: display: grid-lanes; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; — trialable in Safari Technology Preview 234 (announced 2025-12-19, research 05 §5); the item-flow/item-* unification proposal was dropped (Recent Changes on the 2026-01-21 Working Draft, research 05 §5); Safari 27.2 still renames a Grid Lanes property (research 11 §4B)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "minTrack",
+      "unit": "px",
+      "min": 120,
+      "max": 400,
+      "step": 5,
+      "default": 220,
+      "cssVar": "--gl-min",
+      "effect": {
+        "zh": "列轨道最小宽度。默认 220px 取自调研 11§4B 可复用片段 repeat(auto-fill, minmax(220px, 1fr));WebKit 官方示例用 250px 变体(调研 05§5)。轨道定义与普通 Grid 完全一致——泳道只接管堆叠轴。",
+        "en": "The column track minimum. Default 220px from the research 11 §4B snippet repeat(auto-fill, minmax(220px, 1fr)); the official WebKit example uses a 250px variant (research 05 §5). Track definition is plain Grid — lanes only take over the stacking axis."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 4,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--gl-gap",
+      "effect": {
+        "zh": "轨道与泳道间距。默认 16px 取自 WebKit 官方示例(调研 05§5 记载 gap: 16px);泳道轴与轨道轴共用同一 gap。",
+        "en": "Track and lane gap. Default 16px from the official WebKit example (research 05 §5 records gap: 16px); the lane axis and the track axis share one gap."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "engine",
+      "options": [
+        { "value": "grid-lanes", "label": { "zh": "grid-lanes 声明(双写渐进增强)", "en": "grid-lanes declaration (dual-write)" } },
+        { "value": "columns", "label": { "zh": "columns 多列(全平台兜底)", "en": "columns (all-platform fallback)" } }
+      ],
+      "default": "grid-lanes",
+      "effect": {
+        "zh": "JS 型参数(demo 切换引擎)。grid-lanes 档按规范推荐双写声明 display: grid; display: grid-lanes; —— 支持的环境呈现泳道,不支持的环境回退普通网格(行带错位正是泳道要解决的问题);columns 档切换到多列瀑布流兜底(全平台可用)。demo 用 CSS.supports() 实时报告当前浏览器走哪条路。",
+        "en": "JS-type param (the demo switches engines). The grid-lanes mode writes the spec-recommended dual declaration display: grid; display: grid-lanes; — supporting engines render lanes, others fall back to a plain grid (whose row-band misalignment is exactly the problem lanes solve); the columns mode switches to the multi-column masonry fallback (works everywhere). The demo reports the active path live via CSS.supports()."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "实验性(BCD display.json → grid-lanes 标记 experimental,调研 11§4B,2026-11-22 抓取):Safari / iOS 26.4 起支持;Firefox 为 Nightly preview;Chrome 未支持。WebKit 官方:可在 Safari Technology Preview 234 试用(调研 05§5);Firefox 正式支持时间表调研未查到可靠资料(调研 05§5 如实声明)。item-flow/item-* 统一提案已弃(调研 05§5);Safari 27.2 仍在改名属性(调研 11§4B)——语法未冻结,生产勿依赖。",
+      "en": "Experimental (BCD display.json marks grid-lanes experimental; research 11 §4B, fetched 2026-11-22): Safari / iOS 26.4 onward; Firefox Nightly preview; Chrome unsupported. WebKit-official: trialable in Safari Technology Preview 234 (research 05 §5); no reliable source on Firefox's stable timeline (research 05 §5 says so explicitly). The item-flow/item-* proposal was dropped (research 05 §5); Safari 27.2 still renames a property (research 11 §4B) — the syntax is not frozen; do not depend on it in production."
+    }
+  },
+  "fallback": {
+    "zh": "规范原文给出的优雅降级即双写声明:`display: grid; display: grid-lanes;` —— 不支持的 UA 忽略第二行、回退普通网格(调研 11§4B)。普通网格对不等高条目会产生行带错位(一行的顶端对齐拖累整行),正式落地仍需 columns 多列或 JS 兜底(调研 05§5)。demo 即按双写实现,并用 CSS.supports('display', 'grid-lanes') 实时报告当前路径。",
+    "en": "The spec text itself prescribes the graceful degradation — the dual declaration: display: grid; display: grid-lanes; unsupported UAs ignore the second line and render a plain grid (research 11 §4B). A plain grid misaligns row bands for unequal-height items (each row tops out at its tallest), so real deployments still need columns multi-column or JS fallbacks (research 05 §5). The demo implements exactly the dual write and reports the active path live via CSS.supports('display', 'grid-lanes')."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "Pinterest 式图片/商品瀑布流——条目高度不一、逐个放入剩余空间最多的列(Safari 26.4+ / Nightly)", "en": "Pinterest-style image/product walls — uneven heights, each item into the column with the most remaining space (Safari 26.4+ / Nightly)" },
+      { "zh": "前瞻性渐进增强:现在写双声明,Safari 26.4+/Nightly 已呈现泳道,其余环境普通网格", "en": "Forward-looking progressive enhancement: write the dual declaration now — lanes render on Safari 26.4+/Nightly, a plain grid elsewhere" },
+      { "zh": "原型验证泳道排布与 fit-tolerance 行为(规范新属性:normal | <length-percentage> | infinite)", "en": "Prototyping lane arrangement and fit-tolerance behavior (the spec's new property: normal | <length-percentage> | infinite)" },
+      { "zh": "搜索结果流——css-grid-3 草案把 Pinterest 搜索结果页列为典型示例(调研 05§5)", "en": "Search result streams — the css-grid-3 draft names Pinterest search results as the typical example (research 05 §5)" }
+    ],
+    "avoid": [
+      { "zh": "生产环境唯一依赖——Chrome 未支持、Firefox 仅 Nightly、Safari 属性仍在改名(调研 11§4B),必须留兜底", "en": "Sole production dependency — Chrome unsupported, Firefox Nightly-only, Safari still renaming properties (research 11 §4B); always keep a fallback" },
+      { "zh": "按行序阅读的列表——泳道按列填充顺序,视觉顺序与 DOM 顺序脱节(同 columns 的取舍)", "en": "Lists read in row order — lanes fill column-wise, decoupling visual order from DOM order (same trade-off as columns)" },
+      { "zh": "需要精确控制条目位置的编辑场景——自动放置「进剩余空间最多的列」不可指定", "en": "Editorial layouts needing exact item positions — auto-placement 'into the column with most space' is not specifiable" },
+      { "zh": "把双写声明当万能钥匙——普通网格回退对不等高条目有行带错位,严重场景仍需 columns/JS 兜底", "en": "Treating the dual write as a silver bullet — the plain-grid fallback misaligns row bands for uneven heights; serious cases still need columns/JS fallbacks" }
+    ]
+  },
+  "a11y": {
+    "zh": "泳道按列放置会改变视觉阅读顺序,DOM 顺序仍为准(WCAG 1.3.2 语义顺序)——键盘焦点与读屏顺序随 DOM,可能与视觉列序不一致,顺序敏感内容慎用;回退形态(普通网格)与增强形态(泳道)内容相同、可达性等价;fit-tolerance 等新属性不改变可达性语义;实验语法在生产中必须验证回退路径的键盘可达。",
+    "en": "Lane placement reorders the visual reading sequence while the DOM order remains authoritative (WCAG 1.3.2 Meaningful Sequence) — keyboard focus and screen-reader order follow the DOM and may diverge from visual column order; be careful with order-sensitive content; the fallback (plain grid) and the enhancement (lanes) carry identical content with equivalent accessibility; new properties like fit-tolerance change no accessibility semantics; in production, verify keyboard navigation on the fallback path too."
+  },
+  "sources": [
+    "https://drafts.csswg.org/css-grid-3/",
+    "https://webkit.org/blog/17660/introducing-css-grid-lanes/",
+    "https://developer.chrome.com/blog/masonry"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻 Grid Lanes 瀑布流的渐进增强写法:条目墙用 display: grid; display: grid-lanes; 双写声明,grid-template-columns: repeat(auto-fill, minmax()) 定义轨道,并排 columns 多列兜底对照,实时报告当前浏览器的支持路径。",
+      "en": "Replicate the Grid Lanes progressive enhancement: a card wall with the dual declaration display: grid; display: grid-lanes;, tracks via grid-template-columns: repeat(auto-fill, minmax()), a columns multi-column fallback side by side, and a live report of the current browser's support path."
+    },
+    "acceptance": [
+      { "zh": "display: grid 与 display: grid-lanes 双写声明(回退顺序不可颠倒)", "en": "The dual declaration display: grid then display: grid-lanes (fallback order must not be inverted)" },
+      { "zh": "轨道定义 repeat(auto-fill, minmax(Npx, 1fr)) 与 gap 严格使用参数快照值", "en": "Track definition repeat(auto-fill, minmax(Npx, 1fr)) and gap use the exact parameter snapshot values" },
+      { "zh": "用 CSS.supports 检测 grid-lanes 并向用户如实报告当前渲染路径", "en": "Detect grid-lanes via CSS.supports and honestly report the active rendering path to the user" },
+      { "zh": "columns 兜底档对条目应用 break-inside: avoid", "en": "The columns fallback applies break-inside: avoid to items" },
+      { "zh": "浏览器支持表述如实:实验性,Safari 26.4+/Nightly 预览/Chrome 未支持,不夸大可用性", "en": "Support statements stay honest: experimental, Safari 26.4+ / Nightly preview / Chrome unsupported — no overclaiming" }
+    ]
+  }
+}

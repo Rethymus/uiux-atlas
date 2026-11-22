@@ -1,0 +1,73 @@
+## Structure & DOM
+
+Two elements — anchor + pop: **the anchor declares `anchor-name`, the pop links via `position-anchor` and picks a spot on the nine-region grid around the anchor with `position-area`**. The pop usually pairs with popover semantics for focus and dismissal.
+
+```html
+<button class="help-btn" popovertarget="help-pop" aria-describedby="help-pop">Help</button>
+
+<div class="help-pop" id="help-pop" popover>
+  …pop content…
+</div>
+```
+
+Key points:
+
+- The property family (verified item-by-item on MDN, research 11 §1): `anchor-name` (name the anchor), `position-anchor` (link), `anchor()/anchor-size()` (read anchor position/size), `position-area` (declarative nine-region grid), `position-try-fallbacks`/`position-try-order`/`@position-try` (overflow fallbacks), `position-visibility` (conditional hiding: always / anchors-visible / no-overflow), `anchor-center` (center on the anchor), `anchor-scope` (scope the lookup), plus the global `anchor` attribute;
+- Overflow flipping and conditional hiding are the two mechanisms beyond placement — the pop flips when it can't fit and hides when the anchor leaves the viewport;
+- anchor handles placement only: focus management, Esc dismissal and screen-reader announcements belong to popover/dialog semantics.
+
+## Styling & Parameters
+
+Three parameters: area is JS-type (generates the position-area declaration and fallback coordinates), offset is CSS-type (--ap-offset), tryFallback is JS-type (adds/removes the fallback rules):
+
+```css
+.help-btn { anchor-name: --help-btn; }
+
+/* Approach B (declarative, used by the demo): position-area + flip + conditional hide */
+.help-pop {
+  position: fixed;
+  position-anchor: --help-btn;
+  position-area: bottom center;
+  margin-top: var(--ap-offset);        /* 8px: the gap from snippet A, research 11 §1 */
+  position-try-fallbacks: --pop-top;   /* try above when it can't fit below */
+  position-visibility: anchors-visible;
+}
+@position-try --pop-top { position-area: top center; }
+
+/* Approach A (anchor() functional, equivalent): */
+.help-pop {
+  top: calc(anchor(bottom) + 8px);
+  left: anchor(center);
+  translate: -50%;
+}
+
+/* feature detection */
+@supports (anchor-name: --a) { /* enhancement */ }
+```
+
+Where the numbers come from: the 8px default gap comes from research 11 §1 snippets (`calc(anchor(bottom) + 8px)`); the property family and mechanisms are verified on MDN module/reference pages (research 11 §1); support: Chrome/Edge 125 (2024-05), Safari/iOS 26 (WWDC25 preview; first beta lacks position-visibility), Firefox 147 (2026-01-13 release notes: "Support for CSS anchor positioning was added"); additions (position-visibility, flip-x/flip-y, pseudo-elements) in Safari 26.2; the zoom/transform positioning-timing fix in Chrome 144 / Safari 27, unsupported in Firefox (research 11 §1, BCD + official release notes, fetched 2026-11-22).
+
+## Motion & Interaction
+
+Positioning happens at the **layout stage**; flips are instantaneous:
+
+- The pop fades over 0.2s (paired with popover light dismiss); the transition is disabled under `prefers-reduced-motion`;
+- `@position-try` flipping is a layout decision — instant, with no movement animation;
+- The demo detects `CSS.supports('anchor-name: --a')` and reports the active path honestly: native → pure CSS anchoring; unsupported → the getBoundingClientRect JS fallback (same area semantics and flip logic);
+- Pop and button are associated via `aria-expanded` / `aria-describedby` — beyond positioning, you declare the accessibility relationships yourself.
+
+## Real-world examples
+
+- **The MDN CSS anchor positioning module page** — the module's "tethering elements" definition plus full demonstrations of anchor()/position-area/@position-try; the most systematic usage reference (research 11 §1 source).
+- **Chrome for Developers tutorials** — official tutorials and examples since Chromium 125; the earliest scaled usage guidance (research 11 §1 source).
+- **WebKit's WWDC25 post and the Firefox 147 release notes** — the two vendors list anchor positioning as a new Safari 26 layout mechanism and a Firefox 147 feature respectively, both officially framing it as "tethering elements" (research 11 §1 sources).
+
+## Parameter Sensitivity
+
+| Parameter | Up / switching forward… | Down / switching back… |
+| --- | --- | --- |
+| `area` | switching sides (right/left) slides the pop alongside the anchor; near edges the flip direction changes with it | bottom/top center is the default semantics; walk all four directions to confirm the @position-try flip chain |
+| `offset` | a larger gap detaches the pop from the anchor visually; at 48px it reads as disconnected | the pop hugs the anchor; below 4px shadow and border smear together |
+| `tryFallback` | on: flips automatically on viewport overflow (bottom center → top center); the demo's bottom-right anchor shows it immediately | off: the pop may be clipped — the contrast that proves the fallback mechanism's worth |
+
+Working notes: pair every pop with popover semantics (anchor places; accessibility is separate); bottom center + @position-try flip is the community-standard posture (research 11 §1 snippets); wait for the zoom/transform timing fixes to cover your targets before relying on them; the JS fallback is not optional — it is the shipping gate.

@@ -1,0 +1,92 @@
+{
+  "name": "Motion Choreography",
+  "nameZh": "动效编排 Choreography",
+  "aliases": ["编排", "choreography", "方向性编排", "stagger delay"],
+  "category": "motion",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "纯 CSS 的动效编排:animation-delay 按 --i 递增做交错起点,方向(上/下/左/右/无)给整组元素统一的空间语义;时长/曲线取 M3 官方配对(进入 std-decel 250ms、退出 std-accel 200ms),进入恒长于退出。",
+    "en": "Choreography in pure CSS: animation-delay grows with --i to stagger start points, and a shared direction (up/down/left/right/none) gives the whole group one spatial meaning; duration and curve come from M3's official pairs (enter std-decel 250ms, exit std-accel 200ms — enters outlast exits)."
+  },
+  "origin": {
+    "zh": "两处官方依据的组合:① 交错起点——CSS animation/transition delay 的编排用法,JS 库等价物为 Motion 的 delay/stagger(调研 04§1.3,负值=中途开始);② 方向性——M3《Transition patterns》Enter and exit 模式:进入方向建立空间模型,通知自顶部、抽屉自侧缘、sheet/键盘自底部,snackbar 依位置定向展开(调研 04§3.3);时长取官方配对表 std-decel 250ms(进入)/ std-accel 200ms(退出)(调研 04§1.4)。交错间隔具体数值官方未给出。",
+    "en": "A combination of two official sources: (1) staggered starts — the orchestration use of CSS animation/transition delay, whose JS-library counterpart is Motion's delay/stagger (research 04 §1.3, negative = start mid-flight); (2) directionality — M3 \"Transition patterns\" Enter-and-exit mode: the entering direction builds a spatial model — notifications from the top, drawers from the side, sheets/keyboards from the bottom, snackbars directionally by position (research 04 §3.3); durations from the official pairing table, std-decel 250ms (enter) / std-accel 200ms (exit) (research 04 §1.4). The stagger interval itself has no official value."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stagger",
+      "min": 0,
+      "max": 120,
+      "step": 5,
+      "default": 40,
+      "unit": "ms",
+      "effect": {
+        "zh": "相邻子项的启动间隔,demo 按 delay = i × stagger 下发给 5 个子项。M3/Motion 文档均未给出交错间隔的推荐值——40ms 为社区常见值,未证实;总铺开时间 = stagger × (n−1),demo 实时标注。",
+        "en": "The start interval between adjacent children; the demo assigns delay = i × stagger across 5 items. Neither M3 nor the Motion docs recommend a stagger value — 40ms is a common community value, unverified; total spread = stagger × (n−1), labeled live in the demo."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "direction",
+      "options": [
+        { "value": "up", "label": { "zh": "自下方进入(上浮)", "en": "Enter from below (rise)" } },
+        { "value": "down", "label": { "zh": "自上方进入(下落)", "en": "Enter from above (drop)" } },
+        { "value": "left", "label": { "zh": "自右侧进入", "en": "Enter from the right" } },
+        { "value": "right", "label": { "zh": "自左侧进入", "en": "Enter from the left" } },
+        { "value": "fade", "label": { "zh": "无方向·纯淡入", "en": "No direction · fade only" } }
+      ],
+      "default": "up",
+      "effect": {
+        "zh": "整组统一的空间语义(M3 Enter/exit 方向性):进入方向暗示来源——列表内容自下方上浮读作「更多内容到来」,通知类自上方下落,侧栏类自侧缘;fade 去掉位移只留节奏,也是 reduced-motion 的降级形态。",
+        "en": "One spatial meaning for the whole group (M3 Enter/exit directionality): the entering direction implies origin — list content rising from below reads as \"more content arriving\", notifications drop from the top, sidebars come from a screen edge; fade keeps the rhythm without displacement and doubles as the reduced-motion fallback."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "只用 animation-delay + CSS 变量(全现代浏览器可用,属 CSS Animations 既有特性);本次调研未逐浏览器核验版本矩阵。不依赖任何 JS 动效库;禁用 JS 时列表以最终状态渲染(demo 的重播按钮失效但不影响阅读)。",
+      "en": "Uses only animation-delay plus CSS variables (available in all modern browsers, long-standing CSS Animations); per-browser version matrices were not audited in this pass. No JS animation library is involved; without JS the list renders in its final state (the replay button dies, reading is unaffected)."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion 时去掉位移、改用纯 opacity 交错淡入(保留节奏、去掉位移)——大平移是前庭障碍的常见触发源(MDN prefers-reduced-motion,调研 04§6.1);stagger=0 时退化为同步入场,也是合法降级。",
+    "en": "Under prefers-reduced-motion, drop displacement and cross-fade with opacity only (keep the rhythm, remove the movement) — large translations are a common vestibular trigger (MDN prefers-reduced-motion, research 04 §6.1); stagger=0 degrades to a simultaneous entrance, itself a valid fallback."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "首屏内容组的方向性入场:列表自下方上浮、通知自上方下落、侧栏自侧缘滑入(M3 空间模型)", "en": "Directional entrances for above-the-fold groups: lists rise from below, notifications drop from the top, sidebars slide from an edge (M3 spatial model)" },
+      { "zh": "snackbar/toast 依位置定向展开——底部向上、顶部向下(M3 官方描述)", "en": "Snackbars/toasts expanding directionally by position — upward from the bottom, downward from the top (official M3 wording)" },
+      { "zh": "需要退出比进入更快的组:入场 std-decel 250ms + 退场 std-accel 200ms 反向交错", "en": "Groups whose exits must beat their enters: entrance std-decel 250ms + reverse-staggered exit std-accel 200ms" }
+    ],
+    "avoid": [
+      { "zh": "长列表(>20 项)整段交错——末项等待线性拉长;首屏之外改用滚动触发的 reveal(见 scroll-driven-animations 条目)", "en": "Staggering whole long lists (>20 items) — the last item's wait grows linearly; below the fold, switch to scroll-triggered reveals (see scroll-driven-animations)" },
+      { "zh": "同一视图多组同时交错入场——编排是强调手段,并发即互相抵消(HIG:反馈动效简短精确)", "en": "Multiple groups staggering in simultaneously in one view — choreography is an emphasis tool, concurrency cancels it (HIG: feedback motion is brief and precise)" },
+      { "zh": "方向与空间模型矛盾:内容出现在顶部却配「自下方」方向,来源暗示与实际来源打架", "en": "Directions contradicting the spatial model: content appearing at the top while animating \"from below\" — the origin hint fights the actual source" },
+      { "zh": "用户高频重复操作每次都整段点名入场(HIG:高频交互避免加动效、动效可取消)", "en": "A full roll-call on every repetition of a frequent action (HIG: avoid motion on frequent interactions, keep motion cancellable)" }
+    ]
+  },
+  "a11y": {
+    "zh": "位移类入场是前庭触发源,必须响应 prefers-reduced-motion(降级为纯 opacity 交错淡入);列表保持语义 DOM(ul/li 或有序容器),动画只作用于 opacity/transform,可达性树从第一帧完整、读屏立即读到全部子项;末项落定前不承载关键信息,或提供跳过路径(HIG:动效可取消)。",
+    "en": "Displacement entrances are vestibular triggers and must honor prefers-reduced-motion (fade to opacity-only stagger); lists keep semantic DOM (ul/li or ordered containers) while animating only opacity/transform, so the accessibility tree is complete from frame one and screen readers get every item immediately; nothing critical rides on items before the last one settles, or a skip path exists (HIG: cancellable)."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/transitions/transition-patterns",
+    "https://web.dev/articles/animations-guide",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用纯 CSS 复刻一组方向性交错入场:N 个子项共用同一进入方向(如自下方 14px 上浮),delay = i × stagger 递增,入场 std-decel cubic-bezier(0,0,0,1) 250ms;退场反向交错、std-accel 200ms;reduced-motion 降级为纯 opacity 交错。",
+      "en": "Replicate a directional staggered entrance in pure CSS: N children share one entering direction (e.g. rise 14px from below), delay = i × stagger, entering with std-decel cubic-bezier(0,0,0,1) at 250ms; exits reverse-stagger with std-accel 200ms; reduced-motion degrades to opacity-only stagger."
+    },
+    "acceptance": [
+      { "zh": "交错用 animation-delay = i × stagger 实现,不依赖 JS 动效库", "en": "Staggering is animation-delay = i × stagger, with no JS animation library" },
+      { "zh": "整组方向统一且与来源空间一致(M3:通知自顶、抽屉自侧、sheet 自底)", "en": "One direction per group, consistent with the content's spatial origin (M3: notifications top, drawers side, sheets bottom)" },
+      { "zh": "入/出时长取官方配对:进入 250ms std-decel、退出 200ms std-accel(进入恒长于退出)", "en": "Enter/exit durations from the official pairs: enter 250ms std-decel, exit 200ms std-accel (enters outlast exits)" },
+      { "zh": "只动画 opacity 与 transform,并实时显示总铺开时间 stagger × (n−1)", "en": "Animate only opacity and transform, and show the total spread stagger × (n−1) live" },
+      { "zh": "prefers-reduced-motion: reduce 时改纯 opacity 交错淡入,保留节奏去掉位移", "en": "Under prefers-reduced-motion: reduce, cross-fade with opacity only — keep the rhythm, drop the displacement" }
+    ]
+  }
+}

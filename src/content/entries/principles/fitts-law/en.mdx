@@ -1,0 +1,60 @@
+## Structure & DOM
+
+The demo has three roles: a **start button**, a **target button**, and a stage layer that catches misses. Target position and size are driven entirely by two parameters via CSS variables:
+
+```html
+<div class="ft-field" data-phase="idle">
+  <button class="ft-start">Start</button>
+  <button class="ft-target">Target</button>
+  <span class="ft-miss">MISS</span>
+</div>
+```
+
+Key points:
+
+- The start stays fixed bottom-left; the target is offset by `--ft-distance` and sized by `--ft-size` — changing either variable immediately changes the experimental condition;
+- The stage layer catches clicks landing **outside** the target and counts them as misses — the other half of Fitts' finding: fast movements × small targets → high error rates (speed-accuracy trade-off);
+- Start and target are real `<button>` elements, Tab-focusable and activated with Enter/Space (key conventions in the keyboard-navigation entry).
+
+## Styling & Parameters
+
+```css
+.demo-stage {
+  --ft-size: 48px;      /* target edge; default = M3 touch target 48dp (research 04 §2.1) */
+  --ft-distance: 160px; /* horizontal gap start → target */
+}
+.ft-target {
+  width: var(--ft-size);
+  height: var(--ft-size);
+  left: calc(20px + 150px + var(--ft-distance));
+}
+```
+
+Where the numbers come from:
+
+- `size` defaults to **48px**: the target 48dp in M3's Switch spec (research 04 §2.1); the Laws of UX guidance reads "targets should be large enough, well spaced, and placed where they are easily acquired";
+- WCAG 2.2 SC 2.5.8 (AA) sets the legal floor at 24×24 CSS px — far looser than 48px; the demo opens down to 16px so you can **watch the violation happen**;
+- The panel live-computes the Shannon-form difficulty index **ID = log₂(2D/W)**: D is distance, W is target width — the standard quantitative form of the law; the demo approximates amplitude D with the horizontal edge gap.
+
+## Motion & Interaction
+
+- Clicking **Start** starts a **1.2s pulsing halo** on the target (spreading box-shadow, compositor-friendly loop) marking the "aiming" state and the timer start;
+- Hitting the target stops the timer and writes the result into the "Recent" list (max 4 entries); the target returns to rest;
+- A click outside the target during aiming flashes `MISS ✕` (0.5s) and increments the miss counter; the timer **keeps running** — misses are experimental data too;
+- Changing size / distance never interrupts the current run — the parameter panel and the experiment stay in sync;
+- Under `prefers-reduced-motion: reduce`, the halo and MISS flash are dropped while timing logic is untouched.
+
+## Real-world examples
+
+- **Material 3 touch targets**: M3's Switch spec mandates a target of 48dp — the hit area far exceeds the visible track (52×32dp); the most systematic application of "make the target big" (research 04 §2.1);
+- **The big-mobile-button convention**: Laws of UX explicitly notes the law "influenced the convention of making interactive buttons large (especially on finger-operated mobile devices)" — today's consensus primary-button sizes on iOS/Android trace back here (research 07 §22);
+- **"Inverse Fitts" for destructive actions**: shrinking dangerous buttons and moving them away from hot zones raises acquisition cost by the same law — a legitimate inverse use (07 §22 guidance: keep the focus-area-to-button distance short — in reverse).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `size` | hits get easy; time and misses fall; at 96px the target is nearly a whole region and the experiment loses resolution | ID climbs and trials slow; ≤24px touches the WCAG 2.2 SC 2.5.8 legal floor; at 16px miss rate visibly spikes |
+| `distance` | longer travel path, longer times — the raw 1954 finding | near 60px the buttons almost touch and the experiment degrades to "tap what's next to you" |
+
+Working ranges: production touch targets sit at the 44–48px class (M3 target 48dp as reference); WCAG's legal floor is 24px; the demo reads best between ID 1–4 bits — at a given ID, "small but near" and "big but far" take similar time, which is exactly what the formula means.

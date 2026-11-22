@@ -1,0 +1,54 @@
+## 结构与 DOM
+
+演示是 **APG 30 模式浏览面板**:左侧模式芯片墙 + 右侧「三段规范」卡片:
+
+```html
+<div class="apg-chips" role="group" aria-label="APG 模式列表">
+  <button class="apg-chip" aria-pressed="true">Button</button>
+  <!-- ×30 -->
+</div>
+<aside class="apg-card" aria-live="polite">
+  <h4>Button</h4>
+  <b>键盘交互 Keyboard</b> …
+  <b>roles</b> …
+  <b>states & properties</b> …
+</aside>
+```
+
+关键点:
+
+- 30 个模式名**逐字**取自调研 07§34 清单(Accordion…Window Splitter,Slider 与 Multi-Thumb 分列后恰 30 个);
+- 每张卡片保持 APG 模式页的固定三段结构:**键盘交互 / roles / states & properties**(07§34 原文);
+- 键位提示只收录调研 07§36 已证实的六个模式(Button、Checkbox、Radio Group、Slider、Tabs、Dialog),其余如实显示「详见 APG 模式页」——**不确定的不编**。
+
+## 样式与参数
+
+```tsx
+const visible = PATTERNS.map((p, i) => ({ p, i }))
+  .filter(({ p }) => group === "all" || p.group === group);
+```
+
+- `group` 五档过滤(全部/表单与输入/导航与菜单/容器与披露/复合与反馈)——**教学分组,非 APG 官方分类**(APG 页面本身不分组),schema 与本节均如实标注;
+- `keyhint` 开关键位提示;卡片 `aria-live="polite"` 让切换被读屏感知;
+- 芯片是真实按钮、`aria-pressed` 表达选中态——「选中 ≠ 焦点」的视觉与语义双落位(07§35)。
+
+## 动效与交互
+
+- 点芯片 → 卡片内容替换(无动画:规范阅读场景,瞬时切换最佳);`aria-live` 播报;
+- Tab 可遍历全部芯片,焦点环完整;分组容器带 `role="group"` + label;
+- 无循环动画,reduced-motion 无需处理。
+
+## 真实产品案例
+
+- **自定义 Tabs / Tree 的实现底稿**:APG 的 Tabs、Tree View 模式页给出了 roving focus、aria-selected、方向键行为的完整表格——大多数组件库文档只写 props,不写键盘;APG 是补齐这一层的权威来源(07§34/§35);
+- **Combobox 四种 autocomplete 行为**:APG 把 Combobox 的 list/manual/both/none 四种行为分开规定,是 07§5(选择器四种 autocomplete 行为)的规范出处;
+- **Dialog 的 Esc 与困焦惯例**:WebAIM 键盘页(07§36)与 APG Dialog 模式互为印证——「模态困焦合法,但 Esc 通常应能释放,焦点回触发者」,已是 modal 实现的事实标准(见 keyboard-navigation 条目)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `group` | 过滤后每组 6–9 个芯片,扫读更快 | all 档 30 个芯片一览——「模式库」本身的观感 |
+| `keyhint` | on:已证实键位直接可读,六个模式之外让位给 APG 原文 | off:卡片只剩三段结构,适合聚焦结构本身 |
+
+经验结论:APG 的正确用法是「动手前查,做完后验」;把 30 个模式清单当作自定义组件的**覆盖度清单**——你要造的组件在不在库里,在的话三段规范照抄,不在的话再谈发明。

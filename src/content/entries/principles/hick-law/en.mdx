@@ -1,0 +1,54 @@
+## Structure & DOM
+
+The demo is a **choice-reaction-time experiment**: N candidate target buttons on a ring, one randomly highlighted each round, measuring "highlight appears → hit":
+
+```html
+<div class="hk-ring">
+  <button class="hk-target" data-active="false">1</button>
+  <button class="hk-target" data-active="true">2</button>
+  <!-- N of them -->
+</div>
+```
+
+Key points:
+
+- N is controlled by the `choices` param (2–8); the highlighted target gets a **3px green outline + a "Hit" label** — dual-channel marking, never color alone (SC 1.4.1);
+- Wrong clicks don't end the round — error count and the timer coexist; "slow decision" and "wrong decision" are two separate measurements;
+- The stats table groups median RT by N with sample counts; cross-N comparison happens entirely in the side panel.
+
+## Styling & Parameters
+
+```tsx
+// choices / pause are JS-type params: the demo subscribes to the store
+const [choices, setChoices] = useState(() => store.get("choices") as number);
+useEffect(() => store.subscribe(() => {
+  setChoices(store.get("choices") as number);
+  setPause(store.get("pause") as number);
+}), [store]);
+```
+
+- `choices` defaults to **4**: a teaching starting point, not a claim of the law; the classic Hick-Hyman form is **RT = a + b·log₂(N)** (Hick & Hyman 1952), and the demo lets you measure your own a and b;
+- `pause` defaults to 800ms: the inter-round gap, a demo pacing param (too short bleeds one round's hesitation into the next round's timer);
+- Highlight marking: 3px outline + text label — the "Hit" cue also serves screen readers (the button text stays a number).
+
+## Motion & Interaction
+
+- Each round: the highlight flips on (`opacity` 0.45→1 plus outline switch, 0.12s) and the timer starts; a hit extinguishes it, and the next round fires after `pause` ms;
+- **Wrong clicks**: errors +1, highlight stays, timer keeps running — no punishment, no interruption, the data speaks;
+- Changing `choices` re-lays out the ring immediately (changing N ends the current round; tap any target to restart);
+- No looping animation, no reduced-motion need; every target is a real button, Tab-focusable one by one (key conventions in the keyboard-navigation entry).
+
+## Real-world examples
+
+- **Google's homepage**: Laws of UX's first example — decision cost for entering a keyword is minimized by removing anything distracting or requiring extra decisions, the extreme form of "cut options where response time matters";
+- **Apple TV remote**: the second Laws of UX example — the remote itself carries very few keys, transferring complexity to the TV interface where information is organized and progressively disclosed in menus;
+- **Slack's progressive onboarding**: research 07 §23's original case — newcomers see only the message input, learn messaging via Slackbot first, and the rest unlocks gradually instead of flooding the user with every feature at once.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `choices` | decisions slow: median RT rises logarithmically with N; "median(N=8) − median(N=2)" is your measured b·log₂ difference | decisions speed up; N=2 is pure simple reaction time (almost only a) |
+| `pause` | longer gaps slow the experiment and starve the statistics | below ~400ms one round's hesitation bleeds into the next round's timer, dirtying samples |
+
+Working range: teach the contrast with N=2 vs N=8; read medians only once a single N has ≥5 samples; and mind the law's own caveat — **don't simplify to the point of abstraction**: you cut decision cost, not function.

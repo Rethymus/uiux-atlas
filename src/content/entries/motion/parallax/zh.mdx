@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+视差是「一个滚动容器 + 一个分层世界」:滚动容器承载全部内容,`.world` 里叠三层装饰层(远/中/近)+ 一层 1:1 随滚动的真实内容:
+
+```html
+<div class="scroller">          <!-- overflow-y: auto,唯一滚动源 -->
+  <div class="world">           <!-- 相对定位,高度撑出可滚动距离 -->
+    <div class="layer far"  aria-hidden="true"></div><!-- 装饰层不承载内容 -->
+    <div class="layer mid"  aria-hidden="true"></div>
+    <div class="layer near" aria-hidden="true"></div>
+    <div class="copy">…</div>   <!-- 内容层 1:1 随滚动,永远可读 -->
+  </div>
+</div>
+```
+
+关键点:
+
+- 装饰层是纯背景(`aria-hidden`、`pointer-events: none`),**任何正文都不落在视差层上**;
+- 每层一个乘数 m(远 1 / 中 2 / 近 3),跟随比例 p = min(rate × m, 1);内容层恒为 p=1;
+- 位移方向与滚动相反地「补慢」:层随滚动移动 p×距离,视口内净移动只剩 p 倍速——p 越小越接近钉死。
+
+## 样式与参数
+
+声明式实现(CSS 变量型参数 `rate` → `--par-rate`;JS 量测可滚动距离写入 `--par-s`):
+
+```css
+@supports (animation-timeline: scroll()) {
+  .layer {
+    animation: drift linear both;
+    animation-timeline: scroll(nearest block); /* 必须写在 animation 简写之后 */
+    animation-duration: auto;                  /* 时长交给滚动进度 */
+  }
+}
+@keyframes drift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc((1 - min(var(--par-rate) * var(--px-m, 1), 1)) * var(--par-s))); }
+}
+```
+
+JS 对照实现(官方文章的传统路径):scroll 事件 + rAF 直写 `el.style.transform`——它在**主线程**运行且与合成器滚动异步,快速滚动易掉帧;声明式 `scroll()` 可在主线程之外运行(调研 04§4)。demo 的 mode 参数即这两条路径的现场对照;浏览器不支持 `scroll()` 时自动落到 JS 路径并标注。
+
+数值出处:实现机制全部出自 Chrome 官方滚动驱动文章(调研 04§4);**官方未给跟随比例的推荐值**——demo 默认 0.3 为演示值(社区常见分层 0.2–0.6,未证实);Firefox/Safari 支持现状调研明确未逐项核实,以 MDN 兼容表为准。
+
+## 动效与交互
+
+- **速率差即深度**:滚动时远层以 30%(默认)速跟进、中层 60%、近层 90%,内容层 100%——三层视觉速度梯度一屏可辨;
+- **p=0 / p=1 两个边界**:0 = 远层钉在视口(星空不动),1 = 全部层与内容同步(视差消失);demo 两个边界都有标注;
+- **JS/CSS 现场对照**:切到 js 模式滚动对比流畅度——官方结论(主线程 vs 合成器)直接可体感;
+- **性能**:只动画 transform;`--par-s` 只在挂载/resize 时量测一次,滚动路径零布局读取;
+- **reduced-motion**:reduce 时视差整体关闭,静态构图直出(JS 路径同样停),内容不受影响。
+
+与滚动时间轴的基础用法(进度条、reveal、animation-range)见 scroll-driven-animations 条目;「转场内的视差」(iOS 前进/后退)见 page-transitions 条目。
+
+## 真实产品案例
+
+- **iOS 前进/后退转场**:M3《Transition patterns》记载 iOS 的层级转场使用视差——背景慢于前景(调研 04§3.3),这是「速率差=深度」在系统级产品里的官方例证;
+- **Chrome 官方滚动驱动文档**:把「视差背景图」列为 `scroll()` 时间轴的典型用例(前景/背景随不同 timeline/range 速度移动,调研 04§4)——官方推荐的实现路径即本条的声明式写法;
+- **营销页多层 hero(社区常见,未证实)**:星空/山峦/前景三层以不同速率陪跑是 Web 营销页的常见做法,但无官方规范文章——调研明确「视差未找到更专门的一手规范」(调研 04§8.5),实现时应以滚动驱动文档为唯一一手依据。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `rate` | 各层更贴近内容速度,视差感减弱;1 = 无视差(全同步) | 远层更接近钉死,深度感更强;0 附近时星空完全静止,长时间注视易察觉层间脱节 |
+| `mode` | js:可对照体感主线程路径的掉帧代价,也是不支持 scroll() 浏览器的兜底 | css:声明式、可离主线程,是官方推荐路径;两模式在慢速滚动下观感几乎一致 |
+
+选型口诀:内容层永远 1:1,视差只给装饰层;rate 从 0.3 起步按「远层要退多慢」微调;能用声明式 `scroll()` 就不写 scroll 事件。

@@ -1,0 +1,72 @@
+## 结构与 DOM
+
+三层结构是**引用方向**的纪律,不是目录结构:第 1 层 primitive 存原始值(带序号层级),第 2 层 semantic 用角色词命名并**只引用 primitive**,第 3 层 component 的 CSS **只消费语义变量**。
+
+```html
+<article class="card">…</article>
+```
+
+```css
+/* 第 3 层:组件文件里零 hex */
+.card {
+  background-color: var(--st-bg, #ffffff);   /* 语义变量 + 兜底值 */
+  color: var(--st-fg, #1c1b1f);
+}
+```
+
+```css
+/* 第 2 层:语义映射表(light 主题的一行,Primer 实测分层) */
+[data-theme="light"] {
+  --st-bg: var(--st-primitive-neutral-0);
+}
+```
+
+关键点:
+
+- 引用链单向:component → semantic → primitive,禁止反向跳层(组件直接摸 primitive 是 Android 文档点名的反模式——应「语义化分配 color role 而非具体值」);
+- 主题切换只改一张映射表:data-theme 属性重挂语义变量,9 套主题共用同一份组件 CSS;
+- 语义名必须是**角色词**(`bgColor-default`、`fgColor-muted`),不能是观感词(`--light-blue-500`)——观感词换主题即失效。
+
+## 样式与参数
+
+demo 的 9 套主题用 `data-theme` 重映射 6 条语义变量;三个参数全为 JS 型(`theme` / `role` / `layer`),映射面板按 DTCG 形状展示三层定义:
+
+```css
+.st-scene[data-theme="dark"] {
+  --st-bg: oklch(0.19 0.01 297);      /* 演示映射值 */
+  --st-accent: #D0BCFF;                /* M3 暗色 primary 官方基线(调研 06§7) */
+  --st-on-accent: #381E72;             /* M3 暗色 on-primary 官方基线 */
+}
+```
+
+数值与命名出处(全部取自 Primer Primitives README,调研 06§10):
+
+- 官方主题清单 **9 套**,demo 逐字沿用:`light / dark / dark-dimmed / light-high-contrast / dark-high-contrast / light-colorblind / dark-colorblind / light-tritanopia / dark-tritanopia`;
+- 语义 token 官方示例名:`bgColor-default`、`fgColor-muted`、`borderColor-accent.muted`;primitive 官方示例键:`base.color.blue.3`(序号 = 明度层级);
+- token 文件格式遵循 **W3C Design Tokens 社区组规范**(`$value`/`$type`/`$extensions`),支持 alpha 变换(官方原形 `{ $value: '{base.color.blue.3}', alpha: 0.4 }`)与 `@`-hack 定义默认+子值(`bgColor.accent.@` → `bgColor-accent`);
+- 编译器:style-dictionary(Primer 实测采用)。
+
+## 动效与交互
+
+主题切换的动效克制且可选——架构本身是静态纪律:
+
+- **theme 参数切换**:data-theme 重挂变量,卡片底色/文字 0.25s ease 过渡;`prefers-reduced-motion` 时取消过渡;
+- **role 参数**:映射链中被选中的语义角色在卡片上以 2px 虚线 outline 定位宿主元素(bgColor-default → 卡片、fgColor-muted → 次级文字、borderColor-accent.muted → 徽标),面板同时放大该行;
+- **layer 参数**:面板在 primitive(原始值 + alpha 变换原形)/ semantic(DTCG $value 引用)/ component(组件消费侧)三层定义间切换;
+- 色盲/蓝黄色盲主题演示同一张组件 CSS 如何「整体变蓝」——accent 映射移向蓝区 220°(Evil Martians 色相映射),这正是「换映射表生成无障碍模式」的实证。
+
+## 真实产品案例
+
+- **GitHub.com**:Primer 的生产主场——9 套主题全部实装,含 4 套无障碍主题(高对比×2、色盲×2、蓝黄色盲×2,调研 06§10/§19);用户在 github.com/settings/appearance 直接切换;
+- **Android 系统 Dynamic Color**:官方文档原文「用 design token 语义化分配 color role 而非具体值」,亮暗主题与壁纸动态取色共享同一套 token(调研 06§10 佐证)——三层架构的移动端同构;
+- **style-dictionary 生态**:Primer 的 primitive 经它编译为多平台产物(W3C DTCG 格式为通用交换格式,调研 06§10)——同一份 primitive 表喂给 Web/iOS/Android。
+
+## 参数敏感度
+
+| 参数 | 换成… | 会… |
+| --- | --- | --- |
+| `theme` → dark | 表面变暗、accent 提亮降饱和(#6750A4→#D0BCFF,M3 基线演示了该惯例) | dark-dimmed 是折中档;dark 档对比更锐 |
+| `theme` → high-contrast | 文字推向纯黑/纯白、accent 加深、半透明描边收敛为高不透明 | 是独立映射表,不是「同一套色加深」——逐套核对对比度 |
+| `theme` → colorblind | accent 移向蓝区(演示映射);红绿信息改由明度差承载 | 蓝黄(tritanopia)同样换表解决——语义层一旦就位,无障碍主题是「填表」而非「改组件」 |
+| `role` | 高亮不同宿主元素,展示同一张表里不同角色的分工 | — |
+| `layer` | primitive 层是唯一允许出现 hex 的地方;component 层零色值 | — |

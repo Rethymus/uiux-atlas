@@ -1,0 +1,67 @@
+## Structure & DOM
+
+One flat layer: a lanes container plus sibling items — the same DOM as a plain Grid, only the display value changes:
+
+```html
+<div class="wall">
+  <article class="card">…</article>
+  <article class="card">…</article>
+  <!-- uneven heights, auto-placed -->
+</div>
+```
+
+Key points:
+
+- New display values: `grid-lanes` (block-level) / `inline-grid-lanes` (inline); items are placed into predefined tracks on one axis (the grid axis) and stack freely on the other (the stacking axis) (research 11 §4B);
+- **Auto-placement rule**: unplaced items enter **the column with the most remaining space**, sized against already-placed items (research 05 §5 / 11 §4B);
+- New property `fit-tolerance`: `normal | <length-percentage> | infinite` (research 11 §4B);
+- The item-flow / item-* unification proposal **was dropped**, converging on grid lanes (Recent Changes on the 2026-01-21 Working Draft, research 05 §5);
+- Experimental: the syntax is not frozen (Safari 27.2 still renames a property, research 11 §4B); never make it the sole production dependency.
+
+## Styling & Parameters
+
+Three parameters: minTrack / gap are CSS-type (--gl-min / --gl-gap), engine is JS-type:
+
+```css
+.wall {
+  display: grid;         /* fallback: all browsers (spec-recommended dual write, research 11 §4B) */
+  display: grid-lanes;   /* Safari 26.4+ / Firefox Nightly */
+  grid-template-columns: repeat(auto-fill, minmax(var(--gl-min), 1fr)); /* 220px (11 §4B snippet; WebKit example uses a 250px variant) */
+  gap: var(--gl-gap);    /* 16px, official WebKit example (research 05 §5) */
+}
+
+/* columns multi-column fallback (works everywhere, order runs down columns) */
+.wall[data-engine="columns"] {
+  display: block;
+  columns: auto var(--gl-min);
+  column-gap: var(--gl-gap);
+}
+.wall[data-engine="columns"] .card { break-inside: avoid; margin-bottom: var(--gl-gap); }
+```
+
+Where the numbers come from: `minmax(220px, 1fr)` and `gap: 16px` come from the research 11 §4B snippet and the official WebKit example (05 §5 uses a 250px variant); the dual-write degradation comes straight from the css-grid-3 spec text (research 11 §4B); support data: BCD display.json marks grid-lanes experimental — Safari/iOS 26.4, Firefox Nightly preview, Chrome unsupported (research 11 §4B, fetched 2026-11-22).
+
+## Motion & Interaction
+
+Lane placement happens at the **layout stage** — no animation:
+
+- Entering "the column with the most remaining space" is a layout algorithm, instantaneous; adding or removing items rebalances the columns;
+- The demo detects and honestly reports the active path via `CSS.supports('display', 'grid-lanes')`: supported → lanes; unsupported → plain-grid fallback (whose row-band misalignment is exactly the problem lanes solve);
+- engine toggles data-engine between the dual-write declaration and the columns fallback;
+- The status chip cross-fades over 0.25s, disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Pinterest** — the css-grid-3 draft names Pinterest search results as the typical example of "items placed into the column with the most remaining space" (verified against research 05 §5).
+- **WebKit's official tutorial site gridlanes.webkit.org** — the official interactive tutorial, shipped with the "Field Guide to Grid Lanes" (research 11 §4B).
+- **Chrome for Developers' "CSS masonry"** — Rachel Andrew's proposal of an independent layout model on behalf of the Chrome team; the post now carries a note that its examples predate the draft and "Grid lanes layout per css-grid-3" is authoritative (research 05 §5).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `minTrack` | fewer lanes: each lane widens and carries more items; at 400px a narrow container has one lane | more, narrower lanes: below ~120px text squeezes; more lanes make the "most remaining space" allocation finer-grained |
+| `gap` | larger lane and track gaps: airier layout, height differences amplified by gaps | denser layout: height differences read more continuously, approaching a seamless masonry |
+| `engine` | grid-lanes: lanes without row bands on supporting engines; a plain grid (row-band misalignment) elsewhere | columns: an everywhere-consistent masonry, but column-wise order decouples DOM order from visual order |
+
+Working notes: write the dual declaration today (the spec's own degradation path), but real deployments still need columns/JS fallbacks (research 05 §5); keep order-sensitive content (step flows, rankings) off lanes; wait for Safari 27.2's naming to settle before a full switch.

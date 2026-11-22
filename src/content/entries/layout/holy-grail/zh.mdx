@@ -1,0 +1,76 @@
+## 结构与 DOM
+
+四个语义区块 + 一个网格容器:**header / side / main / footer 各自声明 `grid-area: <名字>`,容器用 grid-template-areas 的字符串拼出骨架**。DOM 顺序固定,视觉位置由字符串决定。
+
+```html
+<div class="page">
+  <header>…</header>   <!-- grid-area: header -->
+  <aside>…</aside>     <!-- grid-area: side -->
+  <main>…</main>       <!-- grid-area: main -->
+  <footer>…</footer>   <!-- grid-area: footer -->
+</div>
+```
+
+关键点:
+
+- 每个字符串生成一行、每个单元格生成一列,**同名 token 合并为命名区域**,可被 grid-placement 属性引用(调研 05§2);
+- 经典三栏即 `"header header" "sidebar main" "footer footer"`——三行字符串拼出整页骨架;
+- MDN Layout Cookbook **未设 Holy Grail 专页**(调研 05§2 已验证检索无此条目)——圣杯是实践惯称,标准实现就是 grid-template-areas;
+- 重排 = 改字符串:侧栏换边、移动堆叠零 DOM 改动;
+- DOM 顺序恒定,读屏顺序不随视觉重排(WCAG 1.3.2)——侧栏先于主栏的 DOM 是信息架构决策,配「跳到主内容」链接。
+
+## 样式与参数
+
+三个参数:layout 为 JS 型(areas 字符串值不保证可走 CSS 变量,demo 订阅后重写,与 container-queries 条目同款惯例);gap / sideWidth 为 CSS 型:
+
+```css
+.page {
+  display: grid;
+  gap: var(--hg-gap);                    /* 16px,演示基准值(社区常见,未证实) */
+  grid-template-columns: var(--hg-side) 1fr;  /* 侧栏 200px 基准值,主栏吃剩余 */
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header header"
+    "side   main"
+    "footer footer";
+}
+.page > header { grid-area: header; }
+.page > aside  { grid-area: side; }
+.page > main   { grid-area: main; }
+.page > footer { grid-area: footer; }
+
+/* 移动堆叠:换一串字符串,零 DOM 改动 */
+@media (max-width: 640px) {
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "main" "side" "footer";
+  }
+}
+```
+
+数值出处:Baseline 2017-10(MDN grid-template-areas,调研 05§2);经典字符串 `"header header" "sidebar main" "footer footer"` 为调研 05§2 记载写法;gap 16px 与侧栏 200px 为演示基准值(社区常见,未证实)。
+
+## 动效与交互
+
+骨架重排是**字符串替换**,瞬时完成:
+
+- 切换三档(desktop-left / desktop-right / stacked)只有 areas 字符串与列定义在变,四个区块元素原地不动——「改字符串就重排」是命名区域的全部卖点;
+- demo 读数区实时显示当前 grid-template-areas 声明,字符串与布局一一对照;
+- 命名区域字符串必须**矩形**(每行 token 数一致),否则整条声明失效——demo 三档字符串均为 2×2 / 1×4 矩形;
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭。
+
+## 真实产品案例
+
+- **MDN grid-template-areas 参考页** —— 同名 token 合并、每字符串一行的语义即圣杯的标准实现路径;MDN 未设 Holy Grail 专页(调研 05§2 已验证检索无此条目),实践以该属性实现(调研 05§2 来源)。
+- **文档站/博客/后台的整页骨架** —— header + 侧栏 + 主栏 + footer 是圣杯的当代形态,MDN 文档站自身即此骨架(编辑性内容)。
+- **CSS-Tricks《Complete Guide to Grid》** —— 命名区域字符串拼装整页骨架的权威示例来源(调研 05§2/§3 收录该指南)。
+
+## 参数敏感度
+
+| 参数 | 调大 / 换档会… | 调小 / 换档会… |
+| --- | --- | --- |
+| `layout` | desktop-right:主/侧互换,零 DOM 改动;stacked:单列按 header→main→side→footer 重排 | desktop-left:经典形态;窄容器落到 stacked 是兜底形态,内容完整可读 |
+| `gap` | 骨架呼吸感增强;区块边界更清晰;过大后主栏纵向空间被吃 | 布局更密;过小后区块粘连、层级感消失 |
+| `sideWidth` | 侧栏更宽,主栏被压缩;280px 时窄容器里主栏文字行长告急 | 侧栏变窄,主栏更舒展;120px 只够图标导航,文字导航换行 |
+
+经验要点:DOM 顺序按信息架构排(通常 header → 侧栏 → 主栏 → footer),视觉重排交给字符串;侧栏前置时加「跳到主内容」链接;areas 字符串与轨道定义一起维护,矩形校验是手误高发点。

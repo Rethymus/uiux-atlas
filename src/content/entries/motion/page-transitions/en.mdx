@@ -1,0 +1,67 @@
+## Structure & DOM
+
+What transition selection really inspects is **the relationship between the two states**, not the animation: the demo stages two absolutely-positioned screens (A list / B detail) inside a mini device, and each pattern only decides "who enters, who exits, along which direction, with or without a persistent element":
+
+```html
+<div class="device"><!-- overflow:hidden, the transition stage -->
+  <div class="screen screen-a">…list…</div>   <!-- origin state -->
+  <div class="scrim"></div>                    <!-- scrim, enterexit only -->
+  <div class="screen screen-b">…detail…</div> <!-- destination state -->
+</div>
+```
+
+Key points:
+
+- The pattern is a **relationship judgment** that precedes any animation values: a persistent element → Container transform; hierarchy travel → Forward/backward; peers → Lateral; top-level destinations → Top level; a clear origin direction → Enter/exit; content loading → Skeleton;
+- The Android-side official constraint: in-screen elements (dialog/menu/snackbar) expand along the entry-point's x/y axis, **avoiding scale/z-axis travel** (it implies a hierarchy change); iOS uniformly scales in and fades out;
+- The demo implements both directions (B enters / A exits, roles swapped on the way back); skeleton's reverse degrades to a quick cross-fade.
+
+## Styling & Parameters
+
+Both `pattern` and `duration` are JS-type params; duration feeds a single `--pt-dur`, and the easing stays Standard `cubic-bezier(0.2, 0, 0, 1)` (the official CSS fallback for Emphasized):
+
+```css
+.screen { position: absolute; inset: 0; }
+
+/* container transform: expansion anchored at the FAB (persistent container) */
+.screen-b.in-container {
+  transform-origin: calc(100% - 36px) calc(100% - 36px);  /* aims at the bottom-right FAB */
+  animation: container-in var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both;
+}
+/* forward: the new screen slides in from the right; the old one slides slightly left + fades (Android slide+fade, minimized travel) */
+.screen-b.in-forward  { animation: slide-from-right var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both; }
+.screen-a.out-forward { animation: slide-out-forward var(--pt-dur) cubic-bezier(0.2, 0, 0, 1) both; }
+/* toplevel: quick fade out (0.3×), then fade in (0.7×) */
+.screen-a.out-toplevel { animation: fade-out calc(var(--pt-dur) * 0.3) both; }
+.screen-b.in-toplevel  { animation: fade-in calc(var(--pt-dur) * 0.7) both; animation-delay: calc(var(--pt-dur) * 0.3); }
+```
+
+Each mode's official description and recommended pair (mirrored in the demo readout): container = a persistent container links both states, Emphasized 500ms; forward = Android slide+fade / iOS parallax, enter decel 400ms / exit accel 200ms (per the pairing table); lateral = group slide without fade, Standard 300ms; toplevel = quick fade out then in, deliberately without a persistent element; enterexit = in/out along the origin direction (sheets from the bottom, drawers from a side), temporary exits officially take Emphasized; skeleton = subtle pulse + fast fade-in on completion, with no official pulse duration.
+
+Engineering: land route-level transitions with the View Transitions API (`document.startViewTransition` / cross-document `@view-transition`) by overriding the animations onto the `::view-transition-*` pseudo-elements — details in the view-transitions entry.
+
+## Motion & Interaction
+
+- **One button, both directions**: play picks forward (A→B) or backward (B→A) from the current position, matching forward/backward semantics;
+- **The pattern is the semantics — never cross tiers**: a fade inside lateral implies a hierarchy change; a persistent element on toplevel falsely builds a strong association (officially "deliberately avoided"); scale/z travel on dialogs is an officially named anti-pattern on Android;
+- **Enter/exit's spatial model**: notifications from the top, drawers from a side edge, sheets/keyboards from the bottom — the demo's sheet rises from the bottom; a temporary exit "parks at the edge" hinting recallability, which is why it takes Emphasized rather than accelerate;
+- **Skeleton is two-phase**: subtle pulse (indeterminate progress) → content fades in fast; running only the first half makes the content feel abrupt;
+- **Focus and state**: focus and scroll state hand over across the transition (overlay specifics in overlay-entrance); the skeleton exists before the content so layout never jumps (M3's official motivation);
+- **reduced-motion**: under reduce, every mode hard-cuts with state intact — motion is cancellable (HIG).
+
+For duration/easing inside a mode see m3-duration-tokens and easing-pairs; for the skeleton's own craft see skeleton-loading.
+
+## Real-world examples
+
+- **Android system forward/backward**: officially described as slide+fade with deliberately minimized travel — the standard hierarchy-navigation transition (M3 Transition patterns, research 04 §3.3);
+- **iOS system forward/backward**: officially described as a parallax transition — the background trails the foreground, expressing hierarchy through rate difference (M3 Transition patterns, research 04 §3.3; for the scrolling side see parallax);
+- **Container transform's official scenarios**: Card/search bar/FAB/Sheet expanding seamlessly into a detail page — Material positions it as "the strongest relationship, the most expressive perception" (research 04 §3.3), the first choice for list→detail interactions.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `pattern` | a wrong pick is not "ugly" but "wrong semantics": container on toplevel builds a false association; a fade inside lateral implies a hierarchy change | the sharper the criteria (persistent element? hierarchy? origin direction?), the less selection depends on feel |
+| `duration` | more leisurely, more legible directionality; past 500ms it drags (frozen feel) and must still stay under the official 600ms ambient ceiling | approaching a hard cut; under 200ms directionality is unreadable — only a state flash remains |
+
+Selection rule of thumb: judge the relationship first (persistent element / hierarchy / peers / top level / origin direction / loading), then take duration and easing from the pairing table; within one product, one relationship always maps to one pattern — directional consistency is the reliability of the spatial model.

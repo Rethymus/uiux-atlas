@@ -1,0 +1,63 @@
+## 结构与 DOM
+
+触觉没有 DOM——它是一个**API 调用 + 一条同步的视觉回声**。调用必须在用户手势事件处理器内;视觉回声(时间轴条/节拍点)让无振动硬件或不支持平台的用户获得同等信息:
+
+```html
+<button id="done">完成 Done</button>
+```
+
+```js
+// sticky user activation:必须在 click/pointerup 等手势处理器内同步调用
+done.addEventListener("click", () => {
+  navigator.vibrate([100, 60, 100]); // 振动 100ms → 暂停 60ms → 振动 100ms(演示值)
+});
+// 取消:vibrate(0) 或 vibrate([])
+cancelButton.addEventListener("click", () => navigator.vibrate(0));
+```
+
+关键点:
+
+- `pattern` 是毫秒数(单段)或「振动/暂停交替」数组(多段),**末段不带暂停**;
+- 段数即语义:对齐 HIG 三类预设——Selection 单脉冲、Notification success 两段、error 四段(官方只记载段数与类别,毫秒值各平台未给);
+- API 缺失(iOS Safari)或无振动硬件(桌面)时调用被忽略——所以视觉回声不是装饰,是并行的信息通道。
+
+## 样式与参数
+
+`pulses` / `on` / `off` 三个 JS 型参数,demo 订阅后构造模式并同步驱动视觉脉冲:
+
+```js
+const pattern = [];
+for (let i = 0; i < pulses; i++) {
+  pattern.push(on);                       // 振动段(奇数位)
+  if (i < pulses - 1) pattern.push(off);  // 暂停段(偶数位),末段不带
+}
+navigator.vibrate(pattern); // 在手势处理器内
+```
+
+数值出处:数组形态、SOS 摩尔斯码示例(`[100,30,100,…]`)、取消语义、截断与 activation 约束全部出自 MDN `Navigator.vibrate` 页(调研 04§5.2);段数语义出自 Apple HIG《Playing haptics》(success=两段、warning=两段、error=四段脉冲;Selection=单短脉冲;Impact 五档,调研 04§2.3/§5.2)。**on/off 的默认 ms(100/60)为演示值,官方未给**;iOS 的真实波形由系统预设提供,Web 侧没有对应物。
+
+平台注意(MDN 原文口径):非 Baseline;iOS Safari 无效;超长 pattern 被截断(上限依实现);静音/勿扰模式下设备可能不振动。
+
+## 动效与交互
+
+- **振动与视觉同发**:demo 每次播放都同步点亮时间轴条与节拍点——这是 HIG「与视觉/听觉反馈强度匹配」的落地;
+- **取消可演示**:vibrate(0) 立即停振(HIG「必须可关闭」的 API 形态);
+- **能力如实标注**:demo 检测 `navigator.vibrate` 是否存在,没有就只播视觉脉冲并明说——不假装振动发生了;
+- **节奏语义**:off 太短时多段糊成一次长振,「四段=错误」的可辨识度随之消失;on 太短(≤20ms 级)多数设备难感知;
+- **勿滥用**:HIG 原文「偶发才刚刚好」——高频操作上触觉会迅速贬值(按压态的视觉反馈见 press-feedback 条目)。
+
+## 真实产品案例
+
+- **iOS 系统控件**:HIG 记载 iOS 的 toggle/slider/picker **自动播放系统触感**(调研 04§2.6)——「取值变化即单脉冲」是系统级默认,Web 组件以 navigator.vibrate 对齐这一语义;
+- **任务结果反馈**:HIG 的 Notification 三件套(success/warning/error)就是为「操作成败」设计的脉冲序列,与 toast/dialog 同步触发(调研 04§2.3,见 toast-spring 条目的结果反馈场景);
+- **Android Web**:MDN 明确 API 非 Baseline、iOS Safari 无效——Android 系浏览器是 Web 触觉的主要可感平台(调研 04§5.2),桌面端即便暴露 API 也多无振动硬件,demo 的能力检测即为此而设。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `pulses` | 段数越多语义越重:2 段=成功、4 段=错误的 HIG 对照;>4 段超出官方语义表,读作「乱振」 | 1 段退化为 Selection 语义;段数也是总时长的主要驱动(见 off) |
+| `on` | 单段更「重」;>200ms 的连续段接近长振,物理隐喻从「轻叩」变「闷响」 | ≤20ms 级多数设备难以感知,触觉名存实亡(MDN 未给下限,经验说法未证实) |
+| `off` | 段间停顿更长,「分段」的可辨识度更高,总时长线性拉长 | 暂停太短多段糊成一次长振,段数语义丢失 |
+
+选型口诀:先选段数(语义),再微调 on/off;总时长 = pulses×on + (pulses−1)×off,结果反馈宜短(百毫秒级);永远同步一条视觉回声,并把 on/off 如实标注为演示值。

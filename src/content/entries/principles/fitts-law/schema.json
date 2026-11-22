@@ -1,0 +1,88 @@
+{
+  "name": "Fitts's Law",
+  "nameZh": "Fitts 定律",
+  "aliases": ["费茨定律", "Fitts Law"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "获取目标的时间取决于目标的距离与大小:目标越小、越远,命中越慢、错误越多。触控目标要大、间距要足、离注意力区要近。",
+    "en": "Time to acquire a target is a function of its distance and size: smaller and farther targets take longer and fail more. Make touch targets big, well spaced, and close to the focus area."
+  },
+  "origin": {
+    "zh": "1954 年心理学家 Paul Fitts 研究人类运动系统时提出:移动到目标的时间随距离增加、与目标大小成反比;快速动作配小目标会因速度-精度权衡而放大错误率(Jon Yablonski,Laws of UX)。该定律直接催生了「移动端交互按钮要大」的惯例(调研 07§22)。",
+    "en": "In 1954 psychologist Paul Fitts showed that time to move to a target grows with distance and shrinks with target size; fast movements to small targets raise error rates via the speed-accuracy trade-off (Jon Yablonski, Laws of UX). The law directly spawned the convention of large interactive buttons on mobile (research 07 §22)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "size",
+      "unit": "px",
+      "min": 16,
+      "max": 96,
+      "step": 4,
+      "default": 48,
+      "cssVar": "--ft-size",
+      "effect": {
+        "zh": "目标按钮边长。默认 48px 取 M3 的触控目标规格(target 48dp,M3 Switch 规格,调研 04§2.1);lawsofux 指导:触控目标要足够大、相互间留足间距。调到 16px 体验小目标的手感对比。",
+        "en": "Edge length of the target button. Default 48px comes from M3's touch target spec (target 48dp, M3 Switch specs, research 04 §2.1); Laws of UX guidance: targets should be large and well spaced. Drag to 16px to feel small targets."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "distance",
+      "unit": "px",
+      "min": 60,
+      "max": 360,
+      "step": 20,
+      "default": 160,
+      "cssVar": "--ft-distance",
+      "effect": {
+        "zh": "起点按钮与目标按钮之间的水平间隙(以边距近似 Fitts 的运动幅度)。Fitts 1954:距离越远,移动时间越长;lawsofux 指导:任务注意区与相关按钮的距离尽量短。",
+        "en": "Horizontal gap between the start button and the target (edge distance approximating Fitts' movement amplitude). Fitts 1954: longer distances take longer; Laws of UX guidance: keep the distance between the task focus area and the related button short."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "心理学定律本身无浏览器支持问题;演示用 Pointer 事件计时,全现代浏览器可用。",
+      "en": "As a psychological law there is no browser support question; the demo times clicks with Pointer events, available in all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "定律不可「降级」,但落地到 UI 有两条工程底线:触控目标的最小可命中尺寸交给 CSS(padding/min-width 保证),误触的后果交给撤销与确认,而不是把按钮做小。",
+    "en": "The law cannot 'degrade', but its UI implications have two engineering floors: guarantee minimum hit size via CSS (padding/min-width) and absorb mistaps with undo and confirmation instead of shrinking buttons."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "移动端主要操作按钮与底部导航项——用 48px 级目标(04§2.1)", "en": "Primary mobile actions and bottom-nav items — 48px-class targets (research 04 §2.1)" },
+      { "zh": "销毁类操作:目标做小 + 远离高频区,是 Fitts 的合法反向运用", "en": "Destructive actions: shrink and move them away from hot zones — a legitimate inverse use of Fitts" },
+      { "zh": "工具栏与表单:把主按钮放在注意力停留处附近", "en": "Toolbars and forms: put the primary button near where attention rests" }
+    ],
+    "avoid": [
+      { "zh": "密集小图标按钮相互贴身排列——间距不足会放大误触", "en": "Dense icon buttons packed together — insufficient spacing amplifies mistaps" },
+      { "zh": "把关键操作移到屏幕远角以「腾地方」", "en": "Relocating key actions to far screen corners to 'make room'" }
+    ]
+  },
+  "a11y": {
+    "zh": "WCAG 2.2 SC 2.5.8(目标尺寸最低,AA)要求指针目标至少 24×24 CSS px;M3 的 target 48dp 是更宽松的生产参照(调研 04§2.1)。仅靠 hover 呈现的目标对触屏与运动障碍用户不可用;小目标必须配足间距,否则与相邻目标互相抢命中区。",
+    "en": "WCAG 2.2 SC 2.5.8 (Target Size Minimum, AA) requires pointer targets of at least 24×24 CSS px; M3's target 48dp is a roomier production reference (research 04 §2.1). Hover-only targets are unusable for touch and motor-impaired users; small targets need ample spacing or they compete with neighbors for hits."
+  },
+  "sources": [
+    "https://lawsofux.com/fittss-law/",
+    "https://www.nngroup.com/articles/ten-usability-heuristics/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个 Fitts 定律对照实验:一个起点按钮与一个可调尺寸/距离的目标按钮,点击起点开始计时、命中目标结束,实时显示耗时、难度指数 ID=log₂(2D/W) 与错误计数,让使用者亲手感受目标大小与距离对获取时间的影响。",
+      "en": "Build a Fitts's-law experiment: a start button plus a target button whose size and distance are adjustable; clicking start starts a timer, hitting the target stops it — show elapsed time, difficulty index ID=log₂(2D/W) and error count live."
+    },
+    "acceptance": [
+      { "zh": "目标边长与水平间隙严格使用参数快照值(size 默认 48px= M3 target 48dp)", "en": "Target size and gap use the exact parameter snapshot values (size default 48px = M3 target 48dp)" },
+      { "zh": "计时从点击起点开始、到命中目标结束,误差之外的点击计入 miss", "en": "Timing starts on the start click and stops on the target hit; clicks landing outside count as misses" },
+      { "zh": "展示难度指数 ID=log₂(2D/W)(Shannon 形式)并标注公式出处", "en": "Show the difficulty index ID=log₂(2D/W) (Shannon form) with the formula attributed" },
+      { "zh": "起点与目标均为可 Tab 聚焦的真实按钮,焦点环不被移除", "en": "Start and target are real, Tab-focusable buttons with focus rings intact" },
+      { "zh": "错误计数与最近几次成绩可见,便于对比不同 size/distance 的手感", "en": "Miss count and the last few results stay visible so different size/distance settings can be compared" }
+    ]
+  }
+}

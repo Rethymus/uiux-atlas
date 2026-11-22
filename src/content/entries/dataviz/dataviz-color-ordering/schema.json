@@ -1,0 +1,114 @@
+{
+  "name": "Data Color Ordering",
+  "nameZh": "数据色序与强调",
+  "aliases": ["Series Color Sequence", "dataColors Order", "Accent Color Strategy", "系列色序", "灰底彩突出"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "系列色是按序取用的队列而非自由调色盘:官方顺序最大化相邻对比;强调时把语境系列压灰,只让焦点系列保留饱和色。",
+    "en": "Series colors are an ordered queue, not a free palette: the official order maximizes adjacent contrast; to emphasize, mute the context series to gray and let only the focal series keep saturation."
+  },
+  "origin": {
+    "zh": "「按序取用」的官方锚点:Power BI 主题文档确认 dataColors 数组顺序即系列取色顺序(官方 docs 已核,调研 08§4.2);IBM Carbon 14 色板要求严格按序使用以最大化相邻对比(官网已核,Apache-2.0,调研 08§1.3);Okabe-Ito 序列实践(CUD 官方页,调研 08§1.1)把亮色排前三、红绿混淆对留给低频类别、8 类封顶。「灰底彩突出」强调策略为社区通行做法(参考 Claus Wilke《Fundamentals of Data Visualization》色彩章,调研 06§19),具体灰值无官方数值记载——demo 语境灰标注为社区常见值,未证实。",
+    "en": "Official anchors for 'take colors in order': Power BI's theme docs confirm the dataColors array order is the series color order (official docs verified, research 08 §4.2); IBM Carbon requires its 14-color categorical palette strictly in order to maximize adjacent contrast (official site verified, Apache-2.0, research 08 §1.3); Okabe-Ito practice (official CUD page, research 08 §1.1) puts light colors first, reserves the red/green confusable pair for rare classes, and caps at 8 classes. The gray-context emphasis strategy is community practice (cf. Claus Wilke's Fundamentals of Data Visualization color chapter, research 06 §19); no official numeric gray exists — the demo's context gray is marked as a common community value, unverified."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "order",
+      "options": [
+        { "value": "official", "label": { "zh": "官方顺序", "en": "Official order" } },
+        { "value": "shuffled", "label": { "zh": "乱序", "en": "Shuffled" } }
+      ],
+      "default": "official",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重排系列取色)。official=系列 i 取色板第 i 色(Okabe-Ito 前 5 色,R grDevices 固化值,按 CUD 建议亮色排前三);shuffled=同一组色按固定乱序重新分配。Carbon 官方要求按序取用以最大化相邻对比,乱序会把区分度弱的色对推到第 1、2 类;Power BI 的 dataColors 同理——数组顺序即系列取色顺序,主题文件一旦乱序全报告跟着乱序。",
+        "en": "JS-type param (the demo subscribes and reassigns series colors). official = series i takes palette slot i (Okabe-Ito's first 5 colors, R grDevices fixed values, light colors first per CUD advice); shuffled = the same set reassigned by a fixed scramble. Carbon's official guidance is strict in-order use to maximize adjacent contrast — shuffling pushes weakly-separated pairs into slots 1–2; Power BI's dataColors works the same way: array order is series order, and a scrambled theme file scrambles every visual."
+      }
+    },
+    {
+      "type": "number",
+      "name": "accentSeries",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "焦点系列编号(1-5)。灰底彩突出策略下,仅该系列保留色板色并加粗描边,其余系列降为语境灰;全彩策略下该系列不作特殊处理。默认 2 为 demo 选取的示例焦点,无官方依据——强调位应留给叙事主角,不必是第一个系列。",
+        "en": "Index of the focal series (1–5). Under the gray-context strategy only this series keeps its palette color and a heavier stroke while the rest drop to the context gray; the full-color strategy treats it like any other. The default of 2 is a demo-chosen example focal point with no official basis — the emphasis slot belongs to the story's protagonist, not necessarily series one."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "emphasis",
+      "options": [
+        { "value": "full-color", "label": { "zh": "全彩序列", "en": "Full-color series" } },
+        { "value": "gray-context", "label": { "zh": "灰底彩突出", "en": "Gray context" } }
+      ],
+      "default": "gray-context",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘)。full-color=全部系列按色序饱和呈现,适合多系列等权对比;gray-context=焦点系列饱和加粗、其余压为语境灰,把注意力聚焦到单一叙事线。该策略为社区通行做法(Claus Wilke 色彩章等),官方数值未记载;语境灰经 --co-gray 注入。注意:全彩多系列时线端直标易互相压线,demo 此时回退图例——直标适合单焦点场景。",
+        "en": "JS-type param (the demo subscribes and redraws). full-color = every series renders saturated in palette order, for equal-weight multi-series comparison; gray-context = the focal series stays saturated and heavier while the rest mute to the context gray, focusing attention on a single narrative line. The strategy is community practice (Claus Wilke's color chapter and similar); no official numbers exist; the context gray injects via --co-gray. Note: with all series full-color, line-end labels collide — the demo falls back to a legend there, since direct labeling suits single-focal plots."
+      }
+    },
+    {
+      "type": "color",
+      "name": "contextGray",
+      "format": "hex",
+      "default": "#B0B0B0",
+      "cssVar": "--co-gray",
+      "effect": {
+        "zh": "语境灰颜色(CSS 变量型参数,注入 .demo-stage,SVG stroke 经 var(--co-gray, #B0B0B0) 消费)。灰要足够中性、且与背景和焦点色都保持 ≥3:1 非文本对比(WCAG SC 1.4.11),才会被读作「背景信息」而不是第二条数据;默认 #B0B0B0 为社区常见值,未证实(官方无数值记载)。",
+        "en": "The context gray (CSS-variable param injected onto .demo-stage, consumed by SVG strokes via var(--co-gray, #B0B0B0)). It must be neutral enough — and hold ≥3:1 non-text contrast against both the background and the focal color (WCAG SC 1.4.11) — to read as 'background information' rather than a second datum. The default #B0B0B0 is a common community value, unverified (no official number exists)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为手绘 SVG + React,不依赖新 CSS/JS 特性;语境灰走 var(--co-gray) 自定义属性,全现代浏览器支持,且以 hex 注入、不依赖 oklch()。",
+      "en": "The demo is hand-drawn SVG + React with no reliance on new CSS/JS features; the context gray flows through the var(--co-gray) custom property, supported in all modern browsers, and is injected as hex without depending on oklch()."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容回退(var() 不生效时 stroke 内置 #B0B0B0 兜底)。真正的降级是策略回退:当读者需要核对所有系列的具体数值时,灰底彩突出会让语境系列难以追踪——退回全彩序列、改用小多图,或只对焦点系列保持直标;类别超过 8 个时先并入「其他」,再谈强调。",
+    "en": "No browser-compat fallback (stroke falls back to the built-in #B0B0B0 if var() fails). The real degradation is strategic: when readers must trace every series' values, gray-context makes context series hard to follow — fall back to the full-color sequence, switch to small multiples, or keep direct labels only for the focal series; past 8 classes, merge into 'Other' before discussing emphasis."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "仪表盘焦点卡/KPI 叙事:一图一主角,其余系列压灰作背景", "en": "Dashboard hero cards / KPI storytelling: one protagonist per chart, everything else muted to gray backdrop" },
+      { "zh": "多系列折线图只讲其中一条的趋势(业绩复盘、A/B 指标对照)", "en": "Multi-series line charts where only one line's trend matters (performance reviews, A/B metric comparisons)" },
+      { "zh": "按 Power BI dataColors 顺序沉淀主题文件,让全报告系列取色一致(顺序即取色顺序,官方已核)", "en": "Persist the palette as a Power BI theme following dataColors order so every visual takes colors identically (order = assignment order, officially verified)" },
+      { "zh": "8 类以内按官方色序取色:Okabe-Ito 8 色即上限,第 9 类并入「其他」", "en": "Up to 8 classes in official palette order: Okabe-Ito's 8 colors are the ceiling, class 9 merges into 'Other'" }
+    ],
+    "avoid": [
+      { "zh": "处处强调:语境系列仍用高饱和色,焦点随即失效——强调是零和资源", "en": "Emphasizing everywhere: keeping context series saturated kills the focal one — emphasis is a zero-sum resource" },
+      { "zh": "语境灰与背景太近、或与焦点色区分度 <3:1,读不出层级(WCAG SC 1.4.11)", "en": "A context gray too close to the background, or under 3:1 separation from the focal color — no hierarchy reads (WCAG SC 1.4.11)" },
+      { "zh": "乱序取用官方色板——Carbon 红线:严格按序使用以最大化相邻对比", "en": "Shuffling an official palette — Carbon's red line: strict in-order use to maximize adjacent contrast" },
+      { "zh": "用透明度/明度变体制造「半强调」——层级交给灰度与描边粗细,不发明第 N 色", "en": "Manufacturing 'half-emphasis' via alpha or lightness variants — hierarchy comes from gray value and stroke weight, not an invented Nth color" }
+    ]
+  },
+  "a11y": {
+    "zh": "灰底彩突出不是无障碍替代:语境灰系列仍须可辨——与背景及相邻色 ≥3:1 非文本对比(WCAG 2.1 SC 1.4.11,调研 06§17);焦点不得只靠颜色单通道传达——线端直标系列名、图例 swatch、描边粗细作冗余编码(CUD 原则 2);色盲核查跑三模型模拟(见 dataviz-colorblind-safe:protan/deutan 用 Viénot、tritan 强制 Brettel);全彩多系列的图例回指负担,jfly 原文建议优先直标。",
+    "en": "Gray-context is not an accessibility substitute: muted series must stay legible — ≥3:1 non-text contrast against background and neighbors (WCAG 2.1 SC 1.4.11, research 06 §17); the focal point never rides on color alone — line-end name labels, legend swatches and stroke weight are the redundant encodings (CUD principle 2); verify with three-model CVD simulation (see dataviz-colorblind-safe: Viénot for protan/deutan, Brettel mandatory for tritan); for full-color multi-series legends, jfly prefers direct labels."
+  },
+  "sources": [
+    "https://learn.microsoft.com/en-us/power-bi/create-reports/report-themes-create-custom",
+    "https://carbondesignsystem.com/data-visualization/color-palettes/",
+    "https://jfly.uni-koeln.de/color/",
+    "https://clauswilke.com/dataviz/color-basics.html"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一张 5 系列折线图:系列色严格按官方色板顺序取用;指定一个焦点系列,其余压为语境灰(灰值用参数快照值),焦点系列线端直标名称并加粗。",
+      "en": "Implement a 5-series line chart: series colors taken strictly in official palette order; one designated focal series keeps its color and a heavier stroke while the rest mute to the context gray (use the snapshot gray value), with the focal series' name directly labeled at its line end."
+    },
+    "acceptance": [
+      { "zh": "系列色逐字节按官方顺序取自色板前 N 色,不得乱序或自创色", "en": "Series colors come byte-for-byte from the first N palette slots in official order; no shuffling, no invented colors" },
+      { "zh": "灰底彩突出模式:语境系列灰值使用快照值(默认 #B0B0B0,社区常见值,未证实),与焦点色保持 ≥3:1 非文本对比", "en": "Gray-context mode: context series use the snapshot gray (default #B0B0B0, common community value, unverified), holding ≥3:1 non-text contrast against the focal color" },
+      { "zh": "焦点系列加粗描边 + 线端直标,不靠颜色单通道传达焦点", "en": "The focal series gets a heavier stroke plus a line-end label — never color alone" },
+      { "zh": "8 类封顶;第 9 类并入「其他」,不发明新色", "en": "Cap at 8 classes; class 9 merges into 'Other' — never invent a new color" },
+      { "zh": "零第三方库,动效尊重 prefers-reduced-motion", "en": "Zero third-party libraries; motion respects prefers-reduced-motion" }
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "name": "Semantic Token Layers",
+  "nameZh": "语义色三层架构",
+  "aliases": ["三层 token", "primitive→semantic→component", "Primer Primitives 分层"],
+  "category": "color",
+  "system": "component-lib",
+  "star": 2,
+  "tagline": {
+    "zh": "primitive(原始值)→ semantic(语义角色)→ component(组件)三层引用链:组件只认语义名,换一张映射表就得到 9 套主题——GitHub Primer 用它一口气生成高对比与色盲模式。",
+    "en": "A three-hop reference chain — primitive (raw value) → semantic (role) → component: components know only semantic names, and one swapped mapping sheet yields 9 themes — how GitHub Primer generates its high-contrast and colorblind modes."
+  },
+  "origin": {
+    "zh": "GitHub Primer Primitives 的实测分层(仓库 README 一手,调研 06§10):primitives(`base.color.blue.3` 等原始值,经 style-dictionary 编译)→ functional/semantic token(`bgColor-default`、`fgColor-muted`、`borderColor-accent.muted` 等,引用 primitive)→ 主题文件按需组合;token 格式遵循 W3C Design Tokens 社区组规范($value/$type/$extensions)。同构佐证:Android 文档原文说明 Dynamic Color 用 design token「语义化分配 color role 而非具体值」。",
+    "en": "The measured layering of GitHub Primer Primitives (repo README, first-hand, research 06 §10): primitives (raw values like base.color.blue.3, compiled via style-dictionary) → functional/semantic tokens (bgColor-default, fgColor-muted, borderColor-accent.muted, referencing primitives) → theme files composing on demand; the token format follows the W3C Design Tokens Community Group spec ($value/$type/$extensions). Structural echo: the Android docs state Dynamic Color assigns color roles semantically via design tokens 'rather than concrete values'."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "theme",
+      "options": [
+        { "value": "light", "label": { "zh": "light", "en": "light" } },
+        { "value": "dark", "label": { "zh": "dark", "en": "dark" } },
+        { "value": "dark-dimmed", "label": { "zh": "dark-dimmed", "en": "dark-dimmed" } },
+        { "value": "light-high-contrast", "label": { "zh": "浅色高对比", "en": "light-high-contrast" } },
+        { "value": "dark-high-contrast", "label": { "zh": "深色高对比", "en": "dark-high-contrast" } },
+        { "value": "light-colorblind", "label": { "zh": "浅色色盲友好", "en": "light-colorblind" } },
+        { "value": "dark-colorblind", "label": { "zh": "深色色盲友好", "en": "dark-colorblind" } },
+        { "value": "light-tritanopia", "label": { "zh": "浅色蓝黄色盲", "en": "light-tritanopia" } },
+        { "value": "dark-tritanopia", "label": { "zh": "深色蓝黄色盲", "en": "dark-tritanopia" } }
+      ],
+      "default": "light",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后改写 data-theme)。九个值逐字取自 Primer 官方主题清单(调研 06§10):light / dark / dark-dimmed / light-high-contrast / dark-high-contrast / light-colorblind / dark-colorblind / light-tritanopia / dark-tritanopia——语义层换映射表即可生成全部模式。demo 内每套主题的颜色值为演示映射(非官方 hex,官方值见 primer/primitives 仓库)。",
+        "en": "JS-type param (demo subscribes and rewrites data-theme). The nine values are verbatim from Primer's official theme list (research 06 §10): light / dark / dark-dimmed / light-high-contrast / dark-high-contrast / light-colorblind / dark-colorblind / light-tritanopia / dark-tritanopia — swapping the semantic mapping sheet generates every mode. Each theme's colors in the demo are illustrative mappings (not official hexes; see the primer/primitives repo for the real values)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "role",
+      "options": [
+        { "value": "bgColor-default", "label": { "zh": "bgColor-default(卡片底)", "en": "bgColor-default (card surface)" } },
+        { "value": "fgColor-muted", "label": { "zh": "fgColor-muted(次级文字)", "en": "fgColor-muted (muted text)" } },
+        { "value": "borderColor-accent.muted", "label": { "zh": "borderColor-accent.muted(强调描边)", "en": "borderColor-accent.muted (accent border)" } }
+      ],
+      "default": "bgColor-default",
+      "effect": {
+        "zh": "JS 型参数:高亮映射链中被选中的一行。三个语义名逐字取自 Primer README 的 functional token 示例(调研 06§10);选中后 demo 的映射面板放大该行,展示 组件 → 语义 → primitive 的完整引用链。",
+        "en": "JS-type param: highlights the selected row in the mapping chain. The three semantic names are verbatim functional-token examples from the Primer README (research 06 §10); selecting one magnifies that row in the panel, showing the full component → semantic → primitive chain."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "layer",
+      "options": [
+        { "value": "primitive", "label": { "zh": "primitive 原始值", "en": "primitive" } },
+        { "value": "semantic", "label": { "zh": "semantic 语义角色", "en": "semantic" } },
+        { "value": "component", "label": { "zh": "component 组件", "en": "component" } }
+      ],
+      "default": "semantic",
+      "effect": {
+        "zh": "JS 型参数:切换映射面板聚焦哪一层定义。primitive 层展示原始值与 alpha 变换写法(Primer README 官方示例 `{ $value: '{base.color.blue.3}', alpha: 0.4 }`,调研 06§10);semantic 层展示 DTCG 的 $value/$type 引用;component 层展示组件 CSS 只消费语义变量。",
+        "en": "JS-type param: focuses the mapping panel on one layer's definition. primitive shows raw values and the alpha transform (Primer README's official example `{ $value: '{base.color.blue.3}', alpha: 0.4 }`, research 06 §10); semantic shows DTCG-style $value/$type references; component shows CSS consuming only semantic variables."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "非浏览器特性——工程方法论。落地手段是 CSS 自定义属性(全平台支持)与构建期编译(style-dictionary,Primer 实测采用,调研 06§10);token 文件格式遵循 W3C Design Tokens 社区组规范。",
+      "en": "Not a browser feature — an engineering methodology. The delivery mechanism is CSS custom properties (universally supported) plus build-time compilation (style-dictionary, as Primer actually does, research 06 §10); token files follow the W3C Design Tokens Community Group format."
+    }
+  },
+  "fallback": {
+    "zh": "三层架构的回退是「语义变量必须有非空兜底值」:每条 var() 都写成 var(--st-bg, #ffffff) 形式,token 未编译/未加载时组件仍有可用配色;主题切换用 data-* 属性 + CSS 变量重映射,JS 失效时系统主题仍由 @media (prefers-color-scheme) 兜底。",
+    "en": "The fallback discipline of the layers: every semantic variable must carry a non-empty fallback — write var(--st-bg, #ffffff) so components stay colored even when tokens fail to compile or load; theme switching rides data-* attributes + CSS variable remapping, with @media (prefers-color-scheme) as the JS-free safety net."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "多主题体系:亮/暗/高对比/色盲模式共用一套组件,只换语义映射表(Primer 9 套主题的实证)", "en": "Multi-theme systems: light/dark/high-contrast/colorblind sharing one component set, swapping only the semantic mapping sheet (the 9-theme Primer proof)" },
+      { "zh": "组件库与产品解耦:组件 CSS 只引用语义变量,品牌换色不动组件", "en": "Decoupling component library from product: component CSS references only semantic variables, so rebranding never touches components" },
+      { "zh": "跨平台 token 单一事实源:W3C DTCG 格式经 style-dictionary 编译到 Web/iOS/Android", "en": "A single source of truth across platforms: W3C DTCG files compiled to Web/iOS/Android via style-dictionary" },
+      { "zh": "需要 alpha 变换的半透明体系:同一 primitive 派生多个透明度档位(官方 alpha: 0.4 写法)", "en": "Translucent systems needing alpha variants: one primitive spawning several opacity tiers (the official alpha: 0.4 form)" }
+    ],
+    "avoid": [
+      { "zh": "组件里直接写 hex/原始值——Android 文档点名的反模式(应「语义化分配 color role 而非具体值」)", "en": "Hard-coding hex/raw values inside components — the anti-pattern the Android docs call out ('assign color roles semantically, not concrete values')" },
+      { "zh": "只有一层全局变量就把语义层省掉——主题数量增长后映射关系失控,色盲/高对比模式无从生成", "en": "Collapsing to one flat variable layer and skipping semantics — mapping unravels as themes multiply, and colorblind/high-contrast modes become ungeneratable" },
+      { "zh": "语义名带观感词(--light-blue-500)而非角色词——换主题即失效;Primer 的角色词(bgColor-default)才可跨主题存活", "en": "Naming semantics by appearance (--light-blue-500) instead of role — dies on the first theme swap; Primer's role words (bgColor-default) survive every theme" }
+    ]
+  },
+  "a11y": {
+    "zh": "三层架构是无障碍主题的生成机制本身:Primer 用语义层换映射表产出 light/dark-high-contrast 与 light/dark-colorblind、light/dark-tritanopia 四套无障碍主题(调研 06§10/§19)。每套主题仍需各自核对对比度(WCAG 正文 4.5:1、组件边界 3:1,调研 06§17);高对比主题不是「同一套色加深」而是独立映射表。demo 的演示映射值未做逐套对比度核验,官方值以 primer/primitives 为准。",
+    "en": "The layering IS the accessibility theme generator: Primer swaps the semantic sheet to produce its four accessibility themes (light/dark-high-contrast, light/dark-colorblind, light/dark-tritanopia per research 06 §10/§19). Every theme still needs its own contrast check (WCAG body 4.5:1, component boundaries 3:1, research 06 §17); high-contrast themes are independent mapping sheets, not 'the same colors darker'. The demo's illustrative mappings are not per-theme contrast-audited — the official values live in primer/primitives."
+  },
+  "sources": [
+    "https://github.com/primer/primitives",
+    "https://developer.android.com/develop/ui/views/theming/dynamic-colors"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一个卡片组件搭三层色板:primitive 原始值层(brand 常量)→ 语义层(bgColor-default / fgColor-muted / borderColor-accent.muted)→ 组件层(只引用语义变量);提供 light / dark / dark-dimmed / 高对比×2 / 色盲×2 / tritanopia×2 共 9 套映射表,主题切换仅改 data-* 属性。",
+      "en": "Build a three-layer palette for a card component: a primitive layer (brand constants) → a semantic layer (bgColor-default / fgColor-muted / borderColor-accent.muted) → a component layer consuming only semantic variables; ship 9 mapping sheets (light / dark / dark-dimmed / high-contrast×2 / colorblind×2 / tritanopia×2) where switching changes only a data-* attribute."
+    },
+    "acceptance": [
+      { "zh": "组件 CSS 中不出现任何具体颜色值,只引用语义变量", "en": "Component CSS contains no concrete color values — only semantic variable references" },
+      { "zh": "语义变量每条都带非空兜底值 var(--st-*, fallback)", "en": "Every semantic variable carries a non-empty fallback: var(--st-*, fallback)" },
+      { "zh": "primitive 命名带序号层级(如 base.color.violet.3),语义命名用角色词(bgColor-default)", "en": "Primitives carry indexed levels (e.g. base.color.violet.3); semantics use role words (bgColor-default)" },
+      { "zh": "提供 Primer 官方清单的 9 套主题,高对比与色盲模式是独立映射表而非参数微调", "en": "Provide Primer's official 9 themes; high-contrast and colorblind modes are independent mapping sheets, not tweaked params" },
+      { "zh": "语义层支持 alpha 变换写法(引用 primitive 并附 alpha),与官方 README 示例同形", "en": "The semantic layer supports the alpha-transform form (reference a primitive plus alpha), shaped like the official README example" }
+    ]
+  }
+}

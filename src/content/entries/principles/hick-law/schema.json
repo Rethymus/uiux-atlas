@@ -1,0 +1,86 @@
+{
+  "name": "Hick's Law",
+  "nameZh": "Hick 定律",
+  "aliases": ["希克定律", "Hick-Hyman Law", "希克-海曼定律"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "决策时间随选项数量与复杂度上升:备选越多,选得越慢。响应时间关键处要减选项、拆步骤、突出推荐项。",
+    "en": "Decision time grows with the number and complexity of choices: more alternatives, slower decisions. Cut options where response time matters, split complex tasks, and surface a recommended option."
+  },
+  "origin": {
+    "zh": "1952 年英国心理学家 William Edmund Hick 与美国心理学家 Ray Hyman 用实验考察「刺激数量与反应时的关系」,得到 Hick-Hyman 定律:选择越多,决策越慢(Jon Yablonski,Laws of UX;调研 07§23)。经典量化形式为 RT = a + b·log₂(N)。",
+    "en": "In 1952 British psychologist William Edmund Hick and American psychologist Ray Hyman experimentally related the number of stimuli to reaction time, yielding the Hick-Hyman law: more choices, slower decisions (Jon Yablonski, Laws of UX; research 07 §23). Its classic form is RT = a + b·log₂(N)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "choices",
+      "unit": "个",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "effect": {
+        "zh": "每轮实验的候选目标数 N。Hick-Hyman 定律:反应时随 N 对数上升(RT = a + b·log₂(N));把 N 从 2 拉到 8,在统计表里对比同 N 的中位反应时,能直接看出「选项翻倍、决策变慢」。",
+        "en": "Number of candidate targets N per round. The Hick-Hyman law: reaction time rises logarithmically with N (RT = a + b·log₂(N)); sweep N from 2 to 8 and compare per-N median reaction times in the stats table."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "pause",
+      "unit": "ms",
+      "min": 300,
+      "max": 1500,
+      "step": 50,
+      "default": 800,
+      "effect": {
+        "zh": "命中后到下一轮高亮出现的间隔(demo 节奏参数,非定律结论)。太短会让上一轮的决策时间混入下一轮,太长则拖垮实验节奏。",
+        "en": "Gap between a hit and the next highlight (demo pacing, not part of the law). Too short bleeds one round's decision into the next; too long drags the experiment."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示用 performance.now() 计时与 rAF/timeout 调度,全现代浏览器可用;performance 计时精度受浏览器凑扰保护(通常 ~1ms 量化),对百毫秒级行为测量足够。",
+      "en": "The demo times with performance.now() and schedules via rAF/timeout — all modern browsers; performance timing is quantized by browser protections (~1ms), plenty for 100ms-scale behavior."
+    }
+  },
+  "fallback": {
+    "zh": "定律不可降级,其 UI 结论有三条工程出口:关键路径收窄选项;复杂表单拆步(向导/分步);把「推荐项」视觉前置以免用户在平权列表里漂移。全都必须保留全部功能——减的是决策成本,不是能力。",
+    "en": "The law cannot degrade, but its UI conclusions have three engineering exits: narrow options on critical paths, split complex flows into wizards, and surface a recommended option so users don't drift across a flat list. All capability must remain — you reduce decision cost, not function."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "响应时间关键处(支付、抢购、紧急操作)收窄选项", "en": "Narrow options where response time is critical (checkout, flash sale, emergency actions)" },
+      { "zh": "把复杂任务拆成小步(向导式表单),逐步揭示", "en": "Split complex tasks into wizard steps that reveal progressively" },
+      { "zh": "突出推荐选项,避免用户在平权列表中淹没", "en": "Highlight a recommended option instead of a flat sea of equal choices" },
+      { "zh": "对新用户做渐进式 onboarding(Slack 案例,07§23)", "en": "Progressive onboarding for new users (the Slack case, research 07 §23)" }
+    ],
+    "avoid": [
+      { "zh": "为减而减,简化到失真(lawsofux 原文告诫:be careful not to simplify to the point of abstraction)", "en": "Simplifying to the point of abstraction — the Laws of UX caveat verbatim" },
+      { "zh": "在平权长列表上不做任何分组/推荐,把决策全推给用户", "en": "Flat undifferentiated long lists that dump the whole decision on the user" }
+    ]
+  },
+  "a11y": {
+    "zh": "减少视觉选项不等于减少可达功能:被「渐进披露」藏起的功能必须仍可经键盘/读屏到达(结构见 keyboard-navigation 条目)。高亮目标不能只靠颜色区分(对比 WCAG SC 1.4.1);演示中目标同时用描边+文字标记。",
+    "en": "Reducing visible options must not reduce reachable function: features hidden behind progressive disclosure stay reachable via keyboard and screen readers (structure in the keyboard-navigation entry). The highlighted target is never color-only (cf. WCAG SC 1.4.1); the demo marks it with an outline plus text."
+  },
+  "sources": [
+    "https://lawsofux.com/hicks-law/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个选择反应时实验:N 个候选目标排成圆环,每轮随机高亮一个,测量「高亮出现→点击命中」的决策时间;按 N 分组统计中位反应时,让用户亲手验证「选项越多、决策越慢」。",
+      "en": "Build a choice-reaction-time experiment: N candidate targets on a ring, one randomly highlighted per round; measure highlight→hit decision time and aggregate per-N medians so the user can verify 'more choices, slower decisions' firsthand."
+    },
+    "acceptance": [
+      { "zh": "候选数 N 使用参数快照值(默认 4,范围 2–8),布局随 N 实时重排", "en": "Candidate count N uses the exact parameter snapshot (default 4, range 2–8) and re-layouts live" },
+      { "zh": "计时从高亮出现开始、到命中结束,误点计入错误且不中断计时", "en": "Timing starts when the highlight appears and stops on hit; wrong clicks count as errors without stopping the timer" },
+      { "zh": "按 N 分组统计中位反应时与样本数,可跨 N 对比", "en": "Per-N median reaction times with sample counts, comparable across N" },
+      { "zh": "高亮目标用描边+文字双通道标记,不只靠颜色", "en": "The highlighted target is marked via outline plus text, never color alone" },
+      { "zh": "全部候选都是真实按钮,可键盘操作", "en": "All candidates are real, keyboard-operable buttons" }
+    ]
+  }
+}

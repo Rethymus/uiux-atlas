@@ -1,0 +1,84 @@
+{
+  "name": "Jakob's Law",
+  "nameZh": "Jakob 定律",
+  "aliases": ["雅各布定律"],
+  "category": "principles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "用户大部分时间花在别的产品上,带着在那里养成的期望来到你的产品。利用既有心智模型;改版时别一次扔掉所有熟悉感。",
+    "en": "Users spend most of their time on other products and arrive with the expectations built there. Lean on familiar mental models; don't discard every familiar cue at redesign."
+  },
+  "origin": {
+    "zh": "Jakob Nielsen 提出;心理学注脚是「期望随经验迁移」——NN/g 十大启发式第 4 条(一致性)即以此为据(调研 07§28)。lawsofux 记载 YouTube 2017 改版把熟悉布局换成全新结构,遭遇强烈反弹后提供「回到旧版」并最终回调改动。",
+    "en": "Due to Jakob Nielsen; its psychological footnote is that expectations transfer with experience — the basis of NN/g heuristic #4, consistency (research 07 §28). Laws of UX records YouTube's 2017 redesign swapping the familiar layout for a new structure, the backlash, the temporary 'restore old version' option, and the eventual partial rollback."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "variant",
+      "options": [
+        { "value": "familiar", "label": { "zh": "熟悉范式", "en": "Familiar" } },
+        { "value": "alien", "label": { "zh": "反范式", "en": "Alien" } }
+      ],
+      "default": "familiar",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换面板范式)。familiar=常规设置面板(标签在左、开关在右、主按钮右下);alien=刻意反范式(功能藏进无标签图标、滑块反向、主按钮变角标)——同一任务,对比完成耗时与误触。",
+        "en": "JS-type param (the demo subscribes and swaps the panel paradigm). familiar = a conventional settings panel (labels left, switches right, primary action bottom-right); alien = deliberately alien (label-less icon features, reversed slider, primary action demoted to a corner text) — same task, compare completion time and misclicks."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "hint",
+      "options": [
+        { "value": "show", "label": { "zh": "显示提示", "en": "Show hint" } },
+        { "value": "hide", "label": { "zh": "隐藏提示", "en": "Hide hint" } }
+      ],
+      "default": "show",
+      "effect": {
+        "zh": "任务提示显隐。hide 模式用于公平对比——没有「点这里」的引导时,熟悉范式与反范式的耗时差距会进一步拉大。",
+        "en": "Show or hide the task hint. hide is for a fair comparison — without 'click here' guidance the time gap between paradigms widens."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 DOM 交互,全现代浏览器可用。",
+      "en": "Pure DOM interaction; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "定律的工程出口不是「永远不改版」,而是改版时给退路:暂时保留旧入口(YouTube 2017 案例的做法)、新功能渐进披露、关键控件沿用通行范式。没有任何浏览器特性依赖,因此不存在特性回退问题。",
+    "en": "The engineering exit isn't 'never redesign' but building escape hatches into redesigns: keep the old entry temporarily (the YouTube 2017 approach), disclose new features progressively, and keep established paradigms for key controls. No browser feature is involved, so there is no feature fallback."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单控件、radio、按钮等沿用实体对应物的心智模型(07§28)", "en": "Form controls, radios, buttons follow their physical-world mental models (07 §28)" },
+      { "zh": "改版提供「回到旧版」过渡期(YouTube 2017 案例)", "en": "Redesigns ship with a temporary old-version escape (YouTube 2017 case)" },
+      { "zh": "跨产品复用通行范式:搜索右上、设置齿轮、底部标签栏", "en": "Reuse cross-product paradigms: search top-right, settings gear, bottom tab bar" }
+    ],
+    "avoid": [
+      { "zh": "为差异而差异:把通用控件重新发明成「独一无二」的交互", "en": "Differentiation for its own sake: reinventing common controls as 'unique' interactions" },
+      { "zh": "一次性移除所有熟悉线索且不留退路", "en": "Removing every familiar cue at once with no escape hatch" }
+    ]
+  },
+  "a11y": {
+    "zh": "「熟悉」对残障用户同样是可达性:通行范式(开关在行右、图标配文字)降低认知与操作成本;反范式示例中的无标签图标按钮是反面教材——真实产品里必须提供可读名称(aria-label 或可见文本,SC 4.1.2)。演示的 alien 面板因此标注「不要这样做」。",
+    "en": "Familiarity is itself accessibility: established paradigms (switch on row-right, icons with labels) cut cognitive and motor cost; the demo's unlabeled icon buttons are a cautionary exhibit — real products must give them accessible names (aria-label or visible text, SC 4.1.2). The demo's alien panel is therefore labeled 'don't do this'."
+  },
+  "sources": [
+    "https://lawsofux.com/jakobs-law/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个「同一任务、两种范式」对照实验:任务是把音量调到最小并打开夜间模式;familiar 面板用常规布局,alien 面板刻意反范式(无标签图标、反向滑块、主按钮降级);统计各范式完成耗时与误触次数。",
+      "en": "Build a 'one task, two paradigms' experiment: set volume to minimum and enable night mode; the familiar panel is conventional, the alien panel deliberately inverts paradigms (unlabeled icons, reversed slider, demoted primary); time and misclicks per paradigm."
+    },
+    "acceptance": [
+      { "zh": "variant 为 JS 型参数,订阅 store 后切换 data-variant,两种范式共享同一任务定义", "en": "variant is a JS-type param; on subscribe the panel flips data-variant, both paradigms share one task" },
+      { "zh": "计时从「开始任务」到两个条件同时满足;误触(点了与任务无关的控件)分别计数", "en": "Timer runs from Start until both conditions hold; misclicks (task-irrelevant controls) counted separately" },
+      { "zh": "alien 面板的每个控件仍可键盘操作并带可读名称,但视觉上故意反直觉,并标注为反面教材", "en": "Every alien control stays keyboard-operable with an accessible name, visually counter-intuitive, and labeled as an anti-pattern" },
+      { "zh": "两种范式的最近成绩并列展示,便于对比", "en": "Latest results for both paradigms shown side by side" }
+    ]
+  }
+}

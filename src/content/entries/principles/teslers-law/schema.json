@@ -1,0 +1,85 @@
+{
+  "name": "Tesler's Law",
+  "nameZh": "Tesler 定律",
+  "aliases": ["复杂度守恒定律", "Conservation of Complexity"],
+  "category": "principles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "任何系统都有不可消除的复杂度——不是由系统承担,就是由用户承担。设计的目标是把固有复杂度从用户身上挪到系统里。",
+    "en": "Every system carries irreducible complexity — borne either by the system or by the user. The goal of design is moving that inherent complexity off the user and into the system."
+  },
+  "origin": {
+    "zh": "由 Larry Tesler(Xerox PARC / Apple)提出,又称复杂度守恒定律:复杂度守恒,只能转移,不能消灭(Jon Yablonski,Laws of UX;调研 07§26)。调研 07§26 的指导:设计与开发阶段尽量把固有复杂度从用户身上挪走——「工程师多花一周,好过百万用户各多花一分钟」;不要为「理想理性用户」设计;把指引放进使用上下文。",
+    "en": "Due to Larry Tesler (Xerox PARC / Apple), aka the conservation of complexity: complexity is conserved — it can only move, not vanish (Jon Yablonski, Laws of UX; research 07 §26). Research 07 §26 guidance: move inherent complexity off users during design and development — 'a engineer spending a week beats a million users each spending a minute'; never design for the 'ideal rational user'; put guidance into context."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "fields",
+      "unit": "项",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "default": 6,
+      "effect": {
+        "zh": "寄件表单的字段总数。manual 模式下全部由用户填;assisted 模式下系统从上下文代填前 fields−2 项(收件人/电话/地址来自账户与历史订单),用户只确认剩余 2 项。",
+        "en": "Total fields in the shipping form. In manual mode the user fills all; in assisted mode the system pre-fills the first fields−2 from context (recipient/phone/address from account and order history), leaving 2 for the user."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "manual", "label": { "zh": "全手动", "en": "Manual" } },
+        { "value": "assisted", "label": { "zh": "系统代办", "en": "Assisted" } }
+      ],
+      "default": "manual",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换模式)。manual=6 项全空,用户逐项点击填入;assisted=系统代填并锁定,只留 2 项可编辑——复杂度被移交给系统,总量不变。",
+        "en": "JS-type param (the demo subscribes and swaps modes). manual = all fields empty, user fills one by one; assisted = system pre-fills and locks, leaving 2 editable — complexity moved to the system, total unchanged."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 DOM 交互,全现代浏览器可用。",
+      "en": "Pure DOM interaction; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "复杂度守恒没有 CSS 回退,工程出口是「转移而非消灭」:智能默认值、上下文预填、向导分步、tooltip 内嵌帮助(07§26)。转移的代价记在系统侧——预填错了比空白更危险,assisted 模式必须保留「改掉默认值」的出口。",
+    "en": "Conservation of complexity has no CSS fallback; the engineering exit is 'transfer, don't destroy': smart defaults, context pre-fill, wizard steps, in-context tooltips (07 §26). The transfer costs the system — a wrong pre-fill is worse than a blank, so assisted mode must keep an exit to override defaults."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单预填:从账户/历史订单带出已知信息,只问增量", "en": "Form pre-fill: pull known info from account/order history, ask only the delta" },
+      { "zh": "智能默认值:90% 用户会选的选项直接设为默认", "en": "Smart defaults: make the 90% choice the default" },
+      { "zh": "把「专业术语 + 组装配置」封装成一个系统判断,用户只给意图", "en": "Wrap expert terms and config assembly into one system decision — the user states intent" }
+    ],
+    "avoid": [
+      { "zh": "为「理想理性用户」设计——假定用户愿意理解全部参数(07§26 告诫)", "en": "Designing for the 'ideal rational user' who gladly understands every param (07 §26 caveat)" },
+      { "zh": "把复杂度「藏」成黑盒:用户既没省事,也失去了纠错出口", "en": "Hiding complexity into a black box: no effort saved and the correction exit lost" }
+    ]
+  },
+  "a11y": {
+    "zh": "系统代办不能替用户做不可见决定:预填字段必须可辨识、可修改(锁定的只读项要有文本说明「已从历史订单带出」);表单语义完整(label 关联、fieldset 分组),复杂度转移不以牺牲可理解为代价(呼应 SC 1.3.1/3.3.1)。",
+    "en": "System assistance must not make invisible decisions: pre-filled fields stay recognizable and editable (locked read-only items need text saying 'pulled from order history'); form semantics stay intact (label association, fieldset grouping) — complexity transfer never trades away comprehension (cf. SC 1.3.1/3.3.1)."
+  },
+  "sources": [
+    "https://lawsofux.com/teslers-law/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个复杂度守恒演示:同一张寄件表单在 manual/assisted 两种模式下填写——manual 全部手填并计次,assisted 由系统预填锁定、只留 2 项;实时显示「用户承担 n 项 / 系统承担 k 项」的复杂度分配条。",
+      "en": "Build a conservation-of-complexity demo: one shipping form under manual/assisted modes — manual fills everything with a click counter, assisted pre-fills and locks all but 2; a live bar shows 'user-borne n items / system-borne k items'."
+    },
+    "acceptance": [
+      { "zh": "mode 为 JS 型参数;fields 控制字段总数(3–8),两种模式共用同一字段定义", "en": "mode is a JS-type param; fields sets the total (3–8), both modes share one field definition" },
+      { "zh": "assisted 模式预填项锁定但标注来源,且保留至少 2 项可编辑", "en": "Assisted pre-fills are locked but source-labeled, with at least 2 items left editable" },
+      { "zh": "用户操作计数(点击次数)与复杂度分配条实时更新", "en": "Click counter and the complexity split bar update live" },
+      { "zh": "「演示填写」按钮逐项自动填入(每项约 300ms),模拟真实填写节奏", "en": "An auto-fill button enters fields one by one (~300ms each), simulating real filling rhythm" },
+      { "zh": "提交按钮只在全部字段就绪时可用;预填项可解锁修改", "en": "Submit enables only when all fields are ready; pre-fills can be unlocked for editing" }
+    ]
+  }
+}

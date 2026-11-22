@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+一层结构:泳道容器 + 平级条目——与普通 Grid 相同的 DOM,只换 display 值:
+
+```html
+<div class="wall">
+  <article class="card">…</article>
+  <article class="card">…</article>
+  <!-- 条目高度不一,自动放置 -->
+</div>
+```
+
+关键点:
+
+- 新 display 值:`grid-lanes`(块级)/ `inline-grid-lanes`(行内),条目放入一个轴的预定义轨道(grid axis),在另一轴自由堆叠(stacking axis)(调研 11§4B);
+- **自动放置规则**:未显式放置的条目按已放置条目尺寸,放入**剩余空间最大的列**(调研 05§5/11§4B);
+- 新属性 `fit-tolerance`: `normal | <length-percentage> | infinite`(调研 11§4B);
+- item-flow / item-* 统一提案**已被放弃**,收敛为 grid lanes(基于 2026-01-21 Working Draft 的 Recent Changes,调研 05§5);
+- 实验性:语法未冻结(Safari 27.2 仍在改名属性,调研 11§4B),生产勿唯一依赖。
+
+## 样式与参数
+
+三个参数:minTrack / gap 为 CSS 型(--gl-min / --gl-gap),engine 为 JS 型:
+
+```css
+.wall {
+  display: grid;         /* 回退:所有浏览器(规范推荐双写,调研 11§4B) */
+  display: grid-lanes;   /* Safari 26.4+ / Firefox Nightly */
+  grid-template-columns: repeat(auto-fill, minmax(var(--gl-min), 1fr)); /* 220px(11§4B 片段;WebKit 示例为 250px 变体) */
+  gap: var(--gl-gap);    /* 16px,WebKit 官方示例(调研 05§5) */
+}
+
+/* columns 多列兜底(全平台可用,顺序按列) */
+.wall[data-engine="columns"] {
+  display: block;
+  columns: auto var(--gl-min);
+  column-gap: var(--gl-gap);
+}
+.wall[data-engine="columns"] .card { break-inside: avoid; margin-bottom: var(--gl-gap); }
+```
+
+数值出处:`minmax(220px, 1fr)` 与 `gap: 16px` 取自 11§4B 可复用片段与 WebKit 官方示例(05§5 用 250px 变体);双写降级写法出自 css-grid-3 规范原文(调研 11§4B);支持数据:BCD display.json → grid-lanes 标记 experimental——Safari/iOS 26.4、Firefox Nightly preview、Chrome 未支持(调研 11§4B,2026-11-22 抓取)。
+
+## 动效与交互
+
+泳道放置发生在**布局阶段**,无动画:
+
+- 条目进入「剩余空间最多的列」是布局算法,瞬时完成;条目增删后各列重新平衡;
+- demo 用 `CSS.supports('display', 'grid-lanes')` 实时检测并如实报告当前路径:支持 → 泳道;不支持 → 普通网格回退(行带错位肉眼可见,正是泳道要解决的问题);
+- engine 切换 data-engine,双写声明与 columns 兜底两套形态互切;
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭。
+
+## 真实产品案例
+
+- **Pinterest** —— css-grid-3 草案把「条目放入剩余空间最多的列」的典型示例直接点名 Pinterest 搜索结果页(调研 05§5 原文核对)。
+- **WebKit 官方教程站 gridlanes.webkit.org** —— 官方交互式教程,配合《Field Guide to Grid Lanes》发布(调研 11§4B)。
+- **Chrome for Developers《CSS masonry》** —— Rachel Andrew 代表 Chrome 团队提出的独立布局模式讨论;该文现已加注「代码示例基于早期草案,现为 Grid lanes layout,以 css-grid-3 为准」(调研 05§5)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `minTrack` | 列数减少:每条泳道更宽,单列承载更多条目;400px 时窄容器只剩一列 | 泳道变多变窄:接近 120px 后文字挤压;列数越多,「最多剩余空间」的分配越细碎 |
+| `gap` | 泳道与轨道间距变大:呼吸感强,堆叠高度差被间隙放大 | 布局更密:高度差视觉更连续,接近无缝瀑布流 |
+| `engine` | grid-lanes 档:支持环境泳道排布、无行带;不支持环境普通网格(行带错位) | columns 档:全平台一致的瀑布流,但顺序按列、DOM 顺序与视觉顺序脱节 |
+
+经验要点:现在就可以写双声明(规范推荐降级),但生产落地仍需 columns/JS 兜底(调研 05§5);顺序敏感内容(步骤流、排行榜)别用泳道;关注 Safari 27.2 后续命名定稿再全面切换。

@@ -1,0 +1,62 @@
+## Structure & DOM
+
+One flat layer: a multi-column container plus sibling cards — the container declares `columns`, and content flows down the columns as **fragments**, the same mechanism as paged media (research 11 §4A):
+
+```html
+<div class="wall">
+  <article class="card">…</article>
+  <article class="card">…</article>
+  <!-- content flows down the columns, ordered column-wise -->
+</div>
+```
+
+Key points:
+
+- The `columns` shorthand = `column-count || column-width`; `column-width` is a **floor** — the browser packs as many columns as fit, so the real count is never hard-coded;
+- Content **flows down the columns** (top-to-bottom, then next column); MDN explicitly lists this as a limitation: unfit for row-order reading (research 11 §4A);
+- `break-inside: avoid` keeps cards from being sliced mid-card (fragmentation-module break control);
+- `column-span: all` lets a headline span full width and interrupt the flow; `column-rule` draws separators;
+- Core properties have long enjoyed platform-wide support; Level 2's column-height / column-wrap / ::column remain drafts (research 11 §4A).
+
+## Styling & Parameters
+
+Three parameters: colMin / gap are CSS-type (--mc-width / --mc-gap), rule is JS-type (data-rule):
+
+```css
+.wall {
+  columns: auto var(--mc-width);   /* 220px floor, automatic count (kin to the 11 §4B snippet columns: 4 220px) */
+  column-gap: var(--mc-gap);       /* 16px (same snippet) */
+}
+.card {
+  break-inside: avoid;             /* cards never sliced */
+  margin-bottom: var(--mc-gap);    /* in-column spacing: gap covers only between columns */
+}
+.wall[data-rule="line"] { column-rule: 1px solid rgb(128 128 128 / 0.35); }
+```
+
+Where the numbers come from: `columns: 4 220px`, `column-gap: 16px` and `break-inside: avoid` all come from the research 11 §4B snippet; the module's fragment/flow definition is MDN's own text (research 11 §4A); the rule color is demo styling.
+
+## Motion & Interaction
+
+Column layout happens at the **layout stage** — instantaneous:
+
+- Resizing the container re-counts columns and re-flows everything — the browser resolves the count, with no transition; animating column counts only flickers;
+- The demo's order badges (01…09) honestly show "column-wise fill": 02 sits below 01, not beside it — a semantic boundary of this approach, not a bug;
+- The rule toggle flips data-rule, shifting the look between masonry wall and newspaper columns;
+- The status chip cross-fades over 0.25s, disabled under `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Newspaper/magazine prose columns** — the module's founding purpose: "each column box is a fragment (like paged media), content flows down the columns" (MDN module page, research 11 §4A).
+- **Zero-JS image walls** — columns is the community's most common dependency-free masonry: one declaration, no libraries or math (the research 11 §4B snippet labels the .wall approach "works everywhere, column-wise order").
+- **The fallback layer for grid-lanes** — the same research 11 §4B snippet labels .wall the "old approach", pairing with the display: grid-lanes dual write as a progressive-enhancement combo (editorial pairing; both snippets come from the research).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `colMin` | fewer, wider columns carrying more cards; at 400px a narrow container has one column and the masonry effect is gone | more, narrower columns squeezing content; near 120px text becomes unreadable |
+| `gap` | airier inter-column rhythm; in-card spacing (your own margin) is unaffected, which can unbalance the two rhythms | columns nearly touching; too small and the rule glues to content |
+| `rule` | line: newspaper look with crisp column boundaries; fits prose columns | none: the standard masonry-wall form; column boundaries read through gap alone |
+
+Working notes: supply your own in-card spacing (margin-bottom) — column-gap only covers between columns; no fixed/absolute elements spanning columns inside cards; move order-sensitive content to Grid/lanes; this layout is exactly the fallback layer when upgrading to grid-lanes later.

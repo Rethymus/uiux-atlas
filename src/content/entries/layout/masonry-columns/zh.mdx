@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+一层结构:多列容器 + 平级卡片——容器声明 `columns`,内容作为**片段(fragment)**沿列流动,与分页媒体同机制(调研 11§4A):
+
+```html
+<div class="wall">
+  <article class="card">…</article>
+  <article class="card">…</article>
+  <!-- 内容沿列流动,顺序按列 -->
+</div>
+```
+
+关键点:
+
+- `columns` 简写 = `column-count || column-width`;`column-width` 是**下限**——浏览器按容器尽量多排列,实际列数不写死;
+- 内容**沿列流动**(自上而下再换列),卡片顺序按列排布——MDN 明确列为局限:不适合按行序阅读的场景(调研 11§4A);
+- `break-inside: avoid` 防止卡片被拦腰截断(fragmentation 模块的断行控制);
+- `column-span: all` 让标题横跨全宽打断列流;`column-rule` 画分隔线;
+- 核心属性早已全平台广泛支持;Level 2 的 column-height / column-wrap / ::column 仍在草案(调研 11§4A)。
+
+## 样式与参数
+
+三个参数:colMin / gap 为 CSS 型(--mc-width / --mc-gap),rule 为 JS 型(data-rule):
+
+```css
+.wall {
+  columns: auto var(--mc-width);   /* 220px 下限,自动列数(11§4B 片段 columns: 4 220px 同源) */
+  column-gap: var(--mc-gap);       /* 16px(同一片段记载) */
+}
+.card {
+  break-inside: avoid;             /* 卡片不被拦腰截断 */
+  margin-bottom: var(--mc-gap);    /* 列内垂直间距:gap 只管列间,卡距自己补 */
+}
+.wall[data-rule="line"] { column-rule: 1px solid rgb(128 128 128 / 0.35); }
+```
+
+数值出处:`columns: 4 220px` 与 `column-gap: 16px`、`break-inside: avoid` 全部取自调研 11§4B 可复用片段;多列模块的「片段/沿列流动」定义为 MDN 原文(调研 11§4A);分隔线颜色为演示样式。
+
+## 动效与交互
+
+列排布发生在**布局阶段**,瞬时完成:
+
+- 容器宽窄变化时列数增减、内容整体重排——列数由浏览器解析,无过渡;强行动画列数只会闪烁;
+- demo 的顺序徽标(01…09)如实展示「按列填充」:01 下方紧跟 02,不是右邻——这是该方案的语义边界,不是 bug;
+- rule 开关切换 data-rule 加减分隔线,观感在瀑布流与报章分栏之间切换;
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭。
+
+## 真实产品案例
+
+- **报章/杂志式正文分栏** —— 多列模块的设计初衷:「每个列盒是一个片段(与分页媒体相似),内容沿列流动」(MDN 模块页原文,调研 11§4A)。
+- **零 JS 图片墙** —— columns 是社区最常用的无依赖瀑布流实现:一行声明、无库无计算(调研 11§4B 片段将 `.wall` 方案标注为「全平台可用,顺序按列」)。
+- **作为 grid-lanes 的兜底** —— 11§4B 片段把 `.wall` 明确标注为「老方案」,与 `display: grid-lanes` 双写声明构成渐进增强组合(编辑性组合,两片段均出自调研)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `colMin` | 列数减少:每栏更宽,单栏承载更多卡片;400px 时窄容器只剩一列、瀑布流失效 | 列数增多:栏变窄内容挤压;120px 附近文字不可读 |
+| `gap` | 栏间呼吸感增强;列内卡距(自行 margin)不受影响,视觉上两组间距失衡 | 栏间近粘;过小后分隔线与内容贴死 |
+| `rule` | line:报章式分栏观感,栏界清晰;适合文字多栏 | none:瀑布流卡片墙的标准形态,栏界靠 gap 呼吸 |
+
+经验要点:卡距要自己补(`margin-bottom`),`column-gap` 只管列间;卡片内禁放跨列 fixed/absolute 元素;顺序敏感内容换 Grid/泳道;未来升级 grid-lanes 时本布局就是回退层。

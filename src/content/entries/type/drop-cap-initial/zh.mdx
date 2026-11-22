@@ -1,0 +1,86 @@
+## 结构与 DOM
+
+首字下沉作用于「开篇段落」的首字形,不需要新 DOM——它是纯 CSS 伪元素/属性:
+
+```html
+<article class="feature">
+  <p>字——开篇段落以单个汉字或字母开头,其余为正文……</p>
+  <p>后续段落不受影响……</p>
+</article>
+```
+
+```css
+.feature > p:first-of-type::first-letter {
+  -webkit-initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines)); /* Safari 9–17 前缀 */
+  initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));          /* 规范方案 */
+}
+```
+
+关键点:
+
+- `initial-letter` 是 CSS Inline Layout 的属性,两个整数:**占据行数** + **下沉行数**;声明后浏览器自动让正文环绕首字;
+- `::first-letter` 是传统入口——配合 `float: left` 放大首字,全浏览器可用;它占的是一个矩形盒,不会贴合字形轮廓环绕;
+- 首字仍是原段落文本的一部分:`::first-letter` 与 `initial-letter` 都不改 DOM,复制/搜索/朗读不受影响。
+
+## 样式与参数
+
+三个参数:lines / sink 经 `--dc-*` 变量注入,technique 为 JS 型参数(切换 `data-technique`):
+
+```css
+/* 技法一:规范方案(Chrome/Edge 110+、Safari 带 -webkit-;Firefox 自动退到技法二) */
+.feature[data-technique="initial-letter"] > p:first-of-type::first-letter {
+  -webkit-initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));
+  initial-letter: var(--dc-lines) min(var(--dc-sink), var(--dc-lines));
+  font-weight: 700;
+  margin-right: 0.35em;
+}
+/* 技法二:float 经典兜底(全浏览器;字号按行数近似换算——社区做法,未证实) */
+.feature[data-technique="float"] > p:first-of-type::first-letter {
+  float: left;
+  font-size: calc(var(--dc-lines) * 1.1em);
+  line-height: 0.85;
+  padding: 0.05em 0.12em 0 0;
+  font-weight: 700;
+}
+/* initial-letter 与 -webkit- 前缀都不支持的浏览器(Firefox)自动退到 float */
+@supports not ((initial-letter: 3) or (-webkit-initial-letter: 3)) {
+  .feature[data-technique="initial-letter"] > p:first-of-type::first-letter {
+    float: left;
+    font-size: calc(var(--dc-lines) * 1.1em);
+    line-height: 0.85;
+    padding: 0.05em 0.12em 0 0;
+    font-weight: 700;
+  }
+}
+```
+
+数值出处:
+
+- **支持数据**(BCD css/properties/initial-letter.json,2026-11-22 抓取):Chrome/Edge 110+(2023-02);Firefox 未支持(bugzil.la/1223880);Safari 9+ 带 `-webkit-` 前缀,无前缀版本未发布(WebKit bug 229090);iOS Safari 部分实现、不支持小数值(bug 296785);
+- **默认 3 行**:社区常见惯例(未证实),杂志排版常见 2–4 行;
+- **float 字号换算公式**(行数 × 1.1em、行高 0.85):社区近似做法(未证实)——`initial-letter` 才有精确的「行」语义,float 只能近似。
+
+## 动效与交互
+
+首字下沉是静态装饰,交互只在技法对比:
+
+- demo 切换 technique 即时对比两套规则的渲染差异:initial-letter 下正文沿首字字形下缘环绕;float 下首字占一个矩形盒、正文绕盒排布;
+- 调 lines / sink 观察 drop(下沉=占据)与 sunken(下沉\<占据)形态;
+- demo 顶部徽标实时探测本浏览器对 initial-letter 的支持态(`CSS.supports("initial-letter", "3")` 与前缀形式),Firefox 用户会看到「已自动退到 float 兜底」的如实说明;
+- 无动画;`prefers-reduced-motion` 无需处理。
+
+## 真实产品案例
+
+- **WordPress / Gutenberg 编辑器**:段落块内置「首字下沉(Drop cap)」开关,开启后以前端 CSS 渲染首字放大——内容管理系统把这一编辑传统做成了人人可点的开关,是首字下沉最大规模的分发渠道。
+- **报刊特稿网页(纽约时报等长文特稿)**:特稿开篇段落以放大的首字开场、正文环绕,是杂志排版语言向网页的直接移植;这类页面通常仍以 float/伪元素类方案实现,兼容性最稳。
+- **电子书与杂志阅读产品**:章节首页首字下沉是「正式开读」的编辑信号;ePub/阅读器生态里以 CSS 初始化样式下发,与 Web 同源的 ::first-letter / initial-letter 机制。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `lines` | 首字更高、环绕区更深;超过 5 行后首字与正文比例失衡,且偏离杂志惯例 | 低于 3 行后装饰感减弱;2 行是紧凑书页形态 |
+| `sink` | sink=lines 为标准 drop;大于 lines 的组合被 min() 钳制避免非法值 | sink\<lines 变 sunken(首字底部沉入正文首行下方);1 是极浅下沉 |
+| `technique` | initial-letter 精确按行对齐并环绕字形;float 只占矩形盒 | float 在所有浏览器一致可用,但高度是近似值,字形不参与环绕 |
+
+经验结论:两套技法不是二选一——initial-letter 是「支持浏览器」的精确形态,float 是「其余浏览器」的近似兜底,@supports 连接两者;首字永远只是装饰,可读性主体是正文本身。

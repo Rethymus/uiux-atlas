@@ -1,0 +1,62 @@
+## Structure & DOM
+
+Selection happens before the SVG: identify the data relationship first, then decide the form. The demo hosts all four baseline charts in one `<svg>`, switching only the mix of `<rect>` / `<path>` / `<text>`:
+
+```html
+<div class="stage">
+  <svg viewBox="0 0 640 340" role="img" aria-label="Chart selection demo: baseline charts switched by data relationship">
+    <!-- Compare: a row of <rect>; trend: one <path> + points;
+         distribution: axis-hugging histogram <rect>; composition: four stacked <rect> per quarter -->
+  </svg>
+  <div class="map">   <!-- the four-relationship → four-chart mapping strip -->
+  <div class="readout" role="status"><!-- baseline rule / annotation chips --></div>
+</div>
+```
+
+Key points:
+
+- The compare / trend / distribution / composition taxonomy is the **community-standard classification** of chart choosers (the FT Visual Vocabulary poster organizes chart families by data relationship; this research did not transcribe its full family tree, so the taxonomy is not attributed to FT);
+- The default relationship → chart mapping: compare → bars (equal-width length encoding compares best), trend → lines (evolution over time), distribution → histogram (binned counts), composition → stacked bars (part-to-whole);
+- The zero-baseline rule (FT chart-doctor README verbatim, research 08 §5.4): Column **"Must always start at 0 on the axis"**, summarized as "columns/areas must start at zero"; line charts may skip zero (FT cites ONS' "Does the axis have to start at zero?"), lollipop charts are exempt.
+
+## Styling & Parameters
+
+All three parameters are JS-type; the demo subscribes to the store and redraws, no CSS variables:
+
+```css
+/* the demo uses only fill/stroke + 1px axis lines, no chart library */
+.cs-bar { stroke: var(--border-strong); stroke-width: 1; }
+/* the truncation warning chip uses Carbon danger #da1e28 (official site verified, research 08 §1.3) */
+.cs-chip[data-warn="true"] { color: #da1e28; border-color: #da1e28; }
+```
+
+| Parameter | Default | Where the numbers come from |
+| --- | --- | --- |
+| `relation` | `compare` | The four-relationship mapping is the community-standard taxonomy; each option pairs with one baseline chart (bar/line/histogram/stacked) |
+| `baseline` | `zero` | FT rule: bar family at zero, lines exempt (README verified); `truncated` raises the #da1e28 warning on the bar family |
+| `labels` | `direct` | jfly CUD verbatim: direct labels beat distant color keys (research 08 §1.1); segments under 14px tall drop their labels and fall back to a legend |
+
+All demo data is deterministic: compare has 4 classes (64/49/78/57), trend 12 months, distribution 8 bins (40 samples), composition 4 quarters × 4 segments. The truncation distortion is computable: 49 vs 78 differ 1.6× from zero — 4.2× when truncated at 40. That is the geometric reason "columns must start at zero".
+
+## Motion & Interaction
+
+- Parameter changes redraw immediately with **no transition** — data-mapping changes should not disguise themselves as color cross-fades (same rule as dataviz-categorical-palette);
+- The baseline warning chip is the only state-color change (0.2s border/color transition), disabled under `prefers-reduced-motion: reduce`;
+- Switching direct labels / legend only adds or removes `<text>` and the legend group; the marks themselves do not move;
+- Hover readouts use native `<title>` (hoverable, gone when the pointer leaves); the full WCAG 1.4.13 triad lives in dataviz-tooltip-legend.
+
+## Real-world examples
+
+- **FT Visual Vocabulary**: the chart-doctor repo and its poster in EN/JA/zh-Hant/zh-Hans organize chart families by data relationship; the README rule Column "Must always start at 0 on the axis" is the source of this entry's baseline parameter. The README closes with an FT copyright notice — reprinting requires syndication clearance — cite the principles, do not reprint the poster (README verified, research 08 §5.4).
+- **The ONS zero-baseline debate**: FT's repo cites two UK Office for National Statistics pieces, "Does the axis have to start at zero?", on when line charts may leave zero — the authoritative origin of the "columns zero, lines exempt" pairing (cited via research 08 §5.4; the ONS originals were not directly verified).
+- **Cleveland & McGill, Graphical Perception**: the methodology citation printed on FT's poster — the experimental source of the encoding-precision ranking, i.e. the literature behind "why bars beat pies"; the detailed ranking lives in the paper and was not transcribed into this research.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `relation` | switching to composition: segments are hue-only, middle baselines drift with the stack — the easiest place to misread | compare is the steadiest form: equal-width bars on zero, the highest-precision encoding |
+| `baseline` | `truncated` on the bar family is a red-line error: the demo gap grows from 1.6× to 4.2×; on the line chart it is legitimate | `zero` is the only safe bar-family setting; in distribution mode truncation would also clip the first bin (count 2) away entirely |
+| `labels` | `legend` frees plot area but forces long-distance color matching (jfly: extremely difficult); right for dense charts where labels cannot fit | `direct` puts numbers on the marks with zero look-back; dense small segments degrade back to a legend automatically |
+
+Rules of thumb: settle the relationship before styling; bar family always starts at zero; direct labels first, legend as fallback; annotate a truncated line-chart axis range.

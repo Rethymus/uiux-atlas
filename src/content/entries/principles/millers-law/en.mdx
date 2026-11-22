@@ -1,0 +1,58 @@
+## Structure & DOM
+
+The demo is a **recall experiment card**: a random digit string shown in chunks for 3s → hidden → typed back → scored per position:
+
+```html
+<div class="ml-digits">
+  <span class="ml-digit">4</span>
+  <span class="ml-digit-group-gap"></span> <!-- chunk boundary -->
+  <span class="ml-digit">9</span>
+</div>
+<input class="ml-input" id="ml-recall" inputmode="numeric" />
+```
+
+Key points:
+
+- Generate, hide, and score all close inside the demo — zero external dependencies;
+- The chunk boundary is expressed as a spacer width (0.75em group gap) while the digit cards stay put — **grouping by spacing, not containers**, the division of labor with the Common Region principle;
+- The recall input carries a visually-hidden label and `inputmode="numeric"`; Enter triggers scoring.
+
+## Styling & Parameters
+
+```tsx
+// digits / chunk are JS-type params: the demo subscribes to the store
+const [digits, setDigits] = useState(() => store.get("digits") as number);
+useEffect(() => store.subscribe(() => {
+  setDigits(store.get("digits") as number);
+  setChunk(store.get("chunk") as number);
+}), [store]);
+```
+
+- `digits` defaults to **10**: deliberately just over the 7±2 ceiling so unchunked recall drops 1–3 digits for most people — the felt range of the law (research 07 §24);
+- `chunk` defaults to **3**: isomorphic to phone numbers in 3–4 digit groups; chunking 10 digits by 3 = 4 blocks — working memory holds 4 items;
+- The 3-second display is a demo pacing choice; "reveal again" is button-triggered, never auto-replayed (in the spirit of WCAG 2.2.1 Timing Adjustable).
+
+## Motion & Interaction
+
+- **Start** generates the string → 3s display → hide and auto-focus the input (the focus happens inside a user-initiated flow, not grabbed at page load — the boundary case of "don't set initial focus on load" from the APG keyboard practices);
+- **Score** (or Enter) compares per position: green = hit, red = miss, best round tracked;
+- **Again** generates a new string; run several rounds at chunk=0 vs chunk=3 and compare accuracy;
+- No animation; phase changes use text cues — in a memory experiment, animation is itself a confounding variable;
+- Scored cards colorize (green/red) but **color is never the only channel** — every cell keeps its digit text (cf. SC 1.4.1);
+- Tab order: Start → (no interaction during display) → input → Score → Again;
+- Auto-focus never steals initial page focus: it only happens after the user presses Start.
+
+## Real-world examples
+
+- **Phone number inputs**: the international 3–4 digit grouping (e.g. `138 8888 8888`) is chunking's best-known application — 10 independent digits become 3–4 blocks, easier to type and proofread;
+- **Credit-card four-digit grouping with auto-advance**: payment forms chunk 16 card digits by 4 and jump focus forward, compressing "hold 16 items" into "hold 4 items" — the de-facto standard in e-commerce checkout;
+- **iOS Settings grouped lists (editorial generalization)**: dozens of settings cut into 3–7 item sections with section titles is the prevailing mobile-system-settings pattern; holding a group, scanning between groups, recall load drops (a generalized convention — Laws of UX names no specific product here).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `digits` | past ~9 digits, unchunked accuracy falls off a cliff — the felt wall of 7±2; 14 digits is near-hopeless | 4–6 digits feel trivial unchunked and the experiment loses tension |
+| `chunk` | chunk sizes of 4–5 yield fewer blocks but each is harder to hold as one whole | 0 = unchunked, the control baseline; 1-digit groups over-fragment and add noise |
+
+Working ranges: `digits` 8–12 with `chunk` 3–4 gives the sharpest contrast; the final lesson is the Laws of UX caveat verbatim — **don't use the magical number seven to justify unnecessary design limitations**: capacity varies per individual with prior knowledge and context (research 07 §24).

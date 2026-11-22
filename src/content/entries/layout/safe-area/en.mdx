@@ -1,0 +1,69 @@
+## Structure & DOM
+
+A three-layer structure: the **viewport meta** (declaring cover) → a **full-screen container** (fills the screen) → the **content layer** (padded on all four edges via env()). Safe areas are not a layout system — they are four environment variables.
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<div class="app">                 <!-- fills the screen -->
+  <header class="app-header">Header</header>   <!-- top inset clears the notch -->
+  <main>…</main>
+  <footer class="app-bar">Action bar</footer>  <!-- bottom inset clears the Home indicator -->
+</div>
+```
+
+Key points:
+
+- `viewport-fit` takes `auto` (default, the system insets automatically) or `cover` (fill the screen and self-pad) — per WebKit's official docs (research 05 §15);
+- `env(safe-area-inset-top | right | bottom | left)` gives one value per edge, with optional fallbacks: `env(safe-area-inset-right, 1em)` (research 05 §15);
+- `env()` shipped on iOS 11 as `constant()` and was renamed `env()` from Safari Technology Preview 41 / iOS 11.2 beta (research 05 §15);
+- In landscape the left/right insets take over — write all four, never just top/bottom.
+
+## Styling & Parameters
+
+Four parameters: insetTop / insetBottom are JS-type (desktop browsers report env() = 0, so sliders simulate them); viewportFit / applyEnv are JS-type switches:
+
+```css
+/* cascade fallback: fixed values first, calc(env()) after */
+.app {
+  padding: 16px;                                          /* landing spot without env() */
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.app-bar {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); /* bottom action bar */
+}
+
+/* feature detection (unsupported env() evaluation falls back to 0) */
+@supports (padding: env(safe-area-inset-top)) { /* enhancement */ }
+```
+
+Where the numbers come from: the two viewport-fit values and the env() rename timeline are WebKit-official (research 05 §15); the demo's 44px/34px are the widely cited iPhone-era values — the research records the mechanism but no numbers, so they are community values (unverified); the 16px base padding is a demo baseline.
+
+## Motion & Interaction
+
+Insets are **static geometry**; values snap on rotation and device changes:
+
+- Rotating swaps top/bottom with left/right insets and re-pads instantly — avoid long padding transitions, which read as sliding content during rotation;
+- The demo's sliders simulate inset changes: header and action bar yield in sync; switching applyEnv=off reenacts the "cover without padding" accident (text into the notch, buttons under the indicator);
+- The status chip cross-fades over 0.25s, disabled under `prefers-reduced-motion`;
+- On-device verification is not optional: insets differ per device; desktop simulation is only a demo.
+
+## Real-world examples
+
+- **Apple's "Designing Websites for iPhone X" (WebKit blog)** — the origin and official tutorial of env(safe-area-inset-*) and viewport-fit (research 05 §15 source).
+- **Desktop PWA title bars** — the sibling env(titlebar-area-*) keeps web-app content clear of custom title-bar controls (collected on MDN's env() page, research 05 §15).
+- **Full-screen immersive pages (video players/maps)** — cover plus env() padding on all four edges is the standard posture (community practice, editorial content).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `insetTop` | the header sinks further: insets eat content height; exceeding the real notch depth wastes space | the header nears the notch: below the device's real value the title gets covered — read env(), don't guess |
+| `insetBottom` | the action bar rises: safely away from the Home indicator, but occupies more space | the bar presses toward the indicator: below the real value buttons become untappable — an accessibility accident |
+| `viewportFit` | cover: the page fills the screen for immersion, and padding becomes your job | auto: the system insets automatically and content never enters danger zones; the cost is black bars beside full-screen media |
+| `applyEnv` | on: content yields per insets; every control stays tappable and readable | off: the classic accident under cover — notch over the title, indicator over the buttons |
+
+Working notes: always write "fixed value + calc(env())"; write all four edges; reserve cover for genuinely immersive pages; before shipping, verify on one notched and one punch-hole device.

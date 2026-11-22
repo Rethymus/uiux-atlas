@@ -1,0 +1,121 @@
+{
+  "name": "CJK Typography",
+  "nameZh": "中文排版 CJK",
+  "aliases": ["中文排版", "clreq", "标点挤压", "段首缩进", "text-autospace"],
+  "category": "type",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "中文排版的四件套:段首缩进 2 字、两端对齐、中西文自动间距(≤¼ 汉字宽)、标点挤压——规则出自 W3C clreq,落地靠 text-indent / text-align / text-autospace / text-spacing-trim。",
+    "en": "Four pillars of Chinese typesetting: 2-em paragraph indent, justified alignment, auto CJK-Latin spacing (≤¼ em), punctuation squeeze — rules from W3C clreq, landed via text-indent / text-align / text-autospace / text-spacing-trim."
+  },
+  "origin": {
+    "zh": "W3C《中文排版需求》(clreq,中文布局任务团 Group Note Draft)整理汉字排版规则:段首缩进以两个汉字宽为标准;除段落末行外每行行尾对齐(两端对齐原则);汉字与西文/数字之间字距不多于四分之一个汉字宽;标点符号宽度调整(标点挤压)见其 §6.3.2(以上均为原文一手核对,调研 05§21/22;标点挤压小节锚点于 2026-11-22 直接抓取核对)。CSS 自动间距属性 text-autospace 于 2025-11 起新基线(MDN,调研 05§23)。",
+    "en": "The W3C Requirements for Chinese Text Layout (clreq, Group Note Draft by the Chinese Layout Task Force) codifies Han-script rules: paragraph indent standard is two character widths; every line except the last justifies at the line end; CJK-to-Latin/digit spacing stays within a quarter character width; punctuation width adjustment (squeeze) is its §6.3.2 (all verified from the source, research 05 §21/22; the punctuation-squeeze anchor re-fetched 2026-11-22). The CSS text-autospace property became newly available Baseline in 2025-11 (MDN, research 05 §23)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "autospace",
+      "options": [
+        { "value": "normal", "label": { "zh": "自动加间距(默认)", "en": "Auto spacing (default)" } },
+        { "value": "no-autospace", "label": { "zh": "关闭自动间距", "en": "No auto spacing" } }
+      ],
+      "default": "normal",
+      "cssVar": "--cjk-autospace",
+      "effect": {
+        "zh": "text-autospace 的取值,在排版引擎层为汉字与西文/数字之间自动插入间距,落实 clreq 的「不多于 ¼ 汉字宽」惯例(行首/行尾不加)。2025-11 起 Baseline Newly available(MDN);此前需手工插空格或依赖文本层脚本。",
+        "en": "The text-autospace value: the typesetting engine itself inserts spacing between Han characters and Latin letters/digits, implementing clreq's ≤¼-character-width convention (skipped at line edges). Newly available Baseline since 2025-11 (MDN); before it, hand-inserted spaces or text-layer scripts were the workaround."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "indent",
+      "unit": "em",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "cssVar": "--cjk-indent",
+      "effect": {
+        "zh": "段首缩进(text-indent)。clreq 标准:两个汉字宽(2em);多栏排版每栏字数少时有用一字缩进的变通(原文核对)。中文 Web 文章另有一派「不缩进、以段距分段」的排式——两种惯例并存,书籍排版以 2 字缩进为标准。",
+        "en": "Paragraph indent (text-indent). clreq standard: two character widths (2em); single-column-sparse variants use one width (verified). Chinese web articles also commonly skip indentation and separate paragraphs with spacing — both conventions coexist, while book typesetting standardizes on the 2-em indent."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "align",
+      "options": [
+        { "value": "justify", "label": { "zh": "两端对齐", "en": "Justified" } },
+        { "value": "left", "label": { "zh": "左对齐", "en": "Left-aligned" } }
+      ],
+      "default": "justify",
+      "cssVar": "--cjk-align",
+      "effect": {
+        "zh": "text-align 取值。clreq 对齐原则:除段落末行外每行行尾应对齐(两端对齐)——汉字字框为正方形,两端对齐在纯中文文本上代价低;中西混排行内可把 ¼ 字宽的中西间距拉伸(最大到 ½ 字宽)参与调整(原文核对)。",
+        "en": "The text-align value. clreq alignment principle: every line except the last aligns at the end (justified) — square Han glyph boxes make justification cheap on pure Chinese; mixed lines stretch the ¼-em CJK-Latin gaps (max ½ em) to participate in justification (verified)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "punctTrim",
+      "options": [
+        { "value": "normal", "label": { "zh": "normal(引擎默认)", "en": "normal (engine default)" } },
+        { "value": "trim-start", "label": { "zh": "trim-start(挤压行首标点)", "en": "trim-start (squeeze line-start punctuation)" } },
+        { "value": "space-first", "label": { "zh": "space-first", "en": "space-first" } },
+        { "value": "space-all", "label": { "zh": "space-all(全全角,不挤压)", "en": "space-all (full-width, no squeeze)" } }
+      ],
+      "default": "normal",
+      "cssVar": "--cjk-punct-trim",
+      "effect": {
+        "zh": "text-spacing-trim 取值——标点挤压的 CSS 落地:压缩全角标点的内部留白。clreq §6.3.2「标点符号的宽度调整」记载此需求(2026-11-22 抓取核对);CSS 属性为实验性,BCD @main(2026-11-22):Chrome/Edge 123+,Firefox/Safari 未支持。",
+        "en": "The text-spacing-trim value — the CSS landing of punctuation squeeze: compressing the inner padding of full-width punctuation. The need is recorded in clreq §6.32 'Punctuation Width Adjustment' (fetched 2026-11-22); the CSS property is experimental, BCD @main (2026-11-22): Chrome/Edge 123+, Firefox/Safari unsupported."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "text-indent / text-align:全平台广泛可用。text-autospace:Baseline 2025 Newly available(2025-11 起,MDN)。text-spacing-trim:实验性——Chrome/Edge 123+(2024-03),Firefox 与 Safari 未支持(BCD @main,2026-11-22 抓取;Safari 追踪 WebKit bug 252068)。",
+      "en": "text-indent / text-align: widely available everywhere. text-autospace: Baseline 2025 Newly available (since 2025-11, MDN). text-spacing-trim: experimental — Chrome/Edge 123+ (2024-03), Firefox and Safari unsupported (BCD @main fetched 2026-11-22; Safari tracks WebKit bug 252068)."
+    }
+  },
+  "fallback": {
+    "zh": "text-autospace 不支持时,中西文间距回退为「无自动间距」,可退回手工插空格或文本层脚本(pangu 一类)——但注意手工空格会被复制/搜索带走;text-spacing-trim 不支持时标点保持全角全宽,纯降级无需修复;两个未知属性声明会被解析器安全忽略,无副作用。",
+    "en": "Without text-autospace, CJK-Latin spacing falls back to none; the manual fallback is inserted spaces or text-layer scripts (pangu-style) — noting hand-inserted spaces travel with copy/search. Without text-spacing-trim, punctuation stays full-width — a pure, harmless degradation. Unknown property declarations are safely ignored by the parser."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "中文长文页面(文章、文档、报告)——缩进 + 两端对齐是书籍式排版的 Web 落地", "en": "Chinese long-form pages (articles, docs, reports) — indent + justification is the book-style web landing" },
+      { "zh": "中西混排密集的技术文档,启用 text-autospace 免去手工空格", "en": "CJK-Latin-dense technical docs where text-autospace removes hand-inserted spaces" },
+      { "zh": "出版/电子书类产品:标点挤压与禁则直接决定中文页面的专业度", "en": "Publishing/e-book products: punctuation squeeze and line-break rules define professional Chinese pages" },
+      { "zh": "设计系统的中文排版令牌:缩进/对齐/间距集中声明", "en": "Design-system Chinese typography tokens: indent/align/spacing declared centrally" }
+    ],
+    "avoid": [
+      { "zh": "中文正文套用西文空格词距(word-spacing)——CSS 语义上对无空格分词的中文无效", "en": "Applying Latin word-spacing (word-spacing) to Chinese body text — ineffective per CSS semantics for space-less CJK" },
+      { "zh": "在仅极少数浏览器支持的属性上承载关键可读性(text-spacing-trim 目前仍属增强)", "en": "Carrying critical readability on a property few browsers support (text-spacing-trim is still an enhancement)" },
+      { "zh": "行内元素里硬插全角空格制造间距——会被复制、搜索、无障碍朗读一并带走", "en": "Hand-inserting full-width spaces for gaps inside content — they leak into copy, search and screen readers" },
+      { "zh": "窄容器(卡片、通知条)强行两端对齐——字间距被拉出明显空洞", "en": "Justifying text in narrow containers (cards, notices) — stretched gaps open visible holes" }
+    ]
+  },
+  "a11y": {
+    "zh": "缩进与两端对齐对屏幕阅读器无影响(纯视觉);但两端对齐对阅读障碍用户存在争议——被拉伸的词间/字间距可能加重串行,重要正文可提供左对齐替代;text-autospace 属引擎层行为,不改文本内容(复制/搜索/朗读不受影响),优于手工插空格方案;行首行尾禁则由浏览器断行引擎保证,勿用手工断行破坏。",
+    "en": "Indent and justification are purely visual to screen readers; but justification is contested for dyslexic readers — stretched spacing can worsen line-tracking errors, so offer left alignment for critical body copy. text-autospace works at the engine level without touching the text (copy/search/screen-reader output unaffected), beating hand-inserted spaces. Line-start/end rules come from the browser's breaking engine — never fight them with manual breaks."
+  },
+  "sources": [
+    "https://www.w3.org/TR/clreq/",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/text-autospace"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为中文正文实现书籍式排版:段首缩进 2 字、两端对齐、中西文自动间距(text-autospace)、标点挤压(text-spacing-trim),并为不支持的浏览器保留纯文本降级。",
+      "en": "Implement book-style Chinese body typesetting: 2-em paragraph indent, justified alignment, CJK-Latin auto spacing (text-autospace), punctuation squeeze (text-spacing-trim), with a clean plain-text degradation for unsupported browsers."
+    },
+    "acceptance": [
+      { "zh": "段首缩进用 text-indent: 2em(clreq 标准:两个汉字宽)", "en": "Paragraph indent via text-indent: 2em (clreq standard: two character widths)" },
+      { "zh": "正文 text-align: justify,末行自然左对齐", "en": "Body text-align: justify, with the last line ragged naturally" },
+      { "zh": "声明 text-autospace: normal 启用中西文自动间距,不手工插空格", "en": "Declare text-autospace: normal for CJK-Latin auto spacing; no hand-inserted spaces" },
+      { "zh": "text-spacing-trim 作为渐进增强声明,不支持时无副作用", "en": "text-spacing-trim declared as progressive enhancement, harmless when unsupported" },
+      { "zh": "不在文本内硬插全角/半角空格制造间距", "en": "No full/half-width spaces inserted into content to fake spacing" }
+    ]
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "name": "Chart Selection",
+  "nameZh": "图表选型",
+  "aliases": ["Chart Chooser", "Visual Vocabulary", "图表类型选择", "选型决策树"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "先判断数据关系再挑图表:比较→柱状、趋势→折线、分布→直方图、构成→堆叠柱;柱/面积必须零基线,折线可例外。",
+    "en": "Identify the data relationship first, then pick the chart: compare → bars, trend → lines, distribution → histogram, composition → stacked bars; columns/areas must start at zero, line charts may not."
+  },
+  "origin": {
+    "zh": "方法论载体是 FT Visual Vocabulary(chart-doctor 仓库与英/日/繁中/简中四语海报;FT 版权所有,只引用原则、不翻印海报);零基线判据原文 Column \"Must always start at 0 on the axis\" 出自该仓库 README(调研 08§5.4),实验源头引 Cleveland & McGill《Graphical Perception》;「图上直标优于图例」出自 Okabe & Ito CUD 官方页(调研 08§1.1)。「比较/趋势/分布/构成」四关系分法本身是图表选型指南的社区通行分类,非 FT 官方族谱。",
+    "en": "The methodology carrier is FT Visual Vocabulary (the chart-doctor repo and its poster in EN/JA/zh-Hant/zh-Hans; FT all rights reserved — cite the principles, do not reprint the poster). The zero-baseline rule verbatim, Column \"Must always start at 0 on the axis\", comes from the repo README (research 08 §5.4), with Cleveland & McGill's Graphical Perception as the experimental source; \"direct labels beat distant legends\" comes from Okabe & Ito's official CUD page (research 08 §1.1). The compare/trend/distribution/composition taxonomy itself is the community-standard classification of chart choosers, not FT's official family tree."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "relation",
+      "options": [
+        { "value": "compare", "label": { "zh": "比较", "en": "Compare" } },
+        { "value": "trend", "label": { "zh": "趋势", "en": "Trend" } },
+        { "value": "distribution", "label": { "zh": "分布", "en": "Distribution" } },
+        { "value": "composition", "label": { "zh": "构成", "en": "Composition" } }
+      ],
+      "default": "compare",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重绘 SVG)。四种数据关系各配一种基线图表:比较→柱状图(长度编码最利于等宽比较)、趋势→折线图(时间演化)、分布→直方图(数值分箱计数)、构成→堆叠柱(部分到整体)。关系选错(时间趋势用饼图、离散类别用折线)比样式瑕疵致命得多——选型是图表可读性的第一决策。",
+        "en": "JS-type param (the demo subscribes and redraws the SVG). Each relationship maps to one baseline chart: compare → bar chart (length encoding compares best at equal widths), trend → line chart (evolution over time), distribution → histogram (binned counts), composition → stacked bars (part-to-whole). A mismatched relationship (pie chart for a time trend, line for discrete classes) is far more damaging than a styling flaw — selection is the first readability decision."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "baseline",
+      "options": [
+        { "value": "zero", "label": { "zh": "零基线", "en": "Zero baseline" } },
+        { "value": "truncated", "label": { "zh": "非零截断", "en": "Truncated" } }
+      ],
+      "default": "zero",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后重算 y 轴域)。zero=轴从 0 起;truncated=把 y 轴下限抬到数据附近放大差异。FT 判据:柱 \"Must always start at 0 on the axis\",调研概括为「柱/面积必须零基线」;折线图可不从零(FT 引 ONS《Does the axis have to start at zero?》两篇文章),Lollipop 不强制。柱系截断时 demo 给出 Carbon danger(#da1e28,官网已核)警示徽标——demo 数据 49 vs 78 零基线差 1.6 倍,截断到 40 起即画成 4.2 倍。",
+        "en": "JS-type param (the demo subscribes and recomputes the y domain). zero = axis starts at 0; truncated = the y floor rises near the data to magnify differences. FT's rule: columns \"Must always start at 0 on the axis\", summarized as 'columns/areas must start at zero'; line charts may skip zero (FT cites two ONS pieces, 'Does the axis have to start at zero?'), lollipop charts are exempt. When bar-family charts truncate, the demo raises a Carbon-danger (#da1e28, officially verified) warning chip — demo data 49 vs 78 differ 1.6× from zero, 4.2× when truncated at 40."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "labels",
+      "options": [
+        { "value": "direct", "label": { "zh": "图上直标", "en": "Direct labels" } },
+        { "value": "legend", "label": { "zh": "外置图例", "en": "Legend" } }
+      ],
+      "default": "direct",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换标注方式)。direct=数值/系列名直接标在图形上(柱顶、线端、段内);legend=右侧对色图例。jfly CUD 原文:\"For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult.\" 直标是首选;放不下时(如堆叠段高 <14px)自动省略并退回图例。",
+        "en": "JS-type param (the demo subscribes and switches annotation mode). direct = values/series names written on the marks themselves (bar tops, line ends, segment centers); legend = a color-key at the right. jfly CUD verbatim: \"For graphs and line drawings, label elements of the graph on the graph itself rather than making a separate color-coded key, since matching same colors in distant places is extremely difficult.\" Direct labels come first; when they do not fit (stacked segments under 14px tall) they are omitted and a legend takes over."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "demo 为手绘 SVG + React,不依赖新 CSS/JS 特性,所有现代浏览器可用;y 轴域与柱高全部由 JS 计算,无 layout 引擎依赖。",
+      "en": "The demo is hand-drawn SVG + React with no reliance on new CSS/JS features; available in all modern browsers. The y domain and bar geometry are computed in JS with no layout-engine dependency."
+    }
+  },
+  "fallback": {
+    "zh": "无浏览器兼容回退;真正的「回退」是选型纠偏:发现关系判断错误(时间趋势被画成构成、分布被画成折线)时,先回到四关系判断再换图表类型,而不是继续调样式。空间放不下直标时退回图例,并保持 swatch 与系列一一对应。SVG 文字用 <text> 而非位图,保证缩放、选中与读屏可达。",
+    "en": "No browser-compat fallback; the real 'fallback' is selection correction: when the relationship was misjudged (a time trend drawn as composition, a distribution drawn as a line), go back to the relationship question and change the chart type instead of polishing styles. Where direct labels do not fit, fall back to a legend with swatches mapped one-to-one to series. SVG text uses <text>, not bitmaps, so it scales, selects and reads out."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "拿到新数据集先过四关系判断再定图表——比较/趋势/分布/构成,一步定盘", "en": "Run the four-relationship question on any new dataset before picking a chart — compare/trend/distribution/composition settles it in one step" },
+      { "zh": "评审图表时用零基线判据快速定位误导:柱系非零即警", "en": "Use the zero-baseline rule to spot misleading charts in review: any truncated bar family is a flag" },
+      { "zh": "折线图合法截断轴域以放大波动——记得标注轴范围,避免读者误读幅度", "en": "Line charts may legitimately truncate the axis to show movement — annotate the range so readers do not over-read magnitude" },
+      { "zh": "高密度仪表盘优先直标省掉图例占位,悬停读数交给 tooltip(见 dataviz-tooltip-legend)", "en": "Dense dashboards prefer direct labels to reclaim legend space; hover readouts go to tooltips (see dataviz-tooltip-legend)" }
+    ],
+    "avoid": [
+      { "zh": "用饼图讲时间趋势、用折线连离散类别——关系错配是图表误导的第一来源", "en": "Pie charts for time trends, lines connecting discrete classes — relationship mismatch is the primary source of misleading charts" },
+      { "zh": "柱状/直方/堆叠/面积图非零截断(FT 红线);确需截断请改折线或点图", "en": "Truncated axes on bar/histogram/stacked/area charts (FT red line); switch to a line or dot plot if truncation is truly needed" },
+      { "zh": "堆叠柱跨段比较中段数量——段基线随堆叠漂移,只有第一段贴零基线可精读;跨系列比较改分组柱", "en": "Comparing middle stacked segments across stacks — their baselines drift with the pile; only the first segment sits on zero and reads precisely. Use grouped bars for cross-series comparison" },
+      { "zh": "直标放得下时仍用远处对色图例——jfly 原文:远处颜色匹配极其困难", "en": "A distant color legend where direct labels would fit — jfly verbatim: matching colors from afar is extremely difficult" }
+    ]
+  },
+  "a11y": {
+    "zh": "图表元素对相邻颜色保持 ≥3:1 非文本对比(WCAG 2.1 SC 1.4.11,调研 06§17);直标减少读者远处对色的认知负担(jfly CUD);SVG 需 role=\"img\" 与概述图表目的的 aria-label,逐点数值给原生 <title>,完整悬停三件套(Esc 可关/可悬停/常驻)见 dataviz-tooltip-legend;颜色只作冗余通道,关键区分靠文字与位置兜底(CUD 原则 2)。",
+    "en": "Chart elements hold ≥3:1 non-text contrast against adjacent colors (WCAG 2.1 SC 1.4.11, research 06 §17); direct labels spare readers long-distance color matching (jfly CUD); the SVG needs role=\"img\" plus an aria-label stating the chart's purpose, per-point values via native <title>, and the full hover triad (dismissible/hoverable/persistent) lives in dataviz-tooltip-legend; color stays a redundant channel — text and position carry the key distinctions (CUD principle 2)."
+  },
+  "sources": [
+    "http://ft-interactive.github.io/visual-vocabulary/",
+    "https://github.com/ft-interactive/chart-doctor",
+    "https://jfly.uni-koeln.de/color/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "给定数据集,先判断数据关系(比较/趋势/分布/构成),再选择对应图表类型并用零依赖 SVG 实现:柱系零基线,折线可注明轴域,数值直标优先于图例。",
+      "en": "Given a dataset, identify the relationship first (compare/trend/distribution/composition), then pick the matching chart and implement it with dependency-free SVG: bar family at a zero baseline, line charts may note their axis range, direct labels before legends."
+    },
+    "acceptance": [
+      { "zh": "图表类型与数据关系一一对应:比较→柱状、趋势→折线、分布→直方图、构成→堆叠柱", "en": "Chart type matches relationship one-to-one: compare → bars, trend → lines, distribution → histogram, composition → stacked bars" },
+      { "zh": "柱状/直方/堆叠/面积图 y 轴从 0 开始;确需截断时改用折线/点图而非柱系", "en": "Bar/histogram/stacked/area charts start the y axis at 0; if truncation is truly needed, switch to a line or dot plot instead" },
+      { "zh": "数值或系列名直标在图形上,图例仅作直标放不下时的回退", "en": "Values or series names are labeled on the marks; a legend is only the fallback when labels do not fit" },
+      { "zh": "SVG 带 role=\"img\" 与 aria-label,相邻色 ≥3:1 非文本对比(WCAG SC 1.4.11)", "en": "SVG carries role=\"img\" and an aria-label; adjacent colors hold ≥3:1 non-text contrast (WCAG SC 1.4.11)" },
+      { "zh": "零第三方图表库,动效尊重 prefers-reduced-motion", "en": "Zero third-party chart libraries; motion respects prefers-reduced-motion" }
+    ]
+  }
+}

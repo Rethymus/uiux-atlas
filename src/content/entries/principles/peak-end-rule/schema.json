@@ -1,0 +1,100 @@
+{
+  "name": "Peak-End Rule",
+  "nameZh": "峰终定律",
+  "aliases": ["峰终法则", "Peak-End"],
+  "category": "principles",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "人对一段体验的记忆主要由「峰值时刻」与「结尾感受」决定,而非全程平均。重点设计强度最高与收尾的时刻;负面峰值要专门消除。",
+    "en": "People judge an experience by its peak moment and its ending, not the average. Design the highest-intensity and closing moments; eliminate negative peaks deliberately."
+  },
+  "origin": {
+    "zh": "Kahneman 等人 1993 年冷水实验:被试对整段经历的记忆评估主要取决于峰值与结尾感受,而非时长或平均(Jon Yablonski,Laws of UX;调研 07§25)。相关 NN/g 文章:The Peak–End Rule: How Impressions Become Memories(Lexie Kane)。",
+    "en": "Kahneman et al.'s 1993 cold-water experiment: remembered evaluation of an episode hinges on its peak and its end, not duration or average (Jon Yablonski, Laws of UX; research 07 §25). Related NN/g piece: The Peak–End Rule: How Impressions Become Memories (Lexie Kane)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "peak",
+      "unit": "级",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 8,
+      "effect": {
+        "zh": "旅程峰值时刻的体验强度(demo 构造的 8 段旅程第 3 段)。峰终定律的记忆评估按「峰值+结尾」主导;demo 用教科书化简公式 (峰值+结尾)/2 作为记忆预测,与全程平均对比。",
+        "en": "Experience intensity at the journey's peak (moment 3 of the demo's constructed 8-moment journey). Remembered evaluation is dominated by peak+end; the demo uses the textbook simplification (peak+end)/2 as the memory prediction, contrasted with the full average."
+      }
+    },
+    {
+      "type": "number",
+      "name": "ending",
+      "unit": "级",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 2,
+      "effect": {
+        "zh": "旅程结尾时刻的体验强度(第 8 段)。默认 2 是「烂尾」旅程:峰值 8 的精彩被结尾 2 拖累,记忆预测只有 5——把 ending 拉到 9,看记忆预测怎么翻上去。",
+        "en": "Experience intensity at the journey's end (moment 8). Default 2 is a botched ending: a peak of 8 drags a memory prediction of just 5 — raise ending to 9 and watch the prediction jump."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "preset",
+      "options": [
+        { "value": "custom", "label": { "zh": "自定义", "en": "Custom" } },
+        { "value": "smooth", "label": { "zh": "平顺旅程", "en": "Smooth journey" } },
+        { "value": "finale", "label": { "zh": "惊喜收尾", "en": "Surprise finale" } },
+        { "value": "cliff", "label": { "zh": "烂尾旅程", "en": "Botched ending" } }
+      ],
+      "default": "cliff",
+      "effect": {
+        "zh": "旅程预设(写入 peak/ending 两个参数)。cliff=烂尾(8/2);smooth=平顺(5/4);finale=惊喜收尾(6/9,Mailchimp 发送成功动画的思路,07§25);custom=保持当前滑块值。",
+        "en": "Journey presets (they write the peak/ending params). cliff = botched (8/2); smooth = even (5/4); finale = surprise ending (6/9, the Mailchimp success-animation idea, 07 §25); custom keeps the current sliders."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示用内联 SVG 绘制体验曲线,全现代浏览器可用。",
+      "en": "The curve is inline SVG; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "定律的工程出口:在旅程的两个时刻上做确定性设计——「强度最高处」(达成、揭晓、意外之喜)与「收尾处」(提交成功页、任务完成态、退出确认)。没有可降级的 CSS 特性;若旅程数据缺失,降级方案是至少保证「结尾不烂」。",
+    "en": "The engineering exit: deterministic design at two moments — the peak (achievement, reveal, delight) and the ending (success page, completion state, exit confirmation). No CSS feature to degrade; if journey data is missing, the fallback is at least 'never botch the ending'."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "表单提交成功页、任务完成态——值得单独打磨的「终」", "en": "Form success pages and completion states — the 'end' deserves its own craft" },
+      { "zh": "在最有价值的时刻投放惊喜(Mailchimp 发送成功动画,07§25)", "en": "Surprise at the most valuable moment (Mailchimp's send-success animation, 07 §25)" },
+      { "zh": "消除负面峰值:等待、报错、排队处专门做时间感知设计(Uber 案例,07§25)", "en": "Kill negative peaks: waiting, errors, queues deserve time-perception design (the Uber case, 07 §25)" }
+    ],
+    "avoid": [
+      { "zh": "把资源平均撒在全程,峰值与收尾反而潦草", "en": "Spreading resources evenly while the peak and the ending stay sloppy" },
+      { "zh": "在收尾插入打断(强制问卷、广告)制造负面终值", "en": "Interrupting the ending (forced surveys, ads) and manufacturing a negative end" }
+    ]
+  },
+  "a11y": {
+    "zh": "曲线信息必须双通道:SVG 曲线之外,峰值/结尾/平均/记忆预测四组数值都以文本呈现(演示面板),不依赖颜色或形状传达结论;动画克制,尊重 prefers-reduced-motion。",
+    "en": "Curve information must be dual-channel: beyond the SVG, the four numbers (peak, end, average, memory prediction) all appear as text in the panel, never conveyed by color or shape alone; motion stays restrained and respects prefers-reduced-motion."
+  },
+  "sources": [
+    "https://lawsofux.com/peak-end-rule/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "画一段 8 时刻体验曲线(内联 SVG),峰值与结尾强度可调;面板同时显示「全程平均」与「峰终预测 (峰值+结尾)/2」两根对比条,并提供「平顺/惊喜收尾/烂尾」三种旅程预设。",
+      "en": "Draw an 8-moment experience curve (inline SVG) with adjustable peak and ending intensity; show 'full average' vs 'peak-end prediction (peak+end)/2' as comparison bars plus smooth/surprise-finale/botched-ending presets."
+    },
+    "acceptance": [
+      { "zh": "峰值落在第 3 时刻、结尾在第 8 时刻,由 peak/ending 参数驱动,预设按钮直接写 store", "en": "Peak at moment 3, end at moment 8, driven by peak/ending params; preset buttons write the store" },
+      { "zh": "平均与峰终预测两根条实时重算,数值文本与曲线同步", "en": "Average and peak-end prediction recompute live; numbers and curve stay in sync" },
+      { "zh": "曲线用平滑折线,过渡 0.3s transform/attribute 动画,reduced-motion 时直接跳变", "en": "Smooth polyline with 0.3s transitions; jumps instantly under reduced motion" },
+      { "zh": "所有关键数值以文本呈现,不只靠曲线读图", "en": "All key numbers appear as text, never readable only off the curve" },
+      { "zh": "记忆预测标注「(峰值+结尾)/2 为教科书化简,非原始实验公式」", "en": "Label the memory prediction as the textbook (peak+end)/2 simplification, not the raw experimental formula" }
+    ]
+  }
+}

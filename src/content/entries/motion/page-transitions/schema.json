@@ -1,0 +1,93 @@
+{
+  "name": "Page Transition Patterns",
+  "nameZh": "页面转场模式",
+  "aliases": ["转场选型", "M3 transition patterns", "六大转场模式"],
+  "category": "motion",
+  "system": "m3",
+  "star": 3,
+  "tagline": {
+    "zh": "M3 官方六大转场模式选型:Container transform(持久容器连接起止)、Forward/backward(层级前进后退,Android 滑动+淡出、iOS 视差)、Lateral(同级齐滑)、Top level(先快淡出再淡入)、Enter/exit(按来源方向进出)、Skeleton loaders(骨架脉动→内容快淡入)。",
+    "en": "M3's six official transition patterns: Container transform (a persistent container links both states), Forward/backward (hierarchy travel — Android slide+fade, iOS parallax), Lateral (same-level group slide), Top level (quick fade out, then in), Enter/exit (in/out along the origin direction), and Skeleton loaders (skeleton pulse → content fades in fast)."
+  },
+  "origin": {
+    "zh": "M3《Transition patterns》(Jina 实抓,调研 04§3.3)官方六模式:① Container transform——Card/搜索框/FAB/Sheet 无缝展开为详情页,持久容器连接起止态;② Forward and backward——Android 滑动+淡出(减少位移量)、iOS 视差(背景慢于前景);③ Lateral——tabs/carousels 同级横滑,无淡出/视差,元素成组齐滑;④ Top level——nav bar/rail/drawer 顶层目的地切换,先快速淡出再淡入,刻意不用持久元素;⑤ Enter and exit——屏内沿出入点方向轴展开(dialog/menu/snackbar)、越屏滑入滑出(drawer/bottom sheet),方向建立空间模型;⑥ Skeleton loaders——骨架脉动暗示加载位置,完成后快速淡入。时长/缓动搭配按官方配对表(调研 04§1.4):屏内大面积 Emphasized 500ms、进入 decel 400ms、永久退出 accel 200ms、临时退出(drawer)Emphasized。",
+    "en": "M3's \"Transition patterns\" (fetched via Jina, research 04 §3.3), the six official modes: (1) Container transform — Card/search bar/FAB/Sheet expanding seamlessly into a detail page, a persistent container linking both states; (2) Forward and backward — Android slide+fade (minimized travel), iOS parallax (background slower than foreground); (3) Lateral — tabs/carousels sliding as a group with no fade/parallax; (4) Top level — nav bar/rail/drawer destination switches, quick fade out then in, deliberately without a persistent element; (5) Enter and exit — in-screen expansion along the entry-point axis (dialog/menu/snackbar) and across-screen slides (drawer/bottom sheet), with direction building the spatial model; (6) Skeleton loaders — a pulsing skeleton hinting where content will land, then a fast fade-in. Duration/easing per the official pairing table (research 04 §1.4): large-area on-screen Emphasized 500ms, enter decel 400ms, permanent exit accel 200ms, temporary exits (drawer) Emphasized."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "pattern",
+      "options": [
+        { "value": "container", "label": { "zh": "Container transform", "en": "Container transform" } },
+        { "value": "forward", "label": { "zh": "Forward / backward", "en": "Forward / backward" } },
+        { "value": "lateral", "label": { "zh": "Lateral 同级横滑", "en": "Lateral" } },
+        { "value": "toplevel", "label": { "zh": "Top level 顶层切换", "en": "Top level" } },
+        { "value": "enterexit", "label": { "zh": "Enter / exit 方向进出", "en": "Enter / exit" } },
+        { "value": "skeleton", "label": { "zh": "Skeleton loaders", "en": "Skeleton loaders" } }
+      ],
+      "default": "container",
+      "effect": {
+        "zh": "六模式选型(demo 订阅后重播对应迷你转场,读数条给出各模式的官方描述与推荐配对)。选型逻辑:起止态有持久元素→container;层级前进后退→forward/backward;同级平移→lateral;顶层目的地→top level(刻意弱关联);有明确来源方向→enter/exit;内容加载→skeleton。",
+        "en": "Pattern selection (the demo subscribes and replays a mini transition, with each mode's official description and recommended pair in the readout). Selection logic: a persistent element across states → container; hierarchy travel → forward/backward; same-level panning → lateral; top-level destinations → top level (deliberately weak linkage); a clear origin direction → enter/exit; content loading → skeleton."
+      }
+    },
+    {
+      "type": "number",
+      "name": "duration",
+      "min": 200,
+      "max": 600,
+      "step": 50,
+      "default": 300,
+      "unit": "ms",
+      "effect": {
+        "zh": "demo 各模式的统一播放时长(演示变量)。官方并无「一档走天下」:屏内大面积起止配 Emphasized 500ms、进入配 decel 400ms、永久退出配 accel 200ms、屏内小面积配 Standard 300ms(官方配对表)——读数条按所选模式给出推荐配对,duration 只控制演示播放速度。",
+        "en": "One playback duration for all demo modes (a demo variable). Officially there is no single tier for everything: large-area on-screen pairs with Emphasized 500ms, entering with decel 400ms, permanent exits with accel 200ms, small on-screen with Standard 300ms (official pairing table) — the readout shows the recommended pair per selected mode, while duration only drives the demo playback."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "六模式是设计规范而非 API,demo 以 CSS animation/transition 承载(支持面为 CSS 既有特性,本次调研未逐浏览器核验)。Web 侧工程化落地推荐 View Transitions API:同文档 Chrome/Edge 111+、Safari 18+、Firefox 144+;跨文档 Chrome 126+、Safari 18.2+(Firefox 未支持,调研 04§3.1)——落地细节见 view-transitions 条目。",
+      "en": "The six patterns are design spec, not an API; the demo hosts them in CSS animation/transition (long-standing CSS features; per-browser support not audited in this pass). For web engineering, land them via the View Transitions API: same-document Chrome/Edge 111+, Safari 18+, Firefox 144+; cross-document Chrome 126+, Safari 18.2+ (Firefox: no, research 04 §3.1) — see the view-transitions entry."
+    }
+  },
+  "fallback": {
+    "zh": "prefers-reduced-motion: reduce 时全部模式直切(瞬时换态),功能与上下文不损失——M3/HIG 均要求动效可取消且不是关键信息唯一渠道;模式选型本身与降级正交:即使直切,「选哪种模式」仍决定 DOM/层级关系(持久元素、来源方向、骨架占位)。",
+    "en": "Under prefers-reduced-motion: reduce, every mode hard-cuts (instant swap) with no loss of function or context — M3/HIG both require cancellable motion that is never the sole information channel; pattern selection is orthogonal to fallback: even on a hard cut, \"which pattern\" still decides the DOM/hierarchy relationship (persistent element, origin direction, skeleton placeholder)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "列表→详情、FAB/搜索框→详情页:Container transform,持久容器关系最强、感知最具表达力", "en": "List→detail, FAB/search bar→detail page: Container transform — the persistent container carries the strongest relationship and expressiveness" },
+      { "zh": "层级导航前进/后退:forward/backward(Android 滑动+淡出;iOS 视差)", "en": "Hierarchy navigation forward/backward: forward/backward (Android slide+fade; iOS parallax)" },
+      { "zh": "tabs/carousel 同级切换:Lateral 成组齐滑、无淡出,暗示可手势滑动", "en": "Tabs/carousel peer switching: Lateral group slide with no fade, hinting swipe gestures" },
+      { "zh": "drawer/bottom sheet 的进出场:Enter/exit——sheet/键盘自底部、抽屉自侧缘,临时退出暗示可召回", "en": "Drawer/bottom-sheet entrances: Enter/exit — sheets/keyboards from the bottom, drawers from a side edge; temporary exits hint recallability" }
+    ],
+    "avoid": [
+      { "zh": "顶层目的地切换(nav bar/rail)滥用 Container transform——官方口径:顶层切换刻意不用持久元素建立强关联", "en": "Container transform on top-level destinations (nav bar/rail) — officially top-level switches deliberately avoid persistent elements" },
+      { "zh": "同级横滑掺入淡出或视差——Lateral 的语义是「同一层的两个视角」,淡化会暗示层级变化", "en": "Fades or parallax inside lateral slides — Lateral means \"two views of one level\"; fading implies a hierarchy change" },
+      { "zh": "dialog/menu 用 scale/z 轴位移进出(Android 侧官方明确避免,因其暗示层级变化)", "en": "Dialogs/menus entering with scale/z-axis travel (explicitly avoided on Android — it implies a hierarchy change)" },
+      { "zh": "骨架脉动做完不做「内容快速淡入」——官方模式的后半段,缺了内容出现会显得突兀", "en": "Running the skeleton pulse without the \"content fades in fast\" second half — an official part of the mode; skipping it makes content feel abrupt" }
+    ]
+  },
+  "a11y": {
+    "zh": "转场不豁免 prefers-reduced-motion(reduce 直切,状态与焦点不丢);转场期间焦点管理:进入的界面应接住焦点、退出的界面归还焦点(浮层类另见 overlay-entrance 条目);方向性是空间暗示而非唯一信息通道——层级关系同时由 DOM/视觉状态表达;骨架占位保证布局稳定,减少转场期布局跳动(M3 skeleton 官方动机)。",
+    "en": "Transitions never waive prefers-reduced-motion (reduce hard-cuts while state and focus survive); focus management across transitions: entering surfaces take focus and exiting surfaces hand it back (overlay-specifics in overlay-entrance); directionality is a spatial hint, not the sole information channel — hierarchy is equally expressed by DOM/visual state; skeleton placeholders keep layout stable and reduce transition-time layout jumps (M3's official motivation for skeletons)."
+  },
+  "sources": [
+    "https://m3.material.io/styles/motion/transitions/transition-patterns",
+    "https://developer.chrome.com/docs/web-platform/view-transitions/same-document"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "为一个 SPA 的页面间导航套用 M3 六大转场模式选型:按起止态关系选模式(container/forward/lateral/toplevel/enterexit/skeleton),时长与缓动按官方配对表落到各模式(屏内大面积 500ms Emphasized、进入 400ms decel、退出 200ms accel),并用 View Transitions API(或降级直切)承载。",
+      "en": "Apply M3's six transition patterns to an SPA's page navigation: choose the mode by the relationship between states (container/forward/lateral/toplevel/enterexit/skeleton), ground duration/easing per mode in the official pairing table (large-area on-screen 500ms Emphasized, enter 400ms decel, exit 200ms accel), and host it with the View Transitions API (or a hard-cut fallback)."
+    },
+    "acceptance": [
+      { "zh": "模式选择有明确判据:持久元素→container、层级→forward/backward、同级→lateral、顶层→toplevel、来源方向→enterexit、加载→skeleton", "en": "Mode selection follows explicit criteria: persistent element→container, hierarchy→forward/backward, peers→lateral, top-level→toplevel, origin direction→enterexit, loading→skeleton" },
+      { "zh": "各模式的时长/缓动出自官方配对表,不混用(永久退出 accel、临时退出 Emphasized、进入 decel)", "en": "Per-mode duration/easing come from the official pairing table, unmixed (permanent exit accel, temporary exit Emphasized, enter decel)" },
+      { "zh": "Android 语义:dialog/menu 沿 x/y 轴展开,不用 scale/z 位移;Lateral 无淡出", "en": "Android semantics: dialogs/menus expand along x/y without scale/z travel; Lateral has no fade" },
+      { "zh": "Web 工程化用 View Transitions API 承载(同文档 startViewTransition),并给出无 API/直切降级", "en": "Web engineering hosts patterns via the View Transitions API (same-document startViewTransition) with a no-API/hard-cut fallback" },
+      { "zh": "prefers-reduced-motion: reduce 时全部模式直切,焦点与状态不丢失", "en": "Under prefers-reduced-motion: reduce, all modes hard-cut with focus and state intact" }
+    ]
+  }
+}

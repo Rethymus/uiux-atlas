@@ -1,0 +1,86 @@
+{
+  "name": "Miller's Law",
+  "nameZh": "Miller 7±2 法则",
+  "aliases": ["米勒法则", "7±2 法则", "神奇数字七"],
+  "category": "principles",
+  "system": "community",
+  "star": 2,
+  "tagline": {
+    "zh": "普通人工作记忆大约只能保持 7±2 项。对策是把内容分块(chunking),但「神奇数字七」不能为不必要的设计限制辩护。",
+    "en": "The average person keeps about 7±2 items in working memory. The fix is chunking — but the 'magical number seven' must not justify unnecessary design limitations."
+  },
+  "origin": {
+    "zh": "1956 年 George Miller 提出:即刻记忆与绝对判断的容量都限制在 7 左右(Jon Yablonski,Laws of UX;调研 07§24)。配套 Chunking 法则:分块让内容可扫读、层级分组帮助理解关系(调研 07§24)。",
+    "en": "In 1956 George Miller asserted that immediate memory and absolute judgment are both limited to around 7 pieces of information (Jon Yablonski, Laws of UX; research 07 §24). Its companion law, Chunking: breaking content into chunks makes it scannable and hierarchical grouping clarifies relationships (research 07 §24)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "digits",
+      "unit": "个",
+      "min": 4,
+      "max": 14,
+      "step": 1,
+      "default": 10,
+      "effect": {
+        "zh": "每轮呈现的随机数字个数。默认 10:略超 7±2 上界,不分组时大多数人会漏 1–3 个——正是定律的体感区间;4 与 14 分别给出「轻松」与「必败」两端。",
+        "en": "Random digits shown per round. Default 10: just above the 7±2 ceiling, so unchunked recall typically drops 1–3 digits — the felt range of the law; 4 and 14 give the 'easy' and 'hopeless' ends."
+      }
+    },
+    {
+      "type": "number",
+      "name": "chunk",
+      "unit": "位/组",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "分块大小;0 = 不分组。默认 3:与「电话号码按 3–4 位分组」同构,10 位数字分 4 块,工作记忆只需持 4 项。0 与 digits 对比即 chunking 的效果。",
+        "en": "Chunk size; 0 = unchunked. Default 3: isomorphic to phone numbers grouped in 3–4 digit blocks — 10 digits become 4 items for working memory. Compare chunk=0 vs chunk=3 to feel chunking."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "演示为纯 DOM/输入框交互,全现代浏览器可用。",
+      "en": "Pure DOM/input interaction; all modern browsers."
+    }
+  },
+  "fallback": {
+    "zh": "工作记忆超载没有 CSS 回退,工程出口是**把内容切小**:超长表单拆步、设置项分组、复杂流程渐进披露;分组边界要同时用间距与容器(共同区域)表达,别让「凑成 7 项」变成砍功能的借口。",
+    "en": "Working-memory overload has no CSS fallback; the engineering exit is **cutting content smaller**: split long forms into steps, group settings, disclose progressively. Express group boundaries with both spacing and containers (common region) — and never let 'fit it into 7' become an excuse to cut features."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "电话号/卡号/序列号输入框按 3–4 位分块显示", "en": "Phone/card/serial inputs displayed in 3–4 digit chunks" },
+      { "zh": "导航与设置页分组(每组 3–7 项),而非 20 项平铺", "en": "Nav and settings grouped into 3–7 item sections instead of a flat 20" },
+      { "zh": "把长流程拆成「每步只记 1–2 件事」的向导", "en": "Wizards that ask you to remember 1–2 things per step" }
+    ],
+    "avoid": [
+      { "zh": "拿 7±2 当「只能放 7 个导航项」的教条——lawsofux 原文告诫:不要为不必要的设计限制辩护", "en": "Using 7±2 as a 'only 7 nav items' dogma — the Laws of UX caveat: never justify unnecessary design limitations with it" },
+      { "zh": "同一屏幕塞 10+ 个平权且无分块的输入项", "en": "10+ flat, unchunked, equal-weight inputs on one screen" }
+    ]
+  },
+  "a11y": {
+    "zh": "分块不能丢语义:视觉上分组的信息必须同样用语义分组(fieldset/legend、列表、标题层级)传达给读屏(WCAG SC 1.3.1 信息与关系)。演示的回忆输入用 label 关联,数字串不做自动消失的「闪现内容」——超时展示由用户主动触发重看。",
+    "en": "Chunking must not lose semantics: visually grouped information must be grouped semantically too (fieldset/legend, lists, heading hierarchy) for screen readers (WCAG SC 1.3.1). The demo's recall input is label-associated, and the digit string never vanishes without user control — re-display is user-triggered."
+  },
+  "sources": [
+    "https://lawsofux.com/millers-law/",
+    "https://lawsofux.com/chunking/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "做一个工作记忆分块实验:随机数字串按可调块长显示 3 秒后隐藏,用户凭记忆输入,按位计分;对比 chunk=0 与 chunk=3 的回忆率,体感 7±2 与 chunking。",
+      "en": "Build a working-memory chunking experiment: a random digit string displayed for 3s at an adjustable chunk size, then hidden; the user recalls by typing and scores per position; compare recall at chunk=0 vs chunk=3 to feel 7±2 and chunking."
+    },
+    "acceptance": [
+      { "zh": "数字个数与块长严格使用参数快照值(digits 默认 10,chunk 默认 3,0=不分组)", "en": "Digit count and chunk size use the exact parameter snapshot (digits default 10, chunk default 3, 0 = unchunked)" },
+      { "zh": "展示 3 秒后隐藏;回忆输入框自动聚焦并带 label", "en": "Hide after 3s; the recall input auto-focuses with a label" },
+      { "zh": "按位计分并显示正确率,结果可累计多轮对比", "en": "Score per position with an accuracy readout; rounds accumulate for comparison" },
+      { "zh": "「重看一次」由按钮触发,不自动重播", "en": "'Reveal again' is button-triggered, never auto-replayed" },
+      { "zh": "注意屏阅读:分组用语义列表,不只靠空格", "en": "Screen-reader safe: grouping uses semantic lists, not just spaces" }
+    ]
+  }
+}

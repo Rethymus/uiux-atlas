@@ -1,0 +1,67 @@
+## Structure & DOM
+
+Parallax is "one scroll container + one layered world": the scroller carries all content, and inside `.world` three decorative layers (far/mid/near) stack under a real content layer that scrolls 1:1:
+
+```html
+<div class="scroller">          <!-- overflow-y: auto, the only scroll source -->
+  <div class="world">           <!-- relatively positioned, tall enough to create scroll distance -->
+    <div class="layer far"  aria-hidden="true"></div><!-- decorative layers carry no content -->
+    <div class="layer mid"  aria-hidden="true"></div>
+    <div class="layer near" aria-hidden="true"></div>
+    <div class="copy">…</div>   <!-- content layer scrolls 1:1, always readable -->
+  </div>
+</div>
+```
+
+Key points:
+
+- Decorative layers are pure backdrop (`aria-hidden`, `pointer-events: none`) — **no body copy ever lands on a parallax layer**;
+- Each layer gets a multiplier m (far 1 / mid 2 / near 3); the follow ratio is p = min(rate × m, 1); the content layer is always p=1;
+- Translation "compensates" against scrolling: the layer travels p × distance, so its on-screen net speed is p-fold — the smaller p, the closer to pinned.
+
+## Styling & Parameters
+
+Declarative implementation (the CSS-variable param `rate` → `--par-rate`; JS measures the scrollable distance into `--par-s`):
+
+```css
+@supports (animation-timeline: scroll()) {
+  .layer {
+    animation: drift linear both;
+    animation-timeline: scroll(nearest block); /* must come after the animation shorthand */
+    animation-duration: auto;                  /* duration belongs to scroll progress */
+  }
+}
+@keyframes drift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc((1 - min(var(--par-rate) * var(--px-m, 1), 1)) * var(--par-s))); }
+}
+```
+
+The JS contrast path (the official article's legacy route): scroll events + rAF writing `el.style.transform` — it runs on the **main thread**, async to compositor scrolling, and janks under fast scrolling; declarative `scroll()` can run off the main thread (research 04 §4). The demo's mode param stages exactly this contrast; browsers without `scroll()` fall back to the JS path automatically, with a label.
+
+Where the numbers come from: all mechanics come from Chrome's official scroll-driven animations article (research 04 §4); **no official follow-ratio value exists** — the demo default of 0.3 is a demo value (community layering clusters at 0.2–0.6, unverified); Firefox/Safari support status was explicitly not audited in the research, deferring to the MDN compatibility table.
+
+## Motion & Interaction
+
+- **Rate difference is depth**: while scrolling, the far layer tracks at 30% (default), mid at 60%, near at 90%, content at 100% — a three-step speed gradient visible on one screen;
+- **Two boundaries, p=0 / p=1**: 0 = the far layer is pinned (the starfield never moves); 1 = every layer syncs with content (no parallax); the demo labels both;
+- **JS/CSS live contrast**: switch to js mode and feel the smoothness difference — the official conclusion (main thread vs compositor) becomes tangible;
+- **Performance**: animate transform only; `--par-s` is measured once at mount/resize, so the scroll path reads no layout;
+- **reduced-motion**: under reduce the parallax switches off entirely and the static composition renders (the JS path stands still too), content unaffected.
+
+For scroll-timeline basics (progress bars, reveals, animation-range) see scroll-driven-animations; for parallax inside transitions (iOS forward/backward) see page-transitions.
+
+## Real-world examples
+
+- **iOS forward/backward transitions**: M3's "Transition patterns" documents iOS hierarchy transitions using parallax — the background trails the foreground (research 04 §3.3), the official system-level proof that "rate difference = depth";
+- **Chrome's official scroll-driven docs**: list "parallax background images" as a canonical `scroll()`-timeline use case (foreground/background moving at different speeds via different timelines/ranges, research 04 §4) — the declarative pattern shown here is the officially recommended implementation;
+- **Multi-layer marketing heroes (community-common, unverified)**: starfield/mountain/foreground layers riding at different rates are common on web marketing pages but lack a dedicated spec — the research states plainly that "no dedicated primary-source article on parallax was found" (research 04 §8.5); treat the scroll-driven article as the only primary source.
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `rate` | layers track closer to content speed and the parallax fades; 1 = no parallax (fully synced) | the far layer approaches pinned, deepening the scene; near 0 the starfield freezes entirely and prolonged viewing can expose layer detachment |
+| `mode` | js: lets you feel the main-thread path's jank cost firsthand, and is the fallback where scroll() is unsupported | css: declarative and able to run off the main thread — the officially recommended path; under slow scrolling the two look nearly identical |
+
+Selection rule of thumb: content stays 1:1 forever; parallax is for decoration only; start rate at 0.3 and tune by "how slow should the far layer trail"; prefer declarative `scroll()` over scroll events whenever supported.

@@ -1,0 +1,62 @@
+## 结构与 DOM
+
+选型发生在画 SVG 之前:先判断数据关系,再决定图形。demo 用一个 `<svg>` 承载四种基线图表,DOM 只随关系切换 `<rect>` / `<path>` / `<text>` 的组合:
+
+```html
+<div class="stage">
+  <svg viewBox="0 0 640 340" role="img" aria-label="图表选型演示:按数据关系切换基线图表">
+    <!-- 比较:一排 <rect>;趋势:一条 <path> + 数据点;
+         分布:贴轴的 <rect> 直方;构成:每季度一个四段堆叠 <rect> -->
+  </svg>
+  <div class="map">   <!-- 四关系→四图表的映射条 -->
+  <div class="readout" role="status"><!-- 基线判据 / 标注方式 徽标 --></div>
+</div>
+```
+
+关键点:
+
+- 「比较 / 趋势 / 分布 / 构成」四关系分法是图表选型指南的**社区通行分类**(FT Visual Vocabulary 海报按数据关系组织图表族,本调研未转录其完整族谱,分类学不标注为 FT 官方);
+- 关系→图表的默认映射:比较→柱状(等宽柱的长度编码最利于比较)、趋势→折线(时间演化)、分布→直方图(数值分箱计数)、构成→堆叠柱(部分到整体);
+- 零基线判据(FT 仓库 README 原文,调研 08§5.4):Column **"Must always start at 0 on the axis"**,调研概括为「柱/面积必须零基线」;折线图可不从零(FT 引 ONS《Does the axis have to start at zero?》),Lollipop 不强制。
+
+## 样式与参数
+
+三个参数全部为 JS 型,demo 订阅 store 后重绘,无 CSS 变量:
+
+```css
+/* demo 只用 fill/stroke + 1px 轴线,不引图表库 */
+.cs-bar { stroke: var(--border-strong); stroke-width: 1; }
+/* 截断警示徽标用 Carbon danger #da1e28(官网已核,调研 08§1.3) */
+.cs-chip[data-warn="true"] { color: #da1e28; border-color: #da1e28; }
+```
+
+| 参数 | 默认 | 数值出处 |
+| --- | --- | --- |
+| `relation` | `compare` | 四关系映射为社区通行分类;每档配一种基线图表(柱状/折线/直方/堆叠) |
+| `baseline` | `zero` | FT 判据:柱系零基线、折线例外(README 已核);`truncated` 档在柱系上触发 #da1e28 警示 |
+| `labels` | `direct` | jfly CUD 原文「图上直标优于远处对色图例」(调研 08§1.1);段高 \<14px 时直标自动省略退回图例 |
+
+demo 数据全部确定性:比较 4 类目(64/49/78/57)、趋势 12 月、分布 8 箱(40 样本)、构成 4 季度×4 段。截断的失真可算:49 vs 78 零基线差 1.6 倍,截断到 40 起即画成 4.2 倍——这就是「柱系必须零基线」的几何原因。
+
+## 动效与交互
+
+- 参数切换即时重绘,**无过渡动画**——数据映射变化不应伪装成颜色渐变(与 dataviz-categorical-palette 同一准则);
+- 基线警示徽标是唯一的状态色变化(border/color 0.2s 过渡),`prefers-reduced-motion: reduce` 下关闭;
+- 直标/图例切换只增删 `<text>` 与图例组,不动图形本体;
+- 悬停读数用原生 `<title>`(可悬停、随指针移开消失);完整的 WCAG 1.4.13 三件套见 dataviz-tooltip-legend。
+
+## 真实产品案例
+
+- **FT Visual Vocabulary**:chart-doctor 仓库与英/日/繁中/简中四语海报,按数据关系组织图表族;README 判据 Column "Must always start at 0 on the axis" 即本条目零基线参数的出处。README 尾部声明 FT 版权所有、转载需 syndication 授权——引用原则而非翻印海报(README 已核,调研 08§5.4)。
+- **ONS 零基线之辩**:FT 仓库引用英国国家统计局《Does the axis have to start at zero?》两篇文章,讨论折线图轴域何时可不从零——「柱零基线、折线可例外」这对判据的权威出处(调研 08§5.4 转载其引用关系,原文未直接核)。
+- **Cleveland & McGill《Graphical Perception》**:FT 海报标注的方法论引用,编码精度排序的实验源头——「为什么柱比饼好比」的文献起点;具体排序见原论文,本调研未转录。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `relation` | 换到构成档:堆叠段只靠色相区分、中段基线漂移,跨段比较最易误读 | 比较档是等宽柱贴零基线的最稳形态,长度编码精度最高 |
+| `baseline` | `truncated` 在柱系上是红线级错误:demo 数据差距从 1.6 倍放大成 4.2 倍;折线档则合法 | `zero` 是柱系唯一安全档;分布档截断还会把第一箱(计数值 2)直接削没 |
+| `labels` | `legend` 腾出图形区,但读者要远处对色(jfly:极其困难);适合直标放不下的密集图 | `direct` 让数值贴在图形上,读数零回指;密集小段会自动降级回图例 |
+
+经验法则:先定关系再调样式;柱系永远零基线;直标优先、图例兜底;趋势图截断轴域时必须标注轴范围。

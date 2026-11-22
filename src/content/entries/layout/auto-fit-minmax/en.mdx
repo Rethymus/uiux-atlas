@@ -1,0 +1,67 @@
+## Structure & DOM
+
+One flat layer: a **grid container plus sibling items** — no breakpoints, no media queries. When the container resizes, the auto-repeat keyword in `repeat()` re-resolves the column count at the layout level and items flow in order.
+
+```html
+<ul class="wall">
+  <li class="card">…</li>
+  <li class="card">…</li>
+  <!-- any number of items -->
+</ul>
+```
+
+Key points:
+
+- `repeat(auto-fit, minmax(250px, 1fr))` is called "one of the top tricks in CSS Grid" by CSS-Tricks (verified against research 05 §3);
+- **auto-fill** packs as many tracks as fit and **keeps empty ones**; **auto-fit** stretches occupied tracks to **fill the space (collapsing empty ones)** — the two only differ visibly when items < tracks (research 05 §3);
+- The track keyword is not limited to `1fr`: `minmax(10px, 1fr)`, `min-content`, `max-content` all size tracks by content (research 05 §3);
+- Track count = `⌊(container width + gap) / (min + gap)⌋` — the gap participates in the math.
+
+## Styling & Parameters
+
+Five parameters: three CSS-type (--af-min / --af-gap / --af-width) plus two JS-type (mode switches the literal via data-mode, itemCount controls rendering):
+
+```css
+.wall {
+  display: grid;
+  gap: var(--af-gap);                                   /* 16px, official WebKit example (research 05 §5) */
+  grid-template-columns: repeat(auto-fill, minmax(var(--af-min), 1fr)); /* auto-fill mode */
+}
+.wall[data-mode="auto-fit"] {
+  grid-template-columns: repeat(auto-fit, minmax(var(--af-min), 1fr));  /* auto-fit mode */
+}
+```
+
+Where the numbers come from:
+
+- `minmax(250px, 1fr)` — the CSS-Tricks classic recipe (research 05 §3);
+- `gap: 16px` — the official WebKit example declaration (research 05 §5);
+- The track keyword family `minmax(10px, 1fr)` / `min-content` / `max-content` — research 05 §3;
+- The 800px demo container is this entry's demo baseline (resolves to exactly 3 tracks at 250px); in production the width comes from the real container.
+
+## Motion & Interaction
+
+Column-count changes are **layout re-flow** — instantaneous:
+
+- Dragging the width / track-minimum sliders steps the column count discretely (±1 column per `min + gap` threshold crossed), with no transition — column counts cannot animate, and forcing a transition only flickers;
+- The demo's **track ruler** resolves the track structure with the same formula: in auto-fit mode, collapsed tracks are labeled "collapsed 0px" for a direct contrast of the two keywords;
+- Entrance fades animate only `opacity/translate` and are disabled under `prefers-reduced-motion: reduce`;
+- The status chip cross-fades over 0.25s, disabled under PRM.
+
+## Real-world examples
+
+- **CSS-Tricks' Complete Guide to Grid** — canonizes `repeat(auto-fit, minmax(250px, 1fr))` as a "top trick"; it is the de-facto recipe for breakpoint-free card walls (verified in research 05 §3).
+- **The BentoGrids gallery** — its curated bento designs assemble mixed-size cards from named areas or the auto-fit fluid grid: uniform gaps, asymmetric row/column spans (research 05 §9).
+- **Jen Simmons' "Designing Intrinsic Layouts" (An Event Apart DC 2019)** — the core lever of Intrinsic Web Design is exactly the auto-fit fluid grid plus min-content / max-content keywords: "let content and container sizes drive the design instead of hard-coded breakpoints" (research 05 §10, verified against the talk archive).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `minTrack` | wider tracks: fewer columns per container; at 360px an 800px container fits only 2 | more columns; below 120px too many tracks squeeze text below readability |
+| `gap` | gaps eat the track budget: fewer columns, more breathing room | more columns; too small and cards glue together, losing the grid read |
+| `width` | wider container: column count +1 discretely as each `min + gap` threshold is crossed | narrower container: columns step down to 1; past the minmax floor horizontal scrolling appears |
+| `mode` | auto-fit: empty tracks collapse, items stretch to fill, no vacancies | auto-fill: empty tracks keep their slot — stable positions, room for placeholders |
+| `itemCount` | more items: fill every track then wrap; both keywords converge | fewer items: below the track count auto-fit collapses empties while auto-fill leaves gaps — the clearest contrast |
+
+Working ranges: `minmax(250px, 1fr)` is the canonical shape (research 05 §3); in production minTrack ranges roughly 160–320px by content (empirical, unverified); `gap: 16px` follows the official WebKit example (research 05 §5).

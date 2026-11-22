@@ -1,0 +1,73 @@
+## 结构与 DOM
+
+父子两层网格:**父网格定义轨道,子元素声明 subgrid 把这些轨道「借」下来用**。子元素必须先跨越父网格的多条轨道(`grid-row: span 3` 等),才有可继承的轨道。
+
+```html
+<div class="cards">          <!-- 父网格:定义列轨道 -->
+  <article class="card">     <!-- 子网格:跨 3 条行轨道 -->
+    <h6>标题</h6>            <!-- 内部行 1 = 父网格共享行 -->
+    <p>正文</p>              <!-- 内部行 2 -->
+    <footer>页脚</footer>    <!-- 内部行 3 -->
+  </article>
+  <article class="card">…</article>
+</div>
+```
+
+关键点:
+
+- `grid-template-rows: subgrid` / `grid-template-columns: subgrid` 继承父网格轨道定义(调研 05§4);
+- 跨越的父轨道数必须与内部条目数一致,否则布局溢出或折叠;
+- subgrid **只共享轨道几何**(尺寸与 gap 一并继承),不改变 DOM 语义与读屏顺序;
+- Baseline Widely available 自 2023-09(MDN,调研 05§4)——三引擎全线可用,可以放开用。
+
+## 样式与参数
+
+两个参数:axis 为 JS 型(data-axis 切换 rows/columns 两套声明),gap 为 CSS 型(--sg-gap):
+
+```css
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);   /* 父网格裁定 3 条列轨道 */
+  gap: var(--sg-gap);                       /* 16px,WebKit 官方示例(调研 05§5) */
+}
+
+/* 行轴:卡片跨 3 条父行轨道,内部行 = 共享轨道 */
+.card { grid-row: auto / span 3; display: grid; }
+.card[data-mode="sub"] { grid-template-rows: subgrid; }
+.card[data-mode="ind"] { grid-template-rows: auto auto auto; }  /* 回退:独立轨道 */
+
+/* 列轴:卡片跨父网格全部列轨道,内部列 = 全表对齐 */
+.card { grid-column: 1 / -1; }
+.card[data-mode="sub"] { grid-template-columns: subgrid; }
+.card[data-mode="ind"] { grid-template-columns: auto auto auto; }
+
+@supports (grid-template-rows: subgrid) {
+  /* 增强样式;不支持的环境停留在 ind 回退形态 */
+}
+```
+
+数值出处:Baseline 2023-09(MDN,调研 05§4);gap 16px 取自 WebKit 官方示例(调研 05§5);demo 无其他硬编码布局数值——对齐完全由轨道继承产生。
+
+## 动效与交互
+
+对齐变化是**轨道几何重排**,瞬时完成:
+
+- 「换长度」按钮循环正文长短档位:真实 DOM 文本驱动行高,subgrid 面板的页脚**恒定齐平**,independent 面板页脚随内容漂移——这就是两个面板的全部差异;
+- axis 切换 data-axis,行轴/列轴两套 DOM 与声明同时切换,无过渡动画;
+- 状态徽标颜色切换带 0.25s 过渡,`prefers-reduced-motion` 下关闭;
+- 不写任何固定高度伪造对齐——对齐必须由轨道继承产生,这是验收红线。
+
+## 真实产品案例
+
+- **MDN Subgrid 指南** —— 收录嵌套组件对齐父网格的标准示范(卡片、表单场景),是 subgrid 的权威用法参照(调研 05§4 来源)。
+- **设计系统组件接入页面级网格** —— 组件内部轨道即页面轨道,表单 label 列、卡片页脚行由页面统一裁定(社区公认主战场,编辑性内容,与 MDN 指南场景同源)。
+- **杂志式跨栏排版** —— 标题/导语/正文分层共享行轨道实现基线对齐(编辑性内容,基于 subgrid 的轨道共享能力)。
+
+## 参数敏感度
+
+| 参数 | 切到 rows 轴… | 切到 columns 轴… |
+| --- | --- | --- |
+| `axis` | 卡片纵向并排,跨 3 条父行轨道;标题/正文/页脚三行全墙共享,页脚恒齐平 | 卡片横向堆叠,跨全部父列轨道;标签/值/操作三列全表对齐,类似表格 |
+| `gap` | 父网格行/列间距增大:卡片间距与内部行间距同步变化(轨道定义一并继承) | 列间距变化同步作用于所有行的三列,全表节奏一致 |
+
+经验要点:subgrid 的价值全部来自「共享父网格轨道」,先定父网格的列数与行语义,再让子组件 `span` 对应轨道数;不支持环境保留 independent 回退面板,降级代价一目了然。

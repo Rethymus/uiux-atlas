@@ -1,0 +1,67 @@
+## 结构与 DOM
+
+时长令牌不是 DOM 结构,而是一张**选档表**:先给转场分类(它覆盖多大面积、进还是出、有没有用户输入),再从官方四档里取一个令牌名。落地时 DOM 只需要一个承载过渡的元素:
+
+```html
+<!-- 选择控件类过渡:short4 = 200ms -->
+<button class="chip" style="--md-duration: 200ms">…</button>
+
+<!-- 容器转场:FAB→Sheet = medium4 400ms;Card→全屏 = long2 500ms -->
+<div class="sheet" style="--md-duration: 400ms">…</div>
+```
+
+关键点:
+
+- 官方令牌名为 `md.sys.motion.duration.{tier}{n}`,四档各 4 个序号:short1–4、medium1–4、long1–4、extra-long1–4;
+- 档位是**语义**而非连续刻度:选择控件归 short(官方示例 200ms + Standard),FAB→Sheet 归 medium(400ms),Card→全屏归 long(500ms + Emphasized);
+- demo 用一个采样卡片按所选令牌重播入场,参数面板切档即可对比手感。
+
+## 样式与参数
+
+两个枚举参数(tier / step)都是 JS 型,demo 订阅后换算成 ms 注入动画时长;曲线固定 Standard `cubic-bezier(0.2, 0, 0, 1)`:
+
+```css
+.sample {
+  animation: enter var(--md-duration, 200ms) cubic-bezier(0.2, 0, 0, 1) both;
+}
+@keyframes enter {
+  from { opacity: 0.25; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+```
+
+官方令牌表(调研 04§1.4,tokens-specs 页):
+
+| 档 | 令牌 | 值 | 官方示例 |
+| --- | --- | --- | --- |
+| short | short1–4 | 50 / 100 / 150 / 200ms | 选择控件 = short4 200ms + Standard |
+| medium | medium1–4 | 250 / 300 / 350 / 400ms | FAB→Sheet = medium4 400ms |
+| long | long1–4 | 450 / 500 / 550 / 600ms | Card→全屏 = long2 500ms + Emphasized |
+| extra-long | extra-long1–4 | 700 / 800 / 900 / 1000ms | 仅限无用户输入的环境类转场 |
+
+配套官方准则:时长按转场覆盖面积缩放(小面积 200ms、大面积 500ms);进入比退出更长(示例进入 500ms / 退出 200ms);>600ms 仅用于无输入的环境转场。
+
+## 动效与交互
+
+- **换档即重播**:tier/step 任一变化,demo 重挂载采样卡片,动画按新时长从头播——同一曲线下只变时长,手感差异(从容 vs 拖沓)直接可比;
+- **>600ms 警示**:选中 extra-long 档时 demo 标出官方口径「仅限无用户输入的环境类转场」;
+- **进入/退出不对称**:退出类转场应取同档或更低时长(官方示例退出 200ms),把注意力留给下一任务;
+- **性能**:动画只落 `opacity/transform`(web.dev 底线,调研 04§1.5);
+- **reduced-motion**:reduce 时直出终态,不按时长播放位移类转场;时长档位仍可留给纯 opacity 微动效。
+
+与缓动选择的关系见 easing-pairs 条目(官方配对表把档位与曲线绑成六组);小控件按压反馈的选档实例见 press-feedback 条目。
+
+## 真实产品案例
+
+- **选择控件(M3 官方示例)**:开关/复选/单选类小控件统一取 short4 200ms + Standard easing——这是 tokens 页的官方示例注,也是小面积状态变化的事实基准档;
+- **FAB→Sheet(M3 官方示例)**:悬浮按钮展开为 Sheet 的容器转场取 medium4 400ms;Card→全屏取 long2 500ms + Emphasized——官方用这两例示范「按面积选档」;
+- **进入/退出不对称(官方准则)**:进入 500ms / 退出 200ms 的示例配比出自 M3 官方准则,Android/iOS 系统转场普遍退得比进得快(见 page-transitions 条目)。
+
+## 参数敏感度
+
+| 参数 | 调大会… | 调小会… |
+| --- | --- | --- |
+| `tier` | 面积更大的转场获得更从容的铺开;extra-long 档(700–1000ms)只能服务无输入的环境转场,用户输入触发时会读作迟滞 | 转场更利落;short 档(50–200ms)适合小控件,大面积转场会显得仓促突兀 |
+| `step` | 档内更慢,与相邻档的边界更模糊(如 short4 200ms ≈ medium 档下限 250ms 的观感) | 档内更快,趋近上一档上限;50ms 级的差异在小控件上几乎不可辨 |
+
+选型口诀:先问「转场覆盖多大面积、谁触发的」,面积定档、输入定上限(>600ms 禁用于输入触发),档内序号做微调;进入恒长于退出。

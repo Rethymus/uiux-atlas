@@ -1,0 +1,106 @@
+{
+  "name": "Holy Grail Layout",
+  "nameZh": "圣杯布局",
+  "aliases": ["grid-template-areas", "命名区域", "三栏布局", "holy grail"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "经典三栏(页头/侧栏/主栏/页脚)的现代 Grid 实现:grid-template-areas 一个声明拼出整页骨架,改字符串就能重排——侧栏换边、移动端堆叠都只是换一串空格。",
+    "en": "The classic three-column page (header/sidebar/main/footer) done the modern Grid way: grid-template-areas composes the whole skeleton in one declaration, and re-ordering — sidebar to the other side, stacked mobile — is just swapping strings."
+  },
+  "origin": {
+    "zh": "CSS Grid + grid-template-areas 是圣杯布局的标准实现(MDN Layout Cookbook 未设 Holy Grail 专页,调研 05§2 已验证检索无此条目,实践中以 grid-template-areas 重排实现):每个字符串生成一行、每个单元格生成一列,同名 token 合并为命名区域,可被 grid-placement 属性引用;MDN 标注 Baseline Widely available(自 2017-10 起,调研 05§2)。经典写法 grid-template-areas: \"header header\" \"sidebar main\" \"footer footer\"。",
+    "en": "CSS Grid + grid-template-areas is the standard modern implementation of the Holy Grail (the MDN Layout Cookbook has no dedicated Holy Grail page — verified absent in research 05 §2 — and practice implements it via grid-template-areas re-ordering): each string generates one row and each cell one column, same-name tokens merge into a named area referenceable by grid-placement properties; MDN marks it Baseline Widely available (since 2017-10, research 05 §2). The classic string: grid-template-areas: \"header header\" \"sidebar main\" \"footer footer\"."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "layout",
+      "options": [
+        { "value": "desktop-left", "label": { "zh": "侧栏在左(桌面)", "en": "sidebar left (desktop)" } },
+        { "value": "desktop-right", "label": { "zh": "侧栏在右(桌面)", "en": "sidebar right (desktop)" } },
+        { "value": "stacked", "label": { "zh": "单列堆叠(移动)", "en": "stacked (mobile)" } }
+      ],
+      "default": "desktop-left",
+      "effect": {
+        "zh": "JS 型参数(demo 重写 grid-template-areas 字符串——该属性的字符串值不保证可走 CSS 变量,demo 按 container-queries 同款惯例以 JS 重生成)。三档:desktop-left \"header side\" \"main side\"…;desktop-right 主/侧互换;stacked 单列按 header→main→side→footer 重排。重排零 DOM 改动,纯字符串声明。",
+        "en": "JS-type param (the demo rewrites the grid-template-areas string — the property's string values are not reliably CSS-variable friendly, so the demo regenerates them, same convention as container-queries). Three modes: desktop-left \"header side\" \"main side\"…; desktop-right swaps main/side; stacked re-orders a single column as header→main→side→footer. Zero DOM changes — pure string declarations."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 8,
+      "max": 32,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--hg-gap",
+      "effect": {
+        "zh": "轨道间距(CSS 型)。16px 为演示基准值(社区常见,未证实);行距与列距共用一个值,骨架的呼吸感全在这一个变量。",
+        "en": "Track gap (CSS-type). 16px is a demo baseline (community value, unverified); one value covers rows and columns — the skeleton's breathing room lives in this single variable."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "sideWidth",
+      "unit": "px",
+      "min": 120,
+      "max": 280,
+      "step": 5,
+      "default": 200,
+      "cssVar": "--hg-side",
+      "effect": {
+        "zh": "侧栏列宽(CSS 型,grid-template-columns 第一条轨道)。200px 为演示基准值(社区常见,未证实);主栏吃下剩余空间(1fr),侧栏宽度即圣杯的「比例旋钮」。",
+        "en": "The sidebar column width (CSS-type, the first grid-template-columns track). 200px is a demo baseline (community value, unverified); the main column takes the rest (1fr) — sidebar width is the Holy Grail's proportion knob."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "grid-template-areas 为 Baseline Widely available 自 2017-10(MDN,调研 05§2)——命名区域字符串、同名 token 合并与 grid-placement 引用全平台可用。",
+      "en": "grid-template-areas is Baseline Widely available since 2017-10 (MDN, research 05 §2) — named-area strings, same-name token merging and grid-placement references work everywhere."
+    },
+    "baseline": "Baseline Widely available (2017-10)"
+  },
+  "fallback": {
+    "zh": "不支持 Grid 的极老环境忽略网格声明,header/main/footer 按块级纵排——内容顺序即堆叠顺序,天然可读。更稳的兜底:先写单列 flex/块级布局,再 @supports (grid-template-areas: \"a\" \"b\") 叠加三栏网格;命名区域字符串必须矩形(每行 token 数一致),否则整条声明失效——校验字符串是最常见的手误点。",
+    "en": "On ancient non-Grid engines the declarations are ignored and header/main/footer stack as blocks — content order IS the stacking order, naturally readable. A sturdier fallback: write the single-column layout first, then add the grid inside @supports (grid-template-areas: \"a\" \"b\"); named-area strings must be rectangular (same token count per row) or the whole declaration fails — string validation is the most common typo trap."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "文档站/博客/后台的整页骨架:页头 + 侧栏 + 主栏 + 页脚一声明拼装", "en": "Whole-page skeletons for docs/blogs/admins: header + sidebar + main + footer from one declaration" },
+      { "zh": "响应式重排:桌面两栏 ⇄ 移动单列只是换一串 grid-template-areas 字符串", "en": "Responsive re-ordering: desktop two-column ⇄ mobile single column is just swapping the grid-template-areas string" },
+      { "zh": "侧栏换边(Dir 差异、A/B 实验):desktop-right 档零 DOM 改动", "en": "Sidebar flipping (RTL differences, A/B tests): the desktop-right mode with zero DOM changes" },
+      { "zh": "设计系统的页面级布局令牌:骨架即命名区域,组件填格入住", "en": "Page-level layout tokens for design systems: the skeleton is named areas; components check in" }
+    ],
+    "avoid": [
+      { "zh": "非矩形的命名区域字符串(每行 token 数不一致)——整条声明失效,先对齐每行格子数", "en": "Non-rectangular area strings (mismatched token counts per row) — the whole declaration fails; align cells per row first" },
+      { "zh": "嵌套层级里的重复命名区域——同名字符串合并成一个大区域,内层组件命名要加前缀隔离", "en": "Duplicate area names across nested levels — same-name strings merge into one big area; prefix inner component names" },
+      { "zh": "轨道尺寸硬编码而区域字符串另写——行高/列宽与 areas 行列数不匹配时布局崩坏,一起维护", "en": "Hard-coded track sizes drifting from the area strings — mismatched row/column counts break the layout; maintain them together" },
+      { "zh": "把动态数量的内容塞进固定区域——命名区域适合固定骨架,条目流交给 auto-fit 网格条目", "en": "Pouring dynamic-count content into fixed areas — named areas suit fixed skeletons; item flows belong to the auto-fit grid entry" }
+    ]
+  },
+  "a11y": {
+    "zh": "命名区域重排只改视觉位置,DOM 顺序不变——读屏与 Tab 顺序永远按文档流(WCAG 1.3.2);桌面档侧栏在 DOM 中先于主栏时,读屏用户先听到侧栏导航,这是信息架构决策而非副作用,需有意设计;跳转链接(跳到主内容)在侧栏前置的骨架里尤其必要;键盘焦点随 DOM,与视觉区域无关。",
+    "en": "Named-area re-ordering changes visual positions only, never DOM order — screen-reader and Tab order always follow the document flow (WCAG 1.3.2); when the sidebar precedes the main column in the DOM, screen-reader users hear sidebar navigation first — an information-architecture decision to make deliberately, not a side effect; a skip-to-main-content link is especially necessary in sidebar-first skeletons; keyboard focus follows the DOM, not the visual areas."
+  },
+  "sources": [
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas",
+    "https://css-tricks.com/snippets/css/complete-guide-grid/"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "复刻圣杯布局的现代 Grid 实现:grid-template-areas 拼出 header/sidebar/main/footer 骨架,附三档重排(侧栏左/侧栏右/移动单列)与实时字符串读数,演示「改字符串就重排」。",
+      "en": "Replicate the modern Grid Holy Grail: grid-template-areas composes the header/sidebar/main/footer skeleton with three re-order modes (sidebar left/right, mobile stacked) and a live string readout demonstrating \"re-order by editing the string\"."
+    },
+    "acceptance": [
+      { "zh": "grid-template-areas 字符串矩形(每行 token 数一致),同名 token 合并为区域", "en": "grid-template-areas strings are rectangular (equal token counts per row); same-name tokens merge into areas" },
+      { "zh": "区域成员用 grid-area: <name> 入座,不使用行/列数字定位", "en": "Area members sit via grid-area: <name>, never numeric row/column placement" },
+      { "zh": "三档重排零 DOM 改动,只重写 areas 字符串与列定义", "en": "All three re-order modes change zero DOM — only the areas string and column definition rewrite" },
+      { "zh": "轨道尺寸与间距使用参数快照值;主栏 1fr 吃下剩余空间", "en": "Track sizes and gap use the parameter snapshot values; the main column takes the rest with 1fr" },
+      { "zh": "窄容器或 stacked 档下骨架退化为单列,内容完整可读", "en": "On narrow containers or the stacked mode the skeleton degrades to one readable column" }
+    ]
+  }
+}

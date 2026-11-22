@@ -1,0 +1,58 @@
+## Structure & DOM
+
+The demo combines **three keyboard scenes + a skip link + a key log**:
+
+```html
+<button class="kn-skip">Skip to main content</button>
+<div class="kn-scene" tabindex="-1">
+  <!-- toolbar: role="toolbar" + roving tabindex -->
+  <!-- tabs: role="tablist"/"tab"/"tabpanel" -->
+  <!-- dialog opener -->
+</div>
+<span class="kn-live" aria-live="polite"></span>
+```
+
+Key points:
+
+- **Skip link**: hidden off the stage top (`translate: -200%`), slides in on keyboard focus — the canonical "first Tab stop" form (WebAIM: long pages need skip links);
+- **Toolbar**: `role="toolbar"` + roving tabindex (active item `tabindex=0`, the rest `-1`); Tab enters once, arrows move inside (07 §35's Tab/arrows division of labor);
+- **Tabs**: panels preloaded → **selection follows focus** on arrow keys (07 §35's only condition for it); the `aria-selected` fill and the focus ring are two different visuals — focus ≠ selection;
+- **Dialog**: `aria-modal="true"` traps (two focusables cycle with Tab/Shift+Tab), Esc closes and returns focus to the opener — the full 07 §36 key table.
+
+## Styling & Parameters
+
+```css
+.demo-stage { --kn-ring-width: 3px; }
+.kn-skip:focus-visible { translate: -50% 0; }      /* appears on focus */
+.kn-field[data-ring="strong"] …:focus-visible {
+  outline: var(--kn-ring-width) solid oklch(0.45 0.16 260);
+  outline-offset: 2px;
+}
+```
+
+- `ring` defaults to **native**: the browser default outline stays untouched (07 §35 verbatim: don't strip default outlines casually); `strong` demonstrates the compliant custom ring — solid, ≥3:1 non-text contrast (SC 1.4.11);
+- `ringWidth` defaults to **3px** (cssVar `--kn-ring-width`);
+- Switching scenes (the scene param) resets that scene's internal state, preventing cross-scene state leaks.
+
+## Motion & Interaction
+
+- The skip link slides in with a 0.15s `translate` transition — itself a keyboard-first motion example; harmless under reduced-motion (the position change is the information);
+- The key log writes "pressed → what happened" into the right panel and announces via `aria-live="polite"` — **focus movement is silent to screen readers; the log supplies the narrative**;
+- Opening the dialog focuses its first button; closing calls `openerRef.focus()` — both sides of 07 §35 "focus must persist";
+- Every scene completes keyboard-only; Tab order: skip link → scene controls → (trapped inside while the dialog is open).
+
+## Real-world examples
+
+- **GitHub's keyboard-first interface**: pressing `.` inside a repo opens web VS Code, `t` opens the file finder — single-key shortcuts plus a command palette as the pinnacle of keyboard navigation (editorial generalization, echoing heuristic ⑦ "shortcuts for experts", 07 §21);
+- **Component-library Dialog implementations** (the Radix/shadcn family): scale+fade overlay entrance, focus returned to the trigger on close, Esc to release — the same family verified in the motion/overlay-entrance entry, with keyboard behavior per the APG Dialog pattern (07 §34/§35);
+- **WebAIM's mobile reminder**: "test on mobile devices with an external keyboard" — tablet plus external keyboard is the most overlooked real keyboard environment (07 §36 verbatim).
+
+## Parameter Sensitivity
+
+| Parameter | Turning it up… | Turning it down… |
+| --- | --- | --- |
+| `scene` | dialog: the full trap/return chain; tabs: the focus≠selection dual visuals; toolbar: minimal roving | — |
+| `ring` | strong: a 3px+ high-contrast solid ring that stays salient over busy backgrounds (the compliant custom ring) | native: the browser default outline — "do nothing" is the right answer in most cases |
+| `ringWidth` | 8px is teaching exaggeration, focus location unmistakable | at 2px it blends with borders in dense UI — exactly why SC 1.4.11 demands 3:1 |
+
+The lesson: the whole checklist is six items — visible (focus ring), reachable (don't strip tabindex, `<a>` with href), ordered (Tab order = reading order), never lost (return on close), escapable (Esc releases traps), predictable (no focus grabbing on load). Clear all six and SC 2.1.1/2.1.2/2.4.7/2.4.3 come within range.
