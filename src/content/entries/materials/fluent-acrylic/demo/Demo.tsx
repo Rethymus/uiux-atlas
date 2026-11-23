@@ -103,7 +103,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
   return (
     <DemoStage entryId={entryId} schema={schema}>
       <div className="fa-scene" data-fallback={fallback}>
-        <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+        <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         <section className="fa-window" aria-label="in-app acrylic 窗口示例 in-app acrylic window sample">
           <div className="fa-acrylic">
             <div className="fa-lum" aria-hidden="true" />

@@ -242,7 +242,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
         onPointerMove={onScenePointerMove}
       >
         <div className="lg-bg">
-          <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+          <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
           <div className="lg-blob lg-blob-a" />
           <div className="lg-blob lg-blob-b" />
         </div>

@@ -1,9 +1,28 @@
 import { useEffect, useState } from "react";
-// standard 全轴文件:同时携带 wght 与 opsz 轴(index.css 仅 wght 轴)
-import "@fontsource-variable/inter/standard.css";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
 import DemoStage from "@/components/DemoStage";
+
+/* standard 全轴 Inter(wght + opsz;默认 index.css 仅 wght 轴)按需加载
+   (perf-font-inter-duplicate):本 demo 的 opsz 滑杆功能依赖全轴文件,不能删;
+   但旧写法 `import "@fontsource-variable/inter/standard.css"` 会让 Astro 把这套
+   @font-face 内联进全站 372 个条目页(2.1KB/页),并把 332KB 的 standard 集
+   woff2 变成实际下载源(同 family/weight/range 下后声明覆盖 wght 集)。
+   改为 Vite ?url 资产引用:构建期产出独立 CSS 文件,仅本 demo 模块被
+   动态加载时才注入 <link>,其他页面不再携带、也不再命中这套字体。 */
+import standardCssUrl from "@fontsource-variable/inter/standard.css?url";
+
+/* 模块级单例:同一页面重复挂载不重复注入;不随卸载移除(fontsource CSS
+   无状态,卸载后字形继续由已加载字体渲染,避免闪烁) */
+let standardCssInjected = false;
+function ensureStandardCss() {
+  if (standardCssInjected) return;
+  standardCssInjected = true;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = standardCssUrl;
+  document.head.appendChild(link);
+}
 
 interface DemoProps {
   entryId: string;
@@ -80,6 +99,11 @@ export default function Demo({ entryId, schema }: DemoProps) {
     wght: store.get("wght") as number,
     opsz: store.get("opsz") as number,
   }));
+
+  // 挂载即补注入 standard 全轴 CSS(opsz 轴生效前提;见文件头说明)
+  useEffect(() => {
+    ensureStandardCss();
+  }, []);
 
   useEffect(
     () =>

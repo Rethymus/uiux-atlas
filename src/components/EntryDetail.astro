@@ -206,6 +206,11 @@ const altUrl = entryUrl(locale === "en" ? "zh" : "en", entryId);
                 <span class="acc-src-ico" aria-hidden="true">
                   ↗
                 </span>
+                {/* 新窗口提示(a11y-blank-hint-002):sr-only 文本并入链接名,
+                    WCAG 2.4.4 + G201;视觉侧 ↗ 图标不承载唯一语义 */}
+                <span class="sr-only">
+                  {locale === "zh" ? "(在新窗口打开)" : "(opens in new tab)"}
+                </span>
               </a>
             </li>
           ))

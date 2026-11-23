@@ -57,6 +57,7 @@ const glassEntryUrl = entryUrl(locale, "styles/glassmorphism");
               client:visible
               entryId="styles/glassmorphism"
               schema={glassSchema}
+              locale={locale}
               openHref={glassEntryUrl}
               openLabel={home.openEntry}
             />
@@ -97,7 +98,9 @@ const glassEntryUrl = entryUrl(locale, "styles/glassmorphism");
             <span class="bento-preview" aria-hidden="true">
               {c.id === "motion" ? (
                 <span class="bp bp-motion">
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {/* svg 自身再标 aria-hidden(a11y-svg-consistency-007):
+                      不依赖 .bento-preview 祖先隐藏,防御性写法 */}
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                     <path
                       d="M2,98 C28,98 48,10 98,4"
                       fill="none"

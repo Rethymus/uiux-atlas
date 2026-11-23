@@ -133,6 +133,8 @@ export default function Demo({ entryId, schema }: DemoProps) {
                   alt={`${bd.zh}/${bd.en} · ${tile.en} 滤镜示例 filtered sample`}
                   width={bd.w}
                   height={bd.h}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <figcaption>
                   <span>{tile.zh} {tile.en}</span>

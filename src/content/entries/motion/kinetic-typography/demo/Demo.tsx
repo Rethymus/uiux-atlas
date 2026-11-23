@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import "@fontsource-variable/inter/standard.css";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
 import DemoStage from "@/components/DemoStage";

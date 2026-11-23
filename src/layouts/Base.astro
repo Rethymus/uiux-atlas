@@ -1,14 +1,18 @@
 ---
 import "@fontsource-variable/inter";
-import "@fontsource/noto-sans-sc/chinese-simplified-400.css";
-import "@fontsource/noto-sans-sc/chinese-simplified-500.css";
-import "@fontsource/noto-sans-sc/chinese-simplified-700.css";
+/* 中文 Noto Sans SC 改用 unicode-range 分片版(perf-font-noto-full-files):
+   旧 chinese-simplified-{400,500,700}.css 每字重 = 单个 ~1.1MB 整文件且无
+   unicode-range,任何含中文首帧都要整文件下载;{400,500,700}.css 同字重同
+   字形,拆成 101 片 @font-face(每片带 unicode-range),首帧只命中 2-4 片
+   (~50-150KB/字重)。字体族名与字重档不变,token 面零改动。 */
+import "@fontsource/noto-sans-sc/400.css";
+import "@fontsource/noto-sans-sc/500.css";
+import "@fontsource/noto-sans-sc/700.css";
 import "@/styles/global.css";
 import { t } from "@/i18n/ui";
 import { CATEGORIES, type Locale } from "@/lib/types";
 import { resourcesUrl, trendsUrl } from "@/lib/urls";
 import CommandPalette from "@/components/CommandPalette";
-import { listPaletteItems } from "@/lib/paletteData";
 
 interface Props {
   locale: Locale;
@@ -26,11 +30,6 @@ interface Props {
 const { locale, title, description, altUrl, activeCategory, activeNav, ogType } = Astro.props;
 const dict = t(locale);
 const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
-
-/* ── 命令面板数据(构建时注入):全部条目的 name/nameZh/aliases/category/star,
-      经岛屿 props JSON 序列化给 CommandPalette(client:load)。
-      每个页面都执行一次 getCollection(Astro 内容层缓存共享,无额外构建成本)。 ── */
-const paletteItems = await listPaletteItems();
 
 /* ── canonical / hreflang / OG(清单 hreflang-canonical-missing + og-twitter-missing):
    绝对 URL 全部派生自 astro.config.mjs 的 site(单一事实来源;换域名只改一处)。
@@ -214,6 +213,10 @@ const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
                 rel="noopener noreferrer"
               >
                 CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>
+                {/* 新窗口提示(a11y-blank-hint-002):sr-only 文本并入链接名 */}
+                <span class="sr-only">
+                  {locale === "zh" ? "(在新窗口打开)" : "(opens in new tab)"}
+                </span>
               </a>
             </p>
             <p class="site-footer-line">{dict.footer.licenseSource}</p>
@@ -248,9 +251,12 @@ const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
       </div>
     </footer>
 
-    {/* 命令面板岛(全站 Ctrl/Cmd+K):开面板前不渲染任何 DOM,
-        数据(全部条目索引)已构建时注入;样式见 global.css 命令面板段 */}
-    <CommandPalette client:load items={paletteItems} locale={locale} />
+    {/* 命令面板岛(全站 Ctrl/Cmd+K):开面板前不渲染任何 DOM。
+        数据不走岛屿 props(perf-html-palette-props:props 曾把全部条目索引
+        ~65KB JSON 内联进全站每页),改为首次唤起时 fetch 构建期端点
+        /registry/palette.json(src/pages/registry/palette.json.ts);
+        岛屿保持 client:load(快捷键需在首帧可用)。样式见 global.css 命令面板段 */}
+    <CommandPalette client:load locale={locale} />
 
     <script>
       // 主题层脚本(全部渐进增强;无 JS 时内容直出终态)。

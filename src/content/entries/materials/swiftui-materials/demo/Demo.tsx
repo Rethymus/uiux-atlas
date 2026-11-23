@@ -108,7 +108,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
   return (
     <DemoStage entryId={entryId} schema={schema}>
       <div className="sm-scene" data-material={material} data-vibrancy={vibrancy}>
-        <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+        <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         <section className="sm-panel" aria-label="材质面板示例 Material panel sample">
           <h3>材质面板 Material Panel</h3>
           <p className="sm-note">

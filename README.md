@@ -71,7 +71,7 @@ uiux-atlas 把现代前端的 UI/UX 设计知识点拆成 **186 个条目 × 10 
 | 参数面板 | ✅ | 由条目 `schema.json` 的 params 契约自动生成控件:滑杆 / OKLCH 四轴 / 贝塞尔曲线编辑器 / 分段按钮 / 阴影逐层;附「复位官方默认」 |
 | 一键复刻 Prompt | ✅ | `store.exportSnapshot()` + `buildPrompt` 把参数快照浓缩为结构化 prompt;「复制复刻 Prompt」按钮一键复制。实弹测试:复刻代理仅凭 prompt 产出的 HTML 命中 **7/7** 关键参数(阈值 ≥5/7,`scripts/verify-prompt-test.mjs`;本次重跑 7/7) |
 | AI agent 通道(llms.txt + 条目 .md) | ✅ | `src/pages/llms.txt.ts` 静态端点:站点定位 + 十分类 + 全部条目清单(name / nameZh / URL / en 页 / md 链接);每条目另有 `/{分类}/{slug}/index.md` 纯文本版(`src/pages/[category]/[slug]/index.md.ts`)。本次实测 `dist/llms.txt` 落盘(222 行,含 `## principles 交互法则 / Principles (18)` 节与 `## components 前端部件 / Components (31)` 节)、`dist/styles/glassmorphism/index.md` 存在 |
-| MCP server(四工具) | ✅ | `mcp/server.mjs`:零依赖 stdio JSON-RPC(协议依据 MCP spec 2025-03-26:initialize 握手含版本协商、tools/list / tools/call、JSON-RPC batch),只读各条目 `schema.json`;四工具 `search_entries` / `get_entry` / `build_prompt` / `list_categories`(build_prompt 的参数序列化与站内「复制复刻 Prompt」同源),Claude/Cursor 等 coding agent 以 `node mcp/server.mjs` 接入。门禁 `test:mcp`:initialize → tools/list → tools/call 四断言,本次实测 4/4 通过(协商版本 2025-03-26) |
+| MCP server(四工具) | ✅ | `mcp/server.mjs`:零依赖 stdio JSON-RPC(协议依据 MCP spec 2025-03-26:initialize 握手含版本协商、tools/list / tools/call、JSON-RPC batch),只读各条目 `schema.json`;四工具 `search_entries` / `get_entry` / `build_prompt` / `list_categories`(build_prompt 的参数序列化与站内「复制复刻 Prompt」同源),Claude/Cursor 等 coding agent 以 `node mcp/server.mjs` 接入,接入配置(Claude Desktop / Cursor)见 [docs/mcp-setup.md](docs/mcp-setup.md)。门禁 `test:mcp`:initialize → tools/list → tools/call 四断言,本次实测 4/4 通过(协商版本 2025-03-26) |
 | shadcn registry(31 件) | ✅ | 31 条「前端部件」demo 内联发布为 shadcn registry item + index(`public/registry/`,31 item + index.json 共 32 个文件;`pnpm run build` 后随 `dist/registry/` 静态发布,shadcn CLI/兼容客户端直接拉取);门禁 `verify:registry` 范围已同步到全部 components 条目(24 基础 + 二批 6 + 本轮 command-palette = 31),本次实跑 `{"expected":31,"items":31,"problems":0}`(含 command-palette.json 在册);用法见「部署 → Registry 用法(Agent 消费)」 |
 | Open in v0 | ✅ | 条目页「在 v0 打开」次级按钮(`src/components/PromptExport.tsx`):把当前复刻 Prompt `encodeURIComponent` 进 `https://v0.dev/chat?q=…` 新窗口打开并自动预填。URL 方案来源:官方 URL 参数文档已下线(现行 v0.app/docs 与 vercel.com/docs/v0 均无 URL 参数文档),方案按 2026-11-21 curl 行为实测核验(307 跳转链 `v0.dev/chat → v0.app` 一路保留 `q`,终页 RSC payload 含预填 prompt),属**官方未背书、行为验证**方案,失效时回退「复制 Prompt + 打开 v0 首页」(证据链见该文件头注) |
 | 参数快照分享链接 | ✅ | `src/lib/shareLink.ts` 把当前参数快照序列化为 `#s=name=value&…` 追加到当前地址;「分享参数链接」按钮一键复制完整链接(`src/components/PromptExport.tsx`);打开链接时 `DemoStage` 挂载解析恢复——仅恢复 schema 中存在的参数,非法值过滤、数值按 min/max 收敛 |
@@ -88,7 +88,7 @@ uiux-atlas 把现代前端的 UI/UX 设计知识点拆成 **186 个条目 × 10 
 ### 刻意不做(❌)
 
 - **后端 / 账户 / 云同步**:纯静态,无任何服务端——学习图集不需要账户体系与云端状态,引入即违背「纯静态无追踪」承诺(见顶部 NOTE)。
-- **实盘设计趋势抓取**:内容为 2026-11-20/21 调研快照,不做实时趋势抓取;趋势追踪页已落地为时点快照(见上表 ✅ 行),**脚本化刷新待做**(做法:重跑 `out/research/03` 的联网检索流程后替换 `src/data/trends.ts` 数值,统计口径与来源原文以 03 号调研为准;见路线图「季度刷新自动化」)。
+- **实盘设计趋势抓取**:内容为 2026-11-20/21 调研快照,不做实时趋势抓取;趋势追踪页已落地为时点快照(见上表 ✅ 行),**刷新脚手架已就位**(`scripts/refresh-trends.mjs`:打印季度刷新操作手册、并在 `lastReviewed` 距今 >90 天时 `exit 1` 提醒;数据重抓仍需人工执行调研流程——做法:重跑 `out/research/03` 的联网检索流程后替换 `src/data/trends.ts` 数值,统计口径与来源原文以 03 号调研为准;见路线图「季度刷新自动化」)。
 
 ### 非法输入行为契约
 
@@ -118,9 +118,11 @@ pnpm install                        # 安装依赖
 | 命令 | 作用 | 门禁(不达标 `exit 1`) |
 |---|---|---|
 | `pnpm -C uiux-atlas dev` | 开发服务器(`http://localhost:4321`) | — |
-| `pnpm -C uiux-atlas run build` | 全站静态构建到 `dist/` | 内容集合 zod 校验,不合规条目构建失败;本次实测 399 页(51.64s) |
-| `pnpm -C uiux-atlas exec astro check` | 类型检查 | 0 errors / 0 warnings 才过;本次实测 242 files,0/0 + 4 hint(既有 `document.execCommand` 弃用提示 ×2——PromptExport 与本轮代码复制钮 `Base.astro` 的剪贴板兜底同法,降级方案兜底;`motion/parallax` 与 `icons/icon-button` demo 各一处未用局部变量,纯演示代码——均属已知可接受项,`astro check` exit 0) |
+| `pnpm -C uiux-atlas run build` | 全站静态构建到 `dist/` | 内容集合 zod 校验,不合规条目构建失败;本次实测 399 页(28.37s) |
+| `pnpm -C uiux-atlas exec astro check` | 类型检查 | 0 errors / 0 warnings 才过;本次实测 247 files,0/0 + 4 hint(既有 `document.execCommand` 弃用提示 ×2——PromptExport 与本轮代码复制钮 `Base.astro` 的剪贴板兜底同法,降级方案兜底;`motion/parallax` 与 `icons/icon-button` demo 各一处未用局部变量,纯演示代码——均属已知可接受项,`astro check` exit 0) |
 | `pnpm -C uiux-atlas run check:contrast` | 双主题 WCAG 对比度门禁(`scripts/check-theme-contrast.mjs`) | 文本 ≥4.5:1、UI 组件 ≥3:1,共 12 组配对,任一不达标 `exit 1`;本次实测 12/12 达标 |
+| `pnpm -C uiux-atlas run check:perf`(先 build) | dist 关键页面性能门禁(`scripts/check-perf.mjs`;零依赖,仅读产物) | 六关键页(中英 × 首页 / 分类页 styles / 条目页 styles/glassmorphism):HTML 字节预算 = 本轮实测 ×1.1 上浮(如 zh 首页 36,655B → 40,321B)、astro-island 数上限 = 本轮逐页实测(首页/分类页 2、条目页 4,新增岛屿须有意并上调)、照片 img 全部 `loading="lazy"`、head 内含 `@font-face` 打包 CSS 与 LCP 字体 preload;逐项打印明细,任一失败 `exit 1`;本次实测 6 页 30 项断言 0 失败 |
+| `pnpm -C uiux-atlas run check:a11y`(先 build) | dist 全量 HTML 无障碍静态门禁(`scripts/check-a11y-static.mjs`;零依赖,仅读产物) | 四断言:img `alt` 覆盖 100%(装饰图 `alt=""` 计入)、图标钮(`<button>` 无可见文本)必须具名(aria-label/aria-labelledby/title)、每页恰一个 `h1`、`html lang` 在位非空;逐页打印违规明细,任一违规 `exit 1`;本次实测 399 页:2/2 alt、978/978 图标钮具名、399/399 恰一 h1、399/399 lang 在位,0 违规 |
 | `node uiux-atlas/scripts/verify-entries.mjs` | 条目完整性机器校验 | 186 条期望清单 + 结构/双语/来源 URL/参数 shape/`nameZh`,任一 problem `exit 1`;本次实测 `{"expected":186,"found":186,"problems":0}` |
 | `node uiux-atlas/scripts/verify-dist.mjs` | 构建产物核验(先 build) | 双语三层路由(10 分类 ×2 + 186 条目 ×2)+ 首页/资源页/趋势页共 398 页全产出、且含关键内容标记(含「复制复刻 Prompt」逐字文案、首页/分类页的页头搜索钮 `data-palette-open`),missing/contentFails > 0 即 `exit 1`;本次实测 `{"checked":398,"missing":0,"contentFails":0}` |
 | `node uiux-atlas/scripts/verify-prompt-test.mjs` | Prompt 复刻实弹测试 | 检查 `out/prompt-test/glassmorphism.html`(复刻代理仅凭导出 prompt 产出的页面)是否命中 7 项关键参数,阈值 ≥5/7,不足 `exit 1`;本次实测 7/7 |
@@ -155,6 +157,8 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 
 ### Registry 用法(Agent 消费)
 
+> MCP server(Claude Desktop / Cursor)接入配置、四工具一览与三分钟验证:**[docs/mcp-setup.md](docs/mcp-setup.md)**。
+
 31 条「前端部件」的 demo 另发布为 shadcn registry 格式,`pnpm run build` 后随 `dist/registry/` 静态发布,shadcn CLI/兼容客户端可直接拉取:
 
 - **索引**:`public/registry/index.json` —— JSON 数组,轻量条目(`name`/`type`/`title`/`description`/`files`/`meta`,不含 content);build 后位于 `dist/registry/index.json`。
@@ -185,13 +189,13 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 > [!WARNING]
 > - **平台专有材质是 Web 近似**:Liquid Glass / Fluent Acrylic / SwiftUI 材质的官方未公布数值以社区近似呈现,条目内逐处标注;换真机以系统渲染为准。
 > - **来源 URL 可达性——「待复测」已清零,不再是未决项**:评审抽查 6 条目共 16 个来源 URL,已由 round5 报告(`out/round5-report.md` §三)实跑 `curl -sL -o /dev/null -w "%{http_code}" --max-time 20` 全量复测:**16/16 全部 200、unreachable 0**,早期「3/16 实测 + 13 条待复测」口径作废(round6 报告 §三曾沿用该旧口径,与本条冲突处以 round5 实测记录为准);本次门禁修复再按同命令复测 16 条,仍全部 200。残留口径:来源页内容随官方文档漂移,条目引用数值仍以调研时点(2026-11-20/21)记录为准;全量扩编九批 43 条的 `sources` 为调研 12 时点(2026-11-22)抓取、本轮 `components/command-palette` 的 `sources`(W3C ARIA APG 两则 + 条目自指 og:url 一则)为本轮编写时录入,verify-entries 仅校验 URL 形态,**后两者均未做可达性复测**。
-> - **性能与实机验收未测**:Lighthouse/axe 扫描、360px 无横向滚动实测、`prefers-reduced-motion` 实机走查、主题切换 FOUC 录屏均未执行(design-spec 附录如实标注,round2 报告列为浏览器端留白)。
+> - **性能与无障碍:构建产物已静态机检锁定,实机验收未测**:两条零依赖静态门禁(`scripts/check-perf.mjs` / `scripts/check-a11y-static.mjs`,仅 node 内建模块、只读 dist 产物、不联网)已把性能与无障碍红线机检化——`check:perf` 六关键页 30 项断言(HTML 字节预算 ×1.1 / astro-island 上限 / 照片 `loading="lazy"` / head 字体 CSS 与 LCP preload)、`check:a11y` 全集 399 页四断言(img `alt` 100% 覆盖、图标钮具名、恰一 `h1`、`html lang` 在位),本次实跑双双全绿(逐项口径见「快速开始」命令表两行);但 Lighthouse/axe 实机扫描、360px 无横向滚动实测、`prefers-reduced-motion` 实机走查、主题切换 FOUC 录屏仍未执行——静态门禁只锁产物形态,不替代实机验收(design-spec 附录如实标注,round2 报告列为浏览器端留白)。
 
 > [!NOTE]
 > - **`site` 域名为占位值**:`astro.config.mjs` 现设 `site: "https://uiux-atlas.example.com"`——canonical / og:url / og:image / hreflang / robots.txt / sitemap.xml 的绝对 URL 全部派生自此(site 未配置时这些标签整体跳过,不产出半残相对地址)。上线前改这一处即可;当前占位域名不影响构建与本地浏览,但产物内 SEO/分享元数据(含本轮 OG meta 与 og:image 默认分享图地址)中的绝对 URL 为非真实域名。
 > - **Shopify Polaris 组件级文档已迁移**:调研未能取得组件一手内容,资源页该条目已如实标注「以站内通用参考页为准」(`src/data/resources.ts`)。
 > - **View Transitions 仅 Chromium 系完整支持**:跨文档视图过渡在 Firefox 等浏览器退回普通跳转,功能不破坏、无 morph。
-> - **趋势内容是时点快照**:全部条目与趋势判断基于 2026-11-20/21 调研时点,不做实时更新;季度刷新自动化未做(见路线图)。
+> - **趋势内容是时点快照**:全部条目与趋势判断基于 2026-11-20/21 调研时点,不做实时更新;脚手架已就位(refresh-trends.mjs),数据重抓仍需人工执行调研流程(见路线图)。
 > - **仓库卫生**:`src/out/` 下有一份误放的重构报告副本,待清理,不参与构建。
 
 ## 🗺 路线图
@@ -211,7 +215,7 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 - [x] "Open in v0"——已落地:条目页「在 v0 打开」,复刻 Prompt 经 `?q=` 新窗口预填;URL 方案无官方文档背书,按 2026-11-21 curl 行为实测核验(证据链见 `src/components/PromptExport.tsx` 头注)
 - [x] 趋势追踪页——已落地:`/trends/` 双语页(2023–2026 兴起/退潮时点快照,数据提炼自 `out/research/03-visual-style-trends.md` §二,文件 `src/data/trends.ts`)
 - [ ] MCP 真实客户端注册走查——当前仅有 `test:mcp` stdio 冒烟断言,尚未在 Claude/Cursor 等真实客户端完成注册与工具调用端到端走查
-- [ ] Lighthouse / axe 性能与无障碍实机验收——当前为浏览器端留白(见「已知局限」)
+- [ ] Lighthouse / axe 性能与无障碍实机验收——静态机检已就位(`check:perf` / `check:a11y` 两门禁锁定构建产物,见「快速开始」命令表与「已知局限」),实机验收仍为浏览器端留白
 
 **V3**
 
@@ -226,27 +230,31 @@ Cloudflare Pages 参考配置:构建命令 `pnpm -C uiux-atlas run build`(工作
 - [x] 数据可视化配色(8 条已落地 `dataviz` 分类:08 号专项调研打底首批 6 条,全量补全批新增 `dataviz-chart-selection` / `dataviz-color-ordering` 2 条;专项调研 `out/design-study/08-dataviz.md`)
 - [x] 全量条目——已落地:186 条 × 10 分类,verify-entries 期望清单即 186 条、本次实跑全部命中(`{"expected":186,"found":186,"problems":0}`);构成:第十分类 principles 交互法则 18(首批 15 + 二批 3)+ 全量补全批 b10 布局 8 / b11 排版 6 / b12 色彩 5 / b13 风格史 3 / b14 动效 6 / dataviz 2(97 → 142,`1c130fe`),再叠加扩编九批 布局 6 / 排版 6 / 色彩 5 / 动效 6 / 部件 6 / 材质 4 / 图标 4 / dataviz 3 / principles 3(142 → 185),最后本轮 `components/command-palette` 1 条(185 → 186,站点全站命令面板的组件本体);调研背书 `out/design-study/11-modern-completion.md`(「现代新概念补研(全量补全)」)+ `out/design-study/12-expansion.md`(「全量扩编所需新概念补研」)+ 各条目 `schema.json` `sources` 逐条溯源。蓝图演进表「160 条全量」(M7–M12 里程碑)与本路线图旧表述「170 条」均为规划时点估算,落地全集以 verify-entries 期望清单 186 条为权威口径
 - [x] shadcn registry 范围同步(24 → 31,全部 components 条目入册)——已落地:`scripts/verify-registry.mjs` `EXPECTED_COUNT` 同步 31(24 基础 + 二批 6 + command-palette),发布件重生成(`public/registry/` 31 item + index.json 共 32 个文件,含 command-palette.json),本次实跑 `verify:registry` `{"expected":31,"items":31,"problems":0}`;此前「24 件断言 exit 1」旧口径作废
-- [ ] 趋势数据季度刷新自动化——当前为时点快照,手工刷新做法见功能表 ❌ 行(重跑 `out/research/03` 流程后替换 `src/data/trends.ts`)
+- [ ] 趋势数据季度刷新自动化——脚手架已就位(`scripts/refresh-trends.mjs`:打印季度刷新操作手册 + `lastReviewed` >90 天 `exit 1` 提醒),数据重抓仍需人工执行调研流程(重跑 `out/research/03` 流程后替换 `src/data/trends.ts`,做法见功能表 ❌ 行)
 
 ## 🧱 项目结构
 
 ```
 uiux-atlas/
 ├── astro.config.mjs            # Astro 5 + React + MDX;i18n:zh 无前缀,en 在 /en/
-├── package.json                # scripts:dev / build / preview / check / check:contrast / generate:registry / verify:registry / test:mcp
+├── package.json                # scripts:dev / build / preview / check / check:contrast / check:perf / check:a11y / generate:registry / verify:registry / test:mcp
 ├── tsconfig.json               # astro/tsconfigs/strict + react-jsx + @/* 路径别名
 ├── docs/
 │   ├── design-spec.md          # 设计语言规范 v2.6(单一事实来源;五张页面蓝图 + §2.8 材质层)
+│   ├── mcp-setup.md            # MCP server 接入指南(Claude Desktop / Cursor;配置片段 + 四工具表 + 三分钟验证 + FAQ)
 │   └── screenshots/            # 九张真实运行截图(2026-11-21/22,生产构建)
 ├── out/                        # 评审报告 round4–6(已入库;round2/3 与 build/redesign 报告在上游工作区 out/)
 ├── scripts/                    # 校验脚本(用法见「快速开始」表格)
 │   ├── check-theme-contrast.mjs  # 双主题 WCAG 对比度门禁(支持 hex/rgb/oklch)
+│   ├── check-perf.mjs            # dist 关键页性能门禁(六页 30 断言:字节预算/岛屿上限/照片 lazy/字体 preload)
+│   ├── check-a11y-static.mjs     # dist 全量 HTML 无障碍静态门禁(四断言:alt/图标钮具名/恰一 h1/lang)
 │   ├── verify-entries.mjs        # 186 条期望清单 + 结构/双语/来源/参数 shape 校验
 │   ├── verify-dist.mjs           # 398 页产物核验 + 关键内容标记(含按钮逐字文案)
 │   ├── verify-prompt-test.mjs    # prompt 复刻实弹(7 项正则,阈值 ≥5/7)
 │   ├── generate-registry.mjs     # 24 条部件 demo → shadcn registry item + index(public/registry/)
 │   ├── verify-registry.mjs       # registry 发布件门禁(可解析/必填字段/index 数一致)
 │   ├── test-mcp-server.mjs       # MCP server 冒烟测试(initialize → tools/list → tools/call 四断言)
+│   ├── refresh-trends.mjs        # 趋势数据季度刷新脚手架(打印操作手册;lastReviewed >90 天 exit 1)
 │   └── add-name-zh.mjs           # 一次性:首批 43 条 schema 注入 nameZh(幂等)
 ├── mcp/
 │   └── server.mjs               # MCP server(零依赖 stdio JSON-RPC;四工具,见「快速开始」test:mcp 行)

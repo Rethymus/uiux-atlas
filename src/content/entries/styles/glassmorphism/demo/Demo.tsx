@@ -62,7 +62,8 @@ const css = `
 .gm-scene[data-variant="dark"] .gm-card { color: #f5f7fa; }
 .gm-scene[data-variant="dark"] .gm-card::before { opacity: 1; }
 .gm-card > * { position: relative; }
-.gm-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 650; }
+/* 标题降为 p 后,显式钉住原 h3 视觉(含对 .gm-card p 规则的 opacity/line-height 反制) */
+.gm-card .gm-card-title { margin: 0 0 8px; font-size: 18px; font-weight: 650; line-height: 1.3; opacity: 1; }
 .gm-card p { margin: 0 0 16px; font-size: 13px; line-height: 1.6; opacity: 0.82; }
 .gm-actions { display: flex; gap: 10px; }
 .gm-btn {
@@ -141,14 +142,27 @@ export default function Demo({ entryId, schema }: DemoProps) {
     <DemoStage entryId={entryId} schema={schema}>
       <div className="gm-scene" data-variant={variant}>
         <div className="gm-bg">
+          {/* 装饰性背景照(a11y-img-aria-hidden-005):alt="" 之外再补
+              aria-hidden="true",不依赖任何祖先隐藏(首页 hero 复用本 demo) */}
           {backdrop === "gradient" ? (
             <div className="gm-gradient" />
           ) : (
-            <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+            <img
+              src={`/photos/glass-${backdrop}.jpg`}
+              alt=""
+              aria-hidden="true"
+              width={1600}
+              height={1067}
+              loading="lazy"
+              decoding="async"
+            />
           )}
         </div>
         <div className="gm-card">
-          <h3>毛玻璃卡片 Glass Card</h3>
+          {/* 卡片标题用 p + 类名而非 h3(a11y-h3-skip-001 同族):demo 道具卡的
+              标签不是页面文档结构标题——首页 hero(本 demo 静态直出)会形成
+              h1→h3 跳级(WCAG 1.3.1),条目页水合后同理 */}
+          <p className="gm-card-title">毛玻璃卡片 Glass Card</p>
           <p>
             背景越丰富,玻璃越立体 / Glass only reads as glass over a rich backdrop.
           </p>

@@ -22,7 +22,7 @@ import { entryUrl } from "@/lib/urls";
      APG 允许 combobox 出现在 dialog 内)。零第三方库。
    ──────────────────────────────────────────────────────────── */
 
-/** 构建时注入的条目索引项(JSON 序列化自 src/lib/paletteData.ts) */
+/** 条目索引项(JSON 序列化自 src/lib/paletteData.ts,经 /registry/palette.json 下发) */
 export interface PaletteItem {
   /** 条目 id,形如 "components/button" */
   slug: string;
@@ -330,22 +330,39 @@ export function PalettePanel({
   );
 }
 
+/* 条目索引加载(perf-html-palette-props):不再经岛屿 props 内联进全站每页
+   (~65KB/页 ×399 页),改为首次唤起时 fetch 构建期端点 /registry/palette.json
+   (src/pages/registry/palette.json.ts,与旧 props 同一数据源同构字节)。
+   模块级 Promise 缓存:全会话只 fetch 一次;失败不缓存,下次唤起重试。 */
+let itemsPromise: Promise<PaletteItem[]> | null = null;
+function loadItems(): Promise<PaletteItem[]> {
+  if (!itemsPromise) {
+    itemsPromise = fetch("/registry/palette.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`palette.json ${res.status}`);
+        return res.json() as Promise<PaletteItem[]>;
+      })
+      .catch((err) => {
+        itemsPromise = null;
+        throw err;
+      });
+  }
+  return itemsPromise;
+}
+
 /**
  * 全站浮层岛(client:load,挂在 Base.astro):
  * - 全局 Ctrl+K / Cmd+K 开合;点击 [data-palette-open](页头搜索钮)唤起;
  * - 开面板锁 body 滚动(补偿滚动条宽度防跳动),关面板把焦点还给唤起者;
  * - Tab 在面板内被拦下(唯一 tab 停靠点是 combobox)——focus trap;
  * - Enter 跳转对应条目页(本站为 MPA,直接 location.assign)。
- * 数据 = 构建时注入的 items(全部条目);零第三方库。
+ * 数据 = 首次唤起时 fetch /registry/palette.json(构建期静态 JSON;
+ * 索引到达前先渲染空结果壳,SSR 与开面板壳体均不依赖数据,零 props 负担)。
+ * 零第三方库。
  */
-export default function CommandPalette({
-  items,
-  locale,
-}: {
-  items: PaletteItem[];
-  locale: Locale;
-}) {
+export default function CommandPalette({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState(false);
+  const [items, setItems] = useState<PaletteItem[]>([]);
   const [hotkeyLabel, setHotkeyLabel] = useState("");
   const openRef = useRef(false);
   const invokerRef = useRef<Element | null>(null);
@@ -354,6 +371,22 @@ export default function CommandPalette({
 
   useEffect(() => {
     openRef.current = open;
+  }, [open]);
+
+  // 首次唤起(开面板)才拉索引;之后命中模块级缓存,重开不再发请求
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    loadItems()
+      .then((data) => {
+        if (alive) setItems(data);
+      })
+      .catch(() => {
+        /* 静态端点不可达(如 file:// 直开):面板保持空结果态,下次唤起重试 */
+      });
+    return () => {
+      alive = false;
+    };
   }, [open]);
 
   // 平台探测:Mac 显 ⌘K、其余 Ctrl K;同步页头搜索钮的 kbd 徽标

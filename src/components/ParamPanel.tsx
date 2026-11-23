@@ -74,6 +74,223 @@ const kindOf = (p: Param): ParamKind => {
   }
 };
 
+/* ── 滑杆/数字框 aria-label 人类可读化(a11y-range-label-006)──
+   schema 的 param.name 是面向 CSS 变量的裸标识符("hue"/"duration"),直接当
+   aria-label 时读屏只播报标识符。此处做组件层统一映射,拼成双语文案——
+   zh 页「中文 标识符」(如「色相 hue」,审计样例),en 页「标识符 中文」
+   (与全站双语 aria-label 惯例一致,Base.astro「Search / 搜索」同构);
+   两种形态都包含原标识符,与可见 param-name 保持 Label-in-Name 一致(WCAG 2.5.3)。
+   词表来源:通用设计词汇 + 各条目 schema effect 自述的官方中文名;无对应
+   官方译名的规范属性名(wght/opsz 等 CSS 轴、纯代号为语义的 spotA/lambda 等)
+   保留原标识符回退(与改前一致,零回退风险)。 */
+const PARAM_LABELS: Record<string, string> = {
+  // 几何 / 布局
+  size: "尺寸",
+  width: "宽度",
+  height: "高度",
+  radius: "圆角",
+  gap: "间距",
+  spacing: "间距",
+  space: "间距基值",
+  padding: "内边距",
+  padInline: "内联轴内边距",
+  padBlock: "块轴内边距",
+  offset: "偏移",
+  borderWidth: "边框宽度",
+  strokeWidth: "描边宽度",
+  stroke: "描边",
+  hairline: "发丝线",
+  spread: "扩展",
+  blur: "模糊",
+  elevation: "海拔",
+  thickness: "厚度",
+  indent: "缩进",
+  insetTop: "上内缩",
+  insetBottom: "下内缩",
+  sideWidth: "侧栏宽度",
+  colMin: "最小列宽",
+  cols: "列数",
+  rowCount: "行数",
+  rowHeight: "行高",
+  lines: "行数",
+  tiles: "块数",
+  layers: "层数",
+  iconSize: "图标尺寸",
+  hitTarget: "命中区",
+  minSize: "最小尺寸",
+  maxSize: "最大尺寸",
+  minSpace: "最小间距",
+  maxSpace: "最大间距",
+  minViewport: "最小视口",
+  maxViewport: "最大视口",
+  minTrack: "最小轨道",
+  ringWidth: "圆环宽度",
+  panelGap: "面板间距",
+  inner: "组内间距",
+  top: "吸顶偏移",
+  startSize: "起始栏宽",
+  max: "最大值",
+  current: "当前步",
+  unit: "网格步长",
+  inset: "内缩",
+  // 排版
+  fontSize: "字号",
+  headingSize: "标题字号",
+  bodySize: "正文字号",
+  headingWeight: "标题字重",
+  lineHeight: "行高",
+  paragraphGap: "段间距",
+  letterSpacing: "字距",
+  sink: "下沉行数",
+  wordSpacing: "词距",
+  manualTracking: "手动字距",
+  weight: "字重",
+  wght: "字重 wght",
+  opsz: "光学尺寸 opsz",
+  lead: "行距",
+  measure: "行长度",
+  baseSize: "基准字号",
+  baseUnit: "基准单位",
+  typeScale: "字阶比率",
+  chunk: "分块大小",
+  // 色彩
+  hue: "色相",
+  "hue-rotate": "色相旋转",
+  chroma: "色度",
+  lightness: "明度",
+  textLightness: "文本明度",
+  saturation: "饱和度",
+  saturate: "饱和",
+  contrast: "对比",
+  brightness: "亮度",
+  opacity: "不透明度",
+  alpha: "透明度",
+  tint: "着色",
+  tintOpacity: "着色不透明度",
+  tintIntensity: "着色强度",
+  tintLuminosityOpacity: "亮度色调不透明度",
+  dimming: "调暗",
+  softBg: "柔和底色",
+  accent: "强调",
+  secondary: "次要",
+  dominant: "主导色占比",
+  sourceHue: "源色相",
+  hoverMix: "悬停混合",
+  borderMix: "边框混合",
+  pressAlpha: "按压透明度",
+  gridOpacity: "网格不透明度",
+  grainOpacity: "颗粒不透明度",
+  scanAlpha: "扫描透明度",
+  innerAlpha: "内层透明度",
+  jellyAlpha: "果冻透明度",
+  hueSpan: "色相跨度",
+  hueDanger: "危险色相",
+  hueInfo: "信息色相",
+  hueSuccess: "成功色相",
+  hueWarning: "警示色相",
+  hues: "色相数",
+  chromeStops: "光谱停靠点数",
+  lightAngle: "光源角度",
+  spotA: "光斑 A 位置",
+  spotB: "光斑 B 位置",
+  rgbShift: "RGB 位移",
+  L: "明度",
+  C: "色度",
+  H: "色相",
+  // 动效 / 运动
+  duration: "时长",
+  inDuration: "进入时长",
+  outDuration: "离场时长",
+  releaseDuration: "释放时长",
+  delay: "延迟",
+  loadDelay: "加载延迟",
+  stagger: "错峰",
+  steps: "步数",
+  step: "步长",
+  stiffness: "刚度",
+  damping: "阻尼",
+  dampingFraction: "阻尼比",
+  zeta: "阻尼比 ζ",
+  mass: "质量",
+  response: "响应时间",
+  timeConstant: "时间常数",
+  bounce: "回弹",
+  pulse: "脉冲",
+  travel: "行程",
+  distance: "距离",
+  intensity: "强度",
+  rate: "速率",
+  count: "数量",
+  countSpeed: "计数速度",
+  maxCount: "最大数量",
+  endValue: "计数终值",
+  dwell: "停留时长",
+  rotate: "旋转",
+  skew: "倾斜",
+  tilt: "倾角",
+  rise: "上升",
+  drift: "漂移",
+  press: "按压",
+  hover: "悬停",
+  drag: "拖拽",
+  pause: "停顿",
+  focus: "聚焦",
+  initialScale: "初始缩放",
+  pressScale: "按压缩放",
+  amp: "振幅",
+  lambda: "衰减率 λ",
+  lerp: "插值系数",
+  power: "惯性放大系数",
+  on: "振动时长",
+  off: "段间暂停",
+  // 数据可视化
+  series: "系列数",
+  accentSeries: "焦点系列",
+  // 质感 / 其他
+  ratio: "比例",
+  density: "密度",
+  glow: "光晕",
+  gloss: "高光",
+  glossAlpha: "高光透明度",
+  sheen: "光泽",
+  refraction: "折射",
+  emboss: "浮雕",
+  breakpoint: "断点",
+  percent: "百分比",
+  peak: "峰值",
+  total: "总数",
+  items: "项数",
+  itemCount: "项数",
+  maxItems: "最大项数",
+  maxLength: "最大长度",
+  maxResults: "最大结果数",
+  fields: "字段数",
+  choices: "选项数",
+  digits: "小数位",
+  budget: "预算",
+  tickCount: "刻度数",
+  groupCount: "组数",
+  vwShare: "视口占比",
+  scanGap: "扫描间隔",
+  shiftY: "纵向位移",
+  shadowOffset: "阴影偏移",
+  shadowY: "阴影纵移",
+  lifetime: "生命周期",
+  headStart: "预盖章数",
+  marked: "标记行数",
+  mouth: "缺口张角",
+  ending: "结尾强度",
+  baseFrequency: "噪点频率",
+  numOctaves: "倍频数",
+};
+
+/** 滑杆/数字框的可访问名:映射命中 → 双语(zh 前置/en 后置),未命中 → 原标识符 */
+const paramAriaLabel = (p: DimensionParam | NumberParam, locale: Locale): string => {
+  const zh = PARAM_LABELS[p.name];
+  if (!zh) return p.name;
+  return locale === "zh" ? `${zh} ${p.name}` : `${p.name} ${zh}`;
+};
+
 /* dirty = 当前值偏离 schema 默认(JSON 序列化比较;值仅经 store set 流转,形状稳定) */
 const isDirty = (p: Param, value: unknown): boolean =>
   JSON.stringify(value) !== JSON.stringify(p.default);
@@ -133,7 +350,10 @@ export default function ParamPanel({ entryId, schema, locale }: ParamPanelProps)
       {groups.map((group) => (
         <details key={group.kind} className="param-group" open>
           <summary className="param-group-head">
-            <h3 className="param-group-title">{GROUP_TITLES[group.kind][locale]}</h3>
+            {/* span 而非 h3(a11y-h3-skip-001):summary 本身即披露控件的可访问名,
+                面板 section 已有 aria-label,组内标题再占 h3 会造成 h1→h3 跳级
+                (WCAG 1.3.1;样式由 .param-group-title 类承载,与元素名解耦) */}
+            <span className="param-group-title">{GROUP_TITLES[group.kind][locale]}</span>
             <span className="param-group-chevron" aria-hidden="true">
               ▾
             </span>
@@ -259,7 +479,7 @@ function ParamControl({ param, store, locale }: { param: Param; store: ParamStor
   switch (param.type) {
     case "dimension":
     case "number":
-      return <RangeControl param={param} store={store} />;
+      return <RangeControl param={param} store={store} locale={locale} />;
     case "color":
       return param.format === "oklch" ? (
         <OklchControl param={param} store={store} />
@@ -277,8 +497,17 @@ function ParamControl({ param, store, locale }: { param: Param; store: ParamStor
 
 /* ---------- dimension / number:滑杆 + 数值输入 + 单位 ---------- */
 
-function RangeControl({ param, store }: { param: DimensionParam | NumberParam; store: ParamStore }) {
+function RangeControl({
+  param,
+  store,
+  locale,
+}: {
+  param: DimensionParam | NumberParam;
+  store: ParamStore;
+  locale: Locale;
+}) {
   const value = store.get(param.name) as number;
+  const label = paramAriaLabel(param, locale); // a11y-range-label-006:双语可读名
   const commit = (raw: number) => {
     if (!Number.isFinite(raw)) return;
     // 键入路径同样 step 吸附(清单 slider-numberbox-linkage:与滑杆原生 snap /
@@ -294,7 +523,7 @@ function RangeControl({ param, store }: { param: DimensionParam | NumberParam; s
         max={param.max}
         step={param.step}
         value={value}
-        aria-label={param.name}
+        aria-label={label}
         style={
           {
             "--fill-percent": fillPercent(value, param.min, param.max), // spec §3 滑杆解剖:轨道填充断点
@@ -307,7 +536,7 @@ function RangeControl({ param, store }: { param: DimensionParam | NumberParam; s
         min={param.min}
         max={param.max}
         step={param.step}
-        label={param.name}
+        label={label}
         onCommit={commit}
       />
       <span className="param-unit">{param.unit ?? ""}</span>

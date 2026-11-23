@@ -58,6 +58,8 @@ const res = dict.resources;
                       ↗
                     </span>
                   </span>
+                  {/* New-window hint (a11y-blank-hint-002): sr-only text joins the link name */}
+                  <span class="sr-only">(opens in new tab)</span>
                   <span class="res-url">{r.url}</span>
                   <span class="res-desc">{r.desc.en}</span>
                   {r.tags && r.tags.length > 0 && (

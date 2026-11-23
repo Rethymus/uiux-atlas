@@ -1,9 +1,11 @@
 import { getCollection } from "astro:content";
 
 /**
- * 命令面板条目索引(构建时注入):全部条目的 name/nameZh/aliases/category/star。
- * 由 Base.astro 在 SSR 阶段调用,经 Astro 岛屿 props(JSON 序列化)传入
- * src/components/CommandPalette.tsx(client:load)。纯数据、可序列化。
+ * 命令面板条目索引(构建时产出静态 JSON):全部条目的 name/nameZh/aliases/category/star。
+ * 由 src/pages/registry/palette.json.ts 端点在构建期序列化为 /registry/palette.json,
+ * src/components/CommandPalette.tsx(client:load)在首次唤起时 fetch。
+ * (旧方案经岛屿 props 内联进全站每页 ~65KB,perf-html-palette-props 后移除。)
+ * 纯数据、可序列化。
  */
 export interface PaletteItem {
   /** 条目 id,形如 "components/button"(客户端由 lib/urls entryUrl 拼 URL) */

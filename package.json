@@ -11,6 +11,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:contrast": "node scripts/check-theme-contrast.mjs",
+    "check:perf": "node scripts/check-perf.mjs",
+    "check:a11y": "node scripts/check-a11y-static.mjs",
     "test:mcp": "node scripts/test-mcp-server.mjs",
     "generate:registry": "node scripts/generate-registry.mjs",
     "verify:registry": "node scripts/verify-registry.mjs",

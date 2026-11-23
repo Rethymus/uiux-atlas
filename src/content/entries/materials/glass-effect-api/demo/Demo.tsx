@@ -150,7 +150,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
     <DemoStage entryId={entryId} schema={schema}>
       <div className="lg-scene" data-variant={variant} data-interactive={interactive}>
         <div className="lg-bg">
-          <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+          <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         </div>
         <div className="lg-container">
           <button type="button" className="lg-glass"><span>按钮 A / Btn A</span></button>

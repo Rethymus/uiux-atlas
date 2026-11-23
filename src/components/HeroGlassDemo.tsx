@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { getEntryStore } from "@/lib/store";
-import type { DimensionParam, EntrySchema } from "@/lib/types";
+import type { DimensionParam, EntrySchema, Locale } from "@/lib/types";
 // dogfood(spec §6-3):直接复用 styles/glassmorphism 条目的 Demo 模块与 store,
 // 首页 hero 内嵌一颗真实可调的玻璃微卡 + 一个 blur 滑杆,demo 自身代码零改动。
 import GlassDemo from "@/content/entries/styles/glassmorphism/demo/Demo";
@@ -9,6 +9,8 @@ import GlassDemo from "@/content/entries/styles/glassmorphism/demo/Demo";
 interface HeroGlassDemoProps {
   entryId: string;
   schema: EntrySchema;
+  /** 双语 aria-label 取向(a11y-range-label-006) */
+  locale: Locale;
   /** 右下角「进入条目 →」(spec §4.1-1) */
   openHref: string;
   openLabel: string;
@@ -19,7 +21,7 @@ interface HeroGlassDemoProps {
  * - GlassDemo(条目 Demo 组件)经 DemoStage 注入 CSS 变量,真实运行;
  * - blur 滑杆写同一 store → 演示实时响应;RM 下滑杆仍可用(spec §6-3:功能不降级)。
  */
-export default function HeroGlassDemo({ entryId, schema, openHref, openLabel }: HeroGlassDemoProps) {
+export default function HeroGlassDemo({ entryId, schema, locale, openHref, openLabel }: HeroGlassDemoProps) {
   const store = getEntryStore(entryId, schema);
   const [, setTick] = useState(0);
 
@@ -43,6 +45,8 @@ export default function HeroGlassDemo({ entryId, schema, openHref, openLabel }: 
         <label className="hero-glass-label" htmlFor="hero-blur">
           blur
         </label>
+        {/* 双语可读名(a11y-range-label-006,与 ParamPanel paramAriaLabel 同构):
+            可见 label 文本 "blur" 仍包含在可访问名内(WCAG 2.5.3) */}
         <input
           id="hero-blur"
           type="range"
@@ -50,7 +54,7 @@ export default function HeroGlassDemo({ entryId, schema, openHref, openLabel }: 
           max={param.max}
           step={param.step}
           value={blur}
-          aria-label={param.name}
+          aria-label={locale === "zh" ? "模糊 blur" : "blur 模糊"}
           style={{ "--fill-percent": fillPercent } as CSSProperties}
           onChange={(e) => store.set("blur", Number(e.target.value))}
         />

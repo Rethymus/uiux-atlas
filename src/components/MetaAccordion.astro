@@ -10,6 +10,17 @@ interface Props {
 const { schema, locale } = Astro.props;
 const dict = t(locale);
 
+// 来源链接可访问名(a11y-url-linkname-003):以站点名(hostname 去 www.)为
+// 链接文本与可访问名,完整 URL 保留在 href 并经 title 悬停可查——读屏不再逐字
+// 播报整条 URL(WCAG 2.4.4 链接目的;可见文本即站点名,2.5.3 Label-in-Name 一致)。
+const siteName = (u: string): string => {
+  try {
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch {
+    return u; // 非法 URL 兜底:维持原文(schema 侧 verify-entries 已校验 http 格式)
+  }
+};
+
 // 摘要计数(mono tabular-nums,§6-15 标签计数工艺;仅列表型 item 显示)
 const useCount = schema.scenarios.use.length;
 const avoidCount = schema.scenarios.avoid.length;
@@ -151,8 +162,8 @@ const sourceCount = schema.sources.length;
           {
             schema.sources.map((u) => (
               <li>
-                <a href={u} rel="noopener noreferrer">
-                  <span class="acc-src-text">{u}</span>
+                <a href={u} rel="noopener noreferrer" title={u}>
+                  <span class="acc-src-text">{siteName(u)}</span>
                   <span class="acc-src-ico" aria-hidden="true">
                     ↗
                   </span>

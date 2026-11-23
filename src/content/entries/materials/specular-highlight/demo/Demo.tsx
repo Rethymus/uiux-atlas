@@ -187,7 +187,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
           {backdrop === "gradient" ? (
             <div className="sh-gradient" />
           ) : (
-            <img src={`/photos/glass-${backdrop}.jpg`} alt="" />
+            <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
           )}
         </div>
         <div ref={cardRef} className="sh-card">

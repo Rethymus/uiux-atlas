@@ -17,6 +17,13 @@
  * (写死前已逐条核对存在;趋势页构建期还会再做一次守卫校验,见 src/pages/trends.astro)。
  */
 
+/**
+ * lastReviewed —— 数据复核日期:最近一次按 out/research/03 流程人工复核/重抓本文件数值的日期(ISO yyyy-mm-dd)。
+ * 刷新脚手架 scripts/refresh-trends.mjs 读取本行判断快照是否过期(距今 >90 天 → exit 1 提醒重跑调研);
+ * 刷新时先更新本日期,再按 03 号调研最新小节逐条替换下方条目的 summary 数值、source 出处与 note 口径标注。
+ */
+export const TRENDS_LAST_REVIEWED = "2026-11-20";
+
 /** 趋势方向:rising = 兴起,cooling = 退潮(与 03 §2.2 的 rising/fading 分组一致) */
 export type TrendDirection = "rising" | "cooling";
 
