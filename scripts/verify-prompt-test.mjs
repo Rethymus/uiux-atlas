@@ -2,15 +2,15 @@
 // 核验点对齐 glassmorphism schema 的 promptTemplate 验收要点(官方默认值:
 // blur 20px / fill alpha 0.15 / border 1px alpha 0.3 / radius 20px / 彩色背景)。
 // 兼容两种实现形态:字面量值或 CSS 自定义属性(--xxx: 20px + var() 引用)。
-// 用法: node uiux-atlas/scripts/verify-prompt-test.mjs [任意多余参数被忽略]  (exit 0 = 命中 >= 5/7)
+// 用法: node scripts/verify-prompt-test.mjs  (exit 0 = 命中 >= 5/7)
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-// uiux-atlas/scripts → uiux-atlas → 工作区根(out/ 在工作区根下)
-const workspaceRoot = resolve(scriptDir, "..", "..");
-const target = join(workspaceRoot, "out", "prompt-test", "glassmorphism.html");
+// scripts/ → 仓库根;复刻产物作为测试夹具随仓库入库(out/prompt-test/),干净克隆也能跑
+const repoRoot = resolve(scriptDir, "..");
+const target = join(repoRoot, "out", "prompt-test", "glassmorphism.html");
 
 const CHECKS = [
   { name: "backdrop-filter 应用", re: /backdrop-filter\s*:/ },

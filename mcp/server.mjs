@@ -116,9 +116,29 @@ function resolveEntry(id) {
   return { error: `entry not found: "${id}" — use search_entries / list_categories to discover ids` };
 }
 
-/** 条目页 URL(zh 为主 locale 无前缀、en 在 /en/ 下,与 src/lib/urls.ts entryUrl 同源) */
-const entryUrlZh = (id) => `/${id}/`;
-const entryUrlEn = (id) => `/en/${id}/`;
+/**
+ * 条目页 URL(zh 为主 locale 无前缀、en 在 /en/ 下,与 src/lib/urls.ts entryUrl 同源)。
+ * 部署子路径直接读 astro.config.mjs 文本里的 base(零依赖,不 import astro)——
+ * 站点作为 GitHub Pages 项目页发布在 <base>/ 下,返回根路径地址会让 agent 打开 404。
+ */
+const SITE_BASE = (() => {
+  try {
+    const raw = readFileSync(join(SERVER_ROOT, "astro.config.mjs"), "utf8").match(/\bbase:\s*["']([^"']+)["']/)?.[1] ?? "/";
+    return raw.endsWith("/") ? raw : `${raw}/`;
+  } catch {
+    return "/";
+  }
+})();
+/**
+ * 可选的环境变量 ATLAS_SITE_ORIGIN(如 https://example.github.io):设置后条目 URL 输出绝对地址,
+ * agent 可直接打开;未设置则输出带 base 的站内路径。只接受 http/https 来源,其余一律忽略。
+ */
+const SITE_ORIGIN = /^https?:\/\/[^/\s]+$/i.test(process.env.ATLAS_SITE_ORIGIN ?? "")
+  ? process.env.ATLAS_SITE_ORIGIN
+  : "";
+const siteUrl = (path) => (SITE_ORIGIN ? `${SITE_ORIGIN}${path}` : path);
+const entryUrlZh = (id) => siteUrl(`${SITE_BASE}${id}/`);
+const entryUrlEn = (id) => siteUrl(`${SITE_BASE}en/${id}/`);
 
 // ---------------------------------------------------------------------------
 // 参数值序列化 —— 与 src/lib/store.ts 的 serializeParamValue 同源(same origin):

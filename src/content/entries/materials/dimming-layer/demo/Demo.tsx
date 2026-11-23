@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -152,7 +153,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
     <DemoStage entryId={entryId} schema={schema}>
       <div className="dim-scene" data-mode={mode}>
         <div className="dim-bg" aria-hidden="true">
-          <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
+          <img src={withBase(`photos/glass-${backdrop}.jpg`)} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         </div>
         <div className="dim-scrim-solid" aria-hidden="true" />
         <div className="dim-scrim-grad" aria-hidden="true" />

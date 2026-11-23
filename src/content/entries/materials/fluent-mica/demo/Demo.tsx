@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -105,9 +106,9 @@ export default function Demo({ entryId, schema }: DemoProps) {
   return (
     <DemoStage entryId={entryId} schema={schema}>
       <div className="fm-scene">
-        <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
+        <img src={withBase(`photos/glass-${backdrop}.jpg`)} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         <section className="fm-window" data-variant={variant} aria-label="Mica 主窗口示例 Mica window sample">
-          <img className="fm-sample" src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" aria-hidden="true" />
+          <img className="fm-sample" src={withBase(`photos/glass-${backdrop}.jpg`)} alt="" width={1600} height={1067} loading="lazy" decoding="async" aria-hidden="true" />
           <div className="fm-tintlayer" aria-hidden="true" />
           <div className="fm-chrome">
             <div className="fm-titlebar">

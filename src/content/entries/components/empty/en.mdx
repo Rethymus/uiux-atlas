@@ -1,3 +1,5 @@
+import { entryUrl } from "@/lib/urls";
+
 ## Structure & DOM
 
 An empty state is a **replacement**, not a filler: Carbon's best practice is to have the empty state **replace** the original element — when a table has no data, collapse the header/footer entirely and show only the empty card; otherwise screen-reader users must listen to the whole table structure before hearing "no content".
@@ -16,7 +18,7 @@ An empty state is a **replacement**, not a filler: Carbon's best practice is to 
 
 Anatomy (Carbon): optional artwork → short title (phrased positively, e.g. "Start by adding data assets") → body copy stating the next step → optional primary action → optional secondary link. Carbon recommends left-aligned copy blocks; antd Empty is centered by default — the demo follows antd's centered card form, while Carbon document scenarios may left-align. The two are not in conflict.
 
-This entry echoes the [data table](/en/components/table) empty state: container components (Table/List/TreeSelect) usually embed Empty as the no-data placeholder (official antd usage); the table entry covers the table itself, while this one focuses on the embedded empty card.
+This entry echoes the <a href={entryUrl("en", "components/table")}>data table</a> empty state: container components (Table/List/TreeSelect) usually embed Empty as the no-data placeholder (official antd usage); the table entry covers the table itself, while this one focuses on the embedded empty card.
 
 ## Styling & Parameters
 

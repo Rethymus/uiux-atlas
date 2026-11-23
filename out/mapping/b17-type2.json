@@ -1,0 +1,58 @@
+{
+  "batch": "b17-type2",
+  "category": "type",
+  "date": "2026-11-22",
+  "items": [
+    {
+      "id": "type/tabular-numbers",
+      "researchRef": "out/design-study/12-expansion.md §9(tabular-nums=tnum,MDN『easily aligned like in tables』原文;font-variant-numeric 全值清单;Baseline 2020-01;特性生效前提=字体含 OpenType 表)+ out/research/05-layout-typography.md §24(Inter 官方提供表格数字与 slashed zero,Figma/GitLab/NASA 采用)",
+      "note": "参数 numericStyle(enum cssVar --tn-numeric:tabular/proportional/lining/oldstyle)/slashedZero(JS 型 data-zero 开关)/countSpeed(1–10,标注演示参数非规范值)。demo 用确定性 LCG(非 Math.random,避免弱随机告警且抖动可复现)驱动三行 KPI 计数;宽度探针实测『1111111111』vs『1234567890』渲染宽度差(等宽 Δ≈0),列宽抖动计记录 min/max;prefers-reduced-motion 停止计数保留静态探针。『长文正文数字比例宽度更经济』标注实践共识未证实。sources: MDN font-variant-numeric + rsms/inter(均调研已核)。"
+    },
+    {
+      "id": "type/baseline-grid",
+      "researchRef": "out/design-study/12-expansion.md §9/§10(Bringhurst『空间如时间』经 24ways/Rutter 转述;1px 边框+8px padding=9px 半单元案例)+ 本站 spec(global.css:165 4/8 间距网格、禁止非 4 倍数字面值)+ out/design-study/02-tdesign.md §2(行高=字号+n,n=8,官网 design-basic.ts 一手核对)",
+      "note": "参数 unit(cssVar 默认 8px)/fontSize(16px)/lineHeight(1.5,同时满足 WCAG 1.4.12 ≥1.5 且 16×1.5=24=3 步)/overlay(JS 型 none|grid|baselines|both 可视化开关)。叠加层 repeating-linear-gradient(网格每 unit 一条;基线画在行盒 ~80% 处,已标注教学近似——精确基线位置由字体度量决定);偏移审计实测 getBoundingClientRect().top,判据=步长整数倍或半步(4/8 规则);卡片内文 1px+8px=9px 在 unit=8 判违规、调 unit=18 自动转绿(12§10 半单元规则的可玩呈现)。8pt grid 通行性标注社区惯例未证实。sources: 24ways + tdesign fonts 页 + design-basic.ts(均调研已核)。"
+    },
+    {
+      "id": "type/font-pairing",
+      "researchRef": "out/design-study/12-expansion.md §9(Google Fonts Knowledge『Choosing type』仅确认入口存在,正文未能核验——搭配方法论细则如实标注『社区实践共识,未证实』)+ out/design-study/01-apple.md(HIG『Minimize the number of typefaces you use』全站一字族,官网原文已核)+ out/research/05-layout-typography.md §25(Geist Sans/Serif/Mono/Pixel 四族,OFL 1.1)",
+      "note": "参数 pairing(JS 型三档:serif-head 衬线标题×无衬线正文 / sans-head 反向 / single 单字族多字重)+ headingSize(cssVar,默认 34px)/headingWeight(cssVar,默认 600)。衬线用系统栈 Georgia→Songti SC→SimSun→serif(泛型收尾,零第三方依赖;中文衬线观感标注因平台而异);single 档由本站 Inter Variable wght 100–900 真实驱动,并如实标注系统衬线档 400/700 之外的钳制/合成失真。『标题字体只用于大字号、正文须经长文阅读测试』标注通则未证实。sources: fonts.google.com/knowledge/choosing_type(入口,已标注未核验正文)+ HIG typography + vercel/geist-font。"
+    },
+    {
+      "id": "type/small-caps-features",
+      "researchRef": "out/design-study/12-expansion.md §10(MDN 官方指引『能用高层就用高层,不要用它启用小型大写』;标签恰好 4 ASCII 字符;on/off≡1/0;Baseline 2016-03)+ 本批次新增补核:MDN font-variant-caps 页 2026-11-22 直接抓取(关键字→OpenType 映射 small-caps=smcp / all-small-caps=c2sc+smcp;缺字形时浏览器从大写字形合成、无大小写之分的字符绝不合成;Baseline 2020-01;大面积 all-small-caps 对阅读障碍用户难读的无障碍提示)",
+      "note": "参数 caps/ligatures/zero 全部 cssVar 型,分别落高层属性 font-variant-caps / font-variant-ligatures / font-variant-numeric(与官方分层指引一致);等价低层标签(smcp/c2sc/liga/zero)只以注释代码行展示。宽度探针对照『原样 vs 特性生效』实测宽度差,标注『Δ>0 无法区分真 smcp 字形与 MDN 记载的合成字形;Δ≈0=字体可能缺特性表』——结论由测量产生不写死。0.08em 字距取自本站大写小标纪律(global.css:852-856)。sources: MDN font-feature-settings(12 已核)+ MDN font-variant-caps(本次补核)。"
+    },
+    {
+      "id": "type/vertical-rhythm",
+      "researchRef": "out/design-study/12-expansion.md §9(Rutter《Compose to a Vertical Rhythm》24ways 2006 算法:单元=正文行高 12×1.5=18px;标题行高=18÷14=1.286 反推;间距单元整数倍;em 纪律;Bringhurst 名言)+ out/research/05-layout-typography.md §18(WCAG 2.2 SC 1.4.12 行高 ≥1.5×)+ out/design-study/02-tdesign.md §2(+8 常数)",
+      "note": "参数 baseUnit(cssVar 默认 18px=24ways 工作示例值)/bodySize(默认 12px,标注 2006 年惯例、生产按 16px 体系缩放)/headingSize(默认 14px)/mode(JS 型 rhythm|free 对照)。标题行高由 TSX 反推内联(单元÷字号,规避 CSS 长度÷长度的 calc 兼容问题);行盒叠加=各文本块 repeating-linear-gradient 半透明条带(周期=单元),free 模式任意值(13px/7px、1.1 标题行高)展示『韵律破坏现场』;行高比跌破 1.5 时徽标转红(WCAG 1.4.12)。mdx 明确 18/12 为已核方法示例值而非当代推荐值。sources: 24ways(调研已核)。"
+    },
+    {
+      "id": "type/display-typography",
+      "researchRef": "out/design-study/01-apple.md §2.2(SF Pro tracking 官方全曲线 66 行实抓:17pt −26‱ 全曲线最紧、28pt +14‱、80pt+ 归零)与 §2.3(apple.com 网页三铁律:56px/1.0714/600/−0.005em;≥19px Display/≤17px Text;断点只动 size+letter-spacing)+ 本站 hero 同源手法(global.css:163 --step-5 clamp + 883-888 lh1.12/ls−0.02em;156 负字距只用于 ≥21px 标题、中文正文字距 0)+ out/research/05-layout-typography.md §12/§24(clamp Baseline 2020-07;Inter opsz 14–32 双光学、wght 100–900)",
+      "note": "参数 size(cssVar 默认 48px=apple.com 大标题档)/weight(cssVar 600,真实 wght 轴)/trackingMode(JS 型 auto|manual)/manualTracking(cssVar 默认 −0.02em=本站 hero 档)。auto 模式按 SF 曲线锚点分段线性插值(pt 按 1x 折算近似,已标注教学感知用);曲线小图为官方锚点 SVG 折线+游标(0.15s 过渡,prefers-reduced-motion 关闭);行高比建议值从 apple.com 实测锚点插值;原生曲线 56pt +6‱ 与 apple.com 网页 −0.005em/本站 −0.02em 的分歧两套数值并列如实展示。sources: HIG typography + rsms.me/inter + utopia.fyi(均调研已核)。"
+    }
+  ],
+  "files": {
+    "perEntry": ["schema.json", "zh.mdx", "en.mdx", "demo/Demo.tsx"],
+    "root": "uiux-atlas/src/content/entries/type/"
+  },
+  "verifyScript": {
+    "path": "uiux-atlas/scripts/verify-entries.mjs",
+    "action": "EXPECTED.type 由 9 个既有 slug 增补 6 个本批次 slug(该文件未预先包含,本批次按其既有『批产收口』工作流并入,与 b11 先例同动作);未改动其他分类数组"
+  },
+  "nameZh": {
+    "tabular-numbers": "表格数字",
+    "baseline-grid": "基线网格",
+    "font-pairing": "字体搭配",
+    "small-caps-features": "小型大写与开放特性",
+    "vertical-rhythm": "垂直韵律",
+    "display-typography": "展示级排版"
+  },
+  "extra": {
+    "mdxStructure": "五 h2:结构与 DOM / 样式与参数 / 动效与交互 / 真实产品案例(2–3 条,编辑性内容,不确定不写)/ 参数敏感度;en.mdx 同构(Real-world examples 位于 Motion & Interaction 之后)",
+    "newVerificationThisBatch": "MDN font-variant-caps 全文抓取核对(small-caps-features 的合成回退与无障碍行为),抓取时间 2026-11-22",
+    "demoSafety": "tabular-numbers 计数动画改用确定性 LCG(非加密用途,可复现),响应 Mimosa 弱随机数提示"
+  }
+}

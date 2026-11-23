@@ -2,6 +2,7 @@
 // 门禁:全部断言通过 exit 0;任一断言失败打印明细并 exit 1。
 // 用法: node uiux-atlas/scripts/test-mcp-server.mjs  (或 pnpm -C uiux-atlas run test:mcp)
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,7 +60,9 @@ function request(id, method, params) {
   });
 }
 
+let totalAssertions = 0;
 const assert = (name, ok, detail = "") => {
+  totalAssertions += 1;
   if (ok) console.log(`  ok: ${name}`);
   else failures.push(`${name}${detail ? ` — ${detail}` : ""}`);
 };
@@ -88,7 +91,7 @@ function finish() {
     for (const f of failures) console.error(` - ${f}`);
     process.exit(1);
   }
-  console.log("test-mcp-server: PASS (4/4 assertions)");
+  console.log(`test-mcp-server: PASS (${totalAssertions}/${totalAssertions} assertions)`);
   process.exit(0);
 }
 
@@ -156,6 +159,15 @@ async function main() {
     '断言 3 get_entry(glassmorphism) 文本含「毛玻璃」',
     entryText.includes("毛玻璃"),
     `text 前 300 字: ${JSON.stringify(entryText.slice(0, 300))}`,
+  );
+  // 条目 URL 必须带部署子路径:站点是 <base>/ 下的项目页,根路径地址会 404。
+  // 期望值直接取 astro.config.mjs 的 base,server 与站点配置若漂移会在这里报错。
+  const configBase = readFileSync(join(root, "astro.config.mjs"), "utf8").match(/\bbase:\s*["']([^"']+)["']/)?.[1] ?? "/";
+  const expectedEntryUrl = `${configBase.replace(/\/+$/, "")}/styles/glassmorphism/`;
+  assert(
+    `断言 3b get_entry 条目 URL 带部署子路径(${expectedEntryUrl})`,
+    entryText.includes(expectedEntryUrl),
+    `text 中未出现该地址: ${JSON.stringify(entryText.slice(0, 400))}`,
   );
 
   // ── 4) tools/call build_prompt(styles/glassmorphism, 覆盖 blur=30):含 blur 30px ──

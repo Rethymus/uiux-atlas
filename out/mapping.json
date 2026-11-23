@@ -1,0 +1,1118 @@
+[
+  {
+    "batch": "b0-seed",
+    "id": "styles/glassmorphism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§1 Glassmorphism(交叉:out/research/06-color-theming.md#四、§16 玻璃拟态经典配方)",
+    "note": "来源=glassmorphism.com 生成器(hype4.academy 承接,301 跳转)与 superdesign.dev/styles/glassmorphism 生产实测页(均为调研一手抓取)。参数默认值:blur 20px / fill rgba(255,255,255,0.15)(改写为 oklch(1 0 0 / 0.15))/ border rgba(255,255,255,0.3)(oklch(1 0 0 / 0.3))/ radius 20px,全部取自 glassmorphism.com 生成器经典配方;投影 0 8px 32px rgba(0,0,0,0.25) 取 superdesign.dev(06§16 记 glassmorphism.com 配方为 0.1,两说并列于 MDX 未采用 0.1 作默认);深色变体 rgba(17,25,40,0.55) 取 superdesign.dev。variant 为 JS 型参数(demo 订阅切 data-variant),不写 cssVar。照片来源:Unsplash 免费图两张已 curl 下载至 public/photos/glass-alps.jpg 与 glass-nebula.jpg(JPEG 签名已验),下载失败时的 CSS 渐变兜底已实现为第三个背景选项。"
+  },
+  {
+    "batch": "b0-seed",
+    "id": "motion/motion-spring",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 Spring 物理参数(§A. Motion 文档)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取;本条目写作时再次实测抓取该页核实)。schema 默认值取文档标注:stiffness=1、damping=10、mass=1、bounce=0.25、duration=0.3s(velocity 默认取当前值速度)。差异如实并列:调研记录『社区旧说 stiffness=100 未证实』;写作时又核验了本站安装的 motion-dom@12.43.0 源码(animation/generators/spring.mjs 的 springDefaults.stiffness=100、bounce=0.3、duration=800ms;animation/interfaces/motion-value.mjs:28 传 velocity=value.getVelocity() 实现打断续速),结论=文档标注值与运行时回退不一致,按调研约定取文档标注值 1 作官方默认,差异写进 zh/en MDX 与参数 effect。durationBased 模式在 demo 中显式传 duration 0.3s(省略会落到运行时 800ms 回退)。demo 的可打断续速来自对同一 MotionValue 重复 animate();reduced-motion 时直出终态并停用 ping-pong。"
+  },
+  {
+    "batch": "b0-seed",
+    "id": "color/oklch-workflow",
+    "researchRef": "out/research/06-color-theming.md#一、§1 oklch 与 §2 OKLCH 选色工作流(交叉:§17 WCAG 对比度等级)",
+    "note": "来源=Evil Martians《OKLCH in CSS》(一手)与 MDN oklch 页(一手),WCAG 阈值取 W3C WCAG 2.1 Understanding(一手)。默认值:L=80%(Evil Martians『L=0.8 任意色相配黑字清晰』;参数取 0-100% 刻度故默认 80)、C=0.12(工作流常用中彩度,C 滑杆上限 0.37 取其 sRGB 实测色域边界)、H=220(其经验映射『蓝≈220°』)。三个参数均为 JS 型(无 cssVar),demo 订阅后拼 oklch() 字符串并内置 oklch→sRGB 标准换算(Ottosson 矩阵,gamma 按 CSS Color 4),对比度对黑/白底实时计算并标 AA/AAA;越域按浏览器现状裁剪 RGB 并显式警示(Evil Martians 指出 Chrome/Safari 未做降 chroma 映射)。换算数学已用 node 独立脚本验证:黑白端点 21:1、L=0.8 各色相对黑字 10.6–11.7:1,与调研记载一致。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/backdrop-filter",
+    "researchRef": "out/research/02-official-design-specs.md#4 Web 平台标准 D2 backdrop-filter(交叉:out/research/06-color-theming.md#四、§16 玻璃拟态经典配方)",
+    "note": "来源=Filter Effects L2 规范 + MDN + BCD 实测(Chrome 76/Edge 17/Firefox 103/Safari 9,调研 02 §4 D2)+ glassmorphism.com 生成器配方(调研 06 §四 §16)。参数默认值:blur 20px 取 06§16 生成器经典配方;saturate 180% 取 Apple 全局导航生产 CSS 实测(superdesign.dev,出处为调研 03§1/styles/glassmorphism 条目同款引用,不属本批指定两份调研文档,已在 effect 中如实标注来源与性质);brightness 100% 为 Filter Effects L1 恒等点(调研 02 §4 D1)。三参数均 cssVar 型(--bf-blur/--bf-saturate/--bf-brightness)。Safari 9–17 需 -webkit- 前缀说明沿用调研 03§1。demo 复用 public/photos 两张现有照片 + CSS 渐变兜底,彩色大字与磨砂面板同屏。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/filter-functions",
+    "researchRef": "out/research/02-official-design-specs.md#4 Web 平台标准 D1 filter(交叉:out/research/06-color-theming.md#四、§14/§15 aurora 与 grain 滤镜配方)",
+    "note": "来源=Filter Effects L1 规范 + MDN + BCD 实测(Chrome 18/Firefox 49/Safari 6/Edge 12,调研 02 §4 D1)。任务未给默认值,四个默认(blur 0px/brightness 100%/contrast 100%/hue-rotate 0deg)全部取 Filter Effects L1 规定的函数恒等/插值初始点并在 effect 注明规范出处;调研 06 §四 §14/§15 的社区配方(contrast 170% + brightness 1000%、blur 42px+sat 1.15)只进 MDX 参考区间,不作默认。四参数均 cssVar 型。demo 为同图六瓦片对照(原图/blur/brightness/contrast/hue-rotate/四函数组合),瓦片角标经 store 订阅实时显示当前值(serializeParamValue)。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/liquid-glass",
+    "researchRef": "out/research/02-official-design-specs.md#1 A1–A3 Liquid Glass / glassEffect / Glass(交叉:out/research/06-color-theming.md#四、§16 与 §六条目18 clear 变体 35% 深色 dimming 层)",
+    "note": "来源=Apple HIG Materials(官方 JSON 端点核验,调研 02 §1 A1)+ SwiftUI glassEffect/Glass 文档(A2/A3)+ 调研 06 条目18。参数默认值:variant=regular(glassEffect 官方默认,A2);dimming=35%(HIG 对 clear 变体亮背景的官方建议,调研 06 §四 §16+§六条目18,0–60 为 demo 滑杆量程);blur=20px(任务未给默认,借用 06§16 记载的经典玻璃配方作 Web 近似起点,Apple 未公布数值,effect 已注明未证实);tint=0(Glass.tint(_:) 为可选实例方法、默认不着色,A3)。折射按任务要求用 SVG feTurbulence+feDisplacementMap,demo 以 UA 探测仅 Chromium 启用 url() 引用,其余环境回退纯模糊并在角标如实提示;regular 变体『调整亮度』官方未公布数值,demo 以同值白色薄层近似并在 effect/MDX/角标三处标注为近似。variant 为 JS 型参数,其余三个为 cssVar 型。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/swiftui-materials",
+    "researchRef": "out/research/02-official-design-specs.md#1 A7–A10 UIBlurEffect / SwiftUI Material / HIG vibrancy 层级(交叉:out/research/06-color-theming.md#四、§16 四档标准材质)",
+    "note": "来源=SwiftUI Material 文档(六档 ultraThin/thin/regular/thick/ultraThick/bar,调研 02 §1 A8)+ UIBlurEffect(A7)+ HIG vibrancy 层级(A10)。参数默认值:material=regular(六档中的标准档);vibrancy=default(HIG 层级首级)。『quaternary 在 ultraThin/thin 上禁用』为官方规则(A10),demo 以 role=alert 警告呈现。Web 端透明度/模糊近似表(ultraThin .08/12px→ultraThick .60/28px、bar .36/16px)为社区常见值,官方未公布数值——schema effect、zh/en MDX 与 demo 角标三处均注明『社区近似值,未证实』。material/vibrancy 均 JS 型(demo 订阅切 data-attribute),无 cssVar。star 2。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/fluent-acrylic",
+    "researchRef": "out/research/02-official-design-specs.md#3 C1 Acrylic(交叉:out/research/06-color-theming.md#四、§15 feTurbulence 轻量噪点配方)",
+    "note": "来源=Microsoft Learn Acrylic 设计文档 + AcrylicBrush API 页(调研 02 §3 C1,一手)。调研仅记载官方参数名(TintOpacity/TintLuminosityOpacity/TintColor/AlwaysUseFallback/TintTransitionDuration)与 background/in-app 两型,未记载任何官方默认数值——按任务指示取社区常见值:tintOpacity 0.6、tintLuminosityOpacity 0.35,并在 effect/MDX/demo 徽标三处注明『社区常见值,官方未公布默认(未证实)』;TintColor≈#F3F3F3、blur 24px+saturate 125%、TintTransitionDuration≈0.25s 同为社区近似,MDX 注明。fallback 枚举(off/on)对应官方 AlwaysUseFallback,并在 @supports 不支持 backdrop-filter 时自动落纯色(模拟真实自动回退)。tintOpacity/tintLuminosityOpacity 为 cssVar 型,fallback 为 JS 型。噪点层用调研 06 §四 §15 轻量 feTurbulence data-URI 配方(baseFrequency 0.9/numOctaves 2),层透明度 0.04。"
+  },
+  {
+    "batch": "b1a",
+    "id": "materials/fluent-mica",
+    "researchRef": "out/research/02-official-design-specs.md#3 C2 Mica / Mica Alt",
+    "note": "来源=Microsoft Learn Mica 设计文档(调研 02 §3 C2,一手):『不透明、单次壁纸采样、长驻窗口背景』『Mica Alt 强着色、适合 tab 式标题栏』『Windows App SDK 1.1+』均逐字取自调研记载并进 MDX 首段与 demo 徽标。参数默认值:variant=mica(标准变体);tint=50%(任务未给默认,官方未公布数值,取社区常见值并在 effect/MDX/demo 徽标注明未证实)。取样层滤镜 blur 64px/saturate 60%/brightness 0.92 亦为社区近似,MDX 注明。variant 为 JS 型,tint 为 cssVar 型(--fm-tint)。demo 用壁纸副本+静态滤镜表现『不透明、单次采样』(背景永不动画),窗口内内容条持续滚动而取样背景纹丝不动,另放一块实时 backdrop-filter 的 Acrylic 条作对照,直接可视化与 Acrylic 的区别。star 1(仅两参数)。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/m3-state-layers",
+    "researchRef": "out/research/02-official-design-specs.md#二、§B5 State layers(交叉:out/research/06-color-theming.md#三、§7 M3 基线色值)",
+    "note": "来源=m3.material.io/foundations/interaction/states/state-layers(调研 02 一手抓取,grep 命中「Hover +8% opacity … Drag +16% opacity」)。四参数 hover/focus/press/drag 默认 8/10/10/16% 全部为官方 token,range 0–30% 为批次规格。demo 底色 #6750A4/文字 #FFFFFF/表面 #FFFBFE 取 Android 文档记载的 M3 基线亮色(调研 06§7)。四个参数均为 CSS 变量型(number+%);demo 用 pointer 事件 + focus-visible + 手动开关把四层同时点亮叠加,reduced-motion 时去掉 100ms 过渡。focus 焦点环独立保留,不依赖状态层。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/aurora-gradient",
+    "researchRef": "out/research/06-color-theming.md#四、§14 Mesh / Aurora 渐变(交叉:out/research/02-official-design-specs.md#四、§D1 filter BCD)",
+    "note": "来源=CodeFronts《Animated Mesh / Aurora Gradient Background》(调研 06§14 一手抓取,MIT)+ MDN《Using CSS gradients》。逐值采用:4 光斑+conic 底、inset:-25%、blur(42px)→blur 参数默认 42、saturate(1.15)→saturate 参数默认 115%、首光斑 38% 42% at 20% 25%→spotA 默认 20、光斑 L 0.6–0.75 约束。如实标注的偏离:drift 默认 18s 为批次规格给定值,CodeFronts 配方原文 60s(已写入 effect 与 MDX,注明非调研记载值);spotB 默认 70 为演示取值(调研仅逐值记载首光斑);光斑 B–D 色相/位置为按 L 约束布置的演示值。spots(enum 3/4,默认 4)为 JS 型参数切 data-spots 隐藏第 4 光斑,其余五个为 CSS 变量型。reduced-motion 降级=animation:none 静止直出(ask 要求)。光斑层 aria-hidden。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/grain-gradient",
+    "researchRef": "out/research/06-color-theming.md#四、§15 Grain 颗粒叠加(噪点渐变)",
+    "note": "来源=CSS-Tricks《Grainy Gradients》(调研 06§15 一手)+ CodeFronts 同页轻量变体。逐值采用:baseFrequency 0.65 / numOctaves 3 / stitchTiles stitch / contrast(170%) brightness(1000%) 均为 CSS-Tricks 配方原文;噪点层 opacity 0.16 取 CodeFronts 轻量变体(该变体自身用 baseFrequency 0.9/numOctaves 2,已在 effect 如实并列)。mix-blend-mode: multiply + 父容器 isolation: isolate 为 CSS-Tricks 精修路线;其评论区「极端 contrast/brightness 丢色彩、box-shadow 不适用」的警示也写入 MDX。baseFrequency/numOctaves 为 JS 型(demo 重建 data-URI SVG),contrast/grainOpacity 为 CSS 变量型。demo 左右卡对照(无噪点可见 banding / 有噪点)。纯静态条目,无动效故无 reduced-motion 降级需求(已核实无 keyframes)。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/blend-modes",
+    "researchRef": "out/research/02-official-design-specs.md#四、§D3 混合模式(Compositing and Blending Level 1)",
+    "note": "来源=W3C Compositing 1 规范(drafts.csswg.org/compositing-1/,调研 02 一手核验页面标题与 10.1.x/10.2.x 章节)+ MDN mix-blend-mode 页(次级)。mode 枚举取规范 §10.1 全部 16 个命名值(normal…luminosity),默认 normal 为规范 initial value;opacity 默认 100% 对应 CSS opacity initial value 1——两者均按「规范初始值作默认」原则处理,批次规格未给数值。均为 CSS 变量型参数(mix-blend-mode: var(--blend-mode) / opacity: var(--blend-opacity))。demo 两层渐变叠加 + isolation: isolate 限定混合范围,内置 16 枚快捷切换与参数面板共用同一 store。BCD 支持版本(mix-blend-mode Chrome 41/Firefox 32/Safari 8;background-blend-mode Chrome 35/Firefox 30/Safari 8)写入 browserSupport。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/theme-shadow",
+    "researchRef": "out/research/02-official-design-specs.md#三、§C5 Depth / ThemeShadow(交叉:§7 勘误第 3 条 Depth 页 404 迁移)",
+    "note": "来源=WinUI ThemeShadow API 页(learn.microsoft.com,调研 02§C5 一手抓取)。MDX 记载 z 坐标 elevation 语义(DIP)、非 Popup 必须显式设置 Receivers 集合、仅支持矩形阴影(异形用 DropShadow)、旧 Depth 设计页已 404 迁移。如实标注的偏离:elevation 默认 8 为批次规格给定值,调研未记载官方默认 z(已写入 effect 与 MDX「勿当作官方数值」);opacity 参数非官方 API 面(ThemeShadow 不暴露阴影不透明度),是 Web 近似 demo 的增益旋钮,已如实标注;demo 阴影公式(blur/offset 随 z 增大、alpha clamp 封顶递减)为 Web 趋势拟合,系数 0.4/2.2/0.035 非官方,正文与 fallback 均已注明。两参数均为 CSS 变量型(elevation 无量纲 z 值,CSS calc 内乘 px);demo 固定 z 0/4/8/16/32 对照卡 + 参数驱动卡,浅/暗画布切换,reduced-motion 去过渡。"
+  },
+  {
+    "batch": "b1b",
+    "id": "materials/glass-effect-api",
+    "researchRef": "out/research/02-official-design-specs.md#一、§A1–A6 Liquid Glass / glassEffect / Glass / GlassEffectContainer(交叉:out/research/06-color-theming.md#四、§16 系统玻璃材质 35% 暗层)",
+    "note": "来源=Apple API 文档四页(glassEffect(_:in:)/Glass/GlassEffectContainer/HIG Materials,调研 02§A1–A6 一手,经官方 JSON 数据端点核验)+ HIG 35% 暗层(调研 06§16)。逐值采用:variant enum regular/clear,默认 regular 为 glassEffect 官方默认参数(A2);默认形状 Capsule(A2);tint(_:)/interactive(_:)(A3)、UIGlassEffect isInteractive/tintColor(A6)、GlassEffectContainer(spacing:content:) 融合规则「spacing 越大形状越早开始融合」(A4)均入 MDX;clear 亮背景 35% 不透明度暗层为 HIG 原文。如实标注的偏离:tintIntensity(0–100%,默认 0)是把接受任意 Color 的 tint(_:) 映射为固定强调色叠加不透明度的 Web 强度映射,官方无数值强度参数;spacing 默认 8 为批次规格范围 0–32 内的演示取值,官方未记载数值默认;blur(14px)/saturate(1.6) 等材质数值为 Web 近似演示值,Apple 未公开,均已在 effect/MDX 标注「非官方」。variant/interactive 为 JS 型(订阅 store 切 data 属性),tintIntensity/spacing 为 CSS 变量型(spacing 无量纲,融合桥 opacity=clamp((s-8)/16,0,1),固定 24px 间距)。demo 复用 b0 批次已下载的 public/photos/glass-alps.jpg(亮背景触发 clear 暗层)与 glass-nebula.jpg;Web demo 标注「CSS 近似,非 Liquid Glass 本体,无折射/scroll edge effect」。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/neumorphism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§3 Neumorphism(新拟物 / Soft UI)",
+    "note": "来源=superdesign.dev/styles/neumorphism(一手抓取)+ en.wikipedia.org/wiki/Neumorphism(史实)+ neumorphism.io(工具存在性,抓取确认标题)。参数默认值:base #e0e5ec、凸起配方 ±9px/18px(#bec3c9/#ffffff)、blur≈2×offset、暗影=底色加深 15%、圆角 16–24px,全部取自 superdesign.dev 新拟物页;任务给定 offset 0–24/blur 0–48 区间,默认 9/18 即经典凸起配方值。暗影色未硬编码:demo 用 color-mix(in srgb, var(--neu-bg) 85%, black) 由底色现算,该式对 #e0e5ec 精确等于经典暗影 #bec3c9(85%×224+15%×0=190.4≈190);亮影按经典配方取纯白 #ffffff,换底色时在 effect 与 MDX 注明建议。压入配方经典值 6px/12px 记入 MDX,demo 的 mode=inset 沿用当前 offset/blur 以便对比。mode 为 JS 型参数(无 cssVar),demo 订阅 store 切 data-mode。WCAG 反例(边缘对比≈1.4:1 不达 SC 1.4.11 的 3:1)按任务要求写进 schema.a11y、scenarios.avoid 与 zh/en MDX 样式节的 ⚠️ 段。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/claymorphism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§4 Claymorphism(黏土拟物)",
+    "note": "来源=superdesign.dev/styles/claymorphism(一手抓取,配方唯一出处)+ namethatui.com/styles(词条佐证)。参数默认值全部取调研配方:radius 32px(区间 20–40px,卡片经验值)、外影 y=35px(配方 0 35px 68px rgba(112,100,176,.30) 的定值成分:blur 68 与 alpha .30 写死)、双内阴影 rgba(95,70,140,.22)+rgba(255,255,255,.65)(顺序关键,写进 MDX)。任务参数「双内阴影 alpha」为单一参数而配方两段 alpha 不同(.22/.65),故实现为倍率型参数 innerAlpha(default 1=配方原值,区间 0–2),demo 用 rgb(... / calc(0.22 * var(--clay-inner-alpha))) 缩放,alpha 倍率语义在 effect 中明示——未发明新数值。按压反馈 translateY(2px) scale(0.98) 与显式 3px :focus-visible 描边均为调研配方,demo 落实为 :active/:focus-visible;粉彩元素色 #b3a4ee 与页面底 #ecebfa 为 demo 示例色(非条目参数)。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/neo-brutalism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§6 Neo-Brutalism / Neubrutalism(交叉:§5 Web Brutalism)",
+    "note": "来源=trends.daisyui.com/ui-design-trends-2025/(词条 059,一手)+ superdesign.dev/styles/brutalism(一手,判定口诀出处)+ neobrutalism.dev(抓取确认)。判据 box-shadow: 4px 4px 0 #000 按任务要求写进 MDX(样式节+判据要点)与 schema effect/promptTemplate;描边 2–4px 为 daisyUI/superdesign.dev 双源,默认 3px 为任务基准(区间中值,已在 effect 注明);radius 默认 0(直角,「直角或极小圆角」daisyUI),上限 16px 覆盖社区圆角变体。强调色:调研只记载「单一饱和强调色」未给色值,默认 #ff90e8 在 schema effect 与 zh/en MDX 中均标注「社区常见值,未证实」——按数值铁律不作官方值。shadowOffset 为 number 型带 unit px(store 序列化为 '4px')。demo 按压=translate 至阴影原点+阴影归零(硬切换),focus-visible 3px offset,全参数 CSS 变量型故 demo 无 store 订阅。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/minimalism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§7 Minimalism(极简主义,网页语境)",
+    "note": "来源=superdesign.dev/styles/minimalist-web-design(一手抓取)+ en.wikipedia.org/wiki/Flat_design(谱系)。五枚调色 token(#fafaf9/#f0efec/#1c1917/#57534e/#2563eb)、1.25 模数字阶(Major Third)、8px 间距刻度(8/16/24/32/48/64/96px)、--measure 65ch、正文对比示例 7.4:1 AAA 均逐字取自调研;accent 参数默认 #2563eb 即记载的 --accent token。ratio 为 JS 型参数(无 cssVar):demo 订阅 store 后在 React 内按 16px×ratio^n 逐级换算并以内联字号渲染字阶标本——避免依赖 CSS pow() 的浏览器支持面;space 为 CSS 变量型(--min-space),demo 间距全部取其整数倍。star 2 按任务给定。陷阱(灰字对比、可及性线索剥除、数据密集不适)按调研写进 avoid/a11y/MDX。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/cyberpunk",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§14 Cyberpunk(赛博朋克 UI)",
+    "note": "来源=design-styles.enlighten-media.net/pages/cyberpunk/(调研 03§14 唯一来源,故 sources 仅 1 条)。数值诚实标注:调研只记载可调变量「扫描线间距与透明度、RGB 位移量、霓虹色板对暗底亮度比」而未记载任何具体数值,因此四个默认值(scanGap 4px/scanAlpha 0.25/rgbShift 2px/glow 1)按数值铁律在 schema effect 与 zh/en MDX 中明确标注为「本条目基准设定,非官方默认」;青 #00f0ff/品红 #ff2bd6/酸黄 #fcee0a 亦标注为 demo 示例色(未证实)。demo 实现霓虹文字(双层 text-shadow 辉光,blur 与 alpha 均乘 glow)+RGB 通道分离(text-shadow 左品红右青)+扫描线叠层(repeating-linear-gradient,1px 暗线周期 scanGap)+glitch 抖动(steps(1) 关键帧,4s 周期只闪 4 次,防高频频闪);boost 按钮为本地交互状态非条目参数。prefers-reduced-motion:关闭 glitch/光标/进度动画,保留静态 RGB 分离与扫描线(降级链写进 schema.fallback 与 MDX);扫描线/角标/进度条均为装饰层(pointer-events:none,信息不承载)。"
+  },
+  {
+    "batch": "b2",
+    "id": "styles/bento-grid",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§9 Bento Grid(便当盒布局)",
+    "note": "来源=superdesign.dev/styles/bento-grid(一手,配方唯一出处)+ design-styles.enlighten-media.net/pages/bento-ui/+ deck.gallery(Apple 2022-09 发布会引爆点)+ bentogrids.com(画廊)。参数默认值全部取配方原文:cols 4(repeat(4,minmax(0,1fr)))、rowHeight 180px(grid-auto-rows)、gap 16px、radius 24px(标志值,区间 20–28px,<16px 失效线写入 MDX);cols 为 enum 型,值 '2'/'3'/'4'/'6' 注入 repeat(var(--bento-cols), minmax(0,1fr))。demo 为真 CSS Grid:2×2 hero+span2 宽格+span2 高格,dense 回填,DOM 顺序=阅读顺序;断点按调研 768px→2 列、480px→1 列并重置 span,但以容器查询(@container,随演示台宽度生效)实现,视口媒体查询写法在 browserSupport.note 与 MDX 注明——生产按调研用媒体查询即可。可访问性陷阱(dense 视觉顺序≠DOM 顺序违反 WCAG 2.4.3/1.3.2、逐格 4.5:1、移动端层级丢失)按调研写进 a11y/MDX。Apple 系灰 #f5f5f7/#161617 用于 demo 格子底色。"
+  },
+  {
+    "batch": "b3a",
+    "id": "motion/cubic-bezier",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.1 Easing 曲线族(CSS)",
+    "note": "来源=MDN <easing-function>(调研 04§1.1 一手抓取)。默认 (0.25, 0.1, 0.25, 1) 即 MDN 原文记录的关键字 ease 数值;MDX 逐字列出四关键字预设官方数值(ease-in (0.42,0,1,1) / ease-out (0,0,0.58,1) / ease-in-out (0.42,0,0.58,1),另记 linear=(0,0,1,1))。x∈[0,1]、y 可越界与 MDN 示例 cubic-bezier(0, 1.1, 0.8, 4) 均为调研原文;面板 y 限 [-0.5, 1.5] 为演示工具限制,已在 effect 注明。曲线参数为 CSS 型(cssVar --cb-curve);demo 球与 SVG 示踪点共享同一曲线(外层线性 X + 内层贝塞尔 Y 嵌套合成,规避 CSS 多动画同属性覆盖);reduced-motion 停用循环动画、静态呈现终态与曲线。sources=MDN easing-function + CSSWG css-easing-1(调研 02§D7 所引规范)。"
+  },
+  {
+    "batch": "b3a",
+    "id": "motion/swiftui-spring",
+    "researchRef": "out/research/02-official-design-specs.md#A11 spring(response:dampingFraction:blendDuration:) 与 A13 预设族(交叉:out/research/04-motion-microinteractions.md#1.3 Spring 物理参数 B)",
+    "note": "来源=Apple DocC(调研 02 经官方 JSON 数据端点 developer.apple.com/tutorials/data 核实;调研 04§1.3B 同页抓取,双源一致)。官方默认:response=0.5s、dampingFraction=0.825、blendDuration=0(blendDuration 不入参,写进 MDX);预设族官方定义=bouncy duration 0.5s+基础 bounce 0.3 / snappy 0.5s+0.15 / smooth 0.5s+0,数值逐字写入 MDX 与参数 effect。preset 枚举默认选中 snappy 为演示选择,已在 effect 注明非官方『默认预设』。demo 双轨同跑:上轨按预设官方定义以 Motion duration-based 弹簧(duration 0.5s+bounce)驱动,下轨由 response/dampingFraction 经二阶阻尼谐振子(mass=1)标准等价换算 stiffness=(2π/response)²、damping=4π·dampingFraction/response 驱动——换算公式写在 Demo.tsx 注释与 MDX,并如实注明『物理推导,Apple/Motion 均未发布官方互转公式』(推导依据即 Apple 对两参数的官方定义原文)。reduced-motion 直出终态。"
+  },
+  {
+    "batch": "b3a",
+    "id": "motion/m3-spring-tokens",
+    "researchRef": "out/research/02-official-design-specs.md#B2 Spring composite tokens + Web 曲线换算表(交叉:B3 Compose MotionScheme 实现参数、B1 motion physics 系统)",
+    "note": "来源=m3.material.io/styles/motion/overview/specs(调研 02§B2,Jina 抓取)与 androidx 官方源码 ExpressiveMotionTokens.kt / StandardMotionTokens.kt / MotionScheme.kt(调研 02§B3,curl raw.githubusercontent 核实)。demo 内置 12 枚 token 完整对照表:Web cubic-bezier 换算+时长取 B2,Compose damping/stiffness 取 B3(expressive spatial default 0.8/380、fast 0.6/800、slow 0.8/200;expressive effects 1.0/1600·3800·800;standard spatial 0.9/700·1400·300;standard effects 1.0/1600·3800·800)。合并/降级说明:①写作时再次尝试抓取 m3 specs 页(JS 渲染,fox_fetch/WebFetch/web_reader 均失败),数值仍以调研 02§B2 为准;②官方表 Standard spatial 为同一曲线行(fast/default 列出、750ms 同行),调研未捕获 slow spatial 独立曲线——demo 对 standard|slow|spatial 沿用 (0.27, 1.06, 0.18, 1.00) 配 750ms,token 表标记 approx 并在读数条/UI 如实注明;③三枚参数全为 JS 型枚举(无 cssVar),demo 订阅后查表以 WAAPI(element.animate,官方换算曲线+时长)驱动芯片,切换即取消旧动画重跑;reduced-motion 直出终态。sources=m3 specs 页 + MotionScheme API 参考 + motion overview。"
+  },
+  {
+    "batch": "b3a",
+    "id": "motion/scroll-driven-animations",
+    "researchRef": "out/research/04-motion-microinteractions.md#4. 滚动驱动动画 / 视差 / Reveal on scroll(交叉:out/research/02-official-design-specs.md#D6 BCD 支持、#4 说明)",
+    "note": "来源=Chrome for Developers 滚动驱动官方指南(Bramus)与 MDN CSS scroll-driven animations 模块(调研 04§4 双抓),BCD 支持版本取调研 02§D6(Chrome 115 / Firefox 159 / Safari 26,2026-11 拉取)——调研 04§8.2 明言其快照未逐项核实 Firefox/Safari,故支持表述以 02§D6 BCD 为准并在 browserSupport 双源并列。range 默认 entry 25% cover 50% 逐字取官方 Reveal 示例;进度条 scaleX(0→1)+scroll() 为官方示例配方;『animation-timeline 须写在 animation 简写之后』为调研原文。rangeStart/rangeEnd 为 enum 型字符串参数(named range+百分比有限档,值直接可写进 animation-range),timeline 枚举值取 scroll()/view() 原文,三者均带 cssVar。降级说明:写作时经 web_reader 抓取 MDN animation-range 核实 entry/exit/contain 仅对 view progress timeline 有定义,demo 在 scroll() 模式下把这三类档显式替换为 cover 全程并在读数条注明替换原因;@supports 不通过 → 卡片静态可见+进度条静态;reduced-motion → 卡片始终可见、进度条保留(滚动位置的信息映射)。scroller 可聚焦、方向键可滚动、按钮 scrollTo(reduced 时 auto 直跳)。"
+  },
+  {
+    "batch": "b3a",
+    "id": "motion/view-transitions",
+    "researchRef": "out/research/04-motion-microinteractions.md#3.1 View Transitions API 总览与 3.2 Shared element transition(交叉:out/research/02-official-design-specs.md#D5 BCD 支持)",
+    "note": "来源=Chrome for Developers same-document 与总览官方页、MDN View Transition API(调研 04§3.1/3.2 抓取);支持版本取调研 04§3.1(Chrome/Edge 111+、Safari 18+、Firefox 144+)与调研 02§D6(跨文档 Chrome 126+/Safari 18.2+/Firefox preview),browserSupport 双源并列。duration/easing 默认 300ms + cubic-bezier(0.4, 0, 0.2, 1) 取官方 same-document 页 Material shared-axis 示例主段(调研 04§3.2:退出 90ms+主段 300ms+进入 210ms,demo 取主段值);平台内置交叉淡化默认时长调研未记载,MDX/effect 如实注明不作官方标注。duration/easing 为 CSS 型(cssVar --vt-duration/--vt-easing):因 ::view-transition 伪元素树挂在 <html> 下不继承 .demo-stage 变量,demo 把两个变量镜像到 document.documentElement 并在卸载时移除;mode 为 JS 型枚举,morph=被点卡片与详情 hero 赋同一 view-transition-name(两侧不同 DOM 节点,官方动态赋名语义),fade=不赋名退化为 root 交叉淡化。唯一性纪律:发射前清空全部旧名、结束摘名;React 更新经 flushSync 在过渡回调内同步完成;无 startViewTransition 或 reduced-motion 时直切,功能不损失。"
+  },
+  {
+    "batch": "b3b",
+    "id": "motion/count-up",
+    "researchRef": "out/research/04-motion-microinteractions.md#2.5 数字滚动(count-up) 与 §7 行25(交叉:out/research/09-implementation-tech.md#1.2 @property 与 §1.6 Baseline 结论)",
+    "note": "来源=css-tricks.com/animating-number-counters(调研一手抓取):@property --num(syntax '<integer>')+counter-reset/counter() 方案、calc() 拆小数位、可调维度(时长/缓动/起止值/fill forwards)、评论区可访问性结论(读屏读到中间值→reduced-motion 直出终值、hover 需补 :focus+tabindex)全部进 schema/MDX。数值降级说明:调研未记载任何官方默认数值,duration=1200ms 与 endValue=2026、decimals=0 均在 effect 中标注「社区常见值/演示用值,未证实」,符合数值铁律。三参数均为 JS 型(demo 用 rAF+easeOutCubic 计数,未用 @property,方案在 MDX 并列);无障碍按调研实现:动画节点 aria-hidden+sr-only 终值;reduced-motion 用 web.dev 的 matchMedia+change 监听惯例(调研 04§6.2)直出终值。"
+  },
+  {
+    "batch": "b3b",
+    "id": "motion/inertia-gesture",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 §A Motion transitions 的 inertia 段 与 §7 行14(交叉:§5.1 Pointer Events Baseline 2020-07)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取):power 默认 0.8、timeConstant 默认 700、min/max+bounceStiffness 500/bounceDamping 10、modifyTarget 吸附。写作时核验本站安装的 motion-dom@12.43.0 源码:animation/generators/inertia.mjs 落点公式 ideal=origin+power*velocity、指数衰减 calcDelta(t)=-amplitude*exp(-t/timeConstant)(t 为毫秒)、运行时回退 timeConstant=325;animation/utils/\\replace-transition-type.mjs 确认 type:\"inertia\" 为公开 transition 类型;animation/interfaces/motion-value.mjs:29 确认 velocity 缺省注入 value.getVelocity();framer-motion@12.43.0 VisualElementDragControls.mjs 确认拖拽释放同样以 type:\"inertia\" 调用(实际传 timeConstant 750)。按调研约定取文档标注值 700/0.8 为官方默认,运行时 325/拖拽 750 的差异如实写进 timeConstant effect 与双语 MDX。demo:拖拽 x.set() 直写跟手→释放 animate(x,0,{type:\"inertia\",…}),预测落点标线用生成器同款公式,越界走文档默认边界弹簧;reduced-motion 跟手保留、释放直出钳制落点;键盘/按钮等效甩动(FLICK_VELOCITY=1500px/s 为演示用值,已在代码注明非官方)。"
+  },
+  {
+    "batch": "b3b",
+    "id": "motion/skeleton-loading",
+    "researchRef": "out/research/04-motion-microinteractions.md#2.2 加载反馈(NN/g / lukew / M3 skeleton loaders)",
+    "note": "来源=NN/g progress-indicators、m3.material.io transition-patterns、lukew.com/ff/entry.asp?1797(均为调研一手抓取):NN/g 阈值表(<1s 即时态/≥1s 必须指示/2–10s 循环/≥10s 百分比+文案、>10s 附完成时间估计、可等 3 倍时长)完整写入双语 MDX 表格与 scenarios;M3「微妙脉动(左上→右下)+完成后快速淡入」进 MDX 与 demo(diagonal 档=120° 渐变对角扫过)。数值降级说明:pulse=1200ms 调研未记载(M3 只说微妙脉动),effect 标注「社区常见值,未证实」;内容淡入用 200ms+cubic-bezier(0.2,0,0,1),出处为 M3 short4 档 200ms+Standard easing(调研 04§1.4/§2.6,有据);demo 模拟加载 1.8s 标注为演示用值。pulse 为 CSS 型参数(cssVar --skeleton-duration),direction 为 JS 型(demo 切 data-dir);扫光只动 transform(reduced-motion 下 animation:none),加载语义经 aria-busy+role=status 文字兜底。"
+  },
+  {
+    "batch": "b3b",
+    "id": "motion/stagger-orchestration",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 §A 编排段(delay 负值/repeat/repeatType;目录含 delay and stagger)(交叉:§1.4 M3 进入类时长档位、§6.1 大平移为前庭触发源)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取):调研明确记载该页含「delay and stagger」编排能力与 delay 负值语义,但 staggerChildren 细节未被截取——故 stagger=40ms 默认在 effect 与双语 MDX 均标注「社区常见值,未证实」;items 3–8 为演示用枚举。demo 用 Motion 变体 staggerChildren(单位秒,demo 换算 ms→s),参数/重播变化经重挂载整段重放;子项动画数值(16px/0.4s/easeOut)为演示值,MDX 同时给出 M3 进入类官方档位(Standard decelerate 250ms/Emphasized decelerate 400ms)作参照。reduced-motion 按调研 04§6.1(大平移是前庭触发源)降级为纯 opacity 交错淡入(淡入淡出),保留节奏去掉位移;列表保持 ul/li 语义。"
+  },
+  {
+    "batch": "b3b",
+    "id": "motion/linear-easing",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.2 linear() 与弹簧/弹跳曲线近似 与 §8 未证实事项(交叉:out/research/09-implementation-tech.md#1.6 CSS linear() 渐进方案)",
+    "note": "来源=MDN linear()(Baseline 2023-12,调研一手抓取)+ Jake Archibald linear-easing-generator(README/工具页,调研一手抓取)+ css-easing-2 规范记载(规范中无 spring())。默认值 170/26 调研未记载为任何官方数值,在 effect 与双语 MDX 明确标注「社区常见弹簧手感值(react-spring 传统默认),未证实」;生成器公开参数 simplify=0.0017/round=3 取自调研 04§8 第 6 条记载。demo 按生成器算法实现:mass=1 半隐式欧拉采样(a=-k(x-1)-c·v,8ms 步长)→Douglas-Peucker 抽稀(eps=0.0017)→编译 linear() 文本(round=3、不均匀时间点补 % 停留点、首尾强制 0/1,overshoot 越界值保留)→写入场景 CSS 变量,动画本体为纯 CSS animation(ease 对照轨并列);reduced-motion 直出终态但生成文本照常更新;browserSupport.baseline=2023-12(调研 04§1.2),旧浏览器兜底(cubic-bezier 先行声明)写入 MDX。"
+  },
+  {
+    "batch": "b4a",
+    "id": "color/oklch-space",
+    "researchRef": "out/research/06-color-theming.md#一、§1 OKLCH 色彩空间(交叉:§2 Evil Martians 工作流的 C/H 映射与 sRGB 边界)",
+    "note": "来源=MDN oklch 页 + W3C CSS Color 4(调研 06§一1 一手抓取)。参数区间:L 0–100/0–1、C 实用上限≈0.5 且 100%=0.4、H 0–360°、alpha 用 / 语法、Baseline 2023-05,均取调研记载;C 的 sRGB 实测边界 0.37 与 H 的经验映射(绿≈140°)取调研 §2。默认值 L70/C0.15/H145/α1 为任务规格给定的条目快照(调研未载官方默认),已在 effect 中如实标注『条目快照,调研未载官方默认』并配调研锚点(H145 对应绿≈140°映射)。与 oklch-workflow 条目的区分:本条讲空间本身(四分量语义/语法/兼容),那条讲固定 L 的选色工作流与对比度工程——两条 MDX 互相引流。demo 纯 JS 换算(Ottosson 矩阵),越域按浏览器现状裁剪并亮警示;四参数均为 JS 型,不带 cssVar(与同库 oklch-workflow 一致)。"
+  },
+  {
+    "batch": "b4a",
+    "id": "color/hct-tonal-palette",
+    "researchRef": "out/research/06-color-theming.md#二、§5 Tonal Palette(HCT 空间)(交叉:§六7 M3 基线 tone 锚点)",
+    "note": "来源=material-color-utilities GitHub(Android 13 档/5 板记载,调研 06§二5)+ Android 开发者文档。demo 内嵌官方 npm 发行包 @material/material-color-utilities@0.3.0(Apache-2.0)发布源码的 TS 简版移植:hct_solver.js/cam16.js(前向)/viewing_conditions.js/color_utils.js 常量逐字复制;移植正确性已用 node 实算复核——#6750A4 经 solveToInt(298.98,47.86,40) 回写逐位一致,#D0BCFF 实测 tone≈79.95(与调研 §六7『≈tone 80』吻合),Hct.from(0,0,50)=#777777。参数:chroma 默认 48 为任务规格给定,与 #6750A4 实测 chroma≈47.9 一致;求解器内部搜索上限 200 取自 tonal_palette.js 源码;tone 差 40/50 的对比度保证取自 hct.js 类文档源码。13 档取值采用社区通行集 0,10,…,90,95,99,100——调研仅记载『每关键色 13 档』的数量,95/99 两个具体值未在本次抓取的一手来源逐值核实,已在 schema effect 与 MDX 中如实标注。tone 默认 80 锚定调研 §六7。"
+  },
+  {
+    "batch": "b4a",
+    "id": "color/m3-dynamic-color",
+    "researchRef": "out/research/06-color-theming.md#二、§6 Material You Dynamic Color(交叉:§7 M3 语义色角色与默认值、§12 暗色非反转)",
+    "note": "来源=Android 开发者文档 dynamic-colors(调研 06§六6/§六7 一手)。变体名与时间线(Android 12 Tonal Spot;Android 13 Neutral/Vibrant/Expressive)、取色链(quantize Celebi=Wu+WSMeans→score)取调研 §六6;官方手调基线值(#6750A4/#D0BCFF/#EADDFF/#B3261E/#FFFBFE/#1C1B1F/#381E72/#4F378B/#49454F)取调研 §六7 并在 demo 脚注并列呈现。变体调色板常量(tonal-spot 36/16/24/6/8、neutral 12/8/16/2/2、vibrant 200/24/32/10/12 + 断点旋转表、expressive h+240/40 等)与角色 tone 表(accent 40/80、container 90/30、on-类 100↔20/30↔90、surface 98/6、error 调色板 (25,84))逐字取自发行包 scheme_*.js 与 material_dynamic_colors.js(contrastLevel 0)。已如实标注:生成值与手调基线接近但不逐值相等(基线 primary chroma≈48 vs 变体 36;neutral≈4 vs 6)——demo 不冒充基线值。sourceHue 默认 299=#6750A4 的 HCT 色相(内嵌 CAM16 前向实测 298.98,已 node 实算验证)。scheme/variant/sourceHue 均 JS 型,不带 cssVar。"
+  },
+  {
+    "batch": "b4a",
+    "id": "color/radix-color-scale",
+    "researchRef": "out/research/06-color-theming.md#二、§8 12 步语义色阶(Radix Colors)",
+    "note": "来源=Radix 官方文档 understanding-the-scale(调研 06§二8 一手):12 步逐条语义、步 9 全阶 chroma 最高、步 11/12 对步 2 保 APCA Lc 60/90、Sky/Mint/Lime/Yellow/Amber 5 阶 9 步配深字、6 中性色+26 accent、AppBg mutable alias 用法。8 组色阶的 96 个 hex 逐值读取自官方发行包 @radix-ui/colors@3.0.0(任务指定的调研来源所属官方发行渠道,npm 官方包 gray/blue/green/amber/red/violet/cyan/pink.css 亮色阶);8 个代表 hue(1 中性+7 accent)为任务规格『8 个代表 hue』的具体化。step 默认 9 为任务规格给定(9=CTA solid,语义自洽)。demo 内步 9 文字色按官方 5 阶深字例外分档实现;hue/step 均 JS 型,不带 cssVar。"
+  },
+  {
+    "batch": "b4b",
+    "id": "color/light-dark",
+    "researchRef": "out/research/06-color-theming.md#三、§11 Web 端暗色模式实现策略(交叉:§7 M3 语义色默认值、§12 反转 vs 语义、§13 暗色层级/饱和度、§14 暗色 accent 提亮降饱和)",
+    "note": "来源=MDN light-dark() 与 prefers-color-scheme 页(调研一手,Baseline 2024-05 出处 MDN)。默认值:lightValue=#6750A4、darkValue=#D0BCFF,取 Android 开发者文档记载的 M3 亮/暗 primary 官方基线值(调研 06§7 原文值);demo 的 on-primary 硬编码 #FFFFFF/#381E72 同取 §7。对比度数字(白字 6.44:1、#381E72 配 #D0BCFF 7.7:1)为本条目写作时以 WCAG 2.1 公式 node 验算(tmp-b4b/wcag.js),非调研记载,已在 MDX 标明『实测/写作时计算』。scheme 为 JS 型参数(demo 订阅后改写舞台 color-scheme:system→light dark/light→light/dark→dark),不写 cssVar;demo 中性底用系统色 Canvas/CanvasText(CSS Color 4 §6.2 响应 color-scheme,零发明值),@supports not 回退到 prefers-color-scheme 翻转变量(调研 06§11 记载的传统策略)。"
+  },
+  {
+    "batch": "b4b",
+    "id": "color/rule-60-30-10",
+    "researchRef": "out/research/06-color-theming.md#二、§9 60-30-10 法则(交叉:§13 暗色饱和度告诫、§六10 汇总表)",
+    "note": "来源=LogRocket UX 与 hype4.academy 两篇(调研交叉印证)。默认值 dominant=60/secondary=30/accent=10 取法则定义值(双源一致);demo 三色固定为 LogRocket 记述的 Material 例证示意(白画布/浅灰组件/亮蓝按钮,具体 hex 属示意呈现而非精确取样,已在 demo 注释与 MDX 注明),参数只调占比。三个 number 参数为 JS 型(无 cssVar),demo 内归一化为 100 后驱动 flex 比例(总和不必为 100,demo 显式显示『总和 X → 已归一化』)。hype4 的『暗色下避免过饱和(对比过高致视觉疲劳)』告诫已写进 zh/en MDX 的样式与参数小节及 avoid;调研 §7.7 明示『暗色降饱和 15–30%』无可靠量化标准,故未编造任何降幅数字,官方注脚引 M3 #6750A4→#D0BCFF(§7/§14)。"
+  },
+  {
+    "batch": "b4b",
+    "id": "color/wcag-contrast",
+    "researchRef": "out/research/06-color-theming.md#五、§17 WCAG 对比度等级(交叉:§18 APCA、§20 WebAIM 工具、§7 M3 基线值)",
+    "note": "来源=W3C WCAG 2.1 Understanding 三页(contrast-minimum/contrast-enhanced/non-text-contrast,调研一手)。默认值 foreground=#1C1B1F(M3 亮色 on-surface)/background=#FFFBFE(M3 亮色 surface)取调研 06§7 官方原文值,实测比值 16.707:1 为写作时 node 验算(tmp-b4b/wcag.js,WCAG 2.1 Understanding 公式:c≤0.03928 线性化分支 + 0.2126/0.7152/0.0722 加权 + (亮+0.05)/(暗+0.05));公式注释已按要求写进 demo 代码头与 zh/en MDX。demo 显示 AA(4.5)/AAA(7)/大字(3)/非文本(3:1)四项徽章,判定用未舍入原值(4.499:1 不达标,WCAG 原文要求,MDX 与 demo 文案均注明);textScale 为 JS 型参数切样字档位(24px/18.66px bold 对照)。APCA 与 WCAG 的差异(输出 Lc 非比值、非对称、apca-w3 官方包禁自行实现、Radix Lc60/90 实例)写进 zh/en MDX 动效与交互小节;APCA Lc75/60 具体阈值建议调研标注未核实,故未引用。"
+  },
+  {
+    "batch": "b4b",
+    "id": "color/gradient-interpolation",
+    "researchRef": "out/research/06-color-theming.md#一、§4 广色域渐变与插值空间 + §六4 汇总表(交叉:§14 Aurora/mesh 光斑亮度、§3 color-gamut)",
+    "note": "来源=W3C CSS Color 4 §13(调研一手,§六4 汇总表给出来源 URL)与 Tailwind v4 公告(§4)。默认值:space=oklab(Tailwind v4 渐变默认 OKLAB,§4;写作时另抓取 W3C 规范复核『宿主语法未定义兜底空间为 Oklab』)、hueStrategy=shorter(调研仅列四策略未记载默认值,写作时抓取 W3C CSS Color 4 §13.1 原文复核:『For a <polar-color-space> if the <hue-interpolation-method> is not specified, it defaults to shorter』,并经 MDN linear-gradient 正式语法页二次确认)、from=#FF0000/to=#0000FF(spec/调研例证 linear-gradient(in oklab, red, blue) 的命名色,hex 取 CSS Color 4 命名色表)。hue 关键词仅柱坐标空间合法(本条目四选项中即 oklch),demo 对其余空间省略关键词并明示『hue 不适用』;拼串位次按 MDN 惯用示例角度在前(90deg in oklab,正式语法 || 允许互换)。from/to 为 CSS 型参数带 cssVar(--gi-from/--gi-to,由兜底渐变与 color-mix 中点直接消费),space/hueStrategy 为 JS 型拼串驱动;浏览器支持:调研未逐浏览器记载该语法支持年份,browserSupport 如实注明并以 MDN/CanIUse 提示兜底,demo 采用『无 in 普通渐变兜底在前 + 内联 in 渐变可解析时生效』结构。"
+  },
+  {
+    "batch": "b5",
+    "id": "type/fluid-type-scale",
+    "researchRef": "out/research/05-layout-typography.md#二、§13 Utopia 流式字阶生成器(交叉:§12 clamp()、§17 Modular Scale)",
+    "note": "公式与输出形态取 Utopia 实测输出(§13 一手);写作时用 node 实算验证:按样本隐含输入(minVw 360px/maxVw 1240px、base 1.125→1.25rem、min/max 比率 1.2/1.25)逐字复现调研记载的 --step-0 与 --step-1 两行输出。差异如实并列:Utopia 样本最小/最大两侧比率不同(反推 1.2/1.25),本条目按任务规格简化为单比率双乘,effect 与 MDX 已注明。默认值出处:maxSize 1.25rem 与 ratio 1.25 有调研一手支持(样本 max 值;Utopia 可选比率/modularscale 4:5 大三度);minViewport/maxViewport 480/1440px 与 minSize 1rem 为任务规格取值——Utopia 未直接记录视口默认值,样本反推约 360/1240px,effect/MDX 两说并列。参数全部 JS 型(demo 订阅 store 实时生成 --step-0..5 clamp() 并应用预览,另配模拟视口宽度换算 px 徽标);minViewport≥maxViewport 时分母为 0,demo 以斜率 0 兜底。"
+  },
+  {
+    "batch": "b5",
+    "id": "type/variable-fonts",
+    "researchRef": "out/research/05-layout-typography.md#三、§20 可变字体(OpenType fvar)、§24 Inter(交叉:§21 font-display/FOUT)",
+    "note": "轴标尺 wght 100–900、opsz 14–32 与 x-height 1118/1056 UPM 取 rsms/inter 官方技术规格(调研 05§24 一手);默认 wght 400/opsz 14 为注册轴默认,已与本仓 node_modules/@fontsource-variable/inter/metadata.json 逐项核对一致(variable.axes:wght min 100/max 900/default 400;opsz min 14/max 32/default 14)。font-variation-settings 低层语法(轴名大小写敏感、须整体重申所有轴值)取 MDN+OpenType 规范(§20)。参数为 CSS 型(--vf-wght/--vf-opsz),demo 的 font-optical-sizing: none + font-variation-settings 消费;字体文件选定 standard.css 全轴文件——已查包内文件确认 index.css 仅携 wght 轴。分浏览器首发版本调研未记录(未证实),browserSupport 不作逐版本断言。demo 无动画,无需 reduced-motion 降级。"
+  },
+  {
+    "batch": "b5",
+    "id": "type/fluid-spacing",
+    "researchRef": "out/research/05-layout-typography.md#二、§14 流式间距(交叉:§12 clamp())",
+    "note": "倍数梯 0.25/0.5/0.75/1/1.5/2/3/4/6 取调研 05§14 记载的 Utopia multipliers(0.75|0.5|0.25 与 1.5|2|3|4|6,s=1 基准);minSpace 1.125rem/maxSpace 1.25rem 默认值直接取 Utopia 实测输出 --space-s 的两端(一手)。node 实算验证:同一公式按样本隐含视口(360/1240px)逐字复现调研记载的 --space-2xs 行。差异如实并列:Utopia 官方串对个别令牌独立舍入(其 --space-3xs 为静态定值 0.3125rem),本条目实现为纯倍数插值,输出允许相差末位小数,zh/en MDX 均已声明。视口默认 480/1440px 为任务规格取值(样本反推约 360/1240px,effect/MDX 两说并列)。参数全部 JS 型(demo 生成 --space-3xs…3xl clamp() 并排展示代码+模拟视口条形图,样例卡片用真实 clamp 变量驱动 padding/gap)。star 2 按任务分配。"
+  },
+  {
+    "batch": "b5",
+    "id": "layout/container-queries",
+    "researchRef": "out/research/05-layout-typography.md#一、§6 Container Queries(交叉:§11 响应式策略演进、§8 Split View 的 WAI-ARIA separator 模式)",
+    "note": "Baseline 2023-02、container-type: inline-size(常规组件避免 size)、@container 语法、容器单位 cqw/cqi 族与可查询特征清单均取 MDN(调研 05§6 一手);browserSupport.baseline='Baseline Widely available (2023-02)',Firefox 具体版本号调研未记录故不写。调研标注 style() 样式查询支持矩阵未证实 → browserSupport 明示未核实且 demo 未使用 style()。参数分工:width 为 CSS 型(--cq-width 经 width: var() 消费,拖拽手柄经 store.set 与面板双向同步);breakpoint 为 JS 型——容器查询条件必须是字面量不能用 var(),demo 订阅后重生成 @container (min-width: Npx) 规则。默认 400/320 为任务规格演示值,effect 已注明生产断点应由组件内容决定(MDN 示例写 40rem)。手柄为 WAI-ARIA separator 角色+方向键键盘等价(呼应 §8 可访问分栏);cqw/cqi 均带固定值前置声明作级联回退;唯一 transition(状态徽标配色)已按 prefers-reduced-motion 关闭。"
+  },
+  {
+    "batch": "b6-basic",
+    "id": "components/button",
+    "researchRef": "out/research/07-components-patterns.md#1. 按钮:变体与强调层级(MUI) + #2. 按钮:每屏一个 Primary 与危险按钮(IBM Carbon)(交叉:out/design-study/06-antdesign.md#4.1 Button 与 §2.2/§2.3 token、out/research/02-official-design-specs.md#5 E1 动效 token)",
+    "note": "来源=MUI react-button(调研 07 §1 一手)、Carbon button usage(07 §2)、antd button-cn(06 §4.1 源码级核对)+ WAI-APG Button 模式页(本会话 WebFetch 实测:标题 'Button Pattern | APG',Space/Enter 激活、aria-disabled/aria-pressed)。参数默认值:variant 默认 secondary(对应 antd v6 type 族 primary|dashed|link|text|default 的默认 default,06 §4.1);size 默认 md,高度 16/24/32/40 取 antd genControlHeight 公式(controlHeight 32 ×0.5/×0.75/×1/×1.25,06 §2.3③),xl=48 为 demo 按 ×1.5 外推、antd 无 XL 档(未证实,已在 effect/MDX 标注);loading/disabled 默认 off(antd 两者默认 false,06 §4.1)。样式值:primary #1677ff、hover #4096ff、active #0958d9(蓝十阶阶6/5/7,06 §1.2+§2.3⑤ 派生档位)、圆角 6/圆角族 2/4/6/8(06 §2.3②)、字号 12/14/16(06 §2.3①)、中性禁用态(文字 25%/填充 4%/边框 #d9d9d9,06 §2.3⑤)、过渡 0.1s=motionDurationFast(06 §3.1;02 §5 E1 同值双源)。Arco Button 文档页本会话 WebFetch 为 JS 渲染无正文,未引 Arco 具体默认值。四参数均 JS 型(demo 订阅 store 切 data-variant/data-size 与行为);点击后 1.6s 模拟 loading,spinner 0.8s 旋转为 demo 取值(antd 未记载周期),reduced-motion 静止。"
+  },
+  {
+    "batch": "b6-basic",
+    "id": "components/icon",
+    "researchRef": "out/design-study/06-antdesign.md#4.2 Icon(交叉:out/research/07-components-patterns.md#37. prefers-reduced-motion、#1. MUI Button(IconButton aria-label 要求))",
+    "note": "来源=ant.design icon-cn(06 §4.2 源码级核对:4.0 起不内置、独立包 @ant-design/icons、注入 fill=currentColor 与 width/height=1em、spin 默认 false、twoToneColor)。参数默认值:size 默认 14px=antd seed fontSize 14(06 §2.2)× 1em(06 §4.2);strokeWidth 默认 2 = Lucide/Feather 社区惯例(未证实为官方默认,antd 图标为填充路径无 stroke-width,已在 effect/MDX 如实标注);color 默认 current(currentColor 即 antd 注入行为),accent=#1677ff/danger=#ff4d4f(seed colorPrimary/colorError,06 §2.2)。size/strokeWidth 为 CSS 变量型(--icon-size/--icon-stroke-width,stroke-width 为 SVG 继承属性设在 svg 根),color 为 JS 型(data-icon-color)。图标集 10 个 24×24 自绘描边图形(home/search/heart/star/bell/trash/download/user/plus/arrow),非任何官方库拷贝;另给一行 1em 行内对齐用法展示 antd width/height=1em 行为。"
+  },
+  {
+    "batch": "b6-basic",
+    "id": "components/tag",
+    "researchRef": "out/design-study/06-antdesign.md#4.3 Tag 与 §5.1 v5→v6 变化(交叉:out/research/07-components-patterns.md#35. APG 键盘界面实践(删除项后焦点移交)、#9. APG Alert(标签不作提醒)、#30. Von Restorff)",
+    "note": "来源=ant.design tag-cn(06 §4.3/§5.1 源码级核对:closable 默认 false;v6 以 variant filled|solid|outlined 默认 filled 取代 v5 bordered 布尔默认 true——本条目按任务给定沿用 v5 bordered 语义并在 effect/MDX 标注 v6 变化;antd 13 预设色无灰,灰=无 color 的 default 形态)。参数默认值:color 默认 gray;closable 默认 off;bordered 默认 on。色值:seed 主色红 #F5222D/橙 #FA8C16/绿 #52C41A/蓝 #1677FF(06 §1.2 seed.ts:3-20);浅底/描边/深字按功能色派生档位 Bg=阶1/Border=阶3/Text=阶9(06 §2.3⑤),阶值取 @ant-design/colors 8.0.1 官方 presets(本会话 npm tarball 解包实测 es/presets.js:red #fff1f0/#ffccc7/#820014,orange #fff7e6/#ffd591/#873800,green #f6ffed/#b7eb8f/#135200,blue #e6f4ff/#91caff/#002c8c;该文件与 06 §1.2 的十阶示例逐值一致交叉印证);antd Tag 内部 CSS 是否逐字用该档位未核对源码(已在 MDX 标注)。灰标签 #fafafa/#d9d9d9/文字 88%(06 §2.3⑤ 中性档)。三参数均 JS 型;删除动画 0.18s 只动 opacity/transform(近 motionDurationMid 0.2s,06 §3.1),reduced-motion 瞬时移除;关闭钮带 aria-label,删除后焦点移交剩余后一标签、空则回常驻恢复按钮(APG 07 §35)。"
+  },
+  {
+    "batch": "b6-basic",
+    "id": "components/typography",
+    "researchRef": "out/design-study/06-antdesign.md#4.4 Typography 与 §2.3① 字阶派生、§1.3 字体体系(交叉:out/research/07-components-patterns.md#34. APG 模式库总览)",
+    "note": "来源=ant.design typography-cn(06 §4.4 源码级核对:Title level 1|2|3|4|5 默认 1;Text type secondary|success|warning|danger 默认不设;ellipsis/copyable 默认 false;Paragraph ellipsis 支持 rows/expandable/suffix)+ docs/spec/font-cn(06 §1.3:主字号 14/行高 22、字重 400/500/强调 600、字阶 3-5 种建议)。参数默认值:level 默认 body(主字号 14/1.5714,genFontSizes 公式 size=round(14×e^((i-1)/5))、行高 (size+8)/size,06 §2.3①);h1-h4=38/30/24/20px、行高 1.23/1.2667/1.3333/1.4;caption=fontSizeSM 12/1.6667(官方 token,「caption」为 demo 命名,antd 无此命名档——已标注);type 默认 default(colorText 88%;secondary=65%,中性四档 88/65/45/25%,06 §2.3⑤;danger=#ff4d4f seed colorError,06 §2.2);ellipsis 默认 off(antd 默认 false)。三参数均 JS 型;阶梯区六档同屏静态展示,标本区标题用 role=heading+aria-level 表达层级避免向宿主页面注入重复 h1;省略三件套 white-space/overflow/text-overflow + title 全文提示;字重 h*=600(fontWeightStrong)/正文 400。"
+  },
+  {
+    "batch": "b6-form",
+    "id": "components/input",
+    "researchRef": "out/research/07-components-patterns.md#三、§36 键盘无障碍惯例与测试键位表(WebAIM)(交叉:一、§16 表单错误提示 10 准则(NN/g))",
+    "note": "antd Input props 默认值逐项取 out/design-study/06-antdesign.md §4.5 的 v6.7.1 核对结果(variant=outlined、type=text、size 档位 large|medium|small 默认不设、status=error|warning、allowClear 默认未开启、showCount 默认 false、count.max 超出标红不截断);尺寸三档 24/32/40 与字号 12/14/16 取 06§2.3 的 controlHeight/fontSize 派生档,colorBorder #d9d9d9、colorError #ff4d4f、colorWarning #faad14、占位 25% 中性透明度、圆角 6/4、水平内边距 12/8 均同出该报告;NN/g 错误就近提示与勿提前校验引自调研 07§16,焦点环禁忌引自 07§36。maxLength 参数默认 0=不限为 demo 取值(antd 不设 maxLength 即不限,06§4.5,非官方显式默认);焦点 ring 的 25% color-mix 为自绘示意(antd controlOutline 具体 alpha 调研未记载)。APG textbox URL 为任务指定引用(调研 07§34 的 30 模式清单未列 Textbox,URL 取 APG 标准路径)。MDX 小节顺序按任务要求:真实产品案例插在动效与交互之后(任务措辞「第三个 h2」与「放在动效与交互之后」存在歧义,以位置指令为准,共 5 个 h2)。"
+  },
+  {
+    "batch": "b6-form",
+    "id": "components/select",
+    "researchRef": "out/research/07-components-patterns.md#一、§5 选择器(Combobox):四种 autocomplete 行为(APG)",
+    "note": "APG combobox 行为(Down/Up 进出弹出层、Esc 探索不丢原值、弹出层不进 Tab 序列、select-only 形态)取调研 07§5 一手(listbox 模式同节引用);antd Select 默认值逐项取 06-antdesign.md §4.6(size 默认 medium、allowClear 默认 false、listHeight 256、placement bottomLeft、popupMatchSelectWidth true、单选默认);浮层阴影逐字取 06§2.3⑥ 浮层主阴影,选中底色 #E6F4FF=蓝色板第 1 阶、hover rgba(0,0,0,0.04)=FillTertiary(06§1.2/§2.3⑤)。demo 为自绘 listbox:触发器原生 button(role=combobox + aria-activedescendant),浮层 role=listbox,清空按钮为触发器的兄弟节点以避免嵌套交互元素;status 边框三档沿用 06§2.2 语义色。listbox URL 取 APG 标准路径(模式名在 07§34 清单内)。"
+  },
+  {
+    "batch": "b6-form",
+    "id": "components/switch",
+    "researchRef": "out/research/07-components-patterns.md#一、§6 开关(Switch):on/off 语义与「标签不随状态变」铁律(APG)",
+    "note": "APG switch 铁律(仅二态、标签不随状态变、Space 切换、aria-checked、成组 fieldset/legend)取调研 07§6 一手(URL 同节已核实);antd Switch 默认值逐项取 06-antdesign.md §4.7 v6.7.1 核对(checked/loading/disabled 均 false、size=medium|small 默认 medium,v5 为 default|small,§5.1 有对照);on 轨道 #1677ff=colorPrimary(06§2.2),过渡 0.2s=motionDurationMid、缓动=motionEaseInOut(06§3.1/02-official-design-specs §E1 交叉)。如实标注:demo 轨道/滑块像素(md 40×22、sm 28×16)与 off 轨道灰 rgba(0,0,0,0.25) 为自绘示意,调研未记载官方轨道尺寸 token,不作官方断言。demo 与参数面板双向同步:点击开关经 store.set 回写 checked,面板改动经订阅反映到开关;loading/disabled 下交互抑制并置 aria-disabled;spinner 与位移过渡均尊重 prefers-reduced-motion。"
+  },
+  {
+    "batch": "b6-form",
+    "id": "components/checkbox",
+    "researchRef": "out/research/07-components-patterns.md#一、§6 开关(Switch)(checkbox 第三态同节)+ §13 数据表格(Carbon 三态全选)",
+    "note": "第三态语义(checkbox 才允许半选,switch 不行)取调研 07§6,表头三态全选范式取 07§13(Carbon Data Table);键盘 Space 取 07§36(WebAIM 键位表)。antd Checkbox 默认值逐项取 06-antdesign.md §4.8 v6.7.1 核对(checked/disabled/indeterminate 默认 false、indeterminate 只控样式、Group value/defaultValue 默认 []);控件 16px=controlInteractiveSize(controlHeight/2,06§2.3④)、圆角 4px=borderRadiusSM(06§2.3②)、选中 #1677ff=colorPrimary。demo 双通道设置半选:input.indeterminate 经 ref 命令式设置(React 不透传)+ aria-checked=mixed;selectAll 参数与子项的联动为派生式——子项点击重算后回写 store,订阅侧仅当参数与派生不一致(来源为面板)时才广播给子项,避免回环;禁用经 fieldset 原生 disabled 属性整组生效。APG checkbox URL 取标准路径(模式名在 07§34 清单内);真实产品案例(Gmail 全选下拉/电商购物车/安装向导许可勾选)为编辑性概述,未写未核实的像素细节。"
+  },
+  {
+    "batch": "b6-form",
+    "id": "components/date-picker",
+    "researchRef": "out/research/07-components-patterns.md#三、§34 APG 模式库总览(30 个模式,Grid 承载月历网格思想)",
+    "note": "APG 无独立 date picker 模式,按任务要求以 07§34 清单中的 Grid 模式承载月历行列思想,MDX 与 a11y 均显式标注「自绘简化实现」(方向键仅月内 ±1/±7、无跨月翻页键,未实现 APG grid 全部键盘契约,已如实声明需上线前补全并 AT 实测);antd DatePicker 默认值取 06-antdesign.md §4.9 v6.7.1 核对:size 默认不设=32px/large 40px/small 24px(官方文档明示三个高度)、allowClear 默认 true(demo 保留清空按钮呼应)、placement bottomLeft、默认 en-US 经 ConfigProvider locale 挂 zh_CN;浮层阴影逐字取 06§2.3⑥、圆角 8px=borderRadiusLG(06§2.3②)、选中 #1677ff=colorPrimary。firstDay 默认 mon 与 lang 默认 zh 为任务规格/demo 配对取值(antd 实现层面随 locale 决定周起始,06§4.9,非官方 prop 默认);today 取运行时 new Date()(客户端岛屿,无跨日污染)。网格用 table(role=grid/row/gridcell + columnheader)承载,日格原生 button + roving tabindex,Esc 关闭回焦点触发器,点击外部关闭,动效尊重 prefers-reduced-motion。"
+  },
+  {
+    "batch": "b6-feedback",
+    "id": "components/toast",
+    "researchRef": "out/research/07-components-patterns.md#8-toast--全局轻提示mui-snackbar--antd-message",
+    "note": "来源:调研07§8(MUI Snackbar 非关键通知/role=alert/Esc 关闭;AntD message 顶部居中/默认3s/pauseOnHover/maxCount)+ §9(APG Alert:自动消失过快违反 WCAG 2.2.3)+ 06-antdesign.md §4.10(message duration 默认3、config.top 默认8、maxCount 默认不限制)。duration 500-6000ms 默认3000、placement 六方位(纵横组合,默认 top-center 对齐 antd 顶部居中)、maxCount 1-5 默认3(演示收敛值,已在 effect 中如实标注非官方默认)。demo 用 role=alert + 计时器 + 六方位 flex 对齐实现。"
+  },
+  {
+    "batch": "b6-feedback",
+    "id": "components/modal",
+    "researchRef": "out/research/07-components-patterns.md#3-对话框modal-dialogapg-模式",
+    "note": "来源:调研07§3(APG Dialog:困焦循环/Esc/初始焦点与归还规则/aria-modal 双条件)+ 06-antdesign.md §4.11(Modal width 默认520、Modal.method() 416、maskClosable 默认 true、centered 默认 false、keyboard 默认 true、zIndex 1000)+ §2.3(colorBgMask rgba(0,0,0,0.45)、boxShadow、borderRadiusLG 8)。任务规格 width 320-720 默认480:schema 取 480(任务指定),effect/mdx 如实标注 antd 官方默认 520/416,480 非官方默认。"
+  },
+  {
+    "batch": "b6-feedback",
+    "id": "components/drawer",
+    "researchRef": "out/research/07-components-patterns.md#4-抽屉drawer同上下文承载子任务",
+    "note": "来源:调研07§4(AntD Drawer 定位:边缘滑入承载同上下文子任务;keyboard 默认 true;6.2.0 focusable 焦点陷阱)+ 06-antdesign.md §4.12(placement 四方位默认 right、size 默认378/large736、旧 width/height 378 已废弃、mask 默认 true、push 默认 {distance:180})。thickness 单参数统一表达宽/高,默认378 取 antd size 默认档,范围240-560 为演示收敛(已标注)。transform 过渡 + prefers-reduced-motion 直达。"
+  },
+  {
+    "batch": "b6-feedback",
+    "id": "components/alert",
+    "researchRef": "out/research/07-components-patterns.md#9-alert不中断提醒与自动消失的风险apg",
+    "note": "来源:调研07§9(APG Alert:role=alert 播报/不夺焦点/避免自动消失 WCAG 2.2.3 与频繁打断 2.2.4)+ 06-antdesign.md §4.13(type 默认 info、banner 模式下默认 warning、showIcon 默认 false(banner 下 true)、closable 默认 false、banner 默认 false)+ §2.2(seed 功能色 success #52c41a/warning #faad14/error #ff4d4f/info #1677ff)+ §2.3⑤(色板阶1/阶3 派生规则,color-mix 近似已在文中标注)。"
+  },
+  {
+    "batch": "b6-feedback",
+    "id": "components/tooltip",
+    "researchRef": "out/research/07-components-patterns.md#34-apg-模式库总览30-个模式",
+    "note": "来源:调研07§34(APG 30 模式含 Tooltip 模式,https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/)+ 06-antdesign.md §4.14(placement 12向默认 top、trigger 默认 hover、arrow 默认 true、mouseEnterDelay 默认 0.1s、autoAdjustOverflow 默认 true)+ 03-bytedance.md(Semi 暗色 tooltip #373739 L67、z-index 体系 tooltip 1060 L137、Popover/Tooltip 0.1s 过渡 L155)。theme dark/light:antd 无此枚举(以 color 自定义),dark 默认取 antd 深色浮层事实默认(colorBgSpotlight rgba(0,0,0,0.85),06 §2.3⑤),light 在 effect/mdx 中如实标注「未证实为任何库默认」。"
+  },
+  {
+    "batch": "b6-data",
+    "id": "components/table",
+    "researchRef": "out/research/07-components-patterns.md#13. 数据表格(Data Table)(IBM Carbon)交叉:§17 空状态、§34 APG 模式总览(Table)",
+    "note": "数据表格原则(hover 恒开辅助扫读、不要嵌套表格、空态替换整表不保留表头)取调研 07§13/§17;ARIA 语义参照 07§34 记载的 APG Table 模式(https://www.w3.org/WAI/ARIA/apg/patterns/table/)。props 默认值优先对齐 out/design-study/06-antdesign.md §4.15(size 默认 large、bordered 默认 false),并经本地 antd 6.7.1 源码二次复核(components/table/index.zh-CN.md:129/:148,cellPadding 16/12·8/8 见 style/index.ts:457-462)。striped:antd 6.7.1 无此 prop(本地源码 grep 无 stripe/striped 命中),默认 off 取 TDesign Table stripe 的官方注释 @default false(Tencent/tdesign-vue-next packages/components/table/type.ts,本批 curl 实抓核验)。rowCount 默认 5 为演示值,effect 已注明。参数全部 JS 型(demo 订阅 store 切 data-* 属性),无 cssVar。"
+  },
+  {
+    "batch": "b6-data",
+    "id": "components/avatar",
+    "researchRef": "out/design-study/06-antdesign.md#4.16 Avatar(07-components-patterns.md 无头像专节;shape/size/Group 语义以 06 为一手)",
+    "note": "调研 07 无 Avatar 专节,故 researchRef 指向 ask 指定的优先源 out/design-study/06-antdesign.md §4.16;数值全部经本地 antd 6.7.1 源码复核:shape 默认 circle(index.zh-CN.md:44)、size 默认 medium 且像素基准 containerSize=controlHeight=32(avatar/style/index.ts:209)、字号 textFontSize=fontSize=14(:212,14/32≈0.4375)、组重叠 groupOverlapping=-marginXS=-8px(:220)、组描边 groupBorderColor=colorBorderBg(:221)、square 圆角走 seed borderRadius=6(:98-100/:118)、Group max={count} 折叠自 5.18.0(index.zh-CN.md:58)。groupCount 默认 4 为演示值(antd max.count 无官方默认),effect 已注明。size 为 CSS 型(--av-size),shape/groupCount 为 JS 型。07§35(共同区域)与本条无关,未引用。"
+  },
+  {
+    "batch": "b6-data",
+    "id": "components/badge",
+    "researchRef": "out/design-study/06-antdesign.md#4.17 Badge(07-components-patterns.md 无徽标专节;overflowCount/showZero/dot 语义以 06 为一手)",
+    "note": "调研 07 无 Badge 专节,故 researchRef 指向 ask 指定的优先源 out/design-study/06-antdesign.md §4.17;数值全部经本地 antd 6.7.1 源码复核:overflowCount 默认 99、超出拼 +(index.zh-CN.md:51,Badge.tsx:70/:112)、showZero 默认 false 故 count=0 隐藏(:52/:47)、dot 默认 false(:49)、offset=[number,number] 默认 -(:50)。任务参数名 max 对应 antd overflowCount——06§5.2 已核实 maxCount 在 5.x/6.x 均不存在(未证实命名),本条目如实采用任务契约名 max 并在 effect 注明对应关系。count 默认 8、徽标 20px/dot 8px 为演示值,effect/MDX 已注明。红色 #ff4d4f 取 antd colorError seed(06§2.2)。offset 为 CSS 型(--bd-offset 经 translate 消费),count/max/dot 为 JS 型;demo 的 +1/清零工具条经 store.set 与面板双向同步(b4 container-queries 先例)。"
+  },
+  {
+    "batch": "b6-data",
+    "id": "components/card",
+    "researchRef": "out/research/07-components-patterns.md#32. 格式塔·共同区域原则(Law of Common Region)(交叉:out/design-study/06-antdesign.md#4.18 Card)",
+    "note": "卡片的分组语义(边框/背景即容器分组)取调研 07§35 一手;props 默认值优先对齐 out/design-study/06-antdesign.md §4.18 并经本地 antd 6.7.1 源码复核:size 默认 medium(index.zh-CN.md:55)、hoverable 默认 false 且 Card.Grid 内默认 true(:52/:68)、variant 默认 outlined 取代 v5 bordered=true(:47)、cover 为 ReactNode 插槽默认 -(:49)。两组阴影直接采用 06§2.3 ⑥ 的实测 token(boxShadowTertiary 轻阴影 / boxShadow 浮层),浮起过渡 0.2s=easyOut/motionDurationMid(06§3)。sm/md 两档 padding 具体像素与 2px 浮起高度为演示值,effect/MDX 已注明(antd Card padding 像素规格调研未记载)。cover 默认 off 为演示默认(插槽无布尔默认),已注明。参数全部 JS 型(demo 订阅 store 切 data-* 属性),无 cssVar。"
+  },
+  {
+    "batch": "b6-navigation",
+    "id": "components/nav-menu",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(Menu/Menubar、Menu Button、Disclosure)、§35 键盘界面实践、§23/§29 Hick 定律与序位效应;交叉 out/design-study/06-antdesign.md §4.19 Menu",
+    "note": "旗舰条目,含用户三要素:①定义「将网站的信息架构分组归类并以导航的形式展示给用户,方便用户查找要获取的信息」写入 tagline 与 zh/en MDX 首段;②场景「提供流量分发入口」「网站各功能聚合」写入 schema.scenarios.use 前两项与 MDX;③真实产品案例「CSDN 顶部导航(一般含个人中心;二级导航聚合在下拉菜单;个人中心头像 hover 出现下拉菜单)」写入「真实产品案例」小节,并补充 GitHub 顶栏、飞书/钉钉工作台两个案例。props:theme 默认 light、trigger 默认 hover 取 antd Menu 官方默认(06-antdesign.md §4.19;hover 关闭延时对齐 subMenuCloseDelay 0.1s);mode 任务枚举为 horizontal/vertical——antd 官方默认 vertical,本条目默认 horizontal 以对齐 demo 要求的顶部导航条典型形态,schema effect 与 MDX 已两说并列注明为条目规格取值。demo 完整复现「顶部导航条 + 二级下拉(产品/文档聚合在下拉菜单)+ 右侧头像 hover 用户菜单」,grid 布局随 mode 切换侧栏形态;ARIA 按 2026-11-21 实抓的 APG menubar/menu-button/disclosure 模式(menubar 默认 horizontal、垂直需 aria-orientation=vertical;menu-button 页面实测给出 aria-haspopup/aria-expanded/aria-controls 三件套),demo 实现 disclosure 基线 + 弹层内方向键漫游 + Esc 归还焦点,完整 menubar 漫游在 a11y 字段注明生产补齐。配色引用 antd 6.7.1 已核对 token:#1677ff 主色、#e6f4ff 蓝板第 1 阶选中底、4% FillTertiary hover、88% 中性文字、#1d1d1d dark colorBgElevated、borderRadius 6/8、boxShadow 三段 token、zIndexPopupBase 1000、motionDurationMid 0.2s + motionEaseOut;prefers-reduced-motion 全部关闭动效。"
+  },
+  {
+    "batch": "b6-navigation",
+    "id": "components/tabs",
+    "researchRef": "out/research/07-components-patterns.md#§11 标签页(Tabs):自动激活 vs 手动激活(APG);交叉 out/design-study/06-antdesign.md §4.20 Tabs",
+    "note": "props 对齐 antd 6.7.1 官方默认:type 默认 line、position 默认 top(v6 tabPlacement 取代 v5 tabPosition,任务枚举收敛为 top/left,effect 已注明)、animated 官方默认为复合值 {inkBar:true, tabPane:false}——任务枚举为单开关 on/off,默认 on 取 inkBar 默认 true 的一半,面板过渡为条目规格扩展,schema effect 与 MDX 两说并列注明。demo:top/left 切换标签轴方位(left 时 aria-orientation=vertical、方向键换上下)、line(滑动 ink bar,offsetLeft/Width 实测对齐)/card(边框卡片、活动卡与面板连体)双形态、animated 开关 ink bar 0.2s 滑动与面板淡入。APG tabs 语义(调研 07§11):tablist/tab/tabpanel + aria-selected/aria-controls/aria-labelledby、roving tabindex、方向键漫游 + Home/End;面板内容全部预载故采用「选中随焦点」自动激活并按 §11 判据在 MDX 说明。真实产品案例:GitHub 仓库页头部标签、浏览器多标签、VS Code 编辑器标签组。配色 #1677ff/#4096ff(蓝板第5阶)/65%/88% 文字、#f0f0f0/#d9d9d9 边框、0.2s motionDurationMid;prefers-reduced-motion 关闭全部动效。"
+  },
+  {
+    "batch": "b6-navigation",
+    "id": "components/breadcrumb",
+    "researchRef": "out/research/07-components-patterns.md#§12 面包屑(Breadcrumb)(APG);交叉 out/design-study/06-antdesign.md §4.21 Breadcrumb",
+    "note": "separator 官方默认「/」取 antd 6.7.1(06-antdesign.md §4.21),任务枚举 / > ·;maxItems 为 number 2-5——antd 无此属性,MUI Breadcrumbs 有 maxItems(2026-11-21 经 fox_fetch 实抓 https://mui.com/material-ui/react-breadcrumbs/ 核验:官方示例 maxItems={2} 超出中间折叠为「…」,官方文档未记载默认值),本条目默认 3 为任务规格演示值,effect 已注明来源分层。APG 语义(调研 07§12):navigation landmark + aria-label、ol 有序列表、当前页 aria-current=\"page\" 且非链接、分隔符 aria-hidden(MUI 无障碍说明实抓印证)。demo:5 层样例路径(首页/资源/组件/导航/面包屑),点击任意上层节点回退(路径截断、内容联动),超 maxItems 中层折叠为可聚焦「…」按钮(aria-label「展开被折叠的 N 个层级」),展开后提供「收起 ↑」(aria-expanded=true),切换层级时重置展开态。真实产品案例:MDN 文档路径、Windows 资源管理器地址栏(面包屑+段间下拉)、电商类目路径。配色 65%/88% 文字、#1677ff hover、4% 填充、#d9d9d9 描边;无展开动画,入场动画带 prefers-reduced-motion 降级。"
+  },
+  {
+    "batch": "b6-navigation",
+    "id": "components/dropdown",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(Menu Button)、§35 键盘界面实践;交叉 out/design-study/06-antdesign.md §4.22 Dropdown",
+    "note": "三个 props 默认值全部对齐 antd 6.7.1 官方(06-antdesign.md §4.22):trigger 默认 ['hover']、placement 默认 bottomLeft(任务枚举收敛为四角 下左/下右/上左/上右,effect 注明官方 12 向与 autoAdjustOverflow 默认 true)、arrow 默认 false。MDX 与 schema.scenarios 写入「与 tooltip 的区别:dropdown 承载可点击的操作列表,tooltip 只承载只读说明」(APG menu-button 定义「opens a menu of actions or commands」,2026-11-21 实抓核验)。demo:文件行 + 「更多操作」按钮展开命令列表(重命名/移动到…/复制链接/删除),hover(0.1s 收起延时,对齐 antd Menu subMenuCloseDelay 官方默认)/click 双触发、四角 placement、arrow on/off 旋转小箭头;危险项 role=separator 隔开并 #ff4d4f 标红;浮层相对定位实现于 DemoStage 内(z-index 1000 = zIndexPopupBase)、document 级 mousedown 点击外部关闭、Tab 移出收起;APG menu-button 语义:aria-haspopup/aria-expanded/aria-controls、Enter/Space 键盘打开聚焦首项(e.detail===0 判别)、↑↓/Home/End 漫游、Esc 关闭焦点回触发钮。真实产品案例:GitHub 头部「+」与头像按钮、Google Docs 工具栏字号控件、后台表格行「更多」。配色 #fff 浮层底、圆角 8、boxShadow 三段 token、#e6f4ff 按钮展开底;prefers-reduced-motion 关闭过渡。"
+  },
+  {
+    "batch": "b6-other",
+    "id": "components/empty",
+    "researchRef": "out/research/07-components-patterns.md#§17 空状态(Empty States)(IBM Carbon + Ant Design)",
+    "note": "Carbon 空态三分类(no data/user action/error management)、解剖结构(插画/正向标题/下一步/可选 CTA)与『空态替换原元素』最佳实践取自调研 07§17(含一手 URL carbondesignsystem.com/patterns/empty-states-pattern 与 ant.design/components/empty);antd props 数值(image 默认 PRESENTED_IMAGE_DEFAULT 121×116、内置 PRESENTED_IMAGE_SIMPLE 55×35、description 由 locale 提供『暂无数据』)取自 out/design-study/06-antdesign.md §4.23(6.7.1 源码核对,§5.2-6 标注 description 为实现层默认)。simple 默认 off 对齐 antd image 默认档;footerAction 非官方 props(antd 为 children 可选插槽),demo 默认 on 为展示完整解剖的编辑性选择,已在 effect 文案如实标注。"
+  },
+  {
+    "batch": "b6-other",
+    "id": "components/watermark",
+    "researchRef": "out/design-study/06-antdesign.md#§4.24 Watermark(https://ant.design/components/watermark-cn)",
+    "note": "rotate 默认 -22、gap 默认 [100,100]、单格 120×64、font 默认 rgba(0,0,0,.15)/16px/400/sans-serif、zIndex 9、inherit true、MutationObserver 防篡改、5.18.0+ 容器强制 overflow:hidden 均取自 06-antdesign §4.24(6.7.1 源码核对);opacity 默认 0.15 对齐 antd font.color 的 alpha,TDesign --td-text-color-watermark rgba(0,0,0,10%)/暗色 rgba(255,255,255,10%) 取自 out/design-study/02-tdesign.md §1.6(一手 _light.less/_dark.less)。watermark 未见于调研 07,故 researchRef 指向 06-antdesign §4.24。content 三档为 demo 预设文案(antd content 为任意 string/数组、image 优先),已如实标注为编辑性选择;demo 采用 CSS/DOM 瓦片方案,MDX 内写明与 canvas→dataURL(antd 官方路线)的取舍对照。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/auto-fit-minmax",
+    "researchRef": "out/research/05-layout-typography.md §一.3(minmax/auto-fit 流式网格:repeat(auto-fit, minmax(250px, 1fr)) 为 CSS-Tricks「顶级技巧之一」;auto-fill 保留空轨道 / auto-fit 回收空轨道;轨道关键字 minmax(10px,1fr)/min-content/max-content)+ §一.5 引用的 WebKit 官方示例(gap: 16px)+ §一.2(Baseline 2017-10)+ §9/§10(bento 拼装惯例与 Intrinsic Web Design 抓手)+ out/design-study/11-modern-completion.md §4B(可复用片段)",
+    "note": "参数:minTrack 100-360px 默认 250(调研 05§3 经典配方 minmax(250px,1fr))/gap 4-32px 默认 16(WebKit 官方示例 05§5)/width 220-960 默认 800(演示基准值,配 250px 恰解析 3 轨道,已在 effect/MDX 标注)/mode enum(auto-fill/auto-fit,JS 型 data-mode 切换 repeat() 字面量)/itemCount 1-12 默认 2(少于轨道数正是两关键字产生可见差异的场景)。demo 含轨道标尺,按 (width+gap)/(min+gap) 向下取整解析轨道数并如实标注「计算值」,auto-fit 档标记「回收 0px」轨道;auto-fill/auto-fit 差异机制逐字出自调研 05§3。案例 3 个全部有调研出处:CSS-Tricks 完全指南(05§3)、BentoGrids(05§9)、Jen Simmons Intrinsic Layouts(05§10)。prefers-reduced-motion 关闭入场与徽标过渡。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/subgrid",
+    "researchRef": "out/research/05-layout-typography.md §一.4(Subgrid:grid-template-columns/rows: subgrid 继承父网格轨道定义;Baseline Widely available 自 2023-09)+ §一.5 引用的 WebKit 官方示例(gap: 16px)",
+    "note": "参数:axis enum(rows/columns,JS 型 data-axis 切换两套 DOM 与声明)/gap 8-32px 默认 16(CSS 型 --sg-gap,WebKit 官方示例)。demo 左右双面板对照:subgrid 面板(rows 档三卡各跨 3 条父行轨道声明 grid-template-rows: subgrid;columns 档每行卡片 grid-column: 1/-1 声明 grid-template-columns: subgrid)vs independent 面板(auto auto auto 独立轨道回退形态)——页脚错位/对齐一目了然。「换长度」按钮循环三档正文档位,真实 DOM 文本驱动行高,不用固定高度伪造对齐(验收红线写入 promptTemplate)。Baseline 2023-09 出自调研 05§4;Chrome 117 版本号按 Baseline 日期表述并注明调研正文只记日期。案例 2+1:MDN Subgrid 指南(05§4 来源)、设计系统接入页面网格与杂志跨栏排版标注为编辑性内容。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/position-sticky",
+    "researchRef": "out/research/05-layout-typography.md §一.7(position: sticky;top: 20px 触达最近滚动祖先偏移阈值后停留、不脱离文档流;Baseline 2015-07;MDN Layout Cookbook 收录 Sticky footers 与 Split navigation 配方)",
+    "note": "参数:top 0-96px 默认 20(CSS 型 --sticky-top,调研 05§7 示例值)/trap enum(off/on,JS 型;on 档在滚动内容与吸顶标题之间插入 overflow:hidden 祖先,复刻「最近滚动祖先被劫持→sticky 失效」的最常见生产事故,MDX 明确标注这是结构问题非兼容性 bug)。吸顶状态由真实滚动监听驱动(标题矩形与容器顶部距离≤阈值),不用定时器伪造;「回到顶部」按钮瞬时滚动不做平滑动画。父容器界定粘滞范围、实底背景防穿透等经验要点写入 MDX。案例:MDN Cookbook 两配方(05§7 记载)+ 分组标题吸顶/表格表头吸顶标注编辑性内容。prefers-reduced-motion 关闭阴影与徽标过渡。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/safe-area",
+    "researchRef": "out/research/05-layout-typography.md §二.15(safe-area-inset 环境变量:env() 四向带回退值;viewport-fit=auto|cover 为 WebKit 官方记载;env() 于 iOS 11 以 constant() 引入、STP 41/iOS 11.2 beta 起改名;MDN env() 页收录 titlebar-area-* 与 viewport-segment-*)+ §二.16(viewport-segments 实验性非 Baseline,demo 未使用)",
+    "note": "参数:insetTop 0-60 默认 44 / insetBottom 0-60 默认 34(JS 型模拟 env(),桌面浏览器 env() 实测为 0——44/34px 为 iPhone 时代社区常见值,调研 05§15 只记机制未记数值,已逐处标注「社区常见值,未证实」)/viewportFit enum(auto/cover,取值即 WebKit 官方记载)/applyEnv enum(on/off,off+cover 复刻「铺满全屏却不留边」典型事故:页头顶进刘海、操作栏压进 Home 指示条)。demo 设备框刘海与 Home 指示条 aria-hidden 装饰;CSS 演示「固定 padding 在前 + calc(env()) 在后」级联回退写法;auto 模式=系统自动内缩恒留边。案例 3 个:WebKit iPhone X 官方博客(05§15 来源)、桌面 PWA titlebar-area-*(MDN env() 页,05§15)、全屏沉浸页标注社区通用做法。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/grid-lanes",
+    "researchRef": "out/research/05-layout-typography.md §一.5(Grid Lanes:css-grid-3 草案定义、未放置条目进剩余空间最多的列、WebKit 官方语法 display: grid-lanes + repeat(auto-fill,minmax(250px,1fr)) + gap:16px、STP 234 试用、item-flow 提案已弃、Firefox 时间表未查到)+ out/design-study/11-modern-completion.md §4B(fit-tolerance:normal|<length-percentage>|infinite;grid-lanes/inline-grid-lanes;双写降级写法 display:grid; display:grid-lanes; 为规范原文;BCD display.json grid-lanes experimental:Safari/iOS 26.4、Firefox Nightly preview、Chrome 未支持;Safari 27.2 仍在改名属性;gridlanes.webkit.org 教程)",
+    "note": "参数:minTrack 120-400px 默认 220(11§4B 片段;effect 注明 WebKit 示例为 250px 变体)/gap 默认 16(WebKit 官方示例)/engine enum(grid-lanes 双写声明 / columns 多列兜底,JS 型)。支持现状如实:browserSupport 与 MDX 逐项标注「实验性,Safari 26.4+/Firefox Nightly preview/Chrome 未支持,item-flow 已弃,Safari 27.2 仍在改名,语法未冻结」。demo 以 CSS.supports('display','grid-lanes') 运行时检测并如实报告当前路径(原生泳道 / 普通网格回退——行带错位正是泳道要解决的问题);columns 档 break-inside:avoid。案例 3 个全部有调研出处:Pinterest(css-grid-3 草案点名,05§5)、gridlanes.webkit.org(11§4B)、Chrome 团队 masonry 博客加注(05§5)。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/masonry-columns",
+    "researchRef": "out/design-study/11-modern-completion.md §4A(CSS Multi-column:columns/column-count/column-width/column-gap/column-rule/column-span;列盒为片段、内容沿列流动;顺序按列排布为 MDN 明确局限;Level 2 column-height/column-wrap/::column 草案)+ §4B 可复用片段(columns: 4 220px、column-gap: 16px、break-inside: avoid、.wall 标注全平台可用老方案)",
+    "note": "参数:colMin 120-400px 默认 220(11§4B 片段)/gap 默认 16(同片段)/rule enum(none/line,JS 型 column-rule)。demo 顺序徽标 01…09 直观暴露「按列填充(自上而下再换列)」的顺序语义——徽标即 MDX 记载局限的可视化,不伪装行序;支持现状如实:核心属性全平台广泛可用、Level 2 仍草案勿依赖。a11y 强调 DOM 顺序=栏序与 WCAG 1.3.2 的关系、Tab 顺序随列数变化、卡内禁放跨列 fixed/absolute。案例:报章正文分栏(MDN 模块页原文)、零 JS 图片墙(社区常用,11§4B 片段标注)、作为 grid-lanes 兜底(11§4B 片段原样组合,标注编辑性组合)。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/holy-grail",
+    "researchRef": "out/research/05-layout-typography.md §一.2(CSS Grid + grid-template-areas 为圣杯标准实现;经典字符串 \"header header\" \"sidebar main\" \"footer footer\";每字符串一行、同名 token 合并命名区域;MDN Layout Cookbook 未设 Holy Grail 专页已验证检索无此条目;Baseline 2017-10)+ §一.3 来源 CSS-Tricks 完全指南",
+    "note": "参数:layout enum(desktop-left/desktop-right/stacked,JS 型——grid-template-areas 字符串值不保证可走 CSS 变量,按 container-queries 条目同款惯例订阅后重写 areas/列定义,零 DOM 改动)/gap 8-32px 默认 16(演示基准值,社区常见未证实,已标注)/sideWidth 120-280px 默认 200(演示基准值,已标注)。demo 读数区实时显示当前 grid-template-areas 声明,「改字符串就重排」一眼可见;三档 areas 字符串均矩形(2×2 / 1×4);a11y 强调 DOM 顺序恒定、读屏顺序不随视觉重排(WCAG 1.3.2)、侧栏前置需配跳转链接。案例:MDN grid-template-areas 参考页(05§2 来源,含「无 Holy Grail 专页」已验证事实)、文档站/MDN 自身骨架(编辑性)、CSS-Tricks 完全指南(05§2/§3 收录)。"
+  },
+  {
+    "batch": "b10-layout",
+    "id": "layout/anchor-positioning",
+    "researchRef": "out/design-study/11-modern-completion.md §1(属性族 anchor-name/position-anchor/anchor()/anchor-size()/position-area/position-try-fallbacks/order/@position-try/position-visibility/anchor-center/anchor-scope/全局 anchor 属性;两套写法片段 A anchor() 函数式 calc(anchor(bottom)+8px) 与片段 B position-area+@position-try+position-visibility:anchors-visible;@supports (anchor-name: --a) 检测;支持:Chrome/Edge 125(2024-05)、Safari/iOS 26(WWDC25 预告,首个 beta 不含 position-visibility)、Firefox 147(2026-01-13 发布说明)、position-visibility 与 flip-x/flip-y 与伪元素增补 Safari 26.2、zoom/transform 定位时序修正 Chrome 144/Safari 27/Firefox 未支持)+ §10 签名巧思 1(锚点气泡零 JS 定位)",
+    "note": "参数:area enum(bottom/top/right/left center,JS 型——生成 position-area 声明并在回退路径换算坐标)/offset 4-48px 默认 8(CSS 型 --ap-offset,11§1 片段 A 的 8px)/tryFallback enum(on/off,JS 型生成/移除 position-try-fallbacks 与 @position-try 规则)。支持现状如实逐项写入 browserSupport 与 MDX(含 Safari 26 首个 beta 不含 position-visibility、26.2 增补、Firefox 147 引文、zoom/transform 修正未覆盖 Firefox)。demo 双路径:CSS.supports('anchor-name: --a') 原生支持走纯 CSS 锚定(anchor-name→position-area→@position-try→position-visibility 全链),否则 getBoundingClientRect 的 JS 回退(同一套 area 语义与翻面逻辑),实时如实报告当前路径;按钮 aria-expanded/aria-describedby 关联,MDX 强调可达性归 popover/dialog 语义、anchor 只管位置。案例 3 个全部为调研记载来源:MDN 模块页、Chrome for Developers 教程、WebKit WWDC25 与 Firefox 147 发布说明(标注为官方教程/发布说明口径)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/measure-line-length",
+    "researchRef": "out/research/05-layout-typography.md §三#19 行长 + §四#18(45–90 字符,Butterick 原文一手核对)",
+    "note": "参数 measure(ch)/fontSize(px)/align(left|justify)。默认 65ch 标注为「社区常见惯例,未证实」;已核实区间 45–90 写入 tagline/origin/mdx。demo 用逐字符 span + offsetTop 实时统计行数与最长/平均行,45–90 区间带落针;中文样例只展示换行不给判定(中文行长指导值调研未核实)。sources: practicaltypography.com/line-length.html(调研已核)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/wcag-text-spacing",
+    "researchRef": "out/research/05-layout-typography.md §三#18 WCAG 2.2 SC 1.4.12 Text Spacing(W3C 理解文档原文一手核对)",
+    "note": "四比率可调参数:lineHeight(无单位,阈值 1.5)/paragraphGap(em,阈值 2em)/letterSpacing(0.12em)/wordSpacing(0.16em),全部 cssVar。demo 实时显示四项达标徽标 + 「设为 WCAG 阈值」按钮经 store.set 写回(面板订阅同步);词距对无空格分词中文无效已注明(CSS 语义)。sources: w3.org/WAI/WCAG22/Understanding/text-spacing.html(调研已核)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/cjk-typography",
+    "researchRef": "out/research/05-layout-typography.md §三#22 clreq + §三#23 text-autospace + §四#21/22;标点挤压小节锚点 https://www.w3.org/TR/clreq/#punctuation_width_adjustment 于 2026-11-22 直接抓取核对(本批次补核)",
+    "note": "四参数:autospace(normal|no-autospace,Baseline 2025-11)/indent(2em,clreq 标准)/align(justify,行尾对齐原则)/punctTrim(text-spacing-trim:normal|trim-start|space-first|space-all)。text-spacing-trim 支持数据为本次新增核对:BCD css/properties/text-spacing-trim.json @main 2026-11-22:Chrome/Edge 123+,Firefox/Safari 未支持(实验性)。demo 用 CSS.supports 实时显示两新属性支持态;未知属性声明被解析器忽略,无降级成本。sources: w3.org/TR/clreq/ + MDN text-autospace(均调研已核)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/font-display-strategy",
+    "researchRef": "out/research/05-layout-typography.md §三#21 font-display 与 FOUT/FOIT(MDN + web.dev font-best-practices 原文一手核对:五档语义 + 数值表 Block 2–3s/无限、Swap 0ms/无限、Fallback 100ms/3s、Optional 100ms/无)",
+    "note": "参数 display(五档枚举,JS 型——font-display 是 @font-face 描述符不能经 cssVar 生效,已在 effect/mdx 注明)+ loadDelay(0–3000ms,模拟网络延迟,标注「演示参数非规范值」)。demo 为与数值表等价的状态机(block/swap/fail 相位判定纯函数),时间轴 0–3.5s;prefers-reduced-motion 时不播扫动、一次推进到最终态。auto 演示按 100ms 处理并标注「浏览器自定义」;block 取上界 3s 并注明。sources: MDN font-display + web.dev font-best-practices(均调研已核)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/text-wrap-balance",
+    "researchRef": "out/design-study/11-modern-completion.md §2 text-wrap: balance 与 pretty(MDN 原文引述 + BCD css/properties/text-wrap.json)",
+    "note": "参数 headingWrap(默认 balance)/bodyWrap(默认 pretty)/width(演示 30ch,标注演示值)。支持现状逐档引用 11§2:balance=Chrome 114/Firefox 121/Safari 17.5;pretty=Chrome 117/Safari 26/Firefox 未支持;balance 行数上限 Chromium ≤6 行、Firefox ≤10 行(MDN 原文);简写 Baseline 2024-03。demo 用 CSS.supports 实时探测本浏览器 balance/pretty 支持态 + 标题逐字符 span 统计各行字数与末行孤字警示。sources: MDN text-wrap + BCD text-wrap.json(11 补研已核)。"
+  },
+  {
+    "batch": "b11-type",
+    "id": "type/drop-cap-initial",
+    "researchRef": "本批次新增核对:BCD css/properties/initial-letter.json @main 2026-11-22 抓取(11 补研方法论);规范锚点 https://drafts.csswg.org/css-inline/#sizing-drop-initials 取自 BCD 记录 spec_url",
+    "note": "参数 lines(默认 3,标注社区惯例未证实)/sink(默认 3,demo 以 min(sink,lines) 钳制非法组合,语义细节注明「逐字语义未核对」)/technique(enum JS 型:initial-letter|float 兜底)。支持数据:Chrome/Edge 110+;Firefox 未支持(bugzil.la/1223880);Safari 9+ 带 -webkit- 前缀、无前缀未发布(WebKit bug 229090);iOS Safari 部分实现无小数值(bug 296785)。float 兜底字号换算(×1.1em、行高 0.85)标注社区近似做法未证实;@supports not ((initial-letter:3) or (-webkit-initial-letter:3)) 双前缀检测豁免 Safari。sources: BCD initial-letter.json + css-inline 规范锚点(本次核对)。"
+  },
+  {
+    "batch": "b12-color",
+    "id": "color/p3-wide-gamut",
+    "researchRef": "out/research/06-color-theming.md#§一.3 Display P3 与广色域 CSS(+§一.1 oklch 参数口径、§一.2 Evil Martians 色相/C 上限)",
+    "note": "P3 Lab 色域体积 1.233M vs sRGB 0.820M(≈1.5×)、另一口径 sRGB≈35% 可见色/P3+30%、渐进增强三件套(sRGB 兜底+@supports (color: color(display-p3 1 0 0))+@media (color-gamut: p3))、color-gamut 取值包含关系与 Baseline 2023-02、Chrome/Safari 实际裁剪 RGB 的警示、stylelint-gamut 工具——全部取自调研 06§3/§1/§2。hue 默认 145(绿区)与 hue 映射(红≈20/黄≈90/绿≈140/蓝≈220/紫≈320)、C 上限 0.5(MDN,100%=0.4)与实测 0.37 取 §1/§2;chroma 默认 0.3 为「演示 L=0.8/绿区越域」的教学值(非官方配方,标注为演示)。demo 内嵌 CSS Color 4 官方转换矩阵(oklch→sRGB/XYZ→P3),离线 roundtrip 验证:oklch(1 0 0)→P3=白、sRGB #FF0000→oklch 0.6280/0.2577/29.23 与规范值一致;MDX 中 0.30→0.252 钳制与 P3 坐标 0.385/0.924/0.321 均为该实现实测输出。真实产品案例:Tailwind v4 'Modernized P3 color palette'(§4 已核)、Radix P3 宣称(§8 已核)、oklch.com/stylelint-gamut 工具链(§2 已核)。"
+  },
+  {
+    "batch": "b12-color",
+    "id": "color/semantic-token-layers",
+    "researchRef": "out/research/06-color-theming.md#§二.10 语义色 Token 三层架构(佐证:§19 Primer 色盲主题、§7 Android 语义 role)",
+    "note": "9 套官方主题清单(light/dark/dark-dimmed/light-high-contrast/dark-high-contrast/light-colorblind/dark-colorblind/light-tritanopia/dark-tritanopia)、primitive→semantic→component 分层与命名示例(base.color.blue.3 / bgColor-default / fgColor-muted / borderColor-accent.muted)、W3C DTCG $value/$type/$extensions、官方 alpha 变换原形 { $value: '{base.color.blue.3}', alpha: 0.4 }、@-hack(bgColor.accent.@→bgColor-accent)、style-dictionary 编译、Android「语义化分配 color role 而非具体值」佐证——全部取自调研 06§10(Primer README 一手)。demo 各主题颜色值为演示映射(非官方 hex),schema.effect/MDX/面板文案三处均如实标注;demo 亮侧基座复用调研已核 M3 官方基线值(#6750A4/#D0BCFF/#FFFFFF/#381E72,§7;表面 #FFFBFE/on-surface #1C1B1F 换算 oklch 为本会话实测 0.992 0.006 334 / 0.225 0.008 297);colorblind/tritanopia 演示 accent 移蓝区 220° 依 Evil Martians 色相映射(§2),标注演示映射。真实产品案例:GitHub.com 9 套主题实装(§10/§19)、Android Dynamic Color(§10 佐证)、style-dictionary 生态(§10)。"
+  },
+  {
+    "batch": "b12-color",
+    "id": "color/m3-tone-surfaces",
+    "researchRef": "out/research/02-official-design-specs.md#§B6 Color roles + §B7 Tone-based surfaces(机制:out/research/06-color-theming.md#§二.5 HCT/§7 M3 基线/§14 暗色提亮)",
+    "note": "五档角色命名 surface container lowest/low/(container)/high/highest、2023-02 与 elevation 解耦、角色成对 3:1 对比保证取自调研 02§B6/§B7(m3.material.io 官方博客 URL 已核录);Tone 0-100=CIE L*、13 档、核心 5 板取 06§5;M3 基线值 #FFFBFE/#1C1B1F/#6750A4/#D0BCFF(≈tone 80)取 06§7;暗色层级提亮方向以 Apple base/elevated 同构佐证(06§14)。官方逐档 tone 值(如亮色 100/96/90/92/94)经全库检索确认不在任何调研文件中——schema/MDX 明确标注「社区常见值,未证实」,demo 改用单调演示 L 阶梯(亮降深升)不冒认该表;hue 默认 320 依 Evil Martians 紫≈320(06§2,oklch 刻度;#6750A4 的 HCT 299 为 hct-tonal-palette 条目实测,已注明刻度差异);chroma 默认 0.02 为演示中性值。真实产品案例:Android 12+ Material You(02§B7/06§6)、Material Theme Builder(06§7 官方工具)、Radix 步 1-3 同构(06§8,类比标注编辑性)。"
+  },
+  {
+    "batch": "b12-color",
+    "id": "color/color-psychology-ui",
+    "researchRef": "out/research/06-color-theming.md#§二.9 60-30-10(hype4)+ §五.18 APCA 浅底疲劳 + §一.2 Evil Martians L 规则 + §二.7/§三.14 M3 暗色 accent 基线;out/design-study/11-modern-completion.md#§6 Neo-Brutalism HubSpot 警示",
+    "note": "本条为编辑性总结条目:暖冷/饱和/明度的情绪与行为叙事在调研库中无一手实证,schema.origin/MDX/demo 注释区全部标注「编辑性总结,未证实」。可证实的相邻事实逐条挂调研出处:强调色承担焦点/CTA 与暗色避免过度饱和(hype4 60-30-10,06§9)、APCA 浅色底长时间阅读疲劳专门章节(06§18)、L=0.8 配黑字/L≥0.87 背景配黑字都好/C=0.17 示例/色相映射红20黄90绿140蓝220紫320(Evil Martians,06§2)、M3 暗色 accent 提亮降饱和 #6750A4→#D0BCFF(06§7/§14)、WCAG 4.5:1/3:1 不得四舍五入(06§17)。默认值 L=0.87/C=0.17/H=20 逐个标注出处;demo 内嵌 WCAG 公式实时算黑白字对比度(转换矩阵同 p3 条目,离线 roundtrip 验证,oklch(0.87 0.06 90) 实测对黑 15.31:1 印证 §2 规则),暖冷判定按 ≤90° 暖/>90° 冷并给出映射口径。真实产品案例:Spotify 60/30/30/绿(LogRocket 例证,06§9)、M3 暗色 accent 官方基线(06§7)、Neo-Brutalism 高饱和吸睛+HubSpot 可访问性警示(11§6)。"
+  },
+  {
+    "batch": "b12-color",
+    "id": "color/theme-transition",
+    "researchRef": "out/design-study/11-modern-completion.md#§8 主题切换过渡(View Transitions 方案)",
+    "note": "Chrome 官方配方逐字收编:startViewTransition 包换肤回调、ready 后对 ::view-transition-new(root) 做 clip-path circle 从点击坐标扩散、endRadius=hypot(max(x,w-x),max(y,h-y))、duration 500/easing 'ease-in'、官方降级 if(!document.startViewTransition) 直切、::view-transition-old/new(root){animation-duration:0.3s} 自定义交叉淡化与「animation:none; mix-blend-mode:normal 阻止默认交叉淡化」、prefers-reduced-motion 包裹建议——全部取自 11§8(Chrome 文档原文);API 支持 Chrome/Edge 111、Safari 18、Firefox 144(match-element 137/144/18.4)与 light-dark() 三引擎 Chrome/Edge 123/Firefox 120/Safari 17.5、Baseline 2024-05-13 亦取 11§8。easing 默认 [0.42,0,1,1] 为 ease-in 的标准关键字映射(示例原词 ease-in,MDX 注明映射关系)。demo 与既有 motion/view-transitions 条目差异化分工:本条只做 root 快照换肤表演(不赋 view-transition-name),MDX 已互相指认;::view-transition 伪元素树挂在 html 下故 duration/easing 按 vt 条目既有惯例镜像 :root、卸载清理;circle 档阻断默认交叉淡化按文档写法以 html[data-tt-reveal=circle] 作用域落 CSS。亮侧 token 用 M3 官方基线(06§7),暗侧表面为演示值(官方暗 surface 未在调研逐值列出,已标注);第三条真实产品案例为编辑性总结(社区教程改写官方配方,未逐一核实),前两条(Chrome 文档内置演示、web.dev light-dark 配套)为 11§8 已核来源。"
+  },
+  {
+    "batch": "b13-styles",
+    "id": "styles/maximalism",
+    "researchRef": "out/research/03-visual-style-trends.md §8 Maximalism + out/design-study/11-modern-completion.md §7 极繁主义参数化特征 + §7 表内极简基准列(对照本库 minimalism 条目)",
+    "note": "六参数:hues(每屏色相数 2-8 默认 5)/layers(装饰层叠 1-6 默认 3)/fontMix enum(三族/双族)/typeScale(字阶 ×1.333)/gap(缝隙 12px)/tilt(±2°)——后者四值与 ≥5 色相、≥3 层全部为补研 11§7 建议值(报告明示「经验值——无官方数值标准」,effect/MDX 已标注);八枚撞色 hex 为本条目基准设定(调研未记载色值,已标注),排序即 hues 裁剪次序,Shuffle 按钮旋转色序为本地状态。fontMix/layers/hues 为 JS 型(demo 订阅 store),typeScale/gap/tilt 走 CSS 变量(--mx-step/--mx-gap/--mx-tilt)。可读性红线(正文 45-75ch、放大一倍不滚动、行高下限 1.25)出自补研 11§7 引 WCAG 1.4.8;撞色只落在 marker 划线与贴纸上、正文恒墨色,规避色相文字对比不可控问题。案例 3 个全部出自调研 03§8(Diko/Ellen Porteus/Glitche)。prefers-reduced-motion 关闭入场与贴纸过渡;装饰层全 aria-hidden。"
+  },
+  {
+    "batch": "b13-styles",
+    "id": "styles/classic-brutalism",
+    "researchRef": "out/research/03-visual-style-trends.md §5 Web Brutalism + out/design-study/11-modern-completion.md §6 经典粗野主义 vs Neo-Brutalism 判据差异(99designs/brutalistwebsites.com/HubSpot)+ 对照本库 neo-brutalism 条目",
+    "note": "四参数:borderWidth(1-4px 默认 2,调研记载区间 1-2px 取上限)/linkColor(#0000EE 浏览器默认链接蓝,调研逐字)/typeface enum(system=Times New Roman 系系统默认字[补研判据]/mono=等宽栈[调研 03§5])/hoverInvert enum(硬反色零过渡[调研] /仅下划线对照)。与 neo-brutalism 判据差异(阴影无 vs 硬偏移、黑白灰 vs 高饱和、系统字 vs 展示字体、诚实裸露 vs 风格化玩耍)写入 zh/en MDX 样式节速查;radius=0/box-shadow none/transition none 为风格铁律写死不入参。borderWidth/linkColor 为 CSS 变量型,typeface/hoverInvert 为 JS 型(demo 订阅 store,demo 内切换按钮走 store.set 保持与参数面板单一数据源)。star 2(四参数,风格本身反参数化)。案例 3 个全部出自调研 03§5(Craigslist/Hacker News/Gucci PF18+AWGE,含「功能型常青 vs 风格型易过时、2026-03 峰值 3.6% 回落」调研结论)。无任何 CSS 新特性依赖,fallback 即「删掉 CSS 仍可读」的本体承诺。"
+  },
+  {
+    "batch": "b13-styles",
+    "id": "styles/spatial-ui",
+    "researchRef": "out/design-study/11-modern-completion.md §5 Spatial UI:visionOS 设计语言要点与 Web 借鉴(HIG 官方 Markdown 接口 2026-11 抓取 + WebKit 博客 Safari 26.2)+ out/research/03-visual-style-trends.md §1(backdrop-filter 支持面数据)",
+    "note": "六参数:blur(20px)/saturation(1.4×)/radius(24px)/shadow(0 12px 40px rgba(0,0,0,.18) 单层)——四值全部为补研 11§5 可复用玻璃片段数值(报告明示「本研究映射建议,非官方规范,经验值」,effect/MDX/片段出处三处标注);fill(oklch(1 0 0 / 0.55))为片段 color-mix(in oklab, Canvas 55%, transparent) 的参数化近似(Canvas 语义无法进滑杆,已注明);immersion enum(shared/full)对应 HIG 官方概念 Shared Space/Full Space 与「最小沉浸级别」原则,JS 型 data-immersion,其余五个全 CSS 变量型。system=apple(HIG 官方来源)。深度即层级(单层大阴影非密集描边)、注视即悬停(大热区+::after 光圈+:focus-visible 白环)、环境为静止参照系(仅窗口动,合成器属性)三条 Web 转译纪律进 MDX;HIG 原文引语(a limitless canvas/最小沉浸/避免压倒性运动/内容置于视野内)逐字引用。案例 3 个:HIG Shared Space 系统窗口、数字表冠×Passthrough、Safari 26.2 WebXR+WebGPU(全部出自补研 11§5,未杜撰第三方产品)。fallback=提高填充为实色窗口保留阴影层级(@supports 兜底)。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/m3-duration-tokens",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 Duration 与编排(Material 3 官方建议:tokens-specs 页令牌表 + applying-easing-and-duration 页准则)",
+    "note": "四档 16 令牌数值逐字取调研 04§1.4:short1–4=50/100/150/200、medium1–4=250/300/350/400、long1–4=450/500/550/600、extra-long1–4=700/800/900/1000ms;官方示例(选择控件 short4 200ms+Standard、FAB→Sheet medium4 400ms、Card→全屏 long2 500ms+Emphasized)与「按面积选档/进入>退出/>600ms 仅限无输入环境转场」准则同源。demo 的 tier/step 为 JS 型枚举,采样卡片以所选令牌重播(曲线固定 Standard;Emphasized 官方标注 CSS 无等价,兜底口径写入 schema/MDX)。>600ms 警示 chip 实时标注官方口径;reduced-motion 直出终态。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/easing-pairs",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 官方建议配对表(applying-easing-and-duration 页)+ tokens-specs 页 CSS 贝塞尔值 + §8 未证实事项(Emphasized CSS 无等价)",
+    "note": "六组配对(Emphasized 500 / Emph-decel 400 / Emph-accel 200 / Standard 300 / Std-decel 250 / Std-accel 200 ms)与五组 CSS 贝塞尔逐字取调研 04§1.4;emphasized-500 组按官方口径以 Standard cubic-bezier(0.2,0,0,1) 兜底并在 demo/MDX 显式标注「官方标注 N/A」,Android 多段 pathInterpolator(M 0,0 C 0.05,0 … 1,1)同段记载。曲线语义(进入 decel/永久退出 accel/临时退出 Emphasized)与「进入比退出更长」取同页;travel 参数(40–240px,默认 120px)为演示值已标注。demo 切配对即以该组时长+曲线重播采样滑块,过场类型 chip 同步显示。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/choreography",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 配对表(入 250 std-decel/出 200 std-accel)+ §3.3 M3 Enter/exit 方向性(通知自顶/抽屉自侧/sheet 自底/snackbar 定向)+ §1.3 Motion delay/stagger(负值=中途开始)+ §6.1 prefers-reduced-motion 前庭降级",
+    "note": "纯 CSS 编排(animation-delay = i × stagger + 组级 --ch-from 方向),与既有 stagger-orchestration(Motion 库版)互为落地形态,MDX 已互链。入 250ms std-decel cubic-bezier(0,0,0,1)/出 200ms std-accel cubic-bezier(0.3,0,1,1) 取官方配对表;退场反向交错为 demo 演示语义(MDX 未标注为官方)。stagger 默认 40ms 沿用 stagger-orchestration 同一口径「社区常见值,未证实」;方向语义逐字取调研 04§3.3。demo 五项 ul/li,总铺开时间 stagger×(n−1) 实时标注;reduced-motion 去位移保节奏(纯 opacity 交错)。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/parallax",
+    "researchRef": "out/research/04-motion-microinteractions.md#§4 滚动驱动动画(scroll()/view() 时间轴、duration auto、animation-timeline 写在简写后、视差为官方典型用例、声明式可离主线程)+ §8.5 未证实事项(视差无专门一手规范)+ §3.3 iOS 转场视差 + out/design-study/11-modern-completion.md#§5 visionOS 借鉴(避免全屏视差)",
+    "note": "实现全部取调研 04§4:animation-timeline: scroll(nearest block) 写在 animation 简写之后、duration auto、只动 transform、声明式可运行在主线程之外;js 对照路径(scroll 事件+rAF 直写)按同页「主线程且与合成器滚动异步→卡顿」结论标注。rate(0–1,默认 0.3,cssVar --par-rate)为最远层跟随比例 p,官方无推荐值——默认为演示值、社区常见 0.2–0.6 标注未证实;中层/近层 p×2/p×3 封顶 1 为演示分层。浏览器支持按调研口径如实写:Chrome/Edge 115+(官方文章快照)、Firefox/Safari 未逐项核实以 MDN 为准,demo 内置 @supports 检测自动落 JS 兜底并标注。reduced-motion 静态分层直出(JS 路径同样停);视差层 aria-hidden 纯装饰;全屏视差警告取 11§5。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/haptics-web",
+    "researchRef": "out/research/04-motion-microinteractions.md#§5.2 Web Vibration API(MDN Navigator.vibrate 实抓)+ §2.3/§5.2 Apple HIG Playing haptics(Notification/Impact/Selection 三类预设)+ §2.6 iOS 系统控件自动触感",
+    "note": "API 形态逐字取 MDN(调研 04§5.2):pattern 为毫秒数或振动/暂停交替数组、0/[] 取消、超长截断依实现、sticky user activation、非 Baseline、iOS Safari 无效、静音/勿扰可能不振动。段数语义取 HIG:Selection 单脉冲/success 两段/error 四段脉冲/Impact 五档——HIG 只记载段数与类别,故 pulses/on/off(默认 1|2|4 段、100/60ms)的 ms 值在 schema effect 与 MDX 均如实标注「演示值,官方未给/未证实」。demo 在按钮手势处理器内同步调 navigator.vibrate,提供 vibrate(0) 取消;能力检测缺失时仅播视觉脉冲并明说,不假装振动发生;振动与视觉回声同发(HIG 与视觉/听觉匹配、勿滥用、可关闭、干扰传感器警示全数写入)。"
+  },
+  {
+    "batch": "b14-motion",
+    "id": "motion/page-transitions",
+    "researchRef": "out/research/04-motion-microinteractions.md#§3.3 M3 六大转场模式(transition-patterns 页)+ §1.4 配对表(各模式推荐配对)+ §3.1/§3.2 View Transitions API 支持矩阵与落地路径",
+    "note": "六模式官方描述逐字取调研 04§3.3:Container transform(持久容器连接起止)/ Forward-backward(Android 滑动+淡出、iOS 视差)/ Lateral(同级齐滑无淡出)/ Top level(先快淡出再淡入、刻意不用持久元素)/ Enter-exit(沿出入点方向轴;sheet 自底、抽屉自侧;临时退出 Emphasized)/ Skeleton(微妙脉动+完成后快速淡入)。推荐配对按 §1.4 换算并标注「按官方配对表」;Android 侧「避免 scale/z 位移」反模式写入 avoid。demo 六模式可切、正反向双播(container 以 FAB 为 origin 展开;enterexit 带遮罩;skeleton 两段式脉动→内容快淡入);duration(200–600,默认 300)为演示变量已在 schema 注明。与 view-transitions 条目互链(工程化落地 + 浏览器支持矩阵),另链 skeleton-loading/overlay-entrance/parallax。"
+  },
+  {
+    "batch": "b15-dataviz",
+    "id": "dataviz/dataviz-chart-selection",
+    "researchRef": "out/design-study/08-dataviz.md §5.4 FT Visual Vocabulary(chart-doctor README 零基线判据/Lollipop 豁免/Cleveland & McGill 引用/FT 版权声明)+ §1.1 jfly CUD(直标优于图例原文)+ §1.3 Carbon danger #da1e28(警示徽标用色;交叉:out/research/06-color-theming.md §17 WCAG 2.1 SC 1.4.11 ≥3:1)",
+    "note": "三个参数全部 JS 型 enum(relation/baseline/labels),demo 订阅 store 重绘 SVG,无 cssVar。数值出处:柱系零基线取 FT chart-doctor README 原文 \"Must always start at 0 on the axis\"(调研 08§5.4 已核);折线可不从零取 FT 引 ONS《Does the axis have to start at zero?》(08§5.4 记载引用关系,ONS 原文未直接核,已在 MDX 如实标注);直标优先取 jfly CUD 原文(08§1.1 已核);警示色 #da1e28 为 Carbon danger(08§1.3 官网已核)。四关系分类(比较/趋势/分布/构成)为社区通行分类学,已在 schema origin 与两份 MDX 注明非 FT 官方族谱;截断失真倍数(49 vs 78 零基线 1.6 倍/截断到 40 起 4.2 倍)为 demo 确定性数据上的可复算算术,非调研记载。demo 数据(比较 4 类目/趋势 12 月/分布 8 箱 40 样本/构成 4 季×4 段)为自造确定性演示值,已在 MDX 注明。真实产品案例三条(FT Visual Vocabulary 四语海报+版权声明/ONS 零基线之辩/Cleveland & McGill)全部出自 08§5.4;Cleveland & McGill 排序细节未转录,不引用具体排序。sources 三条均为调研 08 已核 URL。"
+  },
+  {
+    "batch": "b15-dataviz",
+    "id": "dataviz/dataviz-color-ordering",
+    "researchRef": "out/design-study/08-dataviz.md §4.2 Power BI dataColors 顺序=系列取色顺序/good-neutral-bad 语义色 + §1.3 Carbon 14 色按序红线与告警色 #da1e28/#ff832b/#f1c21b/#198038 + §1.1 Okabe-Ito 8 色上限/hex 经 R grDevices 固化 + §5.3 ggplot2 灰底白网格(col_mix(ink,paper,0.92))(交叉:out/research/06-color-theming.md §19 Claus Wilke 色彩章 + §17 WCAG 1.4.11)",
+    "note": "三个 JS 型参数(order/accentSeries/emphasis)+ 一个 CSS 变量型参数(contextGray→--co-gray,hex 注入不依赖 oklch)。按序取用锚点:Power BI dataColors(08§4.2 官方 docs 已核)、Carbon 按序红线(08§1.3 官网已核)、Okabe-Ito 亮色前三/红绿对留低频/8 类封顶(08§1.1+签名巧思 2/3)。强调策略「灰底彩突出」本身为社区通行做法(参考 Wilke 色彩章,调研 06§19 记载了该章 URL),官方无灰值记载——语境灰默认 #B0B0B0 在 schema effect/MDX 表格/demo 徽标三处标注「社区常见值,未证实」;accentSeries 默认 2 注明为 demo 示例值无官方依据。色值 Okabe-Ito 前 5 色取 R grDevices 固化值(08§1.1 源码核验,与 dataviz-categorical-palette 同源)。demo y 轴从 20 起并在 MDX 注明折线可不从零(FT 引 ONS)。全彩模式直标会压线故回退图例——jfly 原文仅反对「直标放得下却用图例」,已在 MDX 如实表述。真实产品案例三条(Power BI dataColors+语义色/Carbon 按序+告警色/ ggplot2 灰底画布 col_mix 0.92)全部出自调研 08 已核内容。sources 四条均为已核 URL(learn.microsoft.com、carbondesignsystem.com、jfly、clauswilke.com,后者经调研 06§19 收录)。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/split-view",
+    "researchRef": "out/research/05-layout-typography.md §一.8(Split View:CSS 无原生可拖拽分栏标准;生态事实标准 react-resizable-panels——PanelGroup/Panel 组件分组、拖拽手柄、WAI-ARIA separator 角色键盘可访问性(方向键调整),README 一手核对;MDN Cookbook「Split navigation」与桌面式可拖分栏并非同一概念,注意区分)+ §一.6 引用的容器查询机制(container-type: inline-size + @container 字面量断点,联动用)",
+    "note": "参数:startSize 20-80% 默认 40 / minSize 5-40% 默认 20——均为演示基准值,react-resizable-panels defaultSize/minSize 按产品自定无官方值,已逐处标注「演示基准值,未证实」。demo 零第三方库:Pointer Events + setPointerCapture 拖拽、role=\"separator\"/tabindex/aria-valuenow/min/max + 方向键 ±2%(Shift×3)/Home/End(呼应调研 05§8 separator 模式)、双击 store.reset() 复位;右栏 container-type: inline-size + 字面量 280px 断点,拖窄翻纵排即「分栏×容器查询联动」;右栏宽度读数为 ResizeObserver 实测。窄视口媒体查询退化为上下堆叠;prefers-reduced-motion 取消宽度过渡。案例 3 个:react-resizable-panels(05§8 出处)、IDE/邮件双栏(编辑性)、MDN Cookbook Split navigation 区分说明(05§8)。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/aspect-ratio",
+    "researchRef": "MDN aspect-ratio 页(本次会话直连抓取核对:Baseline Widely available 自 2021-09;语法 aspect-ratio = auto || <ratio>;斜杠后省略高度按 1;至少一边为 auto 比例才生效;auto <ratio> 对 replaced 元素内容加载后回退内在比例;官方示例 1/1、16/9、0.5、auto 3/2;规范 CSS Box Sizing Module Level 4;See also「preventing jank」)+ out/design-study/12-expansion.md §1(object-fit/object-position 必须写在子 img 上而非 picture 上;width=1200 height=675 属性配对防 CLS)",
+    "note": "参数:ratio enum 默认 16 / 9(MDN 官方示例值),1/1、4/3、3/2、21/9、9/16 档位为社区常见内容比例已标注未证实;fit enum cover/contain/fill(cssVar --ar-fit,标准取值,effect 注明 12§1 的 img 归属约束);width 160-560px 默认 320(cssVar --ar-width,演示基准值已标注,MDN 示例用 100px+height:auto 同机制)。demo 用内在 4:3 的 1200×900 SVG data-URI 样图(与默认 16:9 比例盒异比),cover 裁切/contain 留边/fill 变形一眼可辨;读数同时给 ResizeObserver 实测高度与 width×h/w 换算高度,两者恒等即比例生效证明;img 带 width/height 属性防 CLS。案例:MDN 官方示例与 preventing jank 指南(本次核对)、视频 16:9 槽位与社媒卡片(编辑性,padding-top 百分比老写法标注社区做法未证实)。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/responsive-images",
+    "researchRef": "out/design-study/12-expansion.md §1(全节:srcset/sizes 官方建议仅多分辨率时直接 img 不包 picture;<source> media/srcset(w 或 x 描述符不可混用、不允许重复)/sizes(条件–槽宽对,仅 w 描述符生效)/type;选择规则「槽宽 × DPR = 理想宽度,选最接近者,全不匹配回退 img src」;picture 三场景 art direction/格式切换/设备能力;fetchpriority high/low/auto 为提示非指令;object-fit 写子 img;picture Baseline 2016-03、fetchpriority Chrome/Edge 102+/Firefox 132+/Safari 17.2+;片段 1200w/2400w、(min-width: 900px) 60vw、width=1200 height=675、Google Flights LCP 2.6s→1.9s、Oodle 轮播省 2s、lazy 仍被 high 加载改 low)",
+    "note": "参数:viewport enum 390/768/1280(模拟视口,社区常见设备基准值已标注未证实)/vwShare 20-100% 默认 60(逐字出自 12§1 片段 60vw)/fetchpriority enum high/low/auto 默认 high(12§1;demo setAttribute 写入并回显,注明真实网络加载才生效)。demo:模拟视口设备框按舞台等比 transform 缩放(只影响显示不影响 sizes px 语义),切档重写 img 的 sizes 触发浏览器重跑选择算法,currentSrc 实读命中候选(640w 为演示补充档已标注未证实,1200w/2400w 逐字出自片段;兜底 src=1200w 候选);DPR 读真实 devicePixelRatio 并展示 槽宽×DPR=理想宽度 算式;右侧 picture 艺术指导 source media=(min-width: 900px)(阈值出自片段)按真实浏览器视口求值,resize 监听 + currentSrc 与两幅 URI 精确比对如实报告命中,模拟视口改不了 media 的差别已在读数与 MDX 标注。案例 3 个全部 12§1 实测:Google Flights、Oodle 轮播、MDN picture 三分法。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/logical-properties",
+    "researchRef": "out/design-study/12-expansion.md §2(逻辑属性全节:inline/block 两轴定义与「一行的开头不总是左侧」;映射 padding-left→padding-inline-start、margin-left→margin-inline-start、width→inline-size、height→block-size、top→inset-block-start、border-bottom→border-block-end;简写族 padding-block/inline、margin-block/inline、inset 及圆角逻辑版 border-start-start-radius 等 4 个;片段 padding-block: 1rem、padding-inline: 1.5rem、border-start-start-radius: 12px、margin-inline-start: auto;支持 Chrome 87/Firefox 41+/Safari 14.1 为 MDN 页备注口径、调研明注完整矩阵未核验建议查 caniuse)+ §16-6 签名巧思「逻辑属性全站化,多语言 RTL 只改一个 dir 属性」",
+    "note": "参数:padInline 8-48px 默认 24(cssVar --lp-pad-inline,= 片段 padding-inline: 1.5rem)/padBlock 4-32px 默认 16(--lp-pad-block,= 片段 padding-block: 1rem)/radius 0-24px 默认 12(--lp-radius,= 片段 border-start-start-radius: 12px)——三项默认值逐字换算自 12§2 片段(1rem=16px)/dir enum ltr/rtl(JS 型,切容器 dir 属性)。demo 物理卡(padding-left/border-top-left-radius)与逻辑卡(padding-inline/padding-block/border-start-start-radius/margin-inline-start:auto 推操作按钮)并排同数值对照,dir=rtl 后逻辑卡整体镜像、物理卡原地不动;读数 getComputedStyle 实测 padding-left 与 padding-inline-start 数值对照即翻转证明;渐进增强级联(物理在前逻辑在后)写入 MDX 与 fallback。案例 3 个:12§16-6 签名巧思、设计系统间距 token(编辑性)、MDN 模块页与 css-logical 规范(12§2 来源)。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/writing-modes",
+    "researchRef": "out/design-study/12-expansion.md §2(writing-mode 节:取值 horizontal-tb 默认/vertical-rl 传统中日竖排/vertical-lr/sideways-rl/sideways-lr 字形整体侧放仍 experimental 需 @supports 检测;lr/tb 旧值已废弃;配套 direction/text-orientation 竖排字形朝向/text-combine-upright 纵横对齐;writing-mode Baseline 自 2017-03;片段 aside h2 { writing-mode: vertical-rl } 侧边书脊标签、.tag { writing-mode: sideways-lr } 西文自下而上 + @supports not 回退 transform: rotate(-90deg))",
+    "note": "参数:mode enum 默认 vertical-rl(cssVar --wm-mode,12§2「传统中日竖排」;sideways-lr 档引擎不支持时值无效回落 horizontal-tb,CSS.supports 运行时检测如实报告)/orientation enum mixed/upright/sideways 默认 mixed(cssVar --wm-orientation,规范默认,标题「Li Bai」为三档探针)/combine enum none/all 默认 none(cssVar --wm-combine,纵中横:「2026」压一个字格)。demo 信纸整体竖排(限高成列,vertical-rl 行从右起),静夜思四行中文竖排;书脊标签恒为 vertical-rl(12§2 片段原样);西文侧放标签按 CSS.supports('writing-mode','sideways-lr') 检测,不支持时按钮切换 rotate(-90deg) 回退并如实标注。竖排只做呈现增强、DOM 顺序不变(WCAG 1.3.2)写入 a11y;prefers-reduced-motion 取消入场。案例 3 个:书脊标签片段原始用例(12§2)、中文竖排诗笺(编辑性)、MDN writing-mode 页与 css-writing-modes 规范(12§2 来源)。"
+  },
+  {
+    "batch": "b16-layout2",
+    "id": "layout/custom-scrollbar",
+    "researchRef": "out/design-study/10-microinteractions-code.md §8.3(自定义滚动条:scrollbar-width auto|thin|none Baseline 2024-12、「目的是省空间不是审美」、MDN 警告 none 影响可及性/WCAG 2.1.1 键盘滚动、root 值应用到 viewport;互操作事实 MDN 原文「一旦元素 computed scrollbar-width ≠ auto,::-webkit-scrollbar 家族即被忽略,写回 auto 恢复」;片段 scrollbar-width: thin)+ §8.4 片段(scrollbar-width: thin 配 scroll-snap)+ out/design-study/11-modern-completion.md §9(BCD:scrollbar-color Chrome 121/Firefox 64/Safari 26.2 且 WebKit 建议停用 ::-webkit-scrollbar、Android WebView 暂未支持;片段 html { scrollbar-color: var(--brand, #6a5cff) transparent })+ §10-8 巧思(控件一键换肤)+ out/round2-report.md:43(全站细滚动条 scrollbar-width: thin + scrollbar-color 挂根继承惯例)+ MDN scrollbar-gutter 页(本次会话直连核对:Baseline 2024 Newly available 自 2024-12;auto|stable && both-edges?;槽位=border 内缘与 padding 外缘之间;overlay 滚动条无效果;stable 防内容增减跳布局)",
+    "note": "参数:engine enum standard/webkit 默认 standard(JS 型 data-engine——standard 档写 scrollbar-width/color,互操作事实自动屏蔽 webkit 伪元素;webkit 档不写标准属性 computed 保持 auto 激活伪元素,Firefox 无效果在读数如实标注)/width enum auto/thin/none 默认 thin(round2 全站惯例 + 10§8.3;none 档亮 MDN WCAG 2.1.1 红框警告)/thumb #6a5cff 与 track #00000000(8 位 hex 全透明=11§9 片段 transparent,cssVar --sb-thumb/--sb-track)/gutter enum auto/stable 默认 auto(cssVar --sb-gutter,auto 为 MDN 初始值,stable 防跳布局,本次直连核对)。demo 36 行滚动区(tabindex=0 键盘可滚),CSS.supports 三属性支持检测如实亮牌(Safari<26.2 standard 档无效果的提示),webkit 档 12px 标注演示基准值未证实。案例 3 个:11§10-8 一键换肤、代码块细滚动条(round2+10§8.3)、MDN scrollbar-gutter 三用例(本次核对)。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/tabular-numbers",
+    "researchRef": "out/design-study/12-expansion.md §9(tabular-nums=tnum,MDN『easily aligned like in tables』原文;font-variant-numeric 全值清单;Baseline 2020-01;特性生效前提=字体含 OpenType 表)+ out/research/05-layout-typography.md §24(Inter 官方提供表格数字与 slashed zero,Figma/GitLab/NASA 采用)",
+    "note": "参数 numericStyle(enum cssVar --tn-numeric:tabular/proportional/lining/oldstyle)/slashedZero(JS 型 data-zero 开关)/countSpeed(1–10,标注演示参数非规范值)。demo 用确定性 LCG(非 Math.random,避免弱随机告警且抖动可复现)驱动三行 KPI 计数;宽度探针实测『1111111111』vs『1234567890』渲染宽度差(等宽 Δ≈0),列宽抖动计记录 min/max;prefers-reduced-motion 停止计数保留静态探针。『长文正文数字比例宽度更经济』标注实践共识未证实。sources: MDN font-variant-numeric + rsms/inter(均调研已核)。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/baseline-grid",
+    "researchRef": "out/design-study/12-expansion.md §9/§10(Bringhurst『空间如时间』经 24ways/Rutter 转述;1px 边框+8px padding=9px 半单元案例)+ 本站 spec(global.css:165 4/8 间距网格、禁止非 4 倍数字面值)+ out/design-study/02-tdesign.md §2(行高=字号+n,n=8,官网 design-basic.ts 一手核对)",
+    "note": "参数 unit(cssVar 默认 8px)/fontSize(16px)/lineHeight(1.5,同时满足 WCAG 1.4.12 ≥1.5 且 16×1.5=24=3 步)/overlay(JS 型 none|grid|baselines|both 可视化开关)。叠加层 repeating-linear-gradient(网格每 unit 一条;基线画在行盒 ~80% 处,已标注教学近似——精确基线位置由字体度量决定);偏移审计实测 getBoundingClientRect().top,判据=步长整数倍或半步(4/8 规则);卡片内文 1px+8px=9px 在 unit=8 判违规、调 unit=18 自动转绿(12§10 半单元规则的可玩呈现)。8pt grid 通行性标注社区惯例未证实。sources: 24ways + tdesign fonts 页 + design-basic.ts(均调研已核)。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/font-pairing",
+    "researchRef": "out/design-study/12-expansion.md §9(Google Fonts Knowledge『Choosing type』仅确认入口存在,正文未能核验——搭配方法论细则如实标注『社区实践共识,未证实』)+ out/design-study/01-apple.md(HIG『Minimize the number of typefaces you use』全站一字族,官网原文已核)+ out/research/05-layout-typography.md §25(Geist Sans/Serif/Mono/Pixel 四族,OFL 1.1)",
+    "note": "参数 pairing(JS 型三档:serif-head 衬线标题×无衬线正文 / sans-head 反向 / single 单字族多字重)+ headingSize(cssVar,默认 34px)/headingWeight(cssVar,默认 600)。衬线用系统栈 Georgia→Songti SC→SimSun→serif(泛型收尾,零第三方依赖;中文衬线观感标注因平台而异);single 档由本站 Inter Variable wght 100–900 真实驱动,并如实标注系统衬线档 400/700 之外的钳制/合成失真。『标题字体只用于大字号、正文须经长文阅读测试』标注通则未证实。sources: fonts.google.com/knowledge/choosing_type(入口,已标注未核验正文)+ HIG typography + vercel/geist-font。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/small-caps-features",
+    "researchRef": "out/design-study/12-expansion.md §10(MDN 官方指引『能用高层就用高层,不要用它启用小型大写』;标签恰好 4 ASCII 字符;on/off≡1/0;Baseline 2016-03)+ 本批次新增补核:MDN font-variant-caps 页 2026-11-22 直接抓取(关键字→OpenType 映射 small-caps=smcp / all-small-caps=c2sc+smcp;缺字形时浏览器从大写字形合成、无大小写之分的字符绝不合成;Baseline 2020-01;大面积 all-small-caps 对阅读障碍用户难读的无障碍提示)",
+    "note": "参数 caps/ligatures/zero 全部 cssVar 型,分别落高层属性 font-variant-caps / font-variant-ligatures / font-variant-numeric(与官方分层指引一致);等价低层标签(smcp/c2sc/liga/zero)只以注释代码行展示。宽度探针对照『原样 vs 特性生效』实测宽度差,标注『Δ>0 无法区分真 smcp 字形与 MDN 记载的合成字形;Δ≈0=字体可能缺特性表』——结论由测量产生不写死。0.08em 字距取自本站大写小标纪律(global.css:852-856)。sources: MDN font-feature-settings(12 已核)+ MDN font-variant-caps(本次补核)。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/vertical-rhythm",
+    "researchRef": "out/design-study/12-expansion.md §9(Rutter《Compose to a Vertical Rhythm》24ways 2006 算法:单元=正文行高 12×1.5=18px;标题行高=18÷14=1.286 反推;间距单元整数倍;em 纪律;Bringhurst 名言)+ out/research/05-layout-typography.md §18(WCAG 2.2 SC 1.4.12 行高 ≥1.5×)+ out/design-study/02-tdesign.md §2(+8 常数)",
+    "note": "参数 baseUnit(cssVar 默认 18px=24ways 工作示例值)/bodySize(默认 12px,标注 2006 年惯例、生产按 16px 体系缩放)/headingSize(默认 14px)/mode(JS 型 rhythm|free 对照)。标题行高由 TSX 反推内联(单元÷字号,规避 CSS 长度÷长度的 calc 兼容问题);行盒叠加=各文本块 repeating-linear-gradient 半透明条带(周期=单元),free 模式任意值(13px/7px、1.1 标题行高)展示『韵律破坏现场』;行高比跌破 1.5 时徽标转红(WCAG 1.4.12)。mdx 明确 18/12 为已核方法示例值而非当代推荐值。sources: 24ways(调研已核)。"
+  },
+  {
+    "batch": "b17-type2",
+    "id": "type/display-typography",
+    "researchRef": "out/design-study/01-apple.md §2.2(SF Pro tracking 官方全曲线 66 行实抓:17pt −26‱ 全曲线最紧、28pt +14‱、80pt+ 归零)与 §2.3(apple.com 网页三铁律:56px/1.0714/600/−0.005em;≥19px Display/≤17px Text;断点只动 size+letter-spacing)+ 本站 hero 同源手法(global.css:163 --step-5 clamp + 883-888 lh1.12/ls−0.02em;156 负字距只用于 ≥21px 标题、中文正文字距 0)+ out/research/05-layout-typography.md §12/§24(clamp Baseline 2020-07;Inter opsz 14–32 双光学、wght 100–900)",
+    "note": "参数 size(cssVar 默认 48px=apple.com 大标题档)/weight(cssVar 600,真实 wght 轴)/trackingMode(JS 型 auto|manual)/manualTracking(cssVar 默认 −0.02em=本站 hero 档)。auto 模式按 SF 曲线锚点分段线性插值(pt 按 1x 折算近似,已标注教学感知用);曲线小图为官方锚点 SVG 折线+游标(0.15s 过渡,prefers-reduced-motion 关闭);行高比建议值从 apple.com 实测锚点插值;原生曲线 56pt +6‱ 与 apple.com 网页 −0.005em/本站 −0.02em 的分歧两套数值并列如实展示。sources: HIG typography + rsms.me/inter + utopia.fyi(均调研已核)。"
+  },
+  {
+    "batch": "b18-color2",
+    "id": "color/brand-color-system",
+    "researchRef": "out/research/06-color-theming.md#§二.5 Tonal Palette(HCT/13 档)+ §二.7 M3 语义角色基线 + §二.8 Radix 12 步 + §一.2 Evil Martians 工作流;out/design-study/12-expansion.md#§11 派生片段(--brand oklch(0.62 0.19 250))",
+    "note": "派生机制取 06§5(每关键色 13 档 tone、Tone 0-100=CIE L*);角色映射取 06§8(Radix 步→角色);色相映射红20/黄90/绿140/蓝220/紫320 与 C 上限 0.37 取 06§2;暗侧机制官方锚点 #D0BCFF≈tone 80/#381E72 取 06§7。默认值 H250/L0.62/C0.19 逐字取 12§11 片段;本会话实测该值越 sRGB 域裁剪为 #0088F2、白字 3.62:1(过 3:1 大字/UI 不过正文 AA,如实呈现不掩盖),#D0BCFF/#381E72 复测 7.71:1、同色相 tone80+tone20 8.81:1。13 档计数为官方(06§5),逐档取值 0-100×10+95/99 为 material-color-utilities 通行实现(schema/mdx 双处标注「调研未逐值列出」);demo 用 oklch L 直代 tone 并标注为近似。真实产品案例:Material Theme Builder(06§7 官方工具)、Material You 动态取色(06§5/§6)、Radix 12 步(06§8)。"
+  },
+  {
+    "batch": "b18-color2",
+    "id": "color/dark-mode-patterns",
+    "researchRef": "out/research/06-color-theming.md#§三.12 反转vs语义(Apple「not necessarily inversions」/Android Force Dark)+ §三.13 base/elevated·饱和度·压暗 + §二.7 M3 暗色基线;out/design-study/12-expansion.md#§7 阴影工艺",
+    "note": "四模式逐条挂调研:分层=Apple base/elevated 两组背景与前台自动切换(06§13)、饱和度=#6750A4→#D0BCFF 官方基线与 hype4 暗色避免过饱和(06§7/§13)、阴影=黑底黑影不可辨改由表面提亮承载(06§13 机制+12§7 工艺;「不可辨」为编辑性推论,已按 06§13 的层级替代机制表述)、品牌色=accent 换对+白底图压暗(06§13,Apple 无具体百分比,demo 25% 标注演示值)。三档对照 demo:light 用 M3 亮色基线(06§7);dark-inverted 反模式档亮色值逐通道反转(代码即 invert 关系);dark-semantic 表面阶 L0.17/0.21/0.25 为演示值(官方逐档 elevation overlay 表 06§13 记录「未找到」)。本会话实测:语义暗色文字三档 15.09/13.97/12.64:1 全过 AAA,#D0BCFF 对暗表面 11.25:1,纯反转白黑 21:1(过冲=hype4 视觉疲劳的量化呈现)。真实产品案例:Apple iOS base/elevated 实装(06§13)、Android Force Dark 官方警示(06§12)、Primer dark/dark-dimmed 两套映射表(06§10)。"
+  },
+  {
+    "batch": "b18-color2",
+    "id": "color/status-color-system",
+    "researchRef": "out/research/06-color-theming.md#§五.17 WCAG 阈值 + §二.8 Radix 底/边/字分档 + §一.2 色相映射 + §二.7 M3 error 基线 + §五.19 色盲复核",
+    "note": "四态结构取 Radix 12 步的底(1-3)/边(6-8)/字(11-12)独立档位与步 11/12 APCA Lc60/90 保文本(06§8);四色相默认 20/90/140/220 取 Evil Martians oklch 色相映射(06§2);danger 官方锚点 M3 error #B3261E(06§7,本会话实测白字 6.54:1);阈值正文 AA 4.5:1/AAA 7:1/非文本 3:1 不四舍五入(06§17);红绿另需色盲复核引 Okabe-Ito 思路与 Primer 色盲主题(06§19),APCA 不手写公式(06§18 官方强制 apca-w3,demo 只跑 WCAG 并如实注明)。底/边/字三件套常量(bg L0.97/C0.04、字 L0.45/C0.13、边 L0.6/C0.17)为本会话标定值:schema/mdx/a11y 三处标注「标定结果,非官方配方」,四态文字 6.17-6.97:1、边框 3.20-3.76:1 全过。真实产品案例:Radix 12 步工业配方(06§8)、M3 error/error-container(06§7)、Primer 4 套色盲主题(06§10/§19)。"
+  },
+  {
+    "batch": "b18-color2",
+    "id": "color/color-functions",
+    "researchRef": "out/design-study/12-expansion.md#§11 颜色函数族(color-mix/相对颜色/百分比归一化/空间选型/派生配方)+ §8 半透明与 alpha 运算;out/research/06-color-theming.md#§一.1 oklch/§一.4 渐变插值空间 + §二.10 Primer alpha 变换 + §四.4 Tailwind v4",
+    "note": "全部参数默认值逐字取 12§11 片段:brand oklch(0.62 0.19 250)、hover black 12%、active 24%、soft 12% 掺 transparent、border 40%、on-brand white 85%;百分比归一化三规则(双省50/50/单省补100/和<100 alpha乘数/双0无效)与空间选型指引(xyz/srgb-linear 模拟色光、oklab 感知、oklch 防变灰、srgb 设备)取 12§11(MDN);相对颜色 rgb 通道 calc(g+25) 合法/calc(g+25%) 无效、Safari 16.4 旧语法 @supports (color: rgb(from red r g calc(b + 30%))) 探针取 12§8/§11(MDN 原文);color-mix Baseline 2023-05、相对颜色部分支持取 12§11。色相插值策略 longer hue 取 06§4。本会话实测:on-brand(white 85%)对裁剪后品牌底 #0088F2 仅 3.06:1(过 UI/大字档不过正文 AA)——demo/mdx/a11y 如实呈现「派生后必须复核」。demo 全 CSS 派生零 JS 混色,每条派生声明带静态兜底+@supports 覆写,相对颜色行整行探测。真实产品案例:Tailwind v4 透明度 color-mix 工具链与 oklch 调色板(06§4)、Primer DTCG alpha 变换(06§10,编译期同思想)、Evil Martians oklch calc(l+0.1) hover 工作流(06§2)。"
+  },
+  {
+    "batch": "b18-color2",
+    "id": "color/multi-theme-tokens",
+    "researchRef": "out/research/06-color-theming.md#§二.10 三层 token 架构(Primer)+ §二.7 Android 语义 role 同构 + §四.4 Tailwind v4 @theme;out/design-study/12-expansion.md#§11 三套主题片段与派生配方",
+    "note": "三层架构(primitive→semantic→component)、角色词命名、DTCG 格式与 Primer 9 主题清单取 06§10;Android「语义化分配 color role 而非具体值」反模式佐证取 06§10;三套主题 primitive 值逐字取 12§11 片段(blue oklch(0.62 0.19 250)/crimson oklch(0.58 0.2 20)/forest oklch(0.6 0.15 150)),派生配方(hover12/soft12/border40/on-brand white85%)同片段。本会话复算三主题:sRGB #0088F2(裁剪)/#D73246/#25984D;白字对比 3.62/4.74/3.70(仅 crimson 过正文 AA)、on-brand 对品牌底 3.06/3.90/3.13、深字 on soft 15.07/14.62/15.00——「结论不跨主题搬运」以实测写进 demo/mdx/a11y。换肤机制=JS 参数只写 data-theme 重挂 primitive 层,语义层 color-mix+calc(var()) 现场派生,组件层零改动;@supports 不支持时中性灰兜底+说明行(不冒认派生色)。真实产品案例:GitHub Primer 9 套主题 settings/appearance 实装(06§10/§19)、Android Dynamic Color token 同构(06§10)、Tailwind v4 @theme(06§4)。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/flip-technique",
+    "researchRef": "out/design-study/12-expansion.md#§3 FLIP(First-Last-Invert-Play)精确步骤(aerotwist 一手来源)+ §8 未证实事项(Josh Comeau FLIP 文 404 未采用);交叉:out/research/04-motion-microinteractions.md§3.1/§3.2(View Transitions 支持矩阵)、out/design-study/10-microinteractions-code.md§2.1(layoutId 自动 FLIP)",
+    "note": "四步定义、transform-origin: top left、只动画 transform/opacity(合成器路径)、约 100ms 响应窗口、transitionend/WAAPI finish 清理、GSAP FLIP 插件——全部逐字取补研 12§3;duration 350ms + cubic-bezier(0.2, 0.7, 0.3, 1) 同取 12§3 的「aerotwist 示例改写」片段,已在 schema effect 与 MDX 标注为示例值而非官方规范值;scale invert 拉伸文字的警告与 DOM 拆层对策同段记载。demo 六卡片点击重排,auto=First→Last→Invert 同帧只播 Play(生产形态),step=四阶段手动步进并实时显示反算 dx/dy/scale;reduced-motion 跳过 Play 直出终态。与 slot-spring(layoutId 自动 FLIP)、view-transitions(浏览器原生)、smooth-craft 互链。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/scroll-snap",
+    "researchRef": "out/design-study/12-expansion.md#§4 CSS Scroll Snap(吸附轴/对齐/scroll-padding/snap area/snapport/Level 2 事件)+ out/design-study/10-microinteractions-code.md§8.2(MDN Basic concepts:mandatory 警告/scroll-padding/scroll-margin/scroll-snap-stop)与 §8.4(轮播惯例代码)",
+    "note": "概念(snap area=子项+scroll-margin 对齐 snapport=容器−scroll-padding)、容器 scroll-snap-type × 子项 align/stop、MDN「mandatory 仅在内容量已知时用,一般交互用 proximity」警告、scroll-padding 给吸顶导航留位、Level 2 scrollsnapchange/scrollsnapchanging 需降级——逐字取调研 10§8.2 与补研 12§4;参数默认值(align start、stop always、scroll-padding-inline 16px、gap 16px)取 12§4 片段,10§8.4 的 24px proximity 惯例并列记载;CSS 默认 normal 在 effect 中如实注明。demo 横向卡片轨道四参数全 CSS 型(cssVar 直写),prev/next 按钮 + scrollsnapchange 能力检测 + 滚动位置兜底读数,aria-live 播报;reduced-motion 时程序化滚动 behavior: auto。与 scroll-overflow(overscroll-behavior 防滚动链)、inertia-gesture、scroll-driven-animations 互链。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/magnetic-hover",
+    "researchRef": "out/design-study/12-expansion.md#§5 磁吸交互(radius/lerp/quickTo/可访问性降级)+ §16 巧思 7;未证实记录:Codrops 教程 URL 污染未核验、GSAP 许可结论未核验",
+    "note": "实现全部取补研 12§5:reach = max(宽,高)/2÷(1−radius)、半径内目标 = 指针偏移×radius、逐帧 cx += (tx−cx)×lerp 配 rAF、直写 el.style.translate、@media (prefers-reduced-motion: reduce), (hover: none) { translate: none } 降级 CSS——逐字同款;默认 radius 0.45 / lerp 0.15 为 12§5 片段默认值,lerp 常用区间 0.05–0.2 与判定带 25%~50% 同页记载;GSAP quickTo(3.10.0+)官方示例场景即磁吸按钮(一手文档);Codrops URL 未核验一事如实写入 MDX,不引第三方教程数值。demo 零依赖手写 lerp 版,只响应 mouse 指针,实时显示 (hover: none) 与 reduced-motion 检测结果,mode=plain 预览降级形态;归位后自动停 rAF。与 press-feedback、smooth-craft(逐帧直写 transform 不走 CSS 变量,调研 10§7.4)、handoff-curves 互链。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/kinetic-typography",
+    "researchRef": "out/design-study/12-expansion.md#§6 动态文字(注册轴/GRAD 零重排/font-variation-settings 低层语法/@property 轴过渡/SplitText/手写拆字兜底)+ §16 巧思 8;交叉:out/research/04-motion-microinteractions.md§6.2(matchMedia 检测)、out/research/09(§1.2 @property Baseline)",
+    "note": "注册轴 wght 1–1000↔font-weight、GRAD 改视觉密度不改占位(可动画零重排)、font-variation-settings 需整条重声明→CSS 变量绕过、@property 注册变量 + transition --wght .5s 轴过渡、@font-face 范围描述符、拆字 mask/aria:\"auto\" 语义——逐字取补研 12§6;rise .6s cubic-bezier(.2,.7,.3,1) 与手写拆字 40ms 交错取 12§6 无库兜底片段,GSAP SplitText 官方示例 stagger 0.05/type words,chars/mask/autoSplit 并列记载;旧系统(macOS<10.13)不支持如实标注。demo 用打包的 Inter Variable(variable-fonts 条目同源依赖)驱动 wght 轴 0.5s 过渡 + 逐字/逐词 mask 上升(总铺开 = stagger×(n−1)+rise 已写入 MDX);拆分树 aria-hidden + 容器 aria-label 整句;reduced-motion 上升与轴过渡全关。与 variable-fonts(轴体系)、stagger-orchestration/choreography(交错数学)、page-transitions(标题接力)互链。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/progress-motion",
+    "researchRef": "out/research/04-motion-microinteractions.md#§2.2 加载反馈(NN/g 阈值/3 倍可等待/Luke W Polar/M3 skeleton loaders)+ §1.4(M3 short4 200ms + Standard)+ out/design-study/12-expansion.md#§14 目标梯度效应(清晰进度/人为进度)",
+    "note": "NN/g 阈值逐字取调研 04§2.2(<1s 即时态变化/1s+ 必须给指示/循环动画 2–10s/≥10s percent-done+文字说明/EST)、可等待 3 倍时长、M3 骨架「微妙脉动(左上→右下)」+「完成后快速淡入」;完成淡入 200ms cubic-bezier(0.2,0,0,1) 按 skeleton-loading 条目同口径(M3 short4+Standard,调研 04§1.4);目标梯度(人为进度/预盖章)取补研 12§14。total 默认 10000ms 恰落 NN/g ≥10s 百分比阈值;auto 档 1s/3s 分段点为演示编排值已在 MDX 标注(thresholds 本身官方);pulse 1200ms 沿用 skeleton-loading 同口径「社区常见值,未证实」。demo rAF 时间轴四形态互斥切换,确定段 role=progressbar+aria-valuenow 逐帧同步、不确定段不编数值,aria-busy+状态文字全程兜底;reduced-motion 动画停、数值照走。真实案例全为调研记载(Polar 消灭 spinner、Google 搜索滑入转场、目标梯度人为进度)。与 skeleton-loading、count-up 互链。"
+  },
+  {
+    "batch": "b19-motion2",
+    "id": "motion/handoff-curves",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§7.3 中断接力(velocity preserve,Motion 文档逐字)+ §2.2 springSlot(半隐式欧拉积分/速度存 dataset 接力/restDeltaGranular 0.005)+ §2.3/§4.3(ζ=c/(2√(km))、过冲 e^(−πζ/√(1−ζ²)) 实算公式)+ §5.1(vaul VELOCITY_THRESHOLD 0.4/CLOSE_THRESHOLD 0.25/EASE[0.32,0.72,0,1])+ §4.2(velocity 注入)+ 交叉:out/research/04-motion-microinteractions.md§1.3(SwiftUI 弹簧接力保留速度/inertia 参数)与 §5.1(Pointer Events Baseline 2020-07)",
+    "note": "Motion「物理弹簧吸收既有手势/动画速度、velocity 缺省当前值速度」与 duration-based「从静止开始并忽略速度」反例逐字取调研 10§7.3;积分器(dt 钳制 1/30s、m·x''+c·x'+k·(x−t)=0)、restSpeed/restDelta 双阈值停机(0.01/0.005 为 Motion granular 源码值,demo 放宽 0.5/0.5 + 8s 兜底已标注演示值)、ζ≈0.722/过冲≈3.8%/峰值 262ms「中·微弹」档取 10§2.2/§2.3;vaul 阈值 0.4/0.25 取 10§5.1;SwiftUI「连续 spring 接力保留速度」取调研 04§1.3;FLICK_VELOCITY 1500 沿 inertia-gesture 口径标注演示值。demo 拖拽 1:1 直写 transform→释放 EMA 测速→速度随位置交接给半隐式欧拉弹簧,handoff=off 即归零重启反例对照,读数显示释放速度/ζ/预计过冲;reduced-motion 跟手保留、释放直出。与 inertia-gesture(无到位回弹的对照)、slot-spring(档位手感)、damping-craft(ζ 映射)、smooth-craft(中断接力总纲)、shake-decay(velocity 注入另用)互链。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/cascader",
+    "researchRef": "out/design-study/12-expansion.md#§15 级联选择 Cascader + out/research/07-components-patterns.md#§5(APG Combobox)/§34/§35/§36 + out/design-study/06-antdesign.md#§2.2/§2.3/§4.6",
+    "note": "changeOnSelect 默认 false 与 expandTrigger 取值 click|hover 逐字取 12§15(2026-11-22 抓取 ant.design);multiple/expandTrigger 官方默认值未记载,schema 与 mdx 均标注「社区常见值,未证实」。视觉数值全部取 06 已核 token:控件 32/圆角 6/字号 14(§2.3②③)、浮层主阴影逐字(§2.3⑥)、hover rgba(0,0,0,0.04)=FillTertiary、占位 25%=TextQuaternary、分隔线 #f0f0f0=colorBorderSecondary(§2.3⑤)、选中 #E6F4FF/#1677ff(§1.2 蓝板);浮层单列 256px 借 Select listHeight 档(06§4.6)并如实注明 Cascader 未单列该值。键盘/Esc 恢复原值/浮层不进 Tab 序列取 07§5 combobox;Space 勾选取 07§36。省市区数据为 demo 自拟教学数据。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/timeline",
+    "researchRef": "out/design-study/12-expansion.md#§15 时间线 Timeline + out/design-study/06-antdesign.md#§1.2/§1.3/§2.2/§2.3/§3.1/§3.2 + out/research/07-components-patterns.md#§19(进度指示器)/§37(reduced-motion)",
+    "note": "item color 默认 blue、mode 取值 start|alternate|end、reverse、loading、placement、orientation 逐字取 12§15;mode/reverse 官方默认值未记载,标注「社区常见值,未证实」。accent 参数(CSS 变量 --tl-accent)默认 #1677ff=colorPrimary 表达官方默认 blue(06§1.2/§2.2);成功 #52c41a/失败 #ff4d4f=colorSuccess/colorError(06§2.2);轴线 #f0f0f0=colorBorderSecondary;文字 88/65/45% 透明度体系(06§2.3⑤);字阶 12/14(06§2.3①);时间戳 tabular-nums(06§1.3)。入场 0.3s=motionDurationSlow+EaseOut、stagger 60ms 为 demo 节奏;加载点 1s 自转为 demo 教学参数(未证实),spinner 适用域引用 07§19。节点 12px/线宽 2px 标注「社区常见值,未证实」。真实案例 GitHub 时间线/电商物流为编辑性泛例。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/collapse-panel",
+    "researchRef": "out/design-study/12-expansion.md#§15 折叠面板 Collapse(APG 骨架)+ out/research/07-components-patterns.md#§34(APG 30 模式含 Accordion)/§36/§22 + out/design-study/06-antdesign.md#§2.3⑤/§3.1/§3.2/§3.3",
+    "note": "APG 骨架 heading[aria-level]>button[aria-expanded][aria-controls]+role=region[aria-labelledby]、可同开>6 块时省略 region、Enter/Space 切换逐字取 12§15;accordion/collapsible(header|icon|disabled)/expandIconPlacement(start|end) 取值同源,官方默认值未记载均标注「社区常见值,未证实」;『多开是常规、手风琴单开是特例』按 12§15 原文口径。过渡 0.2s=motionDurationMid+motionEaseInOut(06§3.1/3.2),collapse 动效族存在性取 06§3.3;文字/分隔线透明度体系(06§2.3⑤);grid-template-rows 0fr/1fr 高度动画为自研实现。标题 padding 12px 16px 标注「社区常见值,未证实」。icon 档下键盘 Enter/Space 保留(可达性不让步)为 demo 实现决策并写入 mdx。方向键/Home/End 为 APG 可选增强,demo 仅实现已记载的 Enter/Space 并如实注明。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/rate-score",
+    "researchRef": "out/design-study/12-expansion.md#§15 评分 Rate(APG Rating Radio Group Example)+ out/research/07-components-patterns.md#§23(Hick)/§22(Fitts)/§35(focus≠selection)/§36/§37 + out/design-study/06-antdesign.md#§1.2/§2.2/§2.3④",
+    "note": "count 默认 5 与 allowClear 默认 true 逐字取 12§15(官方记载);allowHalf 默认值未记载,标注「社区常见值,未证实」。APG 无独立 rating 模式、官方 Rating Radio Group Example(radiogroup+radio[aria-checked]+roving tabindex+Space 选中)逐字取 12§15;radio 方向键组内移动取 07§36;悬停预览不改 aria-checked 对齐 07§35 focus≠selection。激活色 --rate-active 默认 #faad14=antd gold 主色/seed 金(06§1.2/§2.2),『antd Rate 官方默认色 token 未证实』已在 schema/mdx 注明;空星 #d9d9d9=colorBorder;星间 4px 借 sizeXXS 档(06§2.3④);星形 24px 标注「demo 教学尺寸,未证实」。tooltips[] 文案(很差→超赞)为 demo 自拟,注明非官方。半星实现:每星拆左右两个 radio,aria-label 写「3.5 星」。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/stepper",
+    "researchRef": "out/design-study/12-expansion.md#§15 步骤条 Steps + §14 目标梯度效应 + out/research/07-components-patterns.md#§16(错误就近)/§21③(可撤销)/§24(Miller)/§34/§36 + out/design-study/06-antdesign.md#§2.2/§2.3③⑤/§3.1/§3.2",
+    "note": "item status wait|process|finish|error 且未配置时由 current 自动推算、percent(process 步进度环)、responsive(<532px 自动转垂直)、maxCount≥3、onChange 设置后可点击 逐字取 12§15;current/orientation 官方默认值未记载,current 默认 1 标注「demo 教学值」、horizontal 标注「社区常见值,未证实」。节点 32px 借 controlHeight 档(06§2.3③,已注明非 Steps 官方记载);wait 25%=TextQuaternary、#d9d9d9=colorBorder、连接线底 #f0f0f0=colorBorderSecondary、error #ff4d4f=colorError(06§2.2/§2.3⑤);图形回弹 0.2s=EaseOutBack token(06§3.2)。ol/li+aria-current=\"step\" 注明「APG 30 模式无步骤条(07§34),惯例未证实」;错误就近取 07§16;可撤销(回退保留数据)取 07§21③;连接线点亮对应目标梯度(12§14,含官方 URL 入 sources)。demo 点击步骤头经 store.set(\"current\") 反向联动参数面板(与 b9 批 peak-end-rule 同一既有模式)。进度环 conic-gradient+mask,0% 不画环。"
+  },
+  {
+    "batch": "b20-components2",
+    "id": "components/upload-states",
+    "researchRef": "out/research/07-components-patterns.md#§14(Carbon File Uploader 三态)/§1(MUI 隐藏 input)/§16(错误就近)/§19(进度指示器)/§37 + out/design-study/12-expansion.md#§15 上传三态 Upload + out/design-study/06-antdesign.md#§1.2/§2.2/§2.3⑤",
+    "note": "Carbon:两变体(按钮/拖放)、拖入边框变色加粗、上传中三态 loading/success/uploaded、错误态清晰修复指引、标题用途+描述限制、长文件名省略号+tooltip、Space/Enter 开框+焦点回触发元素、Tab 到删除图标再 Space/Enter、模态内勿多文件——全部逐字取 07§14(一手 URL 入 sources)。antd:status 四值 uploading(进度条)/done/error/removed、maxCount=1 替换、beforeUpload、onChange event.percent、Upload.Dragger 逐字取 12§15。五态=入口(点击/拖拽)+拖入悬停+三态映射 antd status。配色 #1677ff/#E6F4FF(蓝板第 1 阶,06§1.2)/#52c41a/#ff4d4f/#d9d9d9/rgba(0,0,0,0.04) 均为 06 已核 token;进度条 4px×72px、行 padding、约 1.5s 模拟时长标注「demo 教学几何/教学模拟,未证实」。mdx 如实记录 NN/g(2–10s 宜 spinner)与 antd(统一百分比条)的张力,声明 demo 遵循 antd。maxCount 官方默认未记载,demo 默认 3 标注教学值。aria-live 播报为 demo 实现,非官方出处。"
+  },
+  {
+    "batch": "b21-materials2",
+    "id": "materials/contact-shadows",
+    "researchRef": "12-expansion.md §7(接触阴影/AO:椭圆伪元素+blur 配方 bottom:-6px / height:12px / blur(6px) / α 0.25;着色阴影 #3366CC=hsl(220 60% 50%);Comeau 分层 1/2/4/8/16px 倍增、每层同透明度 0.2;分层阴影不建议动画;AO 术语来自 3D 渲染、社区实践共识如实标注);09-apple-materials.md §8.4(WWDC25 219 [422–445s] 阴影随体积/高度加深的定性)、§3(visionOS)",
+    "note": "distance/spread/color/alpha 四个默认值全部直接取 12§7 配方(6px/6px/#3366cc/0.25,无发明值);float 模式分层 α=0.25×0.8=0.2 与配方值一致(0.8 为 0.2/0.25 的换算系数,已在 effect 中写明);mode=contact|float 对应任务要求的「软接触阴影 vs 悬浮投影」,distance/spread 对应「距离/扩散」。真实产品案例:Comeau 博客(配方出处)、iOS 26 Liquid Glass 放大态加深阴影(定性,09§8.4)、WinUI/Fluent 拖拽抬升(theme-shadow 条目既有记载,调研 02§C5)。"
+  },
+  {
+    "batch": "b21-materials2",
+    "id": "materials/specular-highlight",
+    "researchRef": "12-expansion.md §7(镜面高光 ::before 顶部天光带配方:inset 0 0 auto 0 / height 6px / linear-gradient(hsl(0 0% 100%/.5), transparent));09-apple-materials.md §1.4d(WWDC25 219 lensing 定性;内高光官方未公布→推导区间亮 0.25–0.4/暗 0.08–0.15 + 0.5px 同色 hairline,⚠️未证实如实标注)、§8.8(触碰辉光「从指尖下方点亮」定性,219 [725–737s])、§3(visionOS 注视高亮,WWDC25 303 [90–104s])、§9.2(MDN will-change)",
+    "note": "intensity 默认 0.5、height 默认 6px 取 12§7 配方;hairline 默认 0.5px 取 09§1.4d(推导值,effect 中标注「非官方」);lighting=static|pointer 对应任务要求的「inset 高光 + 随位移动态版」——pointer 光斑跟随指针属输入驱动(参考 liquid-glass 触碰辉光先例),无自主动画,prefers-reduced-motion 只取消入场。玻璃卡底色 rgba(17,25,40,0.55) 为 glassmorphism 条目既有的生产实测配方。"
+  },
+  {
+    "batch": "b21-materials2",
+    "id": "materials/dimming-layer",
+    "researchRef": "09-apple-materials.md §1.3(HIG 官方建议「下层内容偏亮时加 35% 深色压暗层」;SwiftUI Glass.clear 官方示例 .black.opacity(0.3);WWDC25 219 localized dimming 定性)、§1.4b(apple.com 玻璃底色三态 rgba(250,250,252,.8→.92)/rgba(22,22,23,.8→.88),生产 CSS 实抓)、§8.9(sheet 玻璃后退+压暗表达模态,356 [438–494s])、§7.1(MDN overscroll-behavior contain 与 ::backdrop blur(0.5rem) 官方示例)、§11.6(压暗 35% 是 clear 的门票);12-expansion.md §8(::backdrop 语义:viewport 同尺寸/LIFO/不继承任何属性;MDN 典型 rgb(0 0 0 / 25%);color-mix black 55% 重遮罩配方;M2 scrim ~32% 黑未证实如实标注)、§16.10(掺品牌色巧思)、§16.3(::backdrop Baseline 2022-03)",
+    "note": "strength 四档 0.25/0.30/0.35/0.55 全部为调研记载值(MDN 典型/SwiftUI 官方示例/HIG 官方建议/12§8 重遮罩),默认 0.35 取 HIG 官方建议——「α 档位」以 enum+cssVar 实现(枚举值即 CSS 数值);mode=solid|gradient 对应任务要求的「文字压图/弹窗遮罩的梯度与纯色两式」;color 默认 #000000 为全部官方示例基色。M2 ~32% 未证实,未设档。system=web-std(::backdrop 为标准载体)。"
+  },
+  {
+    "batch": "b21-materials2",
+    "id": "materials/depth-of-field",
+    "researchRef": "12-expansion.md §8(景深定义 blur → dim → sharp 三层;远景配方 .stage__far blur(8px) saturate(.9) scale(1.02);玻璃层配方 .stage__glass backdrop-filter blur(6px) + color-mix(in oklab, black 55%, transparent);filter Baseline 2016-09;大面积/频繁动画 blur 开销告诫;will-change 提示);09-apple-materials.md §7.1(MDN dialog ::backdrop blur(0.5rem) 官方示例)、§8.7(scroll edge effect「内容溶解进背景」定性,219 [532–599s])、§1.2(HIG 材质厚度语义:更厚更不透明/更薄保留背景上下文)、§9.2(will-change 用时加)",
+    "note": "blur 默认 8px、saturation 默认 0.9 取 12§8 远景配方;玻璃中景固定 6px+55% scrim 按配方分工(不随参数联动,effect 中写明);失焦薄纱 25% 借 MDN ::backdrop 典型值(同节,演示近似已标注);focus=near|mid|far 实现任务要求的「前景清晰+背景 blur 分层」,far 为反转对照;对焦切换不做 filter 过渡(直接置换,遵循 12§8 性能告诫),仅薄纱 0.25s opacity。system=community(分层配方技法,与 grain-gradient/aurora-gradient 同惯例)。"
+  },
+  {
+    "batch": "b22-icons2",
+    "id": "icons/icon-font-vs-svg",
+    "researchRef": "out/design-study/12-expansion.md §12(CSS-Tricks《Inline SVG vs Icon Fonts [CAGEMATCH]》Chris Coyier 2014:失败面清单/锐度/定位/结论 IE9+ 全胜、IE8 字体占优;评论区 SVG 缓存与 DOM 体积) ; out/design-study/07-icons.md §1.1(Lucide defaultAttributes.ts:24 网格/2px/currentColor 源码定值)、§1.5(Material Symbols 可变字体路线、&display=block、子集化 1.7KB)、§5.2(CSS Color 4 §6.4 currentcolor 原文)",
+    "note": "demo 为机制对照:SVG 侧真实内联矢量;字体侧用系统符号字形真实渲染(机制同源:码位→字形→color,受文本 AA 与 line-height 定位影响),界面上如实标注「非图标字体文件」;failure 故障模拟器 font-missing 档为仿真(tofu+裸连字),emoji-crash 档为真实浏览器行为(U+FE0F 变体选择符,平台相关)。params: delivery(JS)/size(cssVar,默认 24=全行业祖先网格)/color(cssVar,currentColor 链路)/failure(JS)。"
+  },
+  {
+    "batch": "b22-icons2",
+    "id": "icons/icon-button",
+    "researchRef": "out/design-study/12-expansion.md §12(Sara Soueidan《Accessible Icon Buttons》三方案与推荐② hidden+aria-labelledby;aria-label 四缺点;Scott O'Hara 名只放 SVG 的失败矩阵;focusable=false 防 IE 双 Tab;WCAG 2.1 Label in Name) ; out/design-study/07-icons.md §2(Material 图标展示尺寸 24×24 dp)、§4.1(aria-hidden 红线)、§4.3(WCAG 1.4.11) ; out/design-study/04 §2.1(M3 target 48dp,经 fitts-law 条目同源核验) ; out/design-study/02-tdesign.md(实测:文档站顶栏 32×32 图标钮、gap 8px) ; principles/wcag-checklist 条目(WCAG 2.2 SC 2.5.8 ≥24×24 CSS px,先前批次已核值)",
+    "note": "demo:naming(JS)直接改写真实按钮 DOM(labelledby/hidden-text/aria-label/svg-only/none 五档)+规则推演播报;hitTarget(cssVar,默认 48=M3 48dp;审计框 <24 变红=WCAG 2.5.8);iconSize(cssVar,默认 24);expand(JS)padding 撑盒 vs 伪元素负 inset 扩热区(社区常见做法,已标注未证实单一权威出处)。APG button 对照:原生 <button> 自带 Enter/Space,交互日志显式记录;APG Space-keyup 细节未在调研内,已删除不用。「16px 字形+48px 热区」无统一标准,标注为社区常见值未证实。"
+  },
+  {
+    "batch": "b22-icons2",
+    "id": "icons/favicon-stack",
+    "researchRef": "out/design-study/12-expansion.md §12(Evil Martians《How to Favicon in 2024》Andrey Sitnik:5 图标+1 manifest;ico 32×32 根目录/RSS 只认该路径/sizes=32x32 修 Chrome bug;icon.svg 内嵌 <style>+prefers-color-scheme,#0f0f0f↔#f0f0f0 定值;apple-touch 180×180+20px 内边距+背景色;512 maskable 安全区 409×409;manifest 仅 PWA;rel=shortcut icon 无效;staging 反色彩蛋)",
+    "note": "demo:scheme(JS)模拟系统深色模式——SVG 字形 #0f0f0f↔#f0f0f0(官方片段定值)+模拟浏览器 chrome 同步翻暗;staging 标签恒反色;padding(cssVar,默认 20)在 apple-touch 面板可视化,<12px 警告;maskable(JS)叠加 409×409 安全圆(512 画布)+圆形裁切预览。<head> 四行接线与 icon.svg 片段逐字取自 12 §12。sources 仅 Evil Martians 一条(调研唯一来源,≥1 满足)。"
+  },
+  {
+    "batch": "b22-icons2",
+    "id": "icons/icon-system-design",
+    "researchRef": "out/design-study/07-icons.md §2(Material 24px 栅格:24dp 修剪区/20dp live area/2dp padding/键程方 18×18 圆 Ø20 竖 16×20 横 20×16/整数坐标/圆角 2dp) ; out/design-study/07-icons.md §3.2(Lucide 贡献规范:1px 安全区/2px 元素间距/2.41px 斜角半径/模糊法验收/光学偏心)、§3.3(WCAG 1.4.11 细线警告)、§1.3(Heroicons 1.5px 实测、16/20 独立重绘)、§1.5(wght 100–700 轴) ; out/design-study/07-icons.md §1.1(Lucide/Feather 2px 源码定值)",
+    "note": "demo:六枚手绘迷你图标(24 网格、整数坐标、round 线帽),stroke(cssVar)=系统标准线宽(默认 2),overlay(JS)键程 shapes/像素栅格/安全区叠加层全部按调研数值绘制,audit(JS)注入三类真实缺陷(search 端点 19.5 非整数/home 屋顶 y=1 越修剪区/arrow-right 硬编码 1.5)并标红,naming(JS)注入 Home/search_icon/arrowRIGHT 命名违例;审计表逐行给判定+出处。kebab-case 命名规范标注为社区通行惯例(未证实单一权威规范)。"
+  },
+  {
+    "batch": "b23-dataviz2",
+    "id": "dataviz/small-multiples",
+    "researchRef": "out/design-study/12-expansion.md#§13 数据可视化:小倍数(定义/Tufte/地图结论)+ out/design-study/08-dataviz.md#§4.1 Grafana 常量、§1.1 Okabe-Ito hex、§5.2 网格 9% 公式",
+    "note": "定义(同标度同轴小图并置)、trellis/lattice/panel 别名、Tufte《Envisioning Information》1990 p.67『和什么比?』、『刻意不同标度强调相对变化』变体与『动画胜趋势/运动、小倍数胜时间点对比』的地图研究结论均取 12§13(Wikipedia 条目已核);panelGap 默认 8px 逐字对应 Grafana GRID_CELL_VMARGIN(08§4.1 constants.ts 源码核验,24 列/30px/90px 一并入 MDX);demo 四系列色取 Okabe-Ito R grDevices 固化 hex(08§1.1);面板参考线写死 0.09 与坐标轴条目 Grafana 公式同源(08§5.2);面板标题直标最新值取 jfly 直标原则(08§1.1)。核心对照『同轴小倍数阵列 vs 双轴混杂』为任务要点:双轴模式的左 0–100/右 0–70 双轴、交叉点无结论是 demo 自构反例,数值口径(取整到 10 倍数)已在 MDX 声明为演示档,非官方默认。"
+  },
+  {
+    "batch": "b23-dataviz2",
+    "id": "dataviz/chart-animation",
+    "researchRef": "out/design-study/12-expansion.md#§13 图表动效(Chart.js duration 1000/easeOutQuart/过渡模式)+ §5 prefers-reduced-motion Baseline + out/design-study/08-dataviz.md#§6 ECharts tooltip 时长、§5.2 网格 9%",
+    "note": "duration 默认 1000ms、easing 默认 'easeOutQuart'(30 种缓动)、三级配置(defaults→datasets[type]→options)、过渡模式 active 400ms/resize 0、animation:false 禁用、onProgress/onComplete 仅主配置生效——全部逐字取 12§13 Chart.js 官方文档(已核);任务要点『入场三式:生长/淡入/扫描』落为 demo 的 grow/fade/sweep 三档(grow 对应 Chart.js 默认从原点起动画的生长语义);easing 的 cubic-bezier(0.165,0.84,0.44,1) 为社区通行 easeOutQuart 近似——调研未记载系数换算,schema effect/MDX/demo chip 三处均标注『社区常见值,未证实』;prefers-reduced-motion 直出终态由『关键帧只写 from,基态=终态』实现,reduce Baseline 2020-01 取 12§5(MDN 已核);aria-live『图表加载完成』播报取 12§13 片段 onComplete→ariaLive 模式;『轴/网格静止』纪律与 0.09 网格同坐标轴条目(08§5.1/5.2);ECharts tooltip transitionDuration 0.4/hideDelay 100 入真实产品案例(08§6 源码核验);『动画 vs 小倍数』适用边界取 12§13 地图结论。"
+  },
+  {
+    "batch": "b23-dataviz2",
+    "id": "dataviz/chart-accessibility",
+    "researchRef": "out/design-study/12-expansion.md#§13 图表无障碍(WAI 复杂图像教程)+ out/design-study/08-dataviz.md#§3.4 ECharts aria.ts/decal.ts、§1.1 jfly 直标原话、§6 WCAG 1.4.13",
+    "note": "两段式替代文本(短 alt=类型+概要 + 页面内长描述=趋势/比例尺/颜色顺序/相对高度)、figure role=group+figcaption 首选、aria-describedby 仅适合纯文本(结构化表格读成连续段落)、正文先一句话概括——均取 12§13 WAI 教程(已核);decal 默认 off 逐字对应 ECharts aria.decal.show 默认 false、aria.label.enabled 默认 true(08§3.4 aria.ts 源码核验;decal 参数 dashArrayX/Y/rotation 在 util/decal.ts,demo 用 SVG pattern 等效示意并已在 MDX 声明);directLabel 默认 on 取 jfly『图上直标优于远处对色图例』原话(08§1.1 已核);任务要点『tabList 对照』落为 role=tablist+roving tabindex 切换长描述载体(table/text 双档)并与参数面板双向同步;『sonification 说明』按调研边界如实处理:demo 为自研示意(数值→音高 220-880Hz,WebAudio 手势后创建),产品级实现与具体参数本轮调研未核验,schema/MDX/demo chip 三处标注『未核验』不引具体数值;tooltip WCAG 1.4.13 三件套交叉引用图例与提示条目(08§6 W3C 理解页已核)。另:verify-entries.mjs/verify-dist.mjs 的 dataviz slug 清单已按既有批次『落地即并入』惯例加入三 slug(该两文件不在禁改清单);并行批次 b24-principles2 对 verify-entries.mjs 的改动与本批无冲突。"
+  },
+  {
+    "batch": "b24-principles2",
+    "id": "principles/aesthetic-usability",
+    "researchRef": "out/design-study/12-expansion.md#§14 审美可用性效应(定义/证据/UI 启示/URL)+ lawsofux.com/aesthetic-usability-effect(官方 URL);真实案例第三条反例引用 out/research/03-visual-style-trends.md §2(NN/g Liquid Glass 批评,glassmorphism 条目已核验口径)",
+    "note": "Kurosu & Kashimura 1995(日立设计中心)『26 种 ATM 界面变体 × 252 名参与者』与『美观度与感知易用性相关性强于实际易用性』逐字取 12 补研 §14;美观可能掩盖可用性问题→测试规程设防同源。demo:同一功能两种完成度的 A/B 自测(4 按钮 ATM 卡、任务=查询余额),实测用时/误点 vs 感知评分 1–7 双通道对照;beauty/handicap 为 JS 型参数(store 订阅),accent 为 CSS 变量型(--au-accent);handicap 对两侧等量注入(small-target=18px、slow-response=900ms,均标注为演示缺陷值非定律数值);评分量表 1–7 标注为 demo 教学选择(原实验用语义差异量表)。案例一(ATM 实验载体)与案例三(Liquid Glass 反例)有据;案例二(Apple Big Sur 半透明侧栏)标注『编辑性引申自调研 03§1』。"
+  },
+  {
+    "batch": "b24-principles2",
+    "id": "principles/goal-gradient",
+    "researchRef": "out/design-study/12-expansion.md#§14 目标梯度效应(定义/Hull 1932/1934/Kivetz/Urminsky/Zheng/UI 应用/URL)+ §16 签名巧思 9(预盖一枚已完成章)+ out/research/07-components-patterns.md#§20(NN/g percent-done ≥10s)",
+    "note": "『越接近目标动力越强』、Hull 1932 假说/1934 大鼠奔食、Kivetz/Urminsky/Zheng 购买加速与虚幻进度、人为进度(会员卡预盖章、Uber 类起步进度)逐字取 12 补研 §14;默认 headStart=1 取 §16-9 签名巧思;NN/g ≥10s 用 percent-done 取 07§20。demo:可玩咖啡集章卡(集章格/进度条/打卡按钮),steps=10、headStart=1 为 demo 教学参数(schema 如实标注定律不规定数值);间隔=距上一章的真实毫秒数(第 1 章相对本轮起点,demo 实测非模拟),逐章柱状+最近/最短/最长文本;预盖章带『预』标记并如实标注人为进度(虚幻进度研究的伦理边界写进 avoid);达标后按钮原位变『再来一轮』;aria-live 播报+集章格字符/形状/颜色三通道;reduced-motion 全动画取消。"
+  },
+  {
+    "batch": "b24-principles2",
+    "id": "principles/pareto-principle",
+    "researchRef": "out/design-study/12-expansion.md#§14 帕累托法则(定义/意大利 80% 土地归 20% 人口/UX 应用原句/机械套用误用警告/URL)+ out/research/07-components-patterns.md#§29(序位效应,案例二互补关系)",
+    "note": "『约 80% 的效果来自约 20% 的原因(roughly 非精确值)』、意大利 80/20 土地观察、『将大部分精力集中于能为最多用户带来最大收益的领域』『机械套用(如只顾减少点击次数)是误用』逐字取 12 补研 §14。demo:10 项功能使用占比 SVG 柱状+累计曲线+80% 参考线;share ∝ 1/rank^skew 为 demo 教学模型并如实标注(skew=1.9 时前 2 项承载 78.4% 为公式实时实算,不写死 80;80/20 本身是 roughly 近似);budget 默认 2 对应 20% 关键区域,2→4 增益 78.4%→86.1% 递减如实显示;预算高亮双通道(柱体变色+逐项『预算内』文字);关键数字(前 2 项占比/80% 线名次/预算覆盖)全部文本呈现+动态 aria-label;reduced-motion 取消过渡。真实产品两例均标注『泛例』(未点名具体产品,不确定不编),第三条为 12§14 误用警戒。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-categorical-palette",
+    "researchRef": "out/design-study/08-dataviz.md#§1 分类色板(1.1 Okabe-Ito / 1.2 Tableau 10 / 1.3 IBM Carbon)",
+    "note": "三套色板 hex 全部取自调研:Okabe-Ito 8 色为 R grDevices 固化值(§1.1 源码核验;官方页只发色样图+PPT 不含 hex,作为官方发布值未证实,文案如实带标注,沿用 out/research/06-color-theming.md §19/§未证实-4 的口径);Carbon 14 色官网已核(Apache-2.0,demo 取前 8 并按官方顺序);Tableau 10 经 R 源码注释佐证、官方博客 403 与官方许可未证实(§1.2),schema effect 与 MDX 表格均如实标注。demo 排序橙→天蓝→蓝绿取自 §9 签名巧思 2;8 类封顶取巧思 3;jfly『图上直标』取 §1.1/§6;Carbon 渐变红线取 §1.3 原文。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-ordinal-scale",
+    "researchRef": "out/design-study/08-dataviz.md#§2 序数色阶(2.1 ColorBrewer 官方 JSON / 2.2 Crameri / 2.3 插值与生态)",
+    "note": "Blues 5(#EFF3FF→#08519C)与 YlGnBu 5(#FFFFCC→#253494)为 ColorBrewer 官方导出 JSON 核验值(§2.1,curl 直下 35,144 字节);RdBu 5 双向阶含中点锁零原则取自 §2.1+§9 巧思 5。demo 在官方 5 锚点间 sRGB 线性插值仅为演示 3-9 档,MDX 明确生产应取官方整档或 d3-scale-chromatic 均匀 B-spline(§2.3 已核)——符合巧思 4『禁止成品自插值』的声明式落地。ColorBrewer 许可未明示、Crameri 具体许可未证实(§7/§8-5),均如实标注;Crameri v9.0.0/DOI/IPCC 在用取自 §2.2(官方页已核)。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-colorblind-safe",
+    "researchRef": "out/design-study/08-dataviz.md#§3 色盲安全(3.1 患病率 / 3.2 三模型 / 3.4 生态实践)",
+    "note": "三模型机制(Brettel 1997 双半平面/Viénot 1999 单平面/Machado 2009 severity 插值)、『sRGB 直套矩阵=流行 bug 整体偏暗』、『tritan 必须 Brettel,复用红绿平面=完全错误』均取自 §3.2(daltonlens.org 已核);患病率 NEI 1/12 男性(§3.1)与 jfly 白人男 8%/亚洲男 5%/非洲男 4%、tritan 0.001%(§1.1/§3.1)照录。feColorMatrix 系数为社区流传 Machado 2009 severity=1 矩阵——调研未记载系数原文(§8-8 论文未直接核),schema/MDX/demo 内均已标注『社区常见值,未证实』并声明 sRGB 空间近似偏差。演示色板朱红/蓝绿混淆对取 Okabe-Ito 固化值;Power BI ColorblindSafe-Longer.json(§3.4 官方 docs 已核)、ECharts aria.decal 默认 false(§3.4 源码核验)、Primer 四套色盲主题(out/research/06-color-theming.md §10/§19)入真实产品案例。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-dashboard-density",
+    "researchRef": "out/design-study/08-dataviz.md#§4 仪表盘密度(4.1 Grafana 源码 / 4.2 Power BI 官方主题文档)",
+    "note": "24 列/行高 30px/间距 8px/最小面板 90px 逐字取自 Grafana public/app/core/constants.ts(§4.1 源码核验,官方 docs 只给档位名不给像素已核);字号阶梯 45/12/12/10 取自 Power BI report-themes-create-custom 官方示例 textClasses(§4.2,标注为官方示例值非强制默认);thirdLevelElements=轴网格线色 #F3F2F1 同 §4.2。comfortable=调研值原样;compact(间距÷2/行高×0.8/callout 45→32/label 10→9)为 demo 演示档——官方未发布 compact 惯例,Tableau 数值惯例未找到(§4.3/§8-4),schema effect 与 MDX 均如实标注『未证实/未找到』,不编造。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-chart-axes",
+    "researchRef": "out/design-study/08-dataviz.md#§5 坐标轴与网格线(5.1 ECharts / 5.2 Grafana / 5.3 ggplot2 / 5.4 FT)",
+    "note": "ECharts v5.5.1 axisDefault.ts:轴线 #6E7079 宽 1、刻度长 5、标签 margin 8/fontSize 12、splitLine #E0E6F1、splitNumber 5、类目轴不画横网格、值轴 auto——全部逐字核验(§5.1)并落进 demo 常量与默认值;gridOpacity 默认 0.09 逐字对应 Grafana getGridColor 9% 透明度公式(§5.2 暗亮主题翻转,demo 用 currentColor 实现翻转);ggplot2 默认删轴线 element_blank() 取 §5.3(L194/L271/L276);FT『Column must always start at 0』零基线原则取 §5.4(海报版权所有不可翻印,MDX 只引原则)。许可背景(ECharts/Grafana=Apache-2.0,ggplot2 MIT 系)取 §7。"
+  },
+  {
+    "batch": "b7-dataviz",
+    "id": "dataviz/dataviz-tooltip-legend",
+    "researchRef": "out/design-study/08-dataviz.md#§6 图例与提示(legend & tooltip)",
+    "note": "ECharts tooltip 五默认值(trigger 'item'/triggerOn 'mousemove|click'/showDelay 0/hideDelay 100/transitionDuration 0.4)逐字取自 TooltipModel.ts(§6 源码核验),demo 的 100ms 隐藏宽限即 hideDelay;WCAG 2.1 SC 1.4.13 三要求 Dismissible/Hoverable/Persistent 与失败模式 F95/F114 取自 §6(W3C 官方理解页已核),demo 三件套全部实现(Esc 监听/提示可进入/常驻)。legend 默认 right 取 ggplot2 L262(§5.3/§6 源码核验);Power BI 图例枚举 BottomCenter/Right/Left/RightCenter 取 §4.2/§6(官方示例);jfly『直标优于图例』原话取 §1.1/§6,demo 的 legendPos=none 档落地为首组直标;ECharts legend 默认布局值源码未逐字核到位(§8-9),已在 schema effect 如实标注。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-stroke-fill",
+    "researchRef": "out/design-study/07-icons.md#1.1 Lucide(defaultAttributes.ts 源码定值) + #1.2 Feather(attrs 同构) + #1.3 Heroicons(outline 实测 1.5px) + #3.3 线宽与低对比度渲染(WCAG 1.4.11 提醒)",
+    "note": "参数默认值:strokeWidth 默认 2 = Lucide/Feather 官方源码定值(defaultAttributes.ts 四件套 24/2px/round/currentColor,07 §1.1 一手 curl 实测);fill 默认 off = Lucide 源码 fill:'none'(07 §1.1);capJoin 默认 round = 源码 stroke-linecap/linejoin:'round'(07 §1.1)。Heroicons 1.5px 为真实文件实测、README 示例 2 系 v1 旧文案(07 §1.3,已在 effect/MDX 如实标注矛盾)。Demo 内联自绘 24×24 描边图形 8 枚(sun/moon/camera/bolt/flag/chat/pin/bookmark,≥6 满足;非官方库拷贝),相机镜头与定位圆点为写死 fill:none 的镂空子形状,演示「属性写死封死继承」;太阳射线/旗杆为开放路径,fill=on 无形可填。strokeWidth 走 CSS 变量(--sf-stroke),fill/capJoin 为 JS 型 data 属性。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-grid-24",
+    "researchRef": "out/design-study/07-icons.md#2. Material 官方 24px 栅格与键程数值(m2.material.io system-icons 逐条原文) + #1.3 Heroicons 20/16 独立重绘网格 + #1.5 Material Symbols 仅 20/24 做了完美像素对齐",
+    "note": "官方锚值(24 档):展示区 24×24dp、活动区 20×20dp 四周 2dp padding、密集活动区 16×16、方形键程 18×18、圆形 Ø20、竖长方 16×20、横长方 20×16、X/Y 整数、圆角默认 2dp(07 §2 全部逐条原文)。参数:gridSize enum 16/20/24/32 默认 24(24=官方基准;20=Material 密集布局官方档+Heroicons mini 重绘;16=Heroicons micro 实测独立 viewBox;32=社区常见放大网格,官方无锚值,已标注未证实);padding dimension 0-4 step1 默认 2(官方 \"2dp of padding\",整数步进呼应 on-pixel 规则)。demo 派生公式 live=g-2pad、square=live-2、circle=live、rect=live×(live-4)(由 24 官方值反推的规则,等比应用并在标签注明「推导,官方未定义」;20+2 档 live=16 恰为官方密集值)。SVG 8 倍整数缩放渲染,0.125 单位描边=1px 参考线;示例图形自绘 24 网格「图片」图标等比缩放,MDX 注明官方做法是换档重绘非缩放。gridSize/padding 均为 JS 型参数(store 订阅重算几何)。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-optical-sizing",
+    "researchRef": "out/design-study/07-icons.md#2. 键程四图(圆 Ø20 vs 方 18×18) + #3.1 官方数值级惯例(圆比方大 2dp≈+11%/opsz 20-48 默认 24/GRAD 深底降眩光) + #3.2 Lucide 光学细则(不对称允许 slightly off center/模糊法验收/2.41px 斜角)",
+    "note": "参数:baseSize dimension px 16-48 默认 24(Material Symbols opsz 轴官方默认 24,README \"The default is 24\",07 §1.5;量程 20-48,仅 20/24 完美像素对齐);compensate enum on/off 默认 on(on=圆 Ø20/方 18 官方键程 +11.1% 光学放大+不对称三角光学偏心;off=圆 Ø18 同尺寸纯几何对照)。三角偏移 0.5px 为演示取值——Lucide 原文只写 \"may be moved slightly off center\" 未给数值(已在 effect/MDX 如实标注「未证实为官方数」)。模糊法验收(Lucide 原版技法,07 §3.2)做成 demo「模糊法验收」按钮(filter: blur 1.5px)。线宽用 vector-effect: non-scaling-stroke 恒定 2px 绝对值示意 opsz「放大线相对变细」方向,MDX 注明官方补偿曲线未公开、demo 为方向示意。baseSize/compensate 均为 JS 型参数。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-aria-accessible",
+    "researchRef": "out/design-study/07-icons.md#4.1 规则主干(MDN aria-hidden 纯装饰摘除/可聚焦红线/WAI functional-images 动作命名/共享信息图标) + #4.2 WAI-APG 现状(旧页 404,names-and-descriptions 与 hiding-semantics 承接)",
+    "note": "规则全部一手:MDN aria-hidden 可隐藏对象含 \"Purely decorative content, such as icons\"、可聚焦元素/祖先禁用 aria-hidden、摘除前提 \"identical or equivalent meaning and functionality\"(07 §4.1);WAI 教程 \"'print this page' rather than '(image of a) printer'、'search' rather than 'magnifying lens'\"、图标紧跟链接文字不携新信息时 alt=\"\"(07 §4.1)。参数:decorative enum on/off 默认 on(aria-hidden 摘树);label enum with/without 默认 with(名写动作「收藏」,非形状「星形」)。Demo 两个真实按钮(icon-only 收藏 + icon+text 通知)实时消费 aria-hidden/aria-label,可访问名按 accname 简化规则计算展示;读屏播报面板与四格对照表由同一 simulate() 规则函数输出,面板与 MDX 均声明「按 W3C/MDN 规则推演,不逐字复刻任一读屏器,内联 SVG 播报因 NVDA/JAWS/VoiceOver 实现而异」(调研未统一该行为,如实标注)。WAI-APG 旧 Images 页 404 现状写入 MDX(07 §4.2)。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-sprite-symbols",
+    "researchRef": "out/design-study/07-icons.md#5.1 symbol/use 机制(MDN:symbol 不可渲染/use 深克隆 shadow DOM/CSS 继承唯一染色通道/已定义属性被忽略/同源限制/data: 弃用) + #1.2 Feather 官方雪碧图 feather-sprite.svg#circle + #1.4 Phosphor duotone 背景层 opacity 0.2 + #5.2 currentColor(CSS Color 4 §6.4) + #5.1 坑位清单(写死 fill/stroke 封死继承等)",
+    "note": "机制全部 MDN/CSS Color 4 一手(07 §5.1/§5.2):<symbol> 自带 viewBox、width/height 仅在引用对象为 svg/symbol 时生效;use 克隆树不吃文档选择器只吃继承;引用时已定义属性被忽略。参数:symbol enum bell/heart/star/bolt 默认 bell(一份模板四实例:16/24/32+行内);ink enum current/inverse/duotone 默认 current(current=宿主一处 color 全链 currentColor;inverse=深底反白同一继承链;duotone=换双层 symbol——背景层 fill=currentColor opacity=0.2 为 Phosphor duotone 文件实测官方值,前景描边层;换 symbol 而非对克隆树写 CSS 正是 MDN 规则的应用)。反例 tile:写死 fill=\"gray\" 的 path 在任何 ink 下拒绝换色(坑位①活体演示)。Demo 12 个 symbol 定义于隐藏 defs(4 裸+4 duotone+1 locked);Feather README 外链雪碧图用法与同源限制写入结构与 MDX(07 §1.2/§5.1)。symbol/ink 均为 JS 型参数。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-lucide-set",
+    "researchRef": "out/design-study/07-icons.md#0. 结论速览(五套网格/线宽/许可矩阵) + #1.1-#1.5 五套逐项核验(README+真实 SVG 双证) + #7. 未证实清单(Phosphor 权重像素值/Lucide 图标总数不一致/Heroicons README 过期)",
+    "note": "六集=07 调研覆盖的五套 + 经典 Material Icons(同一 google/material-design-icons 仓库内上一代,README 原文 \"2022 年 4 月推出 Symbols,经典五样式 2022 年起停止更新\",07 §1.5)。核验值照录:Lucide 24×24/2px/ISC(defaultAttributes 源码);Feather 24×24/2px/MIT 系出同门;Heroicons 24/20/16 三档、24 outline 实测 1.5px(README 示例 2 已过期,如实标注)、MIT;Phosphor 256×256 viewBox 实测、fill 路径、6 权重、MIT,权重像素值未证实(07 §7 并入 MDX);Material Symbols 24 基准/wght 100-700/opsz 默认 24/Apache-2.0;经典 Material Icons 填充/Apache-2.0/停更。Lucide 总数官网 1600+ vs 仓库 2000+ 两处不一致如实并录(07 §7)。参数:set enum 六值默认 lucide;glyph enum bell/home/heart/star 默认 bell。Demo 主预览+六迷你卡(可点击,经 store.set 双向同步面板);图形为自绘示意(5 种画法 lineA/B/C+solidA/B,MDX 明示非官方库拷贝);许可徽章 ISC/MIT×3/Apache-2.0×2 全部官方核验。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-color-states",
+    "researchRef": "out/design-study/08-dataviz.md#1.3 IBM Carbon 数据可视化色板(分类板 14 色 hex + 告警色 danger #da1e28,官网全文抓取核验,Apache-2.0 LICENSE 已核) + out/design-study/07-icons.md#4.3 WCAG 1.4.11 3:1(2.999:1 算失败) + #5.2 currentColor(CSS Color 4 §6.4) + #1.4 Phosphor duotone opacity 0.2 + #3.1 GRAD 深底降眩光",
+    "note": "状态色取值(本批唯一 hex 来源=08 专项调研已核实值,非编造):default #1192e8=Carbon 分类板 Cyan 50(08 §1.3 板位 #2);hover #002d9c=同板 Blue 80(板位 #8)——Carbon 官方未定义 hover 状态色,取已核实深档作演示语义,已在 effect/MDX 双处标注;danger #da1e28=Carbon 告警色 danger(08 §1.3)。许可 Apache-2.0 经 LICENSE 文件核实(08 §1.3)。对比度阈值 WCAG 1.4.11 ≥3:1(\"2.999:1 would not meet\",07 §4.3)。本会话用 node 按官方相对亮度公式实算:#1192e8 对白底 3.33:1(擦线)、80% 不透明度混白后跌破;#da1e28 5.00:1(80% 时 3.94 仍过、60% 失守);#002d9c 11.32:1(50% 附近才跌破)——数值已写入 MDX 实测锚点,demo 面板实时重算。opacity dimension % 20-100 step5 默认 100,cssVar --cs-opacity;20%=Phosphor duotone 背景层官方弱化量级(07 §1.4)。state JS 型驱动宿主 color,图标+文字 currentColor 全链跟随(CSS Color 4 §6.4,07 §5.2);Tailwind text-gray-500 机制作真实案例(07 §5.2)。"
+  },
+  {
+    "batch": "b7-icons",
+    "id": "icons/icon-motion",
+    "researchRef": "out/design-study/07-icons.md#6.1 Material Symbols FILL 轴动画(官方盖章 selected 动效/先子集化再动画) + #6.2 M3 微交互时长缓动 token(short3/short4 150/200ms、easing.standard cubic-bezier(0.2,0,1,1)、emphasized 系) + #6.3 无障碍护栏(MDN prefers-reduced-motion/transition none 直切终态/描边版实底版换 use 等效降级)",
+    "note": "M3 token 官方值照录(07 §6.2 表格原文):duration.short3=150ms、short4=200ms(官方用例 \"Selection controls have a short duration of 200ms with Standard easing\")、easing.standard=cubic-bezier(0.2, 0, 1, 1)、emphasized-decelerate=[0.05,0.7,0.1,1]、emphasized-accelerate=[0.3,0,0.8,0.15]——缓动默认值取调研记载的 standard 原文。参数:effect enum dash/rotate/fill 默认 dash(dash=pathLength=1 归一+dashoffset 1→0 重绘,默认态全绘不隐藏图标;rotate=≤90°(07 §6.2 惯例 rotate≤90°/位移±1px);fill=fill-opacity 0→1,Material FILL 轴 \"animated fill effect, to indicate user selection\"(07 §6.1)的 SVG 等效,等效降级=两枚 symbol 换 use 亦入 MDX);duration dimension ms 50-400 step25 默认 200 cssVar --im-duration;easing cubicBezier 默认 [0.2,0,1,1] cssVar --im-easing(store 序列化为 cubic-bezier())。reduced-motion:真实 @media 降级(animation/transition 禁用直切终态,MDN 07 §6.3)+demo「模拟 prefers-reduced-motion」开关(data-reduced 同待遇);触屏无 hover→卡片点击触发,键盘走 :focus-visible。三卡图形自绘(加号/环形箭头/心形,非官方拷贝)。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/press-feedback",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§1 按压反馈对(1.1 组件库源码取证 / 1.2 Web 惯例结论 / 1.3 可直接复用代码)+ out/design-study/09-apple-materials.md#§4 按压反馈",
+    "note": "Arco Button `:active{transition:none}` + 0.1s linear 与 primary hover=色阶-5/active=色阶-7、AntD 五颜色系属性 0.2s motionEaseInOut(motionUnit 0.1×2)、Arco decelerate cubic-bezier(0.4,0.8,0.74,1) 全部逐字取自 10§1.1/§1.3;releaseDuration 默认 120ms 取 §1.3 可复用代码(结构仿 Arco)。pressScale 0.97 / pressAlpha 0.8 为社区常见值,schema effect 与 MDX 均按 §1.2/§9 口径如实标注『未证实』(四大库默认按钮无 scale)。Apple 侧 UIControl.isHighlighted 成对语义、WWDC18 803 即时响应、apple.com :active 只换底色取 09§4。demo 用 pointer+键盘事件驱动 data-pressed,徽章实时显示 normal/highlighted 对照。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/slot-spring",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§2 卡槽弹簧(2.1 BuildUI layoutId / 2.2 手写积分器 / 2.3 推荐档位实算 / 2.4 iOS 分段控件对照)+ §6.3 Motion 源码手感映射",
+    "note": "demo 默认 stiffness 300 / damping 25 = §2.3『中·微弹』档(ζ0.722/过冲3.8%/t_peak 262ms/包络→5% 240ms);BuildUI 官方配方 bounce 0.2/duration 0.6(ζ≈0.8/过冲1.5%)与『抄参数先算 ζ』反例(500/50 过阻尼 ζ1.118)写进 schema/MDX;读数条按 §2.3 公式本地实算(ω₀=√k、ζ=c/(2√k)、过冲=e^(−πζ/√(1−ζ²))、包络→5%=ln20/(ζω₀))。iOS 系统分段控件弹簧数值未证实(§2.4)如实标注;HIG ≤5 段/等宽/单一选择器取 §2.4。弹簧经 Motion 物理弹簧驱动,速度接力为 Motion 文档语义(§7.3)。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/overlay-entrance",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§3 浮层入场(3.1 shadcn/radix 事实标准 / 3.2 过冲 bezier / 3.3 可直接复用代码)",
+    "note": "初态 scale 0.95(zoom-in-95)+ fade + 200ms = shadcn Dialog 源码逐字;方向性位移 8px = Popover slide-in-from-bottom-2;进慢出快 = Sheet 入 500/出 300,demo 出场默认 150ms 取 §3.3 Motion 版;曲线三档:standard cubic-bezier(0.4,0,0.2,1)(§3.3 CSS 版)/ react-hot-toast 过冲 cubic-bezier(.21,1.02,.73,1) / Arco 过冲 token cubic-bezier(0.3,1.3,0.3,1)(§3.2)。M3 emphasized easing 数值未证实(§3.2)如实标注。demo 含锚点侧 transform-origin、点击外部关闭、Esc、焦点进出归还;全部参数为 CSS 变量型,零订阅直驱。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/shake-decay",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§4 错误抖动·指数衰减(4.1 animate.css / 4.2 弹簧速度注入 / 4.3 指数衰减数学 / 4.4 macOS 登录框)",
+    "note": "双轨实现:CSS keyframes 轨按 x(t)=A·e^(−λt)·sin(ω_d t) 采样生成衰减帧(A/λ 可调,默认 10px/6s⁻¹ = §4.3 示例;每拍 0.1s、包络每拍 ×e^(−0.3)≈0.74 与 §4.3 一致);弹簧速度注入轨严格用 §4.2 档位 stiffness 500/damping 24(ζ≈0.536/λ≈12/包络→5%≈250ms),初速度 v₀=A·ω_d 为物理推导已在 MDX 标注。animate.css ±10px 等幅与 macOS 登录框 4–6 拍/~0.5s 均按 §4.1/§4.4 如实标注(前者为等幅特例、后者为社区复刻未证实)。公式出处维基 Damping ratio 与 Motion spring.ts 对应关系取 §4.3。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/toast-spring",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§5 Toast 弹簧入场(5.1 react-hot-toast / sonner / vaul 源码 / 5.2 可直接复用代码)+ out/design-study/06-antdesign.md#§4.10 Message",
+    "note": "入场初态(屏外滑入 + scale 0.6 + opacity 0.5)、退场 0.4s cubic-bezier(.06,.71,.55,1)、reduced-motion 纯 fade 逐字取 react-hot-toast toast-bar.tsx(§5.1);lifetime 默认 4000 = sonner TOAST_LIFETIME 源码值;真弹簧档 stiffness 300/damping 25(ζ≈0.722)取 §2.3 同一『弹而不闹』带,Motion 官方写法 bounce 0.25+visualDuration 0.35(§5.2)与 bounceToDampingRatio 换算(§6.3)写入 MDX。AntD message 3s(06§4.10)作对照。WCAG 2.2.3/WAI-APG 口径与 components/toast 条目互链。堆叠上限 3、计时器清理、role=status 均实现。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/damping-craft",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§6 阻尼感设计(6.1 物理定义 / 6.2 感知区间 / 6.3 Motion 源码手感映射)+ §4.3 ζ→过冲表",
+    "note": "ζ 范围 0.2–1.2 连续可调(任务指定),默认 0.5 = Motion 源码默认弹簧(stiffness 100/damping 10/mass 1,spring.ts:22-27,§6.3;文档页标注差异已按源码优先口径记录);参考四档 0.3/0.5/0.8/1.1 对应 §6.2 感知区间(0.3–0.7 弹区、0.5–0.8 UI 目标区、ζ=1 临界、>1 过阻尼);过冲/包络读数按 §4.3 表公式本地实算(0.5→16.3%、0.7→4.6%、0.8→1.5%、1→0);Apple UISpringTimingParameters dampingRatio 官方表述(1.0 更阻尼/0.15 多震荡)取 §4.3;bounce↔ζ 换算(bounceToDampingRatio)与 mass:'auto' 写进 MDX(§6.3)。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/smooth-craft",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§7 丝滑工艺(7.1 transform/opacity / 7.2 will-change / 7.3 中断接力 / 7.4 CSS 变量代价 / 7.5 linear() / 7.6 刷新率)+ out/design-study/09-apple-materials.md#§9 可中断动画与 velocity matching",
+    "note": "三条工艺对照:属性轨(transform vs left,web.dev 丢帧 50%/1% 实测数据引原文)逐帧直写 el.style.transform(§7.4 不经 CSS 变量);will-change 三条纪律(最后手段/动画前置 animationend 后撤/勿撒 body)按 MDN 原文(§7.2),translateZ(0) 廉价回退;中断接力轨 spring(继承速度)vs tween(starts from rest and ignores velocity,Motion 文档原文 §7.3)。帧率表用同一 rAF 循环统计帧间隔均值与 >25ms 长帧。linear()(Baseline 2023-12)与 ms 不按帧(§7.5/§7.6)及 WWDC18 803『打断即设计』(09§9.1)写进 MDX。"
+  },
+  {
+    "batch": "b8-motion",
+    "id": "motion/scroll-overflow",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§8 滚动溢出行为(8.1 overscroll-behavior / 8.2 scroll snap / 8.3 滚动条 / 8.4 可直接复用代码)+ out/design-study/09-apple-materials.md#§7.1 overscroll",
+    "note": "四值语义(auto/contain/none/2025 chain)、滚动链定义、『overflow:hidden 恒在边界 → 锁背景』MDN 原文推论、iframe 边界、::backdrop blur(0.5rem) 官方示例全部取自 §8.1(09§7.1 双源一致);innerMode 默认 contain(弹层防穿透标准姿势,巧思 8),cssVar --ob-inner 直接驱动 overscroll-behavior;lockPage on = 外层 data-locked overflow:hidden。demo 含穿透计数器(弹层开+指针在内层时外层滚动即 +1)、Esc/焦点管理、内层 tabindex=0 键盘滚动。mandatory 吸附警告与 scrollbar-width none 的 WCAG 2.1.1 警告取 §8.2/§8.3;Safari 16+ 等版本号如实标注『MDN 兼容表内容,本次调研未逐项核验』。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/y2k-retro-futurism",
+    "researchRef": "out/research/03-visual-style-trends.md §12 Y2K/Retro-Futurism + §三汇总表 row12 + §19(前接/后继时间线) + 09-apple-materials.md §1.4d(specular highlights 官方定性)",
+    "note": "任务给的路径 out/design-study/03-visual-style-trends.md 实际位于 out/research/(design-study 下无该文件),已按实际路径引用。参数:chromeStops(光谱停靠点数 2-8 默认 5)/jellyAlpha(果冻填充 alpha 默认 0.55)/gloss(镜面高光倍率默认 1)——调研 03§12 原文只列「铬/虹彩渐变(光谱色停靠点)、镜面高光与反射强度、半透明果冻填充与描边、低分辨率伪影」四类变量,未附任何数值,全部默认值为本条目基准设定(已在 effect/MDX 如实标注);grain enum(on/off)对应「低分辨率与 JPEG 伪影作为年代徽章」原文特征。chromeStops/gloss 为 JS 型(渐变停靠点串由 chromeGradient() 以 SPECTRUM 色表均匀采样生成,首尾强制银白保金属读感),jellyAlpha/gloss 走 CSS 变量(--y2k-jelly-alpha/--y2k-gloss),grain 为 JS data-grain 切换像素网格叠层。HUD 读数与 EQ 柱 aria-hidden 装饰;prefers-reduced-motion 关闭入场/EQ/闪烁。真实案例 3 个全部出自调研 03§12(iMac G3、WorkOS Launch Week、Balenciaga/Palace+aespa/XG/Charli XCX)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/memphis-design",
+    "researchRef": "out/research/03-visual-style-trends.md §13 Memphis + §三汇总表 row13 + §6 Neo-Brutalism(硬偏移阴影共享语法对照)",
+    "note": "参数:stroke(描边粗细 1-6px 默认 3 基准)/density(图案密度 3-14 默认 8 基准)——调研 03§13 原文列「图案密度与叠放层数、冲突色板(无调和约束)、描边粗细、几何母题库(squiggle/zigzag/dot)、非对称构图」五类变量未附数值;motif enum 三值即原文母题库;palette enum(classic/角色互换)只用原文四色 turquoise×coral×yellow×black,具体 hex(#3EB8B0/#FF6F61/#FFD449/#141414/#F6F1E7)为基准设定已标注。密度铺排用确定性整数 hash 槽位(rnd=sin hash),Shuffle 按钮换 seed 本地状态可复现。技术要点:SVG 母题的 fill/stroke/strokeWidth 含 var(),必须走 style 属性——SVG 表现属性不解析 CSS 变量(demo 内已按此实现);描边变化同步驱动卡片描边与硬偏移阴影(calc(var(--mm-stroke)*2))。母题层 aria-hidden+pointer-events:none;prefers-reduced-motion 关闭入场与按钮过渡。案例 3 个全部出自调研 03§13(Carlton 屏风 1981、Miami Vice/Nickelodeon、Dior 2011-12/Missoni 2015)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/swiss-international",
+    "researchRef": "out/research/03-visual-style-trends.md §15 Swiss/ITS + §三汇总表 row15 + out/research/05-layout-typography.md §17(字阶比率)",
+    "note": "参数:cols(栅格列数 2-8 默认 6)——调研 03§15 列「模块网格列数/栏距/基线」未附数字,网页社区常见 12 列已标注「未证实为规范值」,海报语境基准 6;ratio enum 四选项(1.25 大三度/1.333 纯四度/1.414 增四度/1.5 纯五度)全部为 modularscale.com 记载比率(05§17 一手核对),cssVar --sw-ratio 经 CSS calc 链驱动标题字号=基准×ratio⁴;accent #E30613 为社区常见基准值(调研只记「经典瑞士红」无色值),按 WCAG 相对亮度公式自算对白底 ≈4.9:1 过 SC 1.4.3;grid enum(on/off)切换 aria-hidden 栅格叠层。技术要点:grid-column span 不用 calc()(兼容风险),跨列在 TSX 内联 style 计算,叠层列数与海报同串内联同步;字体用系统无衬线栈近似 Helvetica 并注明不加载商业字体。动效纪律=近乎无动效(仅入场淡入)。案例 3 个全部出自调研 03§15(Müller-Brockmann 海报、1972 Vignelli 纽约地铁导视、MIT/1960s 美国机构)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/editorial-magazine",
+    "researchRef": "out/research/03-visual-style-trends.md §16 Editorial/Magazine + §三汇总表 row16 + out/research/05-layout-typography.md §18(WCAG 2.2 Text Spacing)/§19(Butterick 行长) + 03§7(65ch 示例值)",
+    "note": "参数全部有调研记载:cols enum(1/2/3,默认 2)对应原文「2/3/12 列结构化栏格」(12 列指整页版心,已在 effect/MDX 注明);measure 45-90ch(默认 65)取 Butterick《Practical Typography》原文区间(05§19 一手核对),65ch 亦为 03§7 minimalism 记载示例值,下限 40 仅演示「过短」方向;lead 1.2-2(默认 1.6)对 WCAG 2.2 SC 1.4.12「行高≥1.5 倍」官方阈值(05§18 原文);dropcap enum 对应原文「首字下沉/引文样式」,::first-letter 实现不产生额外 DOM。CSS columns 按列填充,MDX 标注 DOM 顺序=栏序(SC 1.3.2);pull quote 用 blockquote 语义+column-span:all;窄视口回落单栏。衬线/无衬线标题配对切换为场景内 toggle(原文「衬线展示字体×无衬线正文配对」及其反向实验)。案例 3 个全部出自调研 03§16(The Atlantic、Monocle、NYT Cooking)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/frutiger-aero",
+    "researchRef": "out/research/03-visual-style-trends.md §19 Frutiger Aero(关联条目)+ §三汇总表 row19 + §1(Aero 源头/backdrop-filter 支持面) + 09-apple-materials.md §1.4a(blur20px 实抓)/§1.4d(顶缘受光推导区间)",
+    "note": "参数:skyBlue #8ECDEB/grassGreen #7DBB4E——调研 03§19 只记「天空蓝/草绿」色彩语义无色值,hex 为基准设定(社区常见值,未证实,已标注);glossAlpha 默认 0.35 落在 09§1.4d web 复刻惯例推导区间 rgba(255,255,255,.25~.4)(报告明示推导非官方);blur 默认 20px=09§1.4a Apple 官网生产 CSS 实抓 blur(20px)+saturate(180%) 基准档。全部四参数 CSS 变量型。玻璃卡写 -webkit- 双前缀+@supports 提高填充回退(03§1 支持面:Chrome/Edge76+/FF103+/Safari9+ 前缀/Safari18 去前缀)。气泡升起为装饰层(aria-hidden+pointer-events:none,动画结束自动移除节点);prefers-reduced-motion 气泡静止+入场取消。案例:Windows Vista/7 Aero(03§1 记载)+ Nintendo Wii 频道界面、iOS 6 及更早光泽按钮(公认可归入该美学的产品,MDX 未标注为调研出处,属编辑性内容)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/holographic-chrome",
+    "researchRef": "out/research/03-visual-trends 无此条;正确出处 out/research/03-visual-style-trends.md §20 Holographic/Iridescent & Chrome/Liquid Metal(关联条目)+ §三汇总表 row20 + daisyUI 2025 词条 014/015 + 09-apple-materials.md §1.4d/§8(specular/lensing 官方定性)",
+    "note": "参数:mode enum(holo/chrome 两族)= daisyUI 2025 词条 014/015 分立结构(调研 03§20);hueSpan 60-360°默认 240 基准(「光谱渐变」原文特征无数值,JS 采样 7 停靠点 conic 渐变,首尾同色相闭合);sheen 倍率默认 1 基准(镜面高光官方定性参照 WWDC25 219/09§1.4d,2025 语境风格亲缘已注明);diffraction enum(on/off)对应汇总表 row20 原文「衍射效果」,条纹 opacity 0.16+screen 混合+mask 限卡缘。技术要点:光谱游彩用 hue-rotate 动画(background-position 对不可重复 conic 无效);chrome 模式 180° 线性渐变 50% 处深色「地平线」,MDX 标注只给 ≥24px 大字标题(SC 1.4.3 大文本 3:1)。指针移动驱动 --mx/--my 镜面高光(用户驱动,PRM 下保留);漂移/旋转在 prefers-reduced-motion 下静止。案例 3 个为编辑性内容(Instagram 2016 标识、Spotify Wrapped、Apple Card),调研只记 daisyUI 场景引文(cinematic launches/fashion/music/premium technology)。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/flat-design",
+    "researchRef": "out/research/03-visual-style-trends.md §17 Flat Design(关联条目)+ §三汇总表 row17(Wikipedia Flat_design:演进链+NN/g 22%)",
+    "note": "参数:accent #007AFF 为社区通传 iOS 蓝引用(调研未核验,已标注);自算对白底 ≈4:1,MDX 标注按钮白字需粗体否则不过 SC 1.4.3;ornament enum(none 严格扁平/gradient 微渐变/shadow 柔投影)直接演示「无拟物深度」纪律与 flat 2.0 演化,默认 none;iconStyle enum(outline/filled)= 原文「简洁字形图标」,同一几何内联 SVG 两模式,currentColor 单色;radius 0-20 默认 4 基准(0=Metro 直角纪律为记载起点 WP7 2010)。NN/g 2017「扁平界面平均慢 22%」为调研 03§17 原文数据,写入 a11y/MDX。案例 3 个全部出自调研 03§17 演进链(Metro→Win8、iOS 7、Holo→Material)。star=2(参数化程度低于其余条目,与样式本身的少装饰属性一致)。demo 磁贴/开关可点,选中态 aria-pressed+色+字三重表达(SC 1.4.1);prefers-reduced-motion 取消全部过渡。"
+  },
+  {
+    "batch": "b8-styles",
+    "id": "styles/skeuomorphism",
+    "researchRef": "out/research/03-visual-style-trends.md §18 Skeuomorphism(关联条目)+ §三汇总表 row18(daisyUI 词条 008)+ §3 Neumorphism 词源对照 + daisyUI 2025 词条 022/023/024(四分支) + 09-apple-materials.md §1.4d(顶缘受光推导区间同构)",
+    "note": "参数:texture enum(leather/metal/paper/wood)= 原文「材质贴图」,四种底均为 CSS 渐变近似(radial 粒面/repeating-linear 拉丝·木纹/横线纸纹),无外部贴图已在 acceptance 注明;lightAngle 60-300° 默认 135 基准(「光照模型」原文变量无数值,「左上来光」为社区惯例已标注未证实),驱动全部凹凸渐变方向;emboss 0-2 默认 1 基准,顶缘亮内阴影+底缘暗内阴影成对(与 09§1.4d 推导区间同构);stitch enum 缝线 dashed 内描边为年代签名细节(基准设定,调研未记载)。机械控制隐喻=原文第三变量:拨杆 role=switch+aria-checked+aria-live 读数、旋钮按钮 4 档步进 rotate 映射。MDX 含「与扁平化的历史对照」小节(iOS7 2013 转扁平/03§17 扁平被玻璃取代/03§18 拟物 2026 四分支回潮,均有调研出处)。prefers-reduced-motion 过渡取消;按压=物理下沉(位移+内阴影反转)非发光。案例:iOS 6 及更早原生 App+daisyUI 2026 四分支(前者社区公认样本后者调研记载)+ 复古收音机/车载 App(编辑性内容已标注)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/fitts-law",
+    "researchRef": "out/research/07-components-patterns.md#§22 Fitts 定律 + out/research/04-motion-microinteractions.md#§2.1(M3 Switch target 48dp)",
+    "note": "size 默认 48px = M3 触控目标 48dp(调研 04§2.1,已核);WCAG 2.2 SC 2.5.8 的 24×24 CSS px 法定下限为官方规范事实(源 WCAG22 quickref,WebAIM checklist 已 fetch 核验);distance 为 demo 教学几何(60–360px,非定律数值,schema 如实标注)。lawsofux fittss-law 页 fetch 核验:Paul Fitts 1954、speed-accuracy trade-off、『移动端大按钮惯例』表述。demo:点击起点计时、命中目标结束、脱靶计数、实时 ID=log₂(2D/W)(Shannon 形式,demo 本地实算)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/hick-law",
+    "researchRef": "out/research/07-components-patterns.md#§23 Hick 定律",
+    "note": "choices 2–8 为 demo 实验变量(定律本身定性),RT = a + b·log₂(N) 为 Hick-Hyman 1952 经典形式(lawsofux hicks-law 页 fetch 核验 Hick & Hyman 1952);pause 800ms 为 demo 节奏参数并如实标注。真实产品三例(Google 首页/Apple TV 遥控器/Slack 渐进 onboarding)取 lawsofux Examples 区块与调研 07§23 双源一致。demo:N 目标圆环随机高亮、误点不计入 RT、按 N 分组统计中位反应时;Math.random 仅演示随机源,非加密用途(Mimosa 提示已按此口径确认)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/millers-law",
+    "researchRef": "out/research/07-components-patterns.md#§24 Miller 定律(7±2)与工作记忆 + lawsofux/millers-law + lawsofux/chunking",
+    "note": "7±2 与『不要拿神奇数字七为不必要的设计限制辩护』逐字取调研 07§24;George Miller 1956 取 lawsofux millers-law 页(fetch 核验);digits 默认 10/chunk 默认 3 为 demo 教学参数(略超上界与电话号码分块同构,来源标注为教学选择);展示 3 秒为 demo 节奏并标注。真实产品:电话号码 3–4 位分组、信用卡四位分组自动跳格、iOS 设置分组列表(后者标注编辑性泛例,lawsofux 未点名)。demo:分块展示 3s→隐藏→按位计分→累计最佳;分组靠间距不靠容器(与共同区域分工)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/jakobs-law",
+    "researchRef": "out/research/07-components-patterns.md#§28 Jakob 定律(+§21 启发式④一致性)",
+    "note": "YouTube 2017 改版反弹→『回到旧版』→回调取调研 07§28(lawsofux jakobs-law 记载);NN/g 十大启发式第 4 条为其心理学注脚取 07§21/§28。demo:同任务(夜间模式+音量最小)familiar/alien 双范式对照计时;alien 为刻意反面教材但保留 aria-label 与键盘可达(可达性底线不让步),误触只统计任务无关控件;variant/hint 为 JS 型参数订阅 store。底部 tab bar 两端布局标注编辑性泛例。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/peak-end-rule",
+    "researchRef": "out/research/07-components-patterns.md#§25 峰终定律(Kahneman 1993/Mailchimp/Uber/Lexie Kane)",
+    "note": "Kahneman et al. 1993 冷水实验、Mailchimp 发送成功动画、Uber 时间感知降取消率逐字取 07§25;(峰值+结尾)/2 在 schema/面板/MDX 三处均标注『教科书化简,非原始实验公式』。demo:8 段旅程曲线(第 3 点=峰/第 8 点=终被参数覆写),全程平均 vs 峰终预测双条实时重算;三预设(烂尾 8/2、平顺 5/4、惊喜收尾 6/9)经 store.set 联动参数面板;6/9→预测 7.5 vs 平均 5.0、8/2→预测 5.0 vs 平均 4.4 均按 BASE=[3,4,6,5,4,5,4,3] 实算核对。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/doherty-threshold",
+    "researchRef": "out/research/07-components-patterns.md#§27 Doherty 阈值(+§18 响应时间三限 0.1/1/10s)",
+    "note": "<400ms 与『此前标准 2000ms』、Doherty & Thadani 1982 IBM Systems Journal 取 07§27 + lawsofux doherty-threshold 页(fetch 核验 Walter J. Doherty 与 Ahrvind J. Thadani);NN/g 0.1/1/10s 三限取 07§18,两者互补关系按 07§27 口径。delay 默认 700ms 为『刻意越界』的 demo 参数(阈值本身是定律值);feedback 三档(干等/乐观更新/骨架屏)对应 07§27 感知性能出口,乐观更新按 acceptance 要求做成两阶段(已记录→后台确认)。社交点赞乐观更新标注泛化惯例。demo 面板对 delay≤400ms 翻绿达标徽章;aria-live 播报 + 骨架微光尊重 reduced-motion。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/teslers-law",
+    "researchRef": "out/research/07-components-patterns.md#§26 Tesler 定律(复杂度守恒)",
+    "note": "Larry Tesler(Xerox PARC/Apple)、复杂度守恒、『工程师多花一周好过百万用户各多花一分钟』『不要为理想理性用户设计』『指引放进使用上下文(tooltip 内嵌帮助)』逐字取 07§26。demo:同一寄件表单 manual/assisted 双模式,assisted 预填 fields−2 项并锁定但带『修改』解锁出口(预填可夺回控制=转移有代价的定律另一面);复杂度分配条(用户 n 项/系统 k 项)总宽恒定,300ms/项自动填写为 demo 节奏并如实标注。电商地址预填/外卖默认项标注泛化惯例。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/gestalt-proximity",
+    "researchRef": "out/research/07-components-patterns.md#§31 格式塔·邻近原则(+五类分组清单)",
+    "note": "『相邻元素被感知为一组』与格式塔五类(Proximity/Similarity/Continuity/Closure/Connectedness)逐字取 07§31;指导三例(表单字段分组/列表条目间距/搜索结果簇)同源。gap 默认 36/inner 默认 10 为 demo 教学几何(schema 标注『格式塔原则本身是定性描述,调研未给数值』);『gap≥2×inner 记成立』为 demo 自定判定口径,MDX 如实标注。uniform 阴性对照组隔离单一变量;a11y 红线:分组必须语义化(fieldset/列表,SC 1.3.1),强绑定分组叠共同区域(07§32)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/gestalt-similarity-closure",
+    "researchRef": "out/research/07-components-patterns.md#§33 格式塔·相似原则(+§31 五类分组/闭合)+ §30(色觉告诫)",
+    "note": "相似原则指导(『用颜色与形状标记同功能元素,确保链接与导航与普通文本可区分』)取 07§33;闭合属 07§31 五类清单;『不要只靠颜色』取 07§30 跨条目复用(已在 MDX 标注呼应)。mouth 默认 24°/60° 崩解阈值为 demo 教学口径(标注非定律数值);吃豆人缺口用 conic-gradient 透明扇区实现,不支持时退化完整圆盘(fallback 已写)。相似线索强制双通道(color 模式同时改图标形状);illusory square 无语义的 a11y 红线写进 schema。链接下划线惯例/spinner/图标族形状语言:前两者为 Web 平台事实标准,后者标注编辑性泛例。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/serial-position",
+    "researchRef": "out/research/07-components-patterns.md#§29 序位效应 + lawsofux/serial-position-effect(fetch 核验)",
+    "note": "primacy+recency、『最不重要的放中间、关键动作放最左最右』取 07§29;Ebbinghaus 首创与『Apple/Electronic Arts/Nike 在利用该效应』取 lawsofux 原文(fox_fetch 已核)。items 默认 9/dwell 默认 600ms 为 demo 教学参数并如实标注(效应本身定性);demo 为自由回忆范式(任意顺序输入→按词匹配→映射回原位置计分),累计 tally 跨轮画 U 形柱状图+逐位置数值文本(双通道)。词呈现为离散替换无动画(动画会污染呈现时长变量,a11y 声明)。读屏线性访问的局限写进 a11y/结论。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/von-restorff",
+    "researchRef": "out/research/07-components-patterns.md#§30 Von Restorff 效应 + lawsofux/von-restorff-effect(fetch 核验)",
+    "note": "Hedwig von Restorff(1906–1962)1933 实验、『强调要有节制/避免被误认为广告/不要只靠颜色/动效强调考虑运动敏感用户』四条 takeaways 取 07§30+lawsofux 原文(fetch 核验)。demo:异类记忆测试(展示 2.5s→遮罩→点击应答),三种线索(color/shape/motion)按线索分组统计正确率;motion 线索 1.4s 慢脉冲(≈0.7 次/秒,远低于 SC 2.3.1 的 3 次/秒),reduced-motion 自动退化为 3px 描边(信号换通道不消失)。tiles/cue/SHOW_MS 均标注 demo 参数。每屏一个 Primary(IBM Carbon,07§2)与广告标注(Google)为真实案例;必填星号标注编辑性泛例。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/apg-patterns",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(30 模式)+ §35/§36(键位)",
+    "note": "30 个模式名逐字取调研 07§34 清单;清单逐字点名 29 项,Slider(含 Multi-Thumb)按 APG 官方页面把 Slider 与 Slider (Multi-Thumb) 分列为两条恰得 30(schema/MDX 均按此口径说明);三段规范结构(键盘交互/roles/states/properties)逐字取 07§34。键位提示只收录 07§36 已证实的六个模式(Button=Enter/Space、Checkbox=Space、Radio=方向键、Slider=方向键+Home/End、Tabs=Tab 进出+方向键、Dialog=Esc/困焦/归还),其余显示『详见 APG 模式页』——不确定不编。group 五档为教学分组,MDX 明确标注『非 APG 官方分类』。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/wcag-checklist",
+    "researchRef": "out/research/07-components-patterns.md#§36(WebAIM 键盘页/SC 2.1.2)+ out/research/05(WCAG 官方数值一手核对)+ webaim.org/standards/wcag/checklist(fetch 核验)",
+    "note": "22 条 SC 的编号/等级/阈值为 WCAG 2.2 官方事实:1.4.3=4.5:1、1.4.11=3:1、1.4.6=7:1、2.5.8=24×24 CSS px(WCAG 2.2 新增)、1.4.10=320px、1.4.12=2×/1.5×/0.16×/0.12× 字号——对比度与文本间距两组数值在调研 05 已对照官方原文核验,SC 2.1.2 属 Level A 取 07§36;WebAIM checklist 页 fox_fetch 已核验(POUR 分组/版本与等级过滤)。AA 默认档=常用合规目标;『AAA 不要求全站达标』为 WCAG 官方口径;axe-core 自动化 30–50% 检出率为业界通行数字,标注编辑性泛例。demo 用 fieldset/legend 分组+原生 checkbox+meter 进度(元层面示范)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/prefers-contrast",
+    "researchRef": "out/research/07-components-patterns.md#§38 prefers-contrast(MDN)",
+    "note": "四值 no-preference/more/less/custom、custom 与 forced-colors: active 用户调色板对应、『命中 more 时虚线 outline 换高对比实线』MDN 示例、Baseline 2022 年 5 月全浏览器可用——全部逐字取调研 07§38;『焦点环、分隔线、禁用态文字都应响应此查询增强』同段逐字。demo:auto 档挂真实 @media (prefers-contrast: more/less/custom) 且声明全部套在 [data-mode=auto] 之下,与三档手动模拟互不干扰;ringWidth 默认 2px(cssVar --pc-ring)为 demo 参数;custom 档用 Canvas/Field/ButtonFace 系统色做 forced-colors 语义演示(MDX 标注真实实现应交给 forced-colors)。"
+  },
+  {
+    "batch": "b9-principles",
+    "id": "principles/keyboard-navigation",
+    "researchRef": "out/research/07-components-patterns.md#§35 键盘界面实践(APG)+ §36(WebAIM 键盘惯例与测试键位表)",
+    "note": "Tab/Shift+Tab 与方向键分工(roving focus)、焦点指示可见(默认 outline 轻易不要覆盖/高对比模式下颜色渐变可能消失)、焦点持久存在(关闭对话框/删除列表项后设回触发者或后一项,否则焦点掉到 body)、焦点移动可预测(页面加载不抢初始焦点)、focus≠selection(focus=document.activeElement,selection=aria-selected=true)、『选中随焦点』仅在面板已预载时允许——全部逐字取 07§35;键位表(按钮 Enter/Space、checkbox Space、radio 方向键、对话框 Esc/困焦/归还、滑块方向键+Home/End、tabs Tab 进出+方向键)与 WebAIM 禁忌(outline:0/none、tabindex≥1、无 href 的 <a>、外接键盘实测)、SC 2.1.2 取 07§36。demo 三场景(toolbar roving/tabs 选中随焦点+双视觉/dialog 困焦+Esc 归还)+skip link+aria-live 按键日志;ring 参数 native 档即『不覆盖默认 outline』的正解示范。GitHub 快捷键与 Radix Dialog 标注编辑性泛例。"
+  },
+  {
+    "batch": "b25-polish",
+    "id": "components/command-palette",
+    "researchRef": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/ ; https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/",
+    "note": "细节打磨轮(2026-11-22)新增:全站 Ctrl+K 命令面板的组件本体(吃自己的狗粮,实现见站点命令面板组件)。该批未单独写映射文件,本条为合并映射表时补录;来源与条目 schema.json 的 sources 一致。"
+  }
+]

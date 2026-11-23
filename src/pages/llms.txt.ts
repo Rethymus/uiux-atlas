@@ -1,9 +1,9 @@
 import { getCollection } from "astro:content";
 import { CATEGORIES, type EntrySchema } from "@/lib/types";
-import { entryUrl } from "@/lib/urls";
+import { entryUrl, withBase } from "@/lib/urls";
 
-/** entryId 形如 "styles/glassmorphism" → 对应条目 .md 端点路径 */
-const mdUrl = (entryId: string): string => `/${entryId}/index.md`;
+/** entryId 形如 "styles/glassmorphism" → 对应条目 .md 端点路径(带部署子路径) */
+const mdUrl = (entryId: string): string => withBase(`${entryId}/index.md`);
 
 /**
  * llms.txt(agent 消费通道,静态端点):

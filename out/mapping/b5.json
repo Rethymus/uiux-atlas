@@ -1,0 +1,22 @@
+[
+  {
+    "id": "type/fluid-type-scale",
+    "researchRef": "out/research/05-layout-typography.md#二、§13 Utopia 流式字阶生成器(交叉:§12 clamp()、§17 Modular Scale)",
+    "note": "公式与输出形态取 Utopia 实测输出(§13 一手);写作时用 node 实算验证:按样本隐含输入(minVw 360px/maxVw 1240px、base 1.125→1.25rem、min/max 比率 1.2/1.25)逐字复现调研记载的 --step-0 与 --step-1 两行输出。差异如实并列:Utopia 样本最小/最大两侧比率不同(反推 1.2/1.25),本条目按任务规格简化为单比率双乘,effect 与 MDX 已注明。默认值出处:maxSize 1.25rem 与 ratio 1.25 有调研一手支持(样本 max 值;Utopia 可选比率/modularscale 4:5 大三度);minViewport/maxViewport 480/1440px 与 minSize 1rem 为任务规格取值——Utopia 未直接记录视口默认值,样本反推约 360/1240px,effect/MDX 两说并列。参数全部 JS 型(demo 订阅 store 实时生成 --step-0..5 clamp() 并应用预览,另配模拟视口宽度换算 px 徽标);minViewport≥maxViewport 时分母为 0,demo 以斜率 0 兜底。"
+  },
+  {
+    "id": "type/variable-fonts",
+    "researchRef": "out/research/05-layout-typography.md#三、§20 可变字体(OpenType fvar)、§24 Inter(交叉:§21 font-display/FOUT)",
+    "note": "轴标尺 wght 100–900、opsz 14–32 与 x-height 1118/1056 UPM 取 rsms/inter 官方技术规格(调研 05§24 一手);默认 wght 400/opsz 14 为注册轴默认,已与本仓 node_modules/@fontsource-variable/inter/metadata.json 逐项核对一致(variable.axes:wght min 100/max 900/default 400;opsz min 14/max 32/default 14)。font-variation-settings 低层语法(轴名大小写敏感、须整体重申所有轴值)取 MDN+OpenType 规范(§20)。参数为 CSS 型(--vf-wght/--vf-opsz),demo 的 font-optical-sizing: none + font-variation-settings 消费;字体文件选定 standard.css 全轴文件——已查包内文件确认 index.css 仅携 wght 轴。分浏览器首发版本调研未记录(未证实),browserSupport 不作逐版本断言。demo 无动画,无需 reduced-motion 降级。"
+  },
+  {
+    "id": "type/fluid-spacing",
+    "researchRef": "out/research/05-layout-typography.md#二、§14 流式间距(交叉:§12 clamp())",
+    "note": "倍数梯 0.25/0.5/0.75/1/1.5/2/3/4/6 取调研 05§14 记载的 Utopia multipliers(0.75|0.5|0.25 与 1.5|2|3|4|6,s=1 基准);minSpace 1.125rem/maxSpace 1.25rem 默认值直接取 Utopia 实测输出 --space-s 的两端(一手)。node 实算验证:同一公式按样本隐含视口(360/1240px)逐字复现调研记载的 --space-2xs 行。差异如实并列:Utopia 官方串对个别令牌独立舍入(其 --space-3xs 为静态定值 0.3125rem),本条目实现为纯倍数插值,输出允许相差末位小数,zh/en MDX 均已声明。视口默认 480/1440px 为任务规格取值(样本反推约 360/1240px,effect/MDX 两说并列)。参数全部 JS 型(demo 生成 --space-3xs…3xl clamp() 并排展示代码+模拟视口条形图,样例卡片用真实 clamp 变量驱动 padding/gap)。star 2 按任务分配。"
+  },
+  {
+    "id": "layout/container-queries",
+    "researchRef": "out/research/05-layout-typography.md#一、§6 Container Queries(交叉:§11 响应式策略演进、§8 Split View 的 WAI-ARIA separator 模式)",
+    "note": "Baseline 2023-02、container-type: inline-size(常规组件避免 size)、@container 语法、容器单位 cqw/cqi 族与可查询特征清单均取 MDN(调研 05§6 一手);browserSupport.baseline='Baseline Widely available (2023-02)',Firefox 具体版本号调研未记录故不写。调研标注 style() 样式查询支持矩阵未证实 → browserSupport 明示未核实且 demo 未使用 style()。参数分工:width 为 CSS 型(--cq-width 经 width: var() 消费,拖拽手柄经 store.set 与面板双向同步);breakpoint 为 JS 型——容器查询条件必须是字面量不能用 var(),demo 订阅后重生成 @container (min-width: Npx) 规则。默认 400/320 为任务规格演示值,effect 已注明生产断点应由组件内容决定(MDN 示例写 40rem)。手柄为 WAI-ARIA separator 角色+方向键键盘等价(呼应 §8 可访问分栏);cqw/cqi 均带固定值前置声明作级联回退;唯一 transition(状态徽标配色)已按 prefers-reduced-motion 关闭。"
+  }
+]

@@ -37,6 +37,14 @@ const PAGES = [
 ];
 const BUDGET_FACTOR = 1.1; // ask 规定:实测值 ×1.1 上浮
 
+// 部署子路径:站点作为项目页发布在 <base>/ 下(astro.config.mjs 的 base),产物里的
+// 资源地址形如 "/uiux-atlas/_astro/x.css",而 dist/ 磁盘上并没有 uiux-atlas/ 这一层——
+// 把网址映射回磁盘路径时必须先剥掉 base。base 直接从配置文件文本读取(零依赖,不 import astro)。
+const CONFIG_BASE = (readFileSync(join(root, "astro.config.mjs"), "utf8").match(/\bbase:\s*["']([^"']+)["']/) ?? [])[1] ?? "/";
+const BASE_SLASH = CONFIG_BASE.endsWith("/") ? CONFIG_BASE : `${CONFIG_BASE}/`;
+/** 站内网址 → dist 内磁盘路径;非站内(不以 base 开头)返回 null */
+const toDistPath = (href) => (href.startsWith(BASE_SLASH) ? join(dist, href.slice(BASE_SLASH.length)) : null);
+
 if (!existsSync(dist)) {
   console.error(`dist missing: ${dist} — run "pnpm -C uiux-atlas run build" first`);
   process.exit(1);
@@ -70,9 +78,20 @@ for (const { label, rel, baselineBytes, islandCap } of PAGES) {
   const islands = (html.match(/<astro-island\b/g) ?? []).length;
   check(label, "astro-island 数上限", islands <= islandCap, `${islands} ≤ ${islandCap}(上限 = 本轮 399 页逐页实测)`);
 
-  // ③ 照片 img 全部含 loading="lazy"(照片 = src 以 /photos/ 开头;0 张按"全部满足"通过并如实打印)
+  // ③ 照片 img 全部含 loading="lazy"(照片 = src 含 "/photos/" 的 <img>;项目页部署时 src 带
+  //    部署子路径前缀,故不锚定行首;并断言照片地址确实带 base——否则项目页上会 404)
   const imgs = [...html.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
-  const photoImgs = imgs.filter((tag) => /src="\/photos\//.test(tag));
+  const photoImgs = imgs.filter((tag) => /src="[^"]*\/photos\//.test(tag));
+  const photoSrcs = photoImgs.map((tag) => (tag.match(/src="([^"]+)"/) ?? [])[1] ?? "");
+  const photoOffBase = photoSrcs.filter((src) => !src.startsWith(`${BASE_SLASH}photos/`));
+  check(
+    label,
+    "照片地址带部署子路径",
+    photoOffBase.length === 0,
+    photoSrcs.length === 0
+      ? "0 张照片 img(本页静态 HTML 无照片,断言按全部满足通过)"
+      : `${photoSrcs.length - photoOffBase.length}/${photoSrcs.length} 张以 ${BASE_SLASH}photos/ 开头`,
+  );
   const lazyImgs = photoImgs.filter((tag) => /loading="lazy"/.test(tag));
   const missingLazy = photoImgs.length - lazyImgs.length;
   check(
@@ -84,15 +103,17 @@ for (const { label, rel, baselineBytes, islandCap } of PAGES) {
       : `${lazyImgs.length}/${photoImgs.length} 张含 loading="lazy"` + (missingLazy > 0 ? ",缺失 " + missingLazy + " 张" : ""),
   );
 
-  // ④ 关键字体 CSS 在 head:head 内 /_astro/*.css 样式表,目标文件含 @font-face
+  // ④ 关键字体 CSS 在 head:head 内 <base>/_astro/*.css 样式表,目标文件含 @font-face
   const head = html.slice(0, html.indexOf("</head>"));
   const styleLinks = [...head.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)]
     .map((m) => (m[0].match(/href="([^"]+)"/) ?? [])[1])
     .filter(Boolean);
-  const fontCssLinks = styleLinks.filter((href) => href.startsWith("/_astro/") && href.endsWith(".css"));
+  const fontCssLinks = styleLinks.filter(
+    (href) => href.startsWith(`${BASE_SLASH}_astro/`) && href.endsWith(".css"),
+  );
   const cssWithFontFace = fontCssLinks.filter((href) => {
-    const f = join(dist, href.replace(/^\//, ""));
-    return existsSync(f) && readFileSync(f, "utf8").includes("@font-face");
+    const f = toDistPath(href);
+    return f !== null && existsSync(f) && readFileSync(f, "utf8").includes("@font-face");
   });
   check(
     label,
@@ -107,7 +128,12 @@ for (const { label, rel, baselineBytes, islandCap } of PAGES) {
   const preloadFonts = [...head.matchAll(/<link\b[^>]*rel="preload"[^>]*as="font"[^>]*>|<link\b[^>]*as="font"[^>]*rel="preload"[^>]*>/g)]
     .map((m) => (m[0].match(/href="([^"]+)"/) ?? [])[1])
     .filter(Boolean);
-  const preloadOk = preloadFonts.length > 0 && preloadFonts.every((href) => existsSync(join(dist, href.replace(/^\//, ""))));
+  const preloadOk =
+    preloadFonts.length > 0 &&
+    preloadFonts.every((href) => {
+      const f = toDistPath(href);
+      return f !== null && existsSync(f);
+    });
   check(
     label,
     "LCP 字体 preload 在 head",

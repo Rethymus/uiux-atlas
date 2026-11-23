@@ -1,0 +1,27 @@
+[
+  {
+    "id": "components/input",
+    "researchRef": "out/research/07-components-patterns.md#三、§36 键盘无障碍惯例与测试键位表(WebAIM)(交叉:一、§16 表单错误提示 10 准则(NN/g))",
+    "note": "antd Input props 默认值逐项取 out/design-study/06-antdesign.md §4.5 的 v6.7.1 核对结果(variant=outlined、type=text、size 档位 large|medium|small 默认不设、status=error|warning、allowClear 默认未开启、showCount 默认 false、count.max 超出标红不截断);尺寸三档 24/32/40 与字号 12/14/16 取 06§2.3 的 controlHeight/fontSize 派生档,colorBorder #d9d9d9、colorError #ff4d4f、colorWarning #faad14、占位 25% 中性透明度、圆角 6/4、水平内边距 12/8 均同出该报告;NN/g 错误就近提示与勿提前校验引自调研 07§16,焦点环禁忌引自 07§36。maxLength 参数默认 0=不限为 demo 取值(antd 不设 maxLength 即不限,06§4.5,非官方显式默认);焦点 ring 的 25% color-mix 为自绘示意(antd controlOutline 具体 alpha 调研未记载)。APG textbox URL 为任务指定引用(调研 07§34 的 30 模式清单未列 Textbox,URL 取 APG 标准路径)。MDX 小节顺序按任务要求:真实产品案例插在动效与交互之后(任务措辞「第三个 h2」与「放在动效与交互之后」存在歧义,以位置指令为准,共 5 个 h2)。"
+  },
+  {
+    "id": "components/select",
+    "researchRef": "out/research/07-components-patterns.md#一、§5 选择器(Combobox):四种 autocomplete 行为(APG)",
+    "note": "APG combobox 行为(Down/Up 进出弹出层、Esc 探索不丢原值、弹出层不进 Tab 序列、select-only 形态)取调研 07§5 一手(listbox 模式同节引用);antd Select 默认值逐项取 06-antdesign.md §4.6(size 默认 medium、allowClear 默认 false、listHeight 256、placement bottomLeft、popupMatchSelectWidth true、单选默认);浮层阴影逐字取 06§2.3⑥ 浮层主阴影,选中底色 #E6F4FF=蓝色板第 1 阶、hover rgba(0,0,0,0.04)=FillTertiary(06§1.2/§2.3⑤)。demo 为自绘 listbox:触发器原生 button(role=combobox + aria-activedescendant),浮层 role=listbox,清空按钮为触发器的兄弟节点以避免嵌套交互元素;status 边框三档沿用 06§2.2 语义色。listbox URL 取 APG 标准路径(模式名在 07§34 清单内)。"
+  },
+  {
+    "id": "components/switch",
+    "researchRef": "out/research/07-components-patterns.md#一、§6 开关(Switch):on/off 语义与「标签不随状态变」铁律(APG)",
+    "note": "APG switch 铁律(仅二态、标签不随状态变、Space 切换、aria-checked、成组 fieldset/legend)取调研 07§6 一手(URL 同节已核实);antd Switch 默认值逐项取 06-antdesign.md §4.7 v6.7.1 核对(checked/loading/disabled 均 false、size=medium|small 默认 medium,v5 为 default|small,§5.1 有对照);on 轨道 #1677ff=colorPrimary(06§2.2),过渡 0.2s=motionDurationMid、缓动=motionEaseInOut(06§3.1/02-official-design-specs §E1 交叉)。如实标注:demo 轨道/滑块像素(md 40×22、sm 28×16)与 off 轨道灰 rgba(0,0,0,0.25) 为自绘示意,调研未记载官方轨道尺寸 token,不作官方断言。demo 与参数面板双向同步:点击开关经 store.set 回写 checked,面板改动经订阅反映到开关;loading/disabled 下交互抑制并置 aria-disabled;spinner 与位移过渡均尊重 prefers-reduced-motion。"
+  },
+  {
+    "id": "components/checkbox",
+    "researchRef": "out/research/07-components-patterns.md#一、§6 开关(Switch)(checkbox 第三态同节)+ §13 数据表格(Carbon 三态全选)",
+    "note": "第三态语义(checkbox 才允许半选,switch 不行)取调研 07§6,表头三态全选范式取 07§13(Carbon Data Table);键盘 Space 取 07§36(WebAIM 键位表)。antd Checkbox 默认值逐项取 06-antdesign.md §4.8 v6.7.1 核对(checked/disabled/indeterminate 默认 false、indeterminate 只控样式、Group value/defaultValue 默认 []);控件 16px=controlInteractiveSize(controlHeight/2,06§2.3④)、圆角 4px=borderRadiusSM(06§2.3②)、选中 #1677ff=colorPrimary。demo 双通道设置半选:input.indeterminate 经 ref 命令式设置(React 不透传)+ aria-checked=mixed;selectAll 参数与子项的联动为派生式——子项点击重算后回写 store,订阅侧仅当参数与派生不一致(来源为面板)时才广播给子项,避免回环;禁用经 fieldset 原生 disabled 属性整组生效。APG checkbox URL 取标准路径(模式名在 07§34 清单内);真实产品案例(Gmail 全选下拉/电商购物车/安装向导许可勾选)为编辑性概述,未写未核实的像素细节。"
+  },
+  {
+    "id": "components/date-picker",
+    "researchRef": "out/research/07-components-patterns.md#三、§34 APG 模式库总览(30 个模式,Grid 承载月历网格思想)",
+    "note": "APG 无独立 date picker 模式,按任务要求以 07§34 清单中的 Grid 模式承载月历行列思想,MDX 与 a11y 均显式标注「自绘简化实现」(方向键仅月内 ±1/±7、无跨月翻页键,未实现 APG grid 全部键盘契约,已如实声明需上线前补全并 AT 实测);antd DatePicker 默认值取 06-antdesign.md §4.9 v6.7.1 核对:size 默认不设=32px/large 40px/small 24px(官方文档明示三个高度)、allowClear 默认 true(demo 保留清空按钮呼应)、placement bottomLeft、默认 en-US 经 ConfigProvider locale 挂 zh_CN;浮层阴影逐字取 06§2.3⑥、圆角 8px=borderRadiusLG(06§2.3②)、选中 #1677ff=colorPrimary。firstDay 默认 mon 与 lang 默认 zh 为任务规格/demo 配对取值(antd 实现层面随 locale 决定周起始,06§4.9,非官方 prop 默认);today 取运行时 new Date()(客户端岛屿,无跨日污染)。网格用 table(role=grid/row/gridcell + columnheader)承载,日格原生 button + roving tabindex,Esc 关闭回焦点触发器,点击外部关闭,动效尊重 prefers-reduced-motion。"
+  }
+]

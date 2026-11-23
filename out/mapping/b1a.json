@@ -1,0 +1,32 @@
+[
+  {
+    "id": "materials/backdrop-filter",
+    "researchRef": "out/research/02-official-design-specs.md#4 Web 平台标准 D2 backdrop-filter(交叉:out/research/06-color-theming.md#四、§16 玻璃拟态经典配方)",
+    "note": "来源=Filter Effects L2 规范 + MDN + BCD 实测(Chrome 76/Edge 17/Firefox 103/Safari 9,调研 02 §4 D2)+ glassmorphism.com 生成器配方(调研 06 §四 §16)。参数默认值:blur 20px 取 06§16 生成器经典配方;saturate 180% 取 Apple 全局导航生产 CSS 实测(superdesign.dev,出处为调研 03§1/styles/glassmorphism 条目同款引用,不属本批指定两份调研文档,已在 effect 中如实标注来源与性质);brightness 100% 为 Filter Effects L1 恒等点(调研 02 §4 D1)。三参数均 cssVar 型(--bf-blur/--bf-saturate/--bf-brightness)。Safari 9–17 需 -webkit- 前缀说明沿用调研 03§1。demo 复用 public/photos 两张现有照片 + CSS 渐变兜底,彩色大字与磨砂面板同屏。"
+  },
+  {
+    "id": "materials/filter-functions",
+    "researchRef": "out/research/02-official-design-specs.md#4 Web 平台标准 D1 filter(交叉:out/research/06-color-theming.md#四、§14/§15 aurora 与 grain 滤镜配方)",
+    "note": "来源=Filter Effects L1 规范 + MDN + BCD 实测(Chrome 18/Firefox 49/Safari 6/Edge 12,调研 02 §4 D1)。任务未给默认值,四个默认(blur 0px/brightness 100%/contrast 100%/hue-rotate 0deg)全部取 Filter Effects L1 规定的函数恒等/插值初始点并在 effect 注明规范出处;调研 06 §四 §14/§15 的社区配方(contrast 170% + brightness 1000%、blur 42px+sat 1.15)只进 MDX 参考区间,不作默认。四参数均 cssVar 型。demo 为同图六瓦片对照(原图/blur/brightness/contrast/hue-rotate/四函数组合),瓦片角标经 store 订阅实时显示当前值(serializeParamValue)。"
+  },
+  {
+    "id": "materials/liquid-glass",
+    "researchRef": "out/research/02-official-design-specs.md#1 A1–A3 Liquid Glass / glassEffect / Glass(交叉:out/research/06-color-theming.md#四、§16 与 §六条目18 clear 变体 35% 深色 dimming 层)",
+    "note": "来源=Apple HIG Materials(官方 JSON 端点核验,调研 02 §1 A1)+ SwiftUI glassEffect/Glass 文档(A2/A3)+ 调研 06 条目18。参数默认值:variant=regular(glassEffect 官方默认,A2);dimming=35%(HIG 对 clear 变体亮背景的官方建议,调研 06 §四 §16+§六条目18,0–60 为 demo 滑杆量程);blur=20px(任务未给默认,借用 06§16 记载的经典玻璃配方作 Web 近似起点,Apple 未公布数值,effect 已注明未证实);tint=0(Glass.tint(_:) 为可选实例方法、默认不着色,A3)。折射按任务要求用 SVG feTurbulence+feDisplacementMap,demo 以 UA 探测仅 Chromium 启用 url() 引用,其余环境回退纯模糊并在角标如实提示;regular 变体『调整亮度』官方未公布数值,demo 以同值白色薄层近似并在 effect/MDX/角标三处标注为近似。variant 为 JS 型参数,其余三个为 cssVar 型。"
+  },
+  {
+    "id": "materials/swiftui-materials",
+    "researchRef": "out/research/02-official-design-specs.md#1 A7–A10 UIBlurEffect / SwiftUI Material / HIG vibrancy 层级(交叉:out/research/06-color-theming.md#四、§16 四档标准材质)",
+    "note": "来源=SwiftUI Material 文档(六档 ultraThin/thin/regular/thick/ultraThick/bar,调研 02 §1 A8)+ UIBlurEffect(A7)+ HIG vibrancy 层级(A10)。参数默认值:material=regular(六档中的标准档);vibrancy=default(HIG 层级首级)。『quaternary 在 ultraThin/thin 上禁用』为官方规则(A10),demo 以 role=alert 警告呈现。Web 端透明度/模糊近似表(ultraThin .08/12px→ultraThick .60/28px、bar .36/16px)为社区常见值,官方未公布数值——schema effect、zh/en MDX 与 demo 角标三处均注明『社区近似值,未证实』。material/vibrancy 均 JS 型(demo 订阅切 data-attribute),无 cssVar。star 2。"
+  },
+  {
+    "id": "materials/fluent-acrylic",
+    "researchRef": "out/research/02-official-design-specs.md#3 C1 Acrylic(交叉:out/research/06-color-theming.md#四、§15 feTurbulence 轻量噪点配方)",
+    "note": "来源=Microsoft Learn Acrylic 设计文档 + AcrylicBrush API 页(调研 02 §3 C1,一手)。调研仅记载官方参数名(TintOpacity/TintLuminosityOpacity/TintColor/AlwaysUseFallback/TintTransitionDuration)与 background/in-app 两型,未记载任何官方默认数值——按任务指示取社区常见值:tintOpacity 0.6、tintLuminosityOpacity 0.35,并在 effect/MDX/demo 徽标三处注明『社区常见值,官方未公布默认(未证实)』;TintColor≈#F3F3F3、blur 24px+saturate 125%、TintTransitionDuration≈0.25s 同为社区近似,MDX 注明。fallback 枚举(off/on)对应官方 AlwaysUseFallback,并在 @supports 不支持 backdrop-filter 时自动落纯色(模拟真实自动回退)。tintOpacity/tintLuminosityOpacity 为 cssVar 型,fallback 为 JS 型。噪点层用调研 06 §四 §15 轻量 feTurbulence data-URI 配方(baseFrequency 0.9/numOctaves 2),层透明度 0.04。"
+  },
+  {
+    "id": "materials/fluent-mica",
+    "researchRef": "out/research/02-official-design-specs.md#3 C2 Mica / Mica Alt",
+    "note": "来源=Microsoft Learn Mica 设计文档(调研 02 §3 C2,一手):『不透明、单次壁纸采样、长驻窗口背景』『Mica Alt 强着色、适合 tab 式标题栏』『Windows App SDK 1.1+』均逐字取自调研记载并进 MDX 首段与 demo 徽标。参数默认值:variant=mica(标准变体);tint=50%(任务未给默认,官方未公布数值,取社区常见值并在 effect/MDX/demo 徽标注明未证实)。取样层滤镜 blur 64px/saturate 60%/brightness 0.92 亦为社区近似,MDX 注明。variant 为 JS 型,tint 为 cssVar 型(--fm-tint)。demo 用壁纸副本+静态滤镜表现『不透明、单次采样』(背景永不动画),窗口内内容条持续滚动而取样背景纹丝不动,另放一块实时 backdrop-filter 的 Acrylic 条作对照,直接可视化与 Acrylic 的区别。star 1(仅两参数)。"
+  }
+]

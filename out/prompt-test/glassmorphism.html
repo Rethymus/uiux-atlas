@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glassmorphism · 毛玻璃卡片复刻</title>
+<style>
+/* ============================================================
+   毛玻璃卡片复刻 —— 参数快照映射(Parameter Snapshot)
+   blur   : 20px                → --glass-blur
+   fill   : oklch(1 0 0 / 0.15) → --glass-fill
+   border : oklch(1 0 0 / 0.3)  → --glass-border
+   radius : 20px                → --glass-radius
+   variant: light               → 主卡片为浅色变体(.glass)
+   注:参数快照未给出投影数值,按目标中"柔和投影"要求自选
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25)
+   ============================================================ */
+
+:root {
+  --glass-blur: 20px;
+  --glass-fill: oklch(1 0 0 / 0.15);
+  --glass-border: oklch(1 0 0 / 0.3);
+  --glass-radius: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  padding: 56px 24px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: #fff;
+  /* 玻璃必须悬浮于彩色照片/多层渐变之上 —— 纯色底上毛玻璃效果会失效 */
+  background-color: #101828;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 138, 66, 0.85) 0%, rgba(255, 138, 66, 0) 42%),
+    radial-gradient(circle at 88% 12%, rgba(236, 64, 152, 0.80) 0%, rgba(236, 64, 152, 0) 46%),
+    radial-gradient(circle at 82% 86%, rgba(34, 197, 244, 0.85) 0%, rgba(34, 197, 244, 0) 46%),
+    radial-gradient(circle at 16% 88%, rgba(52, 211, 153, 0.65) 0%, rgba(52, 211, 153, 0) 44%),
+    radial-gradient(circle at 50% 48%, rgba(139, 92, 246, 0.55) 0%, rgba(139, 92, 246, 0) 58%),
+    linear-gradient(135deg, #0f2027 0%, #2c5364 45%, #b24592 100%);
+  background-attachment: fixed;
+}
+
+/* ---------------- 玻璃卡片(浅色主变体 variant: light) ---------------- */
+.glass {
+  /* 解析期回退:不支持 oklch 的旧浏览器保留 rgba 近似值 */
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--glass-radius);                 /* 20px */
+  -webkit-backdrop-filter: blur(var(--glass-blur));   /* Safari 9–17 前缀兜底 */
+  backdrop-filter: blur(var(--glass-blur));           /* 20px */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  width: 340px;
+  padding: 34px 30px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.30);
+}
+
+/* oklch 支持时改用参数快照值(var 的值若不被解析会按 unset 处理,
+   因此包在 @supports 内,保证旧浏览器不会丢失填充) */
+@supports (background: oklch(1 0 0 / 0.15)) {
+  .glass {
+    background: var(--glass-fill);     /* oklch(1 0 0 / 0.15) */
+    border-color: var(--glass-border); /* oklch(1 0 0 / 0.3) */
+  }
+  .glass__stats {
+    border-top-color: var(--glass-border);
+  }
+}
+
+/* ---------------- 深色变体:深填充 + 反白文字 ----------------
+   描边与圆角沿用参数快照,仅覆盖填充与文字 */
+.glass--dark {
+  background: rgba(17, 25, 40, 0.55);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------------- 回退:不支持 backdrop-filter 时 ----------------
+   提高填充不透明度让文字回到实底上可读;描边与圆角保持不变 */
+@supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+  .glass {
+    background: rgba(255, 255, 255, 0.88);
+    color: #1d2939;
+    text-shadow: none;
+  }
+  .glass--dark {
+    background: rgba(17, 25, 40, 0.92);
+    color: #ffffff;
+    text-shadow: none;
+  }
+}
+
+/* ---------------- 卡片内部排版(静态呈现,无交互) ---------------- */
+.glass__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.glass__title {
+  margin: 12px 0 10px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.glass__text {
+  font-size: 14px;
+  line-height: 1.7;
+  opacity: 0.92;
+}
+.glass__stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+.glass__stat-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+.glass__stat-label {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.page-caption {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+</style>
+</head>
+<body>
+
+  <!-- 浅色主变体(参数快照 variant: light) -->
+  <main class="glass">
+    <p class="glass__eyebrow">Glass · Light</p>
+    <h1 class="glass__title">毛玻璃卡片</h1>
+    <p class="glass__text">
+      半透明填充叠在模糊的彩色背景上,配合 1px 半透明描边、
+      20px 大圆角与柔和投影,呈现轻盈的悬浮玻璃质感。
+    </p>
+    <div class="glass__stats">
+      <div>
+        <p class="glass__stat-value">20px</p>
+        <p class="glass__stat-label">Blur</p>
+      </div>
+      <div>
+        <p class="glass__stat-value">0.15</p>
+        <p class="glass__stat-label">Fill</p>
+      </div>
+      <div>
+        <p class="glass__stat-value">20px</p>
+        <p class="glass__stat-label">Radius</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 深色变体:rgba(17,25,40,0.55) 深填充 + 反白文字 -->
+  <aside class="glass glass--dark">
+    <p class="glass__eyebrow">Glass · Dark</p>
+    <h2 class="glass__title">深色变体</h2>
+    <p class="glass__text">
+      深色变体在 rgba(17,25,40,0.55) 深填充上反白文字,
+      适用于暗色照片或低亮度背景上的信息承载。
+    </p>
+    <div class="glass__stats">
+      <div>
+        <p class="glass__stat-value">0.3</p>
+        <p class="glass__stat-label">Border</p>
+      </div>
+      <div>
+        <p class="glass__stat-value">20px</p>
+        <p class="glass__stat-label">Radius</p>
+      </div>
+      <div>
+        <p class="glass__stat-value">1px</p>
+        <p class="glass__stat-label">Stroke</p>
+      </div>
+    </div>
+  </aside>
+
+  <p class="page-caption">backdrop-filter: blur(20px) · fill oklch(1 0 0 / 0.15) · border oklch(1 0 0 / 0.3) · radius 20px</p>
+
+</body>
+</html>

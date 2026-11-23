@@ -1,0 +1,53 @@
+{
+  "batch": "b11-type",
+  "category": "type",
+  "date": "2026-11-22",
+  "items": [
+    {
+      "id": "type/measure-line-length",
+      "researchRef": "out/research/05-layout-typography.md §三#19 行长 + §四#18(45–90 字符,Butterick 原文一手核对)",
+      "note": "参数 measure(ch)/fontSize(px)/align(left|justify)。默认 65ch 标注为「社区常见惯例,未证实」;已核实区间 45–90 写入 tagline/origin/mdx。demo 用逐字符 span + offsetTop 实时统计行数与最长/平均行,45–90 区间带落针;中文样例只展示换行不给判定(中文行长指导值调研未核实)。sources: practicaltypography.com/line-length.html(调研已核)。"
+    },
+    {
+      "id": "type/wcag-text-spacing",
+      "researchRef": "out/research/05-layout-typography.md §三#18 WCAG 2.2 SC 1.4.12 Text Spacing(W3C 理解文档原文一手核对)",
+      "note": "四比率可调参数:lineHeight(无单位,阈值 1.5)/paragraphGap(em,阈值 2em)/letterSpacing(0.12em)/wordSpacing(0.16em),全部 cssVar。demo 实时显示四项达标徽标 + 「设为 WCAG 阈值」按钮经 store.set 写回(面板订阅同步);词距对无空格分词中文无效已注明(CSS 语义)。sources: w3.org/WAI/WCAG22/Understanding/text-spacing.html(调研已核)。"
+    },
+    {
+      "id": "type/cjk-typography",
+      "researchRef": "out/research/05-layout-typography.md §三#22 clreq + §三#23 text-autospace + §四#21/22;标点挤压小节锚点 https://www.w3.org/TR/clreq/#punctuation_width_adjustment 于 2026-11-22 直接抓取核对(本批次补核)",
+      "note": "四参数:autospace(normal|no-autospace,Baseline 2025-11)/indent(2em,clreq 标准)/align(justify,行尾对齐原则)/punctTrim(text-spacing-trim:normal|trim-start|space-first|space-all)。text-spacing-trim 支持数据为本次新增核对:BCD css/properties/text-spacing-trim.json @main 2026-11-22:Chrome/Edge 123+,Firefox/Safari 未支持(实验性)。demo 用 CSS.supports 实时显示两新属性支持态;未知属性声明被解析器忽略,无降级成本。sources: w3.org/TR/clreq/ + MDN text-autospace(均调研已核)。"
+    },
+    {
+      "id": "type/font-display-strategy",
+      "researchRef": "out/research/05-layout-typography.md §三#21 font-display 与 FOUT/FOIT(MDN + web.dev font-best-practices 原文一手核对:五档语义 + 数值表 Block 2–3s/无限、Swap 0ms/无限、Fallback 100ms/3s、Optional 100ms/无)",
+      "note": "参数 display(五档枚举,JS 型——font-display 是 @font-face 描述符不能经 cssVar 生效,已在 effect/mdx 注明)+ loadDelay(0–3000ms,模拟网络延迟,标注「演示参数非规范值」)。demo 为与数值表等价的状态机(block/swap/fail 相位判定纯函数),时间轴 0–3.5s;prefers-reduced-motion 时不播扫动、一次推进到最终态。auto 演示按 100ms 处理并标注「浏览器自定义」;block 取上界 3s 并注明。sources: MDN font-display + web.dev font-best-practices(均调研已核)。"
+    },
+    {
+      "id": "type/text-wrap-balance",
+      "researchRef": "out/design-study/11-modern-completion.md §2 text-wrap: balance 与 pretty(MDN 原文引述 + BCD css/properties/text-wrap.json)",
+      "note": "参数 headingWrap(默认 balance)/bodyWrap(默认 pretty)/width(演示 30ch,标注演示值)。支持现状逐档引用 11§2:balance=Chrome 114/Firefox 121/Safari 17.5;pretty=Chrome 117/Safari 26/Firefox 未支持;balance 行数上限 Chromium ≤6 行、Firefox ≤10 行(MDN 原文);简写 Baseline 2024-03。demo 用 CSS.supports 实时探测本浏览器 balance/pretty 支持态 + 标题逐字符 span 统计各行字数与末行孤字警示。sources: MDN text-wrap + BCD text-wrap.json(11 补研已核)。"
+    },
+    {
+      "id": "type/drop-cap-initial",
+      "researchRef": "本批次新增核对:BCD css/properties/initial-letter.json @main 2026-11-22 抓取(11 补研方法论);规范锚点 https://drafts.csswg.org/css-inline/#sizing-drop-initials 取自 BCD 记录 spec_url",
+      "note": "参数 lines(默认 3,标注社区惯例未证实)/sink(默认 3,demo 以 min(sink,lines) 钳制非法组合,语义细节注明「逐字语义未核对」)/technique(enum JS 型:initial-letter|float 兜底)。支持数据:Chrome/Edge 110+;Firefox 未支持(bugzil.la/1223880);Safari 9+ 带 -webkit- 前缀、无前缀未发布(WebKit bug 229090);iOS Safari 部分实现无小数值(bug 296785)。float 兜底字号换算(×1.1em、行高 0.85)标注社区近似做法未证实;@supports not ((initial-letter:3) or (-webkit-initial-letter:3)) 双前缀检测豁免 Safari。sources: BCD initial-letter.json + css-inline 规范锚点(本次核对)。"
+    }
+  ],
+  "files": {
+    "perEntry": ["schema.json", "zh.mdx", "en.mdx", "demo/Demo.tsx"],
+    "root": "uiux-atlas/src/content/entries/type/"
+  },
+  "verifyScript": {
+    "path": "uiux-atlas/scripts/verify-entries.mjs",
+    "action": "EXPECTED.type 由 [fluid-type-scale, variable-fonts, fluid-spacing] 增补 6 个本批次 slug(该文件未预先包含,本批次按其既有「批产收口」工作流并入);未改动其他分类数组"
+  },
+  "nameZh": {
+    "measure-line-length": "行长与可读性",
+    "wcag-text-spacing": "WCAG 文字间距",
+    "cjk-typography": "中文排版 CJK",
+    "font-display-strategy": "字体加载策略",
+    "text-wrap-balance": "text-wrap 平衡换行",
+    "drop-cap-initial": "首字下沉 Initial Letter"
+  }
+}

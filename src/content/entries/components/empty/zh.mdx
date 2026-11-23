@@ -1,3 +1,5 @@
+import { entryUrl } from "@/lib/urls";
+
 ## 结构与 DOM
 
 空状态是「替换者」而不是「填充物」:Carbon 的最佳实践是空态**替换**原元素——表格无数据时,连表头/页脚一起收起,只留空态卡;否则读屏用户要先听完整个表格结构,才听到「无内容」。
@@ -16,7 +18,7 @@
 
 解剖结构(Carbon):可选插画 → 简短标题(尽量正向表述,如 "Start by adding data assets")→ 正文说明下一步 → 可选主操作按钮 → 可选次级链接。Carbon 建议文案左对齐成块;antd Empty 默认为居中布局——demo 采用 antd 的居中卡片形态,Carbon 文档场景可改左对齐,两者不冲突。
 
-与 [数据表格](/components/table) 的空态呼应:容器组件(Table/List/TreeSelect)在数据为空时通常内嵌 Empty 作为占位(antd 官方用法);表格条目展示的是表格本体的完整能力,本条目聚焦被内嵌的那张空态卡。
+与 <a href={entryUrl("zh", "components/table")}>数据表格</a> 的空态呼应:容器组件(Table/List/TreeSelect)在数据为空时通常内嵌 Empty 作为占位(antd 官方用法);表格条目展示的是表格本体的完整能力,本条目聚焦被内嵌的那张空态卡。
 
 ## 样式与参数
 

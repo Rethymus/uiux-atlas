@@ -1,0 +1,22 @@
+[
+  {
+    "id": "components/nav-menu",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(Menu/Menubar、Menu Button、Disclosure)、§35 键盘界面实践、§23/§29 Hick 定律与序位效应;交叉 out/design-study/06-antdesign.md §4.19 Menu",
+    "note": "旗舰条目,含用户三要素:①定义「将网站的信息架构分组归类并以导航的形式展示给用户,方便用户查找要获取的信息」写入 tagline 与 zh/en MDX 首段;②场景「提供流量分发入口」「网站各功能聚合」写入 schema.scenarios.use 前两项与 MDX;③真实产品案例「CSDN 顶部导航(一般含个人中心;二级导航聚合在下拉菜单;个人中心头像 hover 出现下拉菜单)」写入「真实产品案例」小节,并补充 GitHub 顶栏、飞书/钉钉工作台两个案例。props:theme 默认 light、trigger 默认 hover 取 antd Menu 官方默认(06-antdesign.md §4.19;hover 关闭延时对齐 subMenuCloseDelay 0.1s);mode 任务枚举为 horizontal/vertical——antd 官方默认 vertical,本条目默认 horizontal 以对齐 demo 要求的顶部导航条典型形态,schema effect 与 MDX 已两说并列注明为条目规格取值。demo 完整复现「顶部导航条 + 二级下拉(产品/文档聚合在下拉菜单)+ 右侧头像 hover 用户菜单」,grid 布局随 mode 切换侧栏形态;ARIA 按 2026-11-21 实抓的 APG menubar/menu-button/disclosure 模式(menubar 默认 horizontal、垂直需 aria-orientation=vertical;menu-button 页面实测给出 aria-haspopup/aria-expanded/aria-controls 三件套),demo 实现 disclosure 基线 + 弹层内方向键漫游 + Esc 归还焦点,完整 menubar 漫游在 a11y 字段注明生产补齐。配色引用 antd 6.7.1 已核对 token:#1677ff 主色、#e6f4ff 蓝板第 1 阶选中底、4% FillTertiary hover、88% 中性文字、#1d1d1d dark colorBgElevated、borderRadius 6/8、boxShadow 三段 token、zIndexPopupBase 1000、motionDurationMid 0.2s + motionEaseOut;prefers-reduced-motion 全部关闭动效。"
+  },
+  {
+    "id": "components/tabs",
+    "researchRef": "out/research/07-components-patterns.md#§11 标签页(Tabs):自动激活 vs 手动激活(APG);交叉 out/design-study/06-antdesign.md §4.20 Tabs",
+    "note": "props 对齐 antd 6.7.1 官方默认:type 默认 line、position 默认 top(v6 tabPlacement 取代 v5 tabPosition,任务枚举收敛为 top/left,effect 已注明)、animated 官方默认为复合值 {inkBar:true, tabPane:false}——任务枚举为单开关 on/off,默认 on 取 inkBar 默认 true 的一半,面板过渡为条目规格扩展,schema effect 与 MDX 两说并列注明。demo:top/left 切换标签轴方位(left 时 aria-orientation=vertical、方向键换上下)、line(滑动 ink bar,offsetLeft/Width 实测对齐)/card(边框卡片、活动卡与面板连体)双形态、animated 开关 ink bar 0.2s 滑动与面板淡入。APG tabs 语义(调研 07§11):tablist/tab/tabpanel + aria-selected/aria-controls/aria-labelledby、roving tabindex、方向键漫游 + Home/End;面板内容全部预载故采用「选中随焦点」自动激活并按 §11 判据在 MDX 说明。真实产品案例:GitHub 仓库页头部标签、浏览器多标签、VS Code 编辑器标签组。配色 #1677ff/#4096ff(蓝板第5阶)/65%/88% 文字、#f0f0f0/#d9d9d9 边框、0.2s motionDurationMid;prefers-reduced-motion 关闭全部动效。"
+  },
+  {
+    "id": "components/breadcrumb",
+    "researchRef": "out/research/07-components-patterns.md#§12 面包屑(Breadcrumb)(APG);交叉 out/design-study/06-antdesign.md §4.21 Breadcrumb",
+    "note": "separator 官方默认「/」取 antd 6.7.1(06-antdesign.md §4.21),任务枚举 / > ·;maxItems 为 number 2-5——antd 无此属性,MUI Breadcrumbs 有 maxItems(2026-11-21 经 fox_fetch 实抓 https://mui.com/material-ui/react-breadcrumbs/ 核验:官方示例 maxItems={2} 超出中间折叠为「…」,官方文档未记载默认值),本条目默认 3 为任务规格演示值,effect 已注明来源分层。APG 语义(调研 07§12):navigation landmark + aria-label、ol 有序列表、当前页 aria-current=\"page\" 且非链接、分隔符 aria-hidden(MUI 无障碍说明实抓印证)。demo:5 层样例路径(首页/资源/组件/导航/面包屑),点击任意上层节点回退(路径截断、内容联动),超 maxItems 中层折叠为可聚焦「…」按钮(aria-label「展开被折叠的 N 个层级」),展开后提供「收起 ↑」(aria-expanded=true),切换层级时重置展开态。真实产品案例:MDN 文档路径、Windows 资源管理器地址栏(面包屑+段间下拉)、电商类目路径。配色 65%/88% 文字、#1677ff hover、4% 填充、#d9d9d9 描边;无展开动画,入场动画带 prefers-reduced-motion 降级。"
+  },
+  {
+    "id": "components/dropdown",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(Menu Button)、§35 键盘界面实践;交叉 out/design-study/06-antdesign.md §4.22 Dropdown",
+    "note": "三个 props 默认值全部对齐 antd 6.7.1 官方(06-antdesign.md §4.22):trigger 默认 ['hover']、placement 默认 bottomLeft(任务枚举收敛为四角 下左/下右/上左/上右,effect 注明官方 12 向与 autoAdjustOverflow 默认 true)、arrow 默认 false。MDX 与 schema.scenarios 写入「与 tooltip 的区别:dropdown 承载可点击的操作列表,tooltip 只承载只读说明」(APG menu-button 定义「opens a menu of actions or commands」,2026-11-21 实抓核验)。demo:文件行 + 「更多操作」按钮展开命令列表(重命名/移动到…/复制链接/删除),hover(0.1s 收起延时,对齐 antd Menu subMenuCloseDelay 官方默认)/click 双触发、四角 placement、arrow on/off 旋转小箭头;危险项 role=separator 隔开并 #ff4d4f 标红;浮层相对定位实现于 DemoStage 内(z-index 1000 = zIndexPopupBase)、document 级 mousedown 点击外部关闭、Tab 移出收起;APG menu-button 语义:aria-haspopup/aria-expanded/aria-controls、Enter/Space 键盘打开聚焦首项(e.detail===0 判别)、↑↓/Home/End 漫游、Esc 关闭焦点回触发钮。真实产品案例:GitHub 头部「+」与头像按钮、Google Docs 工具栏字号控件、后台表格行「更多」。配色 #fff 浮层底、圆角 8、boxShadow 三段 token、#e6f4ff 按钮展开底;prefers-reduced-motion 关闭过渡。"
+  }
+]

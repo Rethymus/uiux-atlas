@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -148,7 +149,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
             <div className="gm-gradient" />
           ) : (
             <img
-              src={`/photos/glass-${backdrop}.jpg`}
+              src={withBase(`photos/glass-${backdrop}.jpg`)}
               alt=""
               aria-hidden="true"
               width={1600}

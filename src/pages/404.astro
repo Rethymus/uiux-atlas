@@ -11,7 +11,7 @@ const dict = t("zh");
 const nf = dict.notFound;
 ---
 
-<Base locale="zh" title={nf.title} description={nf.message} altUrl="/">
+<Base locale="zh" title={nf.title} description={nf.message} altUrl={homeUrl("en")}>
   <div class="notfound-page">
     <p class="nf-code" aria-hidden="true">404</p>
     <h1 class="list-title">{nf.title}</h1>

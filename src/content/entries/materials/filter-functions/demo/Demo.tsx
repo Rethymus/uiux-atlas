@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEntryStore, serializeParamValue } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -129,7 +130,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
             return (
               <figure key={tile.id} className="ff-tile" data-fn={tile.id}>
                 <img
-                  src={`/photos/glass-${backdrop}.jpg`}
+                  src={withBase(`photos/glass-${backdrop}.jpg`)}
                   alt={`${bd.zh}/${bd.en} · ${tile.en} 滤镜示例 filtered sample`}
                   width={bd.w}
                   height={bd.h}

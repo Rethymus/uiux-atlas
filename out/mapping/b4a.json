@@ -1,0 +1,22 @@
+[
+  {
+    "id": "color/oklch-space",
+    "researchRef": "out/research/06-color-theming.md#一、§1 OKLCH 色彩空间(交叉:§2 Evil Martians 工作流的 C/H 映射与 sRGB 边界)",
+    "note": "来源=MDN oklch 页 + W3C CSS Color 4(调研 06§一1 一手抓取)。参数区间:L 0–100/0–1、C 实用上限≈0.5 且 100%=0.4、H 0–360°、alpha 用 / 语法、Baseline 2023-05,均取调研记载;C 的 sRGB 实测边界 0.37 与 H 的经验映射(绿≈140°)取调研 §2。默认值 L70/C0.15/H145/α1 为任务规格给定的条目快照(调研未载官方默认),已在 effect 中如实标注『条目快照,调研未载官方默认』并配调研锚点(H145 对应绿≈140°映射)。与 oklch-workflow 条目的区分:本条讲空间本身(四分量语义/语法/兼容),那条讲固定 L 的选色工作流与对比度工程——两条 MDX 互相引流。demo 纯 JS 换算(Ottosson 矩阵),越域按浏览器现状裁剪并亮警示;四参数均为 JS 型,不带 cssVar(与同库 oklch-workflow 一致)。"
+  },
+  {
+    "id": "color/hct-tonal-palette",
+    "researchRef": "out/research/06-color-theming.md#二、§5 Tonal Palette(HCT 空间)(交叉:§六7 M3 基线 tone 锚点)",
+    "note": "来源=material-color-utilities GitHub(Android 13 档/5 板记载,调研 06§二5)+ Android 开发者文档。demo 内嵌官方 npm 发行包 @material/material-color-utilities@0.3.0(Apache-2.0)发布源码的 TS 简版移植:hct_solver.js/cam16.js(前向)/viewing_conditions.js/color_utils.js 常量逐字复制;移植正确性已用 node 实算复核——#6750A4 经 solveToInt(298.98,47.86,40) 回写逐位一致,#D0BCFF 实测 tone≈79.95(与调研 §六7『≈tone 80』吻合),Hct.from(0,0,50)=#777777。参数:chroma 默认 48 为任务规格给定,与 #6750A4 实测 chroma≈47.9 一致;求解器内部搜索上限 200 取自 tonal_palette.js 源码;tone 差 40/50 的对比度保证取自 hct.js 类文档源码。13 档取值采用社区通行集 0,10,…,90,95,99,100——调研仅记载『每关键色 13 档』的数量,95/99 两个具体值未在本次抓取的一手来源逐值核实,已在 schema effect 与 MDX 中如实标注。tone 默认 80 锚定调研 §六7。"
+  },
+  {
+    "id": "color/m3-dynamic-color",
+    "researchRef": "out/research/06-color-theming.md#二、§6 Material You Dynamic Color(交叉:§7 M3 语义色角色与默认值、§12 暗色非反转)",
+    "note": "来源=Android 开发者文档 dynamic-colors(调研 06§六6/§六7 一手)。变体名与时间线(Android 12 Tonal Spot;Android 13 Neutral/Vibrant/Expressive)、取色链(quantize Celebi=Wu+WSMeans→score)取调研 §六6;官方手调基线值(#6750A4/#D0BCFF/#EADDFF/#B3261E/#FFFBFE/#1C1B1F/#381E72/#4F378B/#49454F)取调研 §六7 并在 demo 脚注并列呈现。变体调色板常量(tonal-spot 36/16/24/6/8、neutral 12/8/16/2/2、vibrant 200/24/32/10/12 + 断点旋转表、expressive h+240/40 等)与角色 tone 表(accent 40/80、container 90/30、on-类 100↔20/30↔90、surface 98/6、error 调色板 (25,84))逐字取自发行包 scheme_*.js 与 material_dynamic_colors.js(contrastLevel 0)。已如实标注:生成值与手调基线接近但不逐值相等(基线 primary chroma≈48 vs 变体 36;neutral≈4 vs 6)——demo 不冒充基线值。sourceHue 默认 299=#6750A4 的 HCT 色相(内嵌 CAM16 前向实测 298.98,已 node 实算验证)。scheme/variant/sourceHue 均 JS 型,不带 cssVar。"
+  },
+  {
+    "id": "color/radix-color-scale",
+    "researchRef": "out/research/06-color-theming.md#二、§8 12 步语义色阶(Radix Colors)",
+    "note": "来源=Radix 官方文档 understanding-the-scale(调研 06§二8 一手):12 步逐条语义、步 9 全阶 chroma 最高、步 11/12 对步 2 保 APCA Lc 60/90、Sky/Mint/Lime/Yellow/Amber 5 阶 9 步配深字、6 中性色+26 accent、AppBg mutable alias 用法。8 组色阶的 96 个 hex 逐值读取自官方发行包 @radix-ui/colors@3.0.0(任务指定的调研来源所属官方发行渠道,npm 官方包 gray/blue/green/amber/red/violet/cyan/pink.css 亮色阶);8 个代表 hue(1 中性+7 accent)为任务规格『8 个代表 hue』的具体化。step 默认 9 为任务规格给定(9=CTA solid,语义自洽)。demo 内步 9 文字色按官方 5 阶深字例外分档实现;hue/step 均 JS 型,不带 cssVar。"
+  }
+]

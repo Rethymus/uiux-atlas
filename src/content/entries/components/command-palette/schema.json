@@ -85,7 +85,7 @@
   "sources": [
     "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/",
     "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/",
-    "https://uiux-atlas.example.com/components/command-palette/"
+    "https://rethymus.github.io/uiux-atlas/components/command-palette/"
   ],
   "promptTemplate": {
     "goal": {

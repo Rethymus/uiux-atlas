@@ -1,0 +1,27 @@
+[
+  {
+    "id": "components/toast",
+    "researchRef": "out/research/07-components-patterns.md#8-toast--全局轻提示mui-snackbar--antd-message",
+    "note": "来源:调研07§8(MUI Snackbar 非关键通知/role=alert/Esc 关闭;AntD message 顶部居中/默认3s/pauseOnHover/maxCount)+ §9(APG Alert:自动消失过快违反 WCAG 2.2.3)+ 06-antdesign.md §4.10(message duration 默认3、config.top 默认8、maxCount 默认不限制)。duration 500-6000ms 默认3000、placement 六方位(纵横组合,默认 top-center 对齐 antd 顶部居中)、maxCount 1-5 默认3(演示收敛值,已在 effect 中如实标注非官方默认)。demo 用 role=alert + 计时器 + 六方位 flex 对齐实现。"
+  },
+  {
+    "id": "components/modal",
+    "researchRef": "out/research/07-components-patterns.md#3-对话框modal-dialogapg-模式",
+    "note": "来源:调研07§3(APG Dialog:困焦循环/Esc/初始焦点与归还规则/aria-modal 双条件)+ 06-antdesign.md §4.11(Modal width 默认520、Modal.method() 416、maskClosable 默认 true、centered 默认 false、keyboard 默认 true、zIndex 1000)+ §2.3(colorBgMask rgba(0,0,0,0.45)、boxShadow、borderRadiusLG 8)。任务规格 width 320-720 默认480:schema 取 480(任务指定),effect/mdx 如实标注 antd 官方默认 520/416,480 非官方默认。"
+  },
+  {
+    "id": "components/drawer",
+    "researchRef": "out/research/07-components-patterns.md#4-抽屉drawer同上下文承载子任务",
+    "note": "来源:调研07§4(AntD Drawer 定位:边缘滑入承载同上下文子任务;keyboard 默认 true;6.2.0 focusable 焦点陷阱)+ 06-antdesign.md §4.12(placement 四方位默认 right、size 默认378/large736、旧 width/height 378 已废弃、mask 默认 true、push 默认 {distance:180})。thickness 单参数统一表达宽/高,默认378 取 antd size 默认档,范围240-560 为演示收敛(已标注)。transform 过渡 + prefers-reduced-motion 直达。"
+  },
+  {
+    "id": "components/alert",
+    "researchRef": "out/research/07-components-patterns.md#9-alert不中断提醒与自动消失的风险apg",
+    "note": "来源:调研07§9(APG Alert:role=alert 播报/不夺焦点/避免自动消失 WCAG 2.2.3 与频繁打断 2.2.4)+ 06-antdesign.md §4.13(type 默认 info、banner 模式下默认 warning、showIcon 默认 false(banner 下 true)、closable 默认 false、banner 默认 false)+ §2.2(seed 功能色 success #52c41a/warning #faad14/error #ff4d4f/info #1677ff)+ §2.3⑤(色板阶1/阶3 派生规则,color-mix 近似已在文中标注)。"
+  },
+  {
+    "id": "components/tooltip",
+    "researchRef": "out/research/07-components-patterns.md#34-apg-模式库总览30-个模式",
+    "note": "来源:调研07§34(APG 30 模式含 Tooltip 模式,https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/)+ 06-antdesign.md §4.14(placement 12向默认 top、trigger 默认 hover、arrow 默认 true、mouseEnterDelay 默认 0.1s、autoAdjustOverflow 默认 true)+ 03-bytedance.md(Semi 暗色 tooltip #373739 L67、z-index 体系 tooltip 1060 L137、Popover/Tooltip 0.1s 过渡 L155)。theme dark/light:antd 无此枚举(以 color 自定义),dark 默认取 antd 深色浮层事实默认(colorBgSpotlight rgba(0,0,0,0.85),06 §2.3⑤),light 在 effect/mdx 中如实标注「未证实为任何库默认」。"
+  }
+]

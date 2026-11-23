@@ -1,0 +1,32 @@
+[
+  {
+    "id": "materials/m3-state-layers",
+    "researchRef": "out/research/02-official-design-specs.md#二、§B5 State layers(交叉:out/research/06-color-theming.md#三、§7 M3 基线色值)",
+    "note": "来源=m3.material.io/foundations/interaction/states/state-layers(调研 02 一手抓取,grep 命中「Hover +8% opacity … Drag +16% opacity」)。四参数 hover/focus/press/drag 默认 8/10/10/16% 全部为官方 token,range 0–30% 为批次规格。demo 底色 #6750A4/文字 #FFFFFF/表面 #FFFBFE 取 Android 文档记载的 M3 基线亮色(调研 06§7)。四个参数均为 CSS 变量型(number+%);demo 用 pointer 事件 + focus-visible + 手动开关把四层同时点亮叠加,reduced-motion 时去掉 100ms 过渡。focus 焦点环独立保留,不依赖状态层。"
+  },
+  {
+    "id": "materials/aurora-gradient",
+    "researchRef": "out/research/06-color-theming.md#四、§14 Mesh / Aurora 渐变(交叉:out/research/02-official-design-specs.md#四、§D1 filter BCD)",
+    "note": "来源=CodeFronts《Animated Mesh / Aurora Gradient Background》(调研 06§14 一手抓取,MIT)+ MDN《Using CSS gradients》。逐值采用:4 光斑+conic 底、inset:-25%、blur(42px)→blur 参数默认 42、saturate(1.15)→saturate 参数默认 115%、首光斑 38% 42% at 20% 25%→spotA 默认 20、光斑 L 0.6–0.75 约束。如实标注的偏离:drift 默认 18s 为批次规格给定值,CodeFronts 配方原文 60s(已写入 effect 与 MDX,注明非调研记载值);spotB 默认 70 为演示取值(调研仅逐值记载首光斑);光斑 B–D 色相/位置为按 L 约束布置的演示值。spots(enum 3/4,默认 4)为 JS 型参数切 data-spots 隐藏第 4 光斑,其余五个为 CSS 变量型。reduced-motion 降级=animation:none 静止直出(ask 要求)。光斑层 aria-hidden。"
+  },
+  {
+    "id": "materials/grain-gradient",
+    "researchRef": "out/research/06-color-theming.md#四、§15 Grain 颗粒叠加(噪点渐变)",
+    "note": "来源=CSS-Tricks《Grainy Gradients》(调研 06§15 一手)+ CodeFronts 同页轻量变体。逐值采用:baseFrequency 0.65 / numOctaves 3 / stitchTiles stitch / contrast(170%) brightness(1000%) 均为 CSS-Tricks 配方原文;噪点层 opacity 0.16 取 CodeFronts 轻量变体(该变体自身用 baseFrequency 0.9/numOctaves 2,已在 effect 如实并列)。mix-blend-mode: multiply + 父容器 isolation: isolate 为 CSS-Tricks 精修路线;其评论区「极端 contrast/brightness 丢色彩、box-shadow 不适用」的警示也写入 MDX。baseFrequency/numOctaves 为 JS 型(demo 重建 data-URI SVG),contrast/grainOpacity 为 CSS 变量型。demo 左右卡对照(无噪点可见 banding / 有噪点)。纯静态条目,无动效故无 reduced-motion 降级需求(已核实无 keyframes)。"
+  },
+  {
+    "id": "materials/blend-modes",
+    "researchRef": "out/research/02-official-design-specs.md#四、§D3 混合模式(Compositing and Blending Level 1)",
+    "note": "来源=W3C Compositing 1 规范(drafts.csswg.org/compositing-1/,调研 02 一手核验页面标题与 10.1.x/10.2.x 章节)+ MDN mix-blend-mode 页(次级)。mode 枚举取规范 §10.1 全部 16 个命名值(normal…luminosity),默认 normal 为规范 initial value;opacity 默认 100% 对应 CSS opacity initial value 1——两者均按「规范初始值作默认」原则处理,批次规格未给数值。均为 CSS 变量型参数(mix-blend-mode: var(--blend-mode) / opacity: var(--blend-opacity))。demo 两层渐变叠加 + isolation: isolate 限定混合范围,内置 16 枚快捷切换与参数面板共用同一 store。BCD 支持版本(mix-blend-mode Chrome 41/Firefox 32/Safari 8;background-blend-mode Chrome 35/Firefox 30/Safari 8)写入 browserSupport。"
+  },
+  {
+    "id": "materials/theme-shadow",
+    "researchRef": "out/research/02-official-design-specs.md#三、§C5 Depth / ThemeShadow(交叉:§7 勘误第 3 条 Depth 页 404 迁移)",
+    "note": "来源=WinUI ThemeShadow API 页(learn.microsoft.com,调研 02§C5 一手抓取)。MDX 记载 z 坐标 elevation 语义(DIP)、非 Popup 必须显式设置 Receivers 集合、仅支持矩形阴影(异形用 DropShadow)、旧 Depth 设计页已 404 迁移。如实标注的偏离:elevation 默认 8 为批次规格给定值,调研未记载官方默认 z(已写入 effect 与 MDX「勿当作官方数值」);opacity 参数非官方 API 面(ThemeShadow 不暴露阴影不透明度),是 Web 近似 demo 的增益旋钮,已如实标注;demo 阴影公式(blur/offset 随 z 增大、alpha clamp 封顶递减)为 Web 趋势拟合,系数 0.4/2.2/0.035 非官方,正文与 fallback 均已注明。两参数均为 CSS 变量型(elevation 无量纲 z 值,CSS calc 内乘 px);demo 固定 z 0/4/8/16/32 对照卡 + 参数驱动卡,浅/暗画布切换,reduced-motion 去过渡。"
+  },
+  {
+    "id": "materials/glass-effect-api",
+    "researchRef": "out/research/02-official-design-specs.md#一、§A1–A6 Liquid Glass / glassEffect / Glass / GlassEffectContainer(交叉:out/research/06-color-theming.md#四、§16 系统玻璃材质 35% 暗层)",
+    "note": "来源=Apple API 文档四页(glassEffect(_:in:)/Glass/GlassEffectContainer/HIG Materials,调研 02§A1–A6 一手,经官方 JSON 数据端点核验)+ HIG 35% 暗层(调研 06§16)。逐值采用:variant enum regular/clear,默认 regular 为 glassEffect 官方默认参数(A2);默认形状 Capsule(A2);tint(_:)/interactive(_:)(A3)、UIGlassEffect isInteractive/tintColor(A6)、GlassEffectContainer(spacing:content:) 融合规则「spacing 越大形状越早开始融合」(A4)均入 MDX;clear 亮背景 35% 不透明度暗层为 HIG 原文。如实标注的偏离:tintIntensity(0–100%,默认 0)是把接受任意 Color 的 tint(_:) 映射为固定强调色叠加不透明度的 Web 强度映射,官方无数值强度参数;spacing 默认 8 为批次规格范围 0–32 内的演示取值,官方未记载数值默认;blur(14px)/saturate(1.6) 等材质数值为 Web 近似演示值,Apple 未公开,均已在 effect/MDX 标注「非官方」。variant/interactive 为 JS 型(订阅 store 切 data 属性),tintIntensity/spacing 为 CSS 变量型(spacing 无量纲,融合桥 opacity=clamp((s-8)/16,0,1),固定 24px 间距)。demo 复用 b0 批次已下载的 public/photos/glass-alps.jpg(亮背景触发 clear 暗层)与 glass-nebula.jpg;Web demo 标注「CSS 近似,非 Liquid Glass 本体,无折射/scroll edge effect」。"
+  }
+]

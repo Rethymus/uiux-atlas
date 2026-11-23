@@ -1,0 +1,77 @@
+[
+  {
+    "id": "principles/fitts-law",
+    "researchRef": "out/research/07-components-patterns.md#§22 Fitts 定律 + out/research/04-motion-microinteractions.md#§2.1(M3 Switch target 48dp)",
+    "note": "size 默认 48px = M3 触控目标 48dp(调研 04§2.1,已核);WCAG 2.2 SC 2.5.8 的 24×24 CSS px 法定下限为官方规范事实(源 WCAG22 quickref,WebAIM checklist 已 fetch 核验);distance 为 demo 教学几何(60–360px,非定律数值,schema 如实标注)。lawsofux fittss-law 页 fetch 核验:Paul Fitts 1954、speed-accuracy trade-off、『移动端大按钮惯例』表述。demo:点击起点计时、命中目标结束、脱靶计数、实时 ID=log₂(2D/W)(Shannon 形式,demo 本地实算)。"
+  },
+  {
+    "id": "principles/hick-law",
+    "researchRef": "out/research/07-components-patterns.md#§23 Hick 定律",
+    "note": "choices 2–8 为 demo 实验变量(定律本身定性),RT = a + b·log₂(N) 为 Hick-Hyman 1952 经典形式(lawsofux hicks-law 页 fetch 核验 Hick & Hyman 1952);pause 800ms 为 demo 节奏参数并如实标注。真实产品三例(Google 首页/Apple TV 遥控器/Slack 渐进 onboarding)取 lawsofux Examples 区块与调研 07§23 双源一致。demo:N 目标圆环随机高亮、误点不计入 RT、按 N 分组统计中位反应时;Math.random 仅演示随机源,非加密用途(Mimosa 提示已按此口径确认)。"
+  },
+  {
+    "id": "principles/millers-law",
+    "researchRef": "out/research/07-components-patterns.md#§24 Miller 定律(7±2)与工作记忆 + lawsofux/millers-law + lawsofux/chunking",
+    "note": "7±2 与『不要拿神奇数字七为不必要的设计限制辩护』逐字取调研 07§24;George Miller 1956 取 lawsofux millers-law 页(fetch 核验);digits 默认 10/chunk 默认 3 为 demo 教学参数(略超上界与电话号码分块同构,来源标注为教学选择);展示 3 秒为 demo 节奏并标注。真实产品:电话号码 3–4 位分组、信用卡四位分组自动跳格、iOS 设置分组列表(后者标注编辑性泛例,lawsofux 未点名)。demo:分块展示 3s→隐藏→按位计分→累计最佳;分组靠间距不靠容器(与共同区域分工)。"
+  },
+  {
+    "id": "principles/jakobs-law",
+    "researchRef": "out/research/07-components-patterns.md#§28 Jakob 定律(+§21 启发式④一致性)",
+    "note": "YouTube 2017 改版反弹→『回到旧版』→回调取调研 07§28(lawsofux jakobs-law 记载);NN/g 十大启发式第 4 条为其心理学注脚取 07§21/§28。demo:同任务(夜间模式+音量最小)familiar/alien 双范式对照计时;alien 为刻意反面教材但保留 aria-label 与键盘可达(可达性底线不让步),误触只统计任务无关控件;variant/hint 为 JS 型参数订阅 store。底部 tab bar 两端布局标注编辑性泛例。"
+  },
+  {
+    "id": "principles/peak-end-rule",
+    "researchRef": "out/research/07-components-patterns.md#§25 峰终定律(Kahneman 1993/Mailchimp/Uber/Lexie Kane)",
+    "note": "Kahneman et al. 1993 冷水实验、Mailchimp 发送成功动画、Uber 时间感知降取消率逐字取 07§25;(峰值+结尾)/2 在 schema/面板/MDX 三处均标注『教科书化简,非原始实验公式』。demo:8 段旅程曲线(第 3 点=峰/第 8 点=终被参数覆写),全程平均 vs 峰终预测双条实时重算;三预设(烂尾 8/2、平顺 5/4、惊喜收尾 6/9)经 store.set 联动参数面板;6/9→预测 7.5 vs 平均 5.0、8/2→预测 5.0 vs 平均 4.4 均按 BASE=[3,4,6,5,4,5,4,3] 实算核对。"
+  },
+  {
+    "id": "principles/doherty-threshold",
+    "researchRef": "out/research/07-components-patterns.md#§27 Doherty 阈值(+§18 响应时间三限 0.1/1/10s)",
+    "note": "<400ms 与『此前标准 2000ms』、Doherty & Thadani 1982 IBM Systems Journal 取 07§27 + lawsofux doherty-threshold 页(fetch 核验 Walter J. Doherty 与 Ahrvind J. Thadani);NN/g 0.1/1/10s 三限取 07§18,两者互补关系按 07§27 口径。delay 默认 700ms 为『刻意越界』的 demo 参数(阈值本身是定律值);feedback 三档(干等/乐观更新/骨架屏)对应 07§27 感知性能出口,乐观更新按 acceptance 要求做成两阶段(已记录→后台确认)。社交点赞乐观更新标注泛化惯例。demo 面板对 delay≤400ms 翻绿达标徽章;aria-live 播报 + 骨架微光尊重 reduced-motion。"
+  },
+  {
+    "id": "principles/teslers-law",
+    "researchRef": "out/research/07-components-patterns.md#§26 Tesler 定律(复杂度守恒)",
+    "note": "Larry Tesler(Xerox PARC/Apple)、复杂度守恒、『工程师多花一周好过百万用户各多花一分钟』『不要为理想理性用户设计』『指引放进使用上下文(tooltip 内嵌帮助)』逐字取 07§26。demo:同一寄件表单 manual/assisted 双模式,assisted 预填 fields−2 项并锁定但带『修改』解锁出口(预填可夺回控制=转移有代价的定律另一面);复杂度分配条(用户 n 项/系统 k 项)总宽恒定,300ms/项自动填写为 demo 节奏并如实标注。电商地址预填/外卖默认项标注泛化惯例。"
+  },
+  {
+    "id": "principles/gestalt-proximity",
+    "researchRef": "out/research/07-components-patterns.md#§31 格式塔·邻近原则(+五类分组清单)",
+    "note": "『相邻元素被感知为一组』与格式塔五类(Proximity/Similarity/Continuity/Closure/Connectedness)逐字取 07§31;指导三例(表单字段分组/列表条目间距/搜索结果簇)同源。gap 默认 36/inner 默认 10 为 demo 教学几何(schema 标注『格式塔原则本身是定性描述,调研未给数值』);『gap≥2×inner 记成立』为 demo 自定判定口径,MDX 如实标注。uniform 阴性对照组隔离单一变量;a11y 红线:分组必须语义化(fieldset/列表,SC 1.3.1),强绑定分组叠共同区域(07§32)。"
+  },
+  {
+    "id": "principles/gestalt-similarity-closure",
+    "researchRef": "out/research/07-components-patterns.md#§33 格式塔·相似原则(+§31 五类分组/闭合)+ §30(色觉告诫)",
+    "note": "相似原则指导(『用颜色与形状标记同功能元素,确保链接与导航与普通文本可区分』)取 07§33;闭合属 07§31 五类清单;『不要只靠颜色』取 07§30 跨条目复用(已在 MDX 标注呼应)。mouth 默认 24°/60° 崩解阈值为 demo 教学口径(标注非定律数值);吃豆人缺口用 conic-gradient 透明扇区实现,不支持时退化完整圆盘(fallback 已写)。相似线索强制双通道(color 模式同时改图标形状);illusory square 无语义的 a11y 红线写进 schema。链接下划线惯例/spinner/图标族形状语言:前两者为 Web 平台事实标准,后者标注编辑性泛例。"
+  },
+  {
+    "id": "principles/serial-position",
+    "researchRef": "out/research/07-components-patterns.md#§29 序位效应 + lawsofux/serial-position-effect(fetch 核验)",
+    "note": "primacy+recency、『最不重要的放中间、关键动作放最左最右』取 07§29;Ebbinghaus 首创与『Apple/Electronic Arts/Nike 在利用该效应』取 lawsofux 原文(fox_fetch 已核)。items 默认 9/dwell 默认 600ms 为 demo 教学参数并如实标注(效应本身定性);demo 为自由回忆范式(任意顺序输入→按词匹配→映射回原位置计分),累计 tally 跨轮画 U 形柱状图+逐位置数值文本(双通道)。词呈现为离散替换无动画(动画会污染呈现时长变量,a11y 声明)。读屏线性访问的局限写进 a11y/结论。"
+  },
+  {
+    "id": "principles/von-restorff",
+    "researchRef": "out/research/07-components-patterns.md#§30 Von Restorff 效应 + lawsofux/von-restorff-effect(fetch 核验)",
+    "note": "Hedwig von Restorff(1906–1962)1933 实验、『强调要有节制/避免被误认为广告/不要只靠颜色/动效强调考虑运动敏感用户』四条 takeaways 取 07§30+lawsofux 原文(fetch 核验)。demo:异类记忆测试(展示 2.5s→遮罩→点击应答),三种线索(color/shape/motion)按线索分组统计正确率;motion 线索 1.4s 慢脉冲(≈0.7 次/秒,远低于 SC 2.3.1 的 3 次/秒),reduced-motion 自动退化为 3px 描边(信号换通道不消失)。tiles/cue/SHOW_MS 均标注 demo 参数。每屏一个 Primary(IBM Carbon,07§2)与广告标注(Google)为真实案例;必填星号标注编辑性泛例。"
+  },
+  {
+    "id": "principles/apg-patterns",
+    "researchRef": "out/research/07-components-patterns.md#§34 APG 模式库总览(30 模式)+ §35/§36(键位)",
+    "note": "30 个模式名逐字取调研 07§34 清单;清单逐字点名 29 项,Slider(含 Multi-Thumb)按 APG 官方页面把 Slider 与 Slider (Multi-Thumb) 分列为两条恰得 30(schema/MDX 均按此口径说明);三段规范结构(键盘交互/roles/states/properties)逐字取 07§34。键位提示只收录 07§36 已证实的六个模式(Button=Enter/Space、Checkbox=Space、Radio=方向键、Slider=方向键+Home/End、Tabs=Tab 进出+方向键、Dialog=Esc/困焦/归还),其余显示『详见 APG 模式页』——不确定不编。group 五档为教学分组,MDX 明确标注『非 APG 官方分类』。"
+  },
+  {
+    "id": "principles/wcag-checklist",
+    "researchRef": "out/research/07-components-patterns.md#§36(WebAIM 键盘页/SC 2.1.2)+ out/research/05(WCAG 官方数值一手核对)+ webaim.org/standards/wcag/checklist(fetch 核验)",
+    "note": "22 条 SC 的编号/等级/阈值为 WCAG 2.2 官方事实:1.4.3=4.5:1、1.4.11=3:1、1.4.6=7:1、2.5.8=24×24 CSS px(WCAG 2.2 新增)、1.4.10=320px、1.4.12=2×/1.5×/0.16×/0.12× 字号——对比度与文本间距两组数值在调研 05 已对照官方原文核验,SC 2.1.2 属 Level A 取 07§36;WebAIM checklist 页 fox_fetch 已核验(POUR 分组/版本与等级过滤)。AA 默认档=常用合规目标;『AAA 不要求全站达标』为 WCAG 官方口径;axe-core 自动化 30–50% 检出率为业界通行数字,标注编辑性泛例。demo 用 fieldset/legend 分组+原生 checkbox+meter 进度(元层面示范)。"
+  },
+  {
+    "id": "principles/prefers-contrast",
+    "researchRef": "out/research/07-components-patterns.md#§38 prefers-contrast(MDN)",
+    "note": "四值 no-preference/more/less/custom、custom 与 forced-colors: active 用户调色板对应、『命中 more 时虚线 outline 换高对比实线』MDN 示例、Baseline 2022 年 5 月全浏览器可用——全部逐字取调研 07§38;『焦点环、分隔线、禁用态文字都应响应此查询增强』同段逐字。demo:auto 档挂真实 @media (prefers-contrast: more/less/custom) 且声明全部套在 [data-mode=auto] 之下,与三档手动模拟互不干扰;ringWidth 默认 2px(cssVar --pc-ring)为 demo 参数;custom 档用 Canvas/Field/ButtonFace 系统色做 forced-colors 语义演示(MDX 标注真实实现应交给 forced-colors)。"
+  },
+  {
+    "id": "principles/keyboard-navigation",
+    "researchRef": "out/research/07-components-patterns.md#§35 键盘界面实践(APG)+ §36(WebAIM 键盘惯例与测试键位表)",
+    "note": "Tab/Shift+Tab 与方向键分工(roving focus)、焦点指示可见(默认 outline 轻易不要覆盖/高对比模式下颜色渐变可能消失)、焦点持久存在(关闭对话框/删除列表项后设回触发者或后一项,否则焦点掉到 body)、焦点移动可预测(页面加载不抢初始焦点)、focus≠selection(focus=document.activeElement,selection=aria-selected=true)、『选中随焦点』仅在面板已预载时允许——全部逐字取 07§35;键位表(按钮 Enter/Space、checkbox Space、radio 方向键、对话框 Esc/困焦/归还、滑块方向键+Home/End、tabs Tab 进出+方向键)与 WebAIM 禁忌(outline:0/none、tabindex≥1、无 href 的 <a>、外接键盘实测)、SC 2.1.2 取 07§36。demo 三场景(toolbar roving/tabs 选中随焦点+双视觉/dialog 困焦+Esc 归还)+skip link+aria-live 按键日志;ring 参数 native 档即『不覆盖默认 outline』的正解示范。GitHub 快捷键与 Radix Dialog 标注编辑性泛例。"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "id": "color/p3-wide-gamut",
+    "researchRef": "out/research/06-color-theming.md#§一.3 Display P3 与广色域 CSS(+§一.1 oklch 参数口径、§一.2 Evil Martians 色相/C 上限)",
+    "note": "P3 Lab 色域体积 1.233M vs sRGB 0.820M(≈1.5×)、另一口径 sRGB≈35% 可见色/P3+30%、渐进增强三件套(sRGB 兜底+@supports (color: color(display-p3 1 0 0))+@media (color-gamut: p3))、color-gamut 取值包含关系与 Baseline 2023-02、Chrome/Safari 实际裁剪 RGB 的警示、stylelint-gamut 工具——全部取自调研 06§3/§1/§2。hue 默认 145(绿区)与 hue 映射(红≈20/黄≈90/绿≈140/蓝≈220/紫≈320)、C 上限 0.5(MDN,100%=0.4)与实测 0.37 取 §1/§2;chroma 默认 0.3 为「演示 L=0.8/绿区越域」的教学值(非官方配方,标注为演示)。demo 内嵌 CSS Color 4 官方转换矩阵(oklch→sRGB/XYZ→P3),离线 roundtrip 验证:oklch(1 0 0)→P3=白、sRGB #FF0000→oklch 0.6280/0.2577/29.23 与规范值一致;MDX 中 0.30→0.252 钳制与 P3 坐标 0.385/0.924/0.321 均为该实现实测输出。真实产品案例:Tailwind v4 'Modernized P3 color palette'(§4 已核)、Radix P3 宣称(§8 已核)、oklch.com/stylelint-gamut 工具链(§2 已核)。"
+  },
+  {
+    "id": "color/semantic-token-layers",
+    "researchRef": "out/research/06-color-theming.md#§二.10 语义色 Token 三层架构(佐证:§19 Primer 色盲主题、§7 Android 语义 role)",
+    "note": "9 套官方主题清单(light/dark/dark-dimmed/light-high-contrast/dark-high-contrast/light-colorblind/dark-colorblind/light-tritanopia/dark-tritanopia)、primitive→semantic→component 分层与命名示例(base.color.blue.3 / bgColor-default / fgColor-muted / borderColor-accent.muted)、W3C DTCG $value/$type/$extensions、官方 alpha 变换原形 { $value: '{base.color.blue.3}', alpha: 0.4 }、@-hack(bgColor.accent.@→bgColor-accent)、style-dictionary 编译、Android「语义化分配 color role 而非具体值」佐证——全部取自调研 06§10(Primer README 一手)。demo 各主题颜色值为演示映射(非官方 hex),schema.effect/MDX/面板文案三处均如实标注;demo 亮侧基座复用调研已核 M3 官方基线值(#6750A4/#D0BCFF/#FFFFFF/#381E72,§7;表面 #FFFBFE/on-surface #1C1B1F 换算 oklch 为本会话实测 0.992 0.006 334 / 0.225 0.008 297);colorblind/tritanopia 演示 accent 移蓝区 220° 依 Evil Martians 色相映射(§2),标注演示映射。真实产品案例:GitHub.com 9 套主题实装(§10/§19)、Android Dynamic Color(§10 佐证)、style-dictionary 生态(§10)。"
+  },
+  {
+    "id": "color/m3-tone-surfaces",
+    "researchRef": "out/research/02-official-design-specs.md#§B6 Color roles + §B7 Tone-based surfaces(机制:out/research/06-color-theming.md#§二.5 HCT/§7 M3 基线/§14 暗色提亮)",
+    "note": "五档角色命名 surface container lowest/low/(container)/high/highest、2023-02 与 elevation 解耦、角色成对 3:1 对比保证取自调研 02§B6/§B7(m3.material.io 官方博客 URL 已核录);Tone 0-100=CIE L*、13 档、核心 5 板取 06§5;M3 基线值 #FFFBFE/#1C1B1F/#6750A4/#D0BCFF(≈tone 80)取 06§7;暗色层级提亮方向以 Apple base/elevated 同构佐证(06§14)。官方逐档 tone 值(如亮色 100/96/90/92/94)经全库检索确认不在任何调研文件中——schema/MDX 明确标注「社区常见值,未证实」,demo 改用单调演示 L 阶梯(亮降深升)不冒认该表;hue 默认 320 依 Evil Martians 紫≈320(06§2,oklch 刻度;#6750A4 的 HCT 299 为 hct-tonal-palette 条目实测,已注明刻度差异);chroma 默认 0.02 为演示中性值。真实产品案例:Android 12+ Material You(02§B7/06§6)、Material Theme Builder(06§7 官方工具)、Radix 步 1-3 同构(06§8,类比标注编辑性)。"
+  },
+  {
+    "id": "color/color-psychology-ui",
+    "researchRef": "out/research/06-color-theming.md#§二.9 60-30-10(hype4)+ §五.18 APCA 浅底疲劳 + §一.2 Evil Martians L 规则 + §二.7/§三.14 M3 暗色 accent 基线;out/design-study/11-modern-completion.md#§6 Neo-Brutalism HubSpot 警示",
+    "note": "本条为编辑性总结条目:暖冷/饱和/明度的情绪与行为叙事在调研库中无一手实证,schema.origin/MDX/demo 注释区全部标注「编辑性总结,未证实」。可证实的相邻事实逐条挂调研出处:强调色承担焦点/CTA 与暗色避免过度饱和(hype4 60-30-10,06§9)、APCA 浅色底长时间阅读疲劳专门章节(06§18)、L=0.8 配黑字/L≥0.87 背景配黑字都好/C=0.17 示例/色相映射红20黄90绿140蓝220紫320(Evil Martians,06§2)、M3 暗色 accent 提亮降饱和 #6750A4→#D0BCFF(06§7/§14)、WCAG 4.5:1/3:1 不得四舍五入(06§17)。默认值 L=0.87/C=0.17/H=20 逐个标注出处;demo 内嵌 WCAG 公式实时算黑白字对比度(转换矩阵同 p3 条目,离线 roundtrip 验证,oklch(0.87 0.06 90) 实测对黑 15.31:1 印证 §2 规则),暖冷判定按 ≤90° 暖/>90° 冷并给出映射口径。真实产品案例:Spotify 60/30/30/绿(LogRocket 例证,06§9)、M3 暗色 accent 官方基线(06§7)、Neo-Brutalism 高饱和吸睛+HubSpot 可访问性警示(11§6)。"
+  },
+  {
+    "id": "color/theme-transition",
+    "researchRef": "out/design-study/11-modern-completion.md#§8 主题切换过渡(View Transitions 方案)",
+    "note": "Chrome 官方配方逐字收编:startViewTransition 包换肤回调、ready 后对 ::view-transition-new(root) 做 clip-path circle 从点击坐标扩散、endRadius=hypot(max(x,w-x),max(y,h-y))、duration 500/easing 'ease-in'、官方降级 if(!document.startViewTransition) 直切、::view-transition-old/new(root){animation-duration:0.3s} 自定义交叉淡化与「animation:none; mix-blend-mode:normal 阻止默认交叉淡化」、prefers-reduced-motion 包裹建议——全部取自 11§8(Chrome 文档原文);API 支持 Chrome/Edge 111、Safari 18、Firefox 144(match-element 137/144/18.4)与 light-dark() 三引擎 Chrome/Edge 123/Firefox 120/Safari 17.5、Baseline 2024-05-13 亦取 11§8。easing 默认 [0.42,0,1,1] 为 ease-in 的标准关键字映射(示例原词 ease-in,MDX 注明映射关系)。demo 与既有 motion/view-transitions 条目差异化分工:本条只做 root 快照换肤表演(不赋 view-transition-name),MDX 已互相指认;::view-transition 伪元素树挂在 html 下故 duration/easing 按 vt 条目既有惯例镜像 :root、卸载清理;circle 档阻断默认交叉淡化按文档写法以 html[data-tt-reveal=circle] 作用域落 CSS。亮侧 token 用 M3 官方基线(06§7),暗侧表面为演示值(官方暗 surface 未在调研逐值列出,已标注);第三条真实产品案例为编辑性总结(社区教程改写官方配方,未逐一核实),前两条(Chrome 文档内置演示、web.dev light-dark 配套)为 11§8 已核来源。"
+  }
+]

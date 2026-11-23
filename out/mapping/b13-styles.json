@@ -1,0 +1,17 @@
+[
+  {
+    "id": "styles/maximalism",
+    "researchRef": "out/research/03-visual-style-trends.md §8 Maximalism + out/design-study/11-modern-completion.md §7 极繁主义参数化特征 + §7 表内极简基准列(对照本库 minimalism 条目)",
+    "note": "六参数:hues(每屏色相数 2-8 默认 5)/layers(装饰层叠 1-6 默认 3)/fontMix enum(三族/双族)/typeScale(字阶 ×1.333)/gap(缝隙 12px)/tilt(±2°)——后者四值与 ≥5 色相、≥3 层全部为补研 11§7 建议值(报告明示「经验值——无官方数值标准」,effect/MDX 已标注);八枚撞色 hex 为本条目基准设定(调研未记载色值,已标注),排序即 hues 裁剪次序,Shuffle 按钮旋转色序为本地状态。fontMix/layers/hues 为 JS 型(demo 订阅 store),typeScale/gap/tilt 走 CSS 变量(--mx-step/--mx-gap/--mx-tilt)。可读性红线(正文 45-75ch、放大一倍不滚动、行高下限 1.25)出自补研 11§7 引 WCAG 1.4.8;撞色只落在 marker 划线与贴纸上、正文恒墨色,规避色相文字对比不可控问题。案例 3 个全部出自调研 03§8(Diko/Ellen Porteus/Glitche)。prefers-reduced-motion 关闭入场与贴纸过渡;装饰层全 aria-hidden。"
+  },
+  {
+    "id": "styles/classic-brutalism",
+    "researchRef": "out/research/03-visual-style-trends.md §5 Web Brutalism + out/design-study/11-modern-completion.md §6 经典粗野主义 vs Neo-Brutalism 判据差异(99designs/brutalistwebsites.com/HubSpot)+ 对照本库 neo-brutalism 条目",
+    "note": "四参数:borderWidth(1-4px 默认 2,调研记载区间 1-2px 取上限)/linkColor(#0000EE 浏览器默认链接蓝,调研逐字)/typeface enum(system=Times New Roman 系系统默认字[补研判据]/mono=等宽栈[调研 03§5])/hoverInvert enum(硬反色零过渡[调研] /仅下划线对照)。与 neo-brutalism 判据差异(阴影无 vs 硬偏移、黑白灰 vs 高饱和、系统字 vs 展示字体、诚实裸露 vs 风格化玩耍)写入 zh/en MDX 样式节速查;radius=0/box-shadow none/transition none 为风格铁律写死不入参。borderWidth/linkColor 为 CSS 变量型,typeface/hoverInvert 为 JS 型(demo 订阅 store,demo 内切换按钮走 store.set 保持与参数面板单一数据源)。star 2(四参数,风格本身反参数化)。案例 3 个全部出自调研 03§5(Craigslist/Hacker News/Gucci PF18+AWGE,含「功能型常青 vs 风格型易过时、2026-03 峰值 3.6% 回落」调研结论)。无任何 CSS 新特性依赖,fallback 即「删掉 CSS 仍可读」的本体承诺。"
+  },
+  {
+    "id": "styles/spatial-ui",
+    "researchRef": "out/design-study/11-modern-completion.md §5 Spatial UI:visionOS 设计语言要点与 Web 借鉴(HIG 官方 Markdown 接口 2026-11 抓取 + WebKit 博客 Safari 26.2)+ out/research/03-visual-style-trends.md §1(backdrop-filter 支持面数据)",
+    "note": "六参数:blur(20px)/saturation(1.4×)/radius(24px)/shadow(0 12px 40px rgba(0,0,0,.18) 单层)——四值全部为补研 11§5 可复用玻璃片段数值(报告明示「本研究映射建议,非官方规范,经验值」,effect/MDX/片段出处三处标注);fill(oklch(1 0 0 / 0.55))为片段 color-mix(in oklab, Canvas 55%, transparent) 的参数化近似(Canvas 语义无法进滑杆,已注明);immersion enum(shared/full)对应 HIG 官方概念 Shared Space/Full Space 与「最小沉浸级别」原则,JS 型 data-immersion,其余五个全 CSS 变量型。system=apple(HIG 官方来源)。深度即层级(单层大阴影非密集描边)、注视即悬停(大热区+::after 光圈+:focus-visible 白环)、环境为静止参照系(仅窗口动,合成器属性)三条 Web 转译纪律进 MDX;HIG 原文引语(a limitless canvas/最小沉浸/避免压倒性运动/内容置于视野内)逐字引用。案例 3 个:HIG Shared Space 系统窗口、数字表冠×Passthrough、Safari 26.2 WebXR+WebGPU(全部出自补研 11§5,未杜撰第三方产品)。fallback=提高填充为实色窗口保留阴影层级(@supports 兜底)。"
+  }
+]

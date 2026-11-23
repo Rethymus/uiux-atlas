@@ -1,0 +1,17 @@
+[
+  {
+    "id": "styles/glassmorphism",
+    "researchRef": "out/research/03-visual-style-trends.md#一、§1 Glassmorphism(交叉:out/research/06-color-theming.md#四、§16 玻璃拟态经典配方)",
+    "note": "来源=glassmorphism.com 生成器(hype4.academy 承接,301 跳转)与 superdesign.dev/styles/glassmorphism 生产实测页(均为调研一手抓取)。参数默认值:blur 20px / fill rgba(255,255,255,0.15)(改写为 oklch(1 0 0 / 0.15))/ border rgba(255,255,255,0.3)(oklch(1 0 0 / 0.3))/ radius 20px,全部取自 glassmorphism.com 生成器经典配方;投影 0 8px 32px rgba(0,0,0,0.25) 取 superdesign.dev(06§16 记 glassmorphism.com 配方为 0.1,两说并列于 MDX 未采用 0.1 作默认);深色变体 rgba(17,25,40,0.55) 取 superdesign.dev。variant 为 JS 型参数(demo 订阅切 data-variant),不写 cssVar。照片来源:Unsplash 免费图两张已 curl 下载至 public/photos/glass-alps.jpg 与 glass-nebula.jpg(JPEG 签名已验),下载失败时的 CSS 渐变兜底已实现为第三个背景选项。"
+  },
+  {
+    "id": "motion/motion-spring",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 Spring 物理参数(§A. Motion 文档)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取;本条目写作时再次实测抓取该页核实)。schema 默认值取文档标注:stiffness=1、damping=10、mass=1、bounce=0.25、duration=0.3s(velocity 默认取当前值速度)。差异如实并列:调研记录『社区旧说 stiffness=100 未证实』;写作时又核验了本站安装的 motion-dom@12.43.0 源码(animation/generators/spring.mjs 的 springDefaults.stiffness=100、bounce=0.3、duration=800ms;animation/interfaces/motion-value.mjs:28 传 velocity=value.getVelocity() 实现打断续速),结论=文档标注值与运行时回退不一致,按调研约定取文档标注值 1 作官方默认,差异写进 zh/en MDX 与参数 effect。durationBased 模式在 demo 中显式传 duration 0.3s(省略会落到运行时 800ms 回退)。demo 的可打断续速来自对同一 MotionValue 重复 animate();reduced-motion 时直出终态并停用 ping-pong。"
+  },
+  {
+    "id": "color/oklch-workflow",
+    "researchRef": "out/research/06-color-theming.md#一、§1 oklch 与 §2 OKLCH 选色工作流(交叉:§17 WCAG 对比度等级)",
+    "note": "来源=Evil Martians《OKLCH in CSS》(一手)与 MDN oklch 页(一手),WCAG 阈值取 W3C WCAG 2.1 Understanding(一手)。默认值:L=80%(Evil Martians『L=0.8 任意色相配黑字清晰』;参数取 0-100% 刻度故默认 80)、C=0.12(工作流常用中彩度,C 滑杆上限 0.37 取其 sRGB 实测色域边界)、H=220(其经验映射『蓝≈220°』)。三个参数均为 JS 型(无 cssVar),demo 订阅后拼 oklch() 字符串并内置 oklch→sRGB 标准换算(Ottosson 矩阵,gamma 按 CSS Color 4),对比度对黑/白底实时计算并标 AA/AAA;越域按浏览器现状裁剪 RGB 并显式警示(Evil Martians 指出 Chrome/Safari 未做降 chroma 映射)。换算数学已用 node 独立脚本验证:黑白端点 21:1、L=0.8 各色相对黑字 10.6–11.7:1,与调研记载一致。"
+  }
+]

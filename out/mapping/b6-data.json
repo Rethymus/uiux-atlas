@@ -1,0 +1,22 @@
+[
+  {
+    "id": "components/table",
+    "researchRef": "out/research/07-components-patterns.md#13. 数据表格(Data Table)(IBM Carbon)交叉:§17 空状态、§34 APG 模式总览(Table)",
+    "note": "数据表格原则(hover 恒开辅助扫读、不要嵌套表格、空态替换整表不保留表头)取调研 07§13/§17;ARIA 语义参照 07§34 记载的 APG Table 模式(https://www.w3.org/WAI/ARIA/apg/patterns/table/)。props 默认值优先对齐 out/design-study/06-antdesign.md §4.15(size 默认 large、bordered 默认 false),并经本地 antd 6.7.1 源码二次复核(components/table/index.zh-CN.md:129/:148,cellPadding 16/12·8/8 见 style/index.ts:457-462)。striped:antd 6.7.1 无此 prop(本地源码 grep 无 stripe/striped 命中),默认 off 取 TDesign Table stripe 的官方注释 @default false(Tencent/tdesign-vue-next packages/components/table/type.ts,本批 curl 实抓核验)。rowCount 默认 5 为演示值,effect 已注明。参数全部 JS 型(demo 订阅 store 切 data-* 属性),无 cssVar。"
+  },
+  {
+    "id": "components/avatar",
+    "researchRef": "out/design-study/06-antdesign.md#4.16 Avatar(07-components-patterns.md 无头像专节;shape/size/Group 语义以 06 为一手)",
+    "note": "调研 07 无 Avatar 专节,故 researchRef 指向 ask 指定的优先源 out/design-study/06-antdesign.md §4.16;数值全部经本地 antd 6.7.1 源码复核:shape 默认 circle(index.zh-CN.md:44)、size 默认 medium 且像素基准 containerSize=controlHeight=32(avatar/style/index.ts:209)、字号 textFontSize=fontSize=14(:212,14/32≈0.4375)、组重叠 groupOverlapping=-marginXS=-8px(:220)、组描边 groupBorderColor=colorBorderBg(:221)、square 圆角走 seed borderRadius=6(:98-100/:118)、Group max={count} 折叠自 5.18.0(index.zh-CN.md:58)。groupCount 默认 4 为演示值(antd max.count 无官方默认),effect 已注明。size 为 CSS 型(--av-size),shape/groupCount 为 JS 型。07§35(共同区域)与本条无关,未引用。"
+  },
+  {
+    "id": "components/badge",
+    "researchRef": "out/design-study/06-antdesign.md#4.17 Badge(07-components-patterns.md 无徽标专节;overflowCount/showZero/dot 语义以 06 为一手)",
+    "note": "调研 07 无 Badge 专节,故 researchRef 指向 ask 指定的优先源 out/design-study/06-antdesign.md §4.17;数值全部经本地 antd 6.7.1 源码复核:overflowCount 默认 99、超出拼 +(index.zh-CN.md:51,Badge.tsx:70/:112)、showZero 默认 false 故 count=0 隐藏(:52/:47)、dot 默认 false(:49)、offset=[number,number] 默认 -(:50)。任务参数名 max 对应 antd overflowCount——06§5.2 已核实 maxCount 在 5.x/6.x 均不存在(未证实命名),本条目如实采用任务契约名 max 并在 effect 注明对应关系。count 默认 8、徽标 20px/dot 8px 为演示值,effect/MDX 已注明。红色 #ff4d4f 取 antd colorError seed(06§2.2)。offset 为 CSS 型(--bd-offset 经 translate 消费),count/max/dot 为 JS 型;demo 的 +1/清零工具条经 store.set 与面板双向同步(b4 container-queries 先例)。"
+  },
+  {
+    "id": "components/card",
+    "researchRef": "out/research/07-components-patterns.md#32. 格式塔·共同区域原则(Law of Common Region)(交叉:out/design-study/06-antdesign.md#4.18 Card)",
+    "note": "卡片的分组语义(边框/背景即容器分组)取调研 07§35 一手;props 默认值优先对齐 out/design-study/06-antdesign.md §4.18 并经本地 antd 6.7.1 源码复核:size 默认 medium(index.zh-CN.md:55)、hoverable 默认 false 且 Card.Grid 内默认 true(:52/:68)、variant 默认 outlined 取代 v5 bordered=true(:47)、cover 为 ReactNode 插槽默认 -(:49)。两组阴影直接采用 06§2.3 ⑥ 的实测 token(boxShadowTertiary 轻阴影 / boxShadow 浮层),浮起过渡 0.2s=easyOut/motionDurationMid(06§3)。sm/md 两档 padding 具体像素与 2px 浮起高度为演示值,effect/MDX 已注明(antd Card padding 像素规格调研未记载)。cover 默认 off 为演示默认(插槽无布尔默认),已注明。参数全部 JS 型(demo 订阅 store 切 data-* 属性),无 cssVar。"
+  }
+]

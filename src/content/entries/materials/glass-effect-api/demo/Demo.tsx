@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -150,7 +151,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
     <DemoStage entryId={entryId} schema={schema}>
       <div className="lg-scene" data-variant={variant} data-interactive={interactive}>
         <div className="lg-bg">
-          <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
+          <img src={withBase(`photos/glass-${backdrop}.jpg`)} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
         </div>
         <div className="lg-container">
           <button type="button" className="lg-glass"><span>按钮 A / Btn A</span></button>

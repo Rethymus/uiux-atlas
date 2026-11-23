@@ -5,10 +5,12 @@ import mdx from "@astrojs/mdx";
 import { fontPreload } from "./scripts/integration-font-preload.mjs";
 
 export default defineConfig({
-  // ⚠️ 占位域名(清单 sitemap-robots-site-missing ①):canonical / og:url / hreflang /
-  //    robots.txt / sitemap 的绝对 URL 全部派生自此 site——上线前改成正式域名,
-  //    只需改这一处(Base.astro / robots.txt 端点 / sitemap 端点均读 Astro.site / SITE)。
-  site: "https://uiux-atlas.example.com",
+  // 正式站点 = GitHub Pages 项目页(github.com/Rethymus/uiux-atlas 的 gh-pages 分支):
+  // site 是域名来源,base 是项目页的子路径——canonical / og:url / hreflang / robots.txt /
+  // sitemap 的绝对 URL 派生自二者,站内链接一律经 src/lib/urls.ts 的 withBase()。
+  // 换仓库或换托管时改这两处(另见 mcp/server.mjs 顶部 SITE_BASE、scripts/deploy-gh-pages.mjs)。
+  site: "https://rethymus.github.io",
+  base: "/uiux-atlas",
   integrations: [react(), mdx(), fontPreload()],
   i18n: {
     defaultLocale: "zh",

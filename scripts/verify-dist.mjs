@@ -1,12 +1,16 @@
 // 构建产物核验:双语三层路由(首页/分类/条目)全部产出且含关键内容标记。
 // 用法: node uiux-atlas/scripts/verify-dist.mjs  (exit 0 = 通过)
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
 const dist = join(root, "dist");
+// 部署子路径(站点作为项目页发布在 <base>/ 下):标记里的站内链接与下方的全量地址检查都以它为前缀
+const CONFIG_BASE =
+  (readFileSync(join(root, "astro.config.mjs"), "utf8").match(/\bbase:\s*["']([^"']+)["']/) ?? [])[1] ?? "/";
+const BASE_SLASH = CONFIG_BASE.endsWith("/") ? CONFIG_BASE : `${CONFIG_BASE}/`;
 
 const EXPECTED = {
   // styles 第 8 批 8 个 + 第 9 批(b13)maximalism / classic-brutalism / spatial-ui 共 18 个
@@ -131,12 +135,12 @@ checkPage(
 // 时点快照声明与一条互链 href,验证卡片网格与站内互链已渲染)
 checkPage(
   join("trends", "index.html"),
-  ["趋势", "正在兴起", "正在退潮", "时点快照", 'href="/styles/glassmorphism/"'],
+  ["趋势", "正在兴起", "正在退潮", "时点快照", `href="${BASE_SLASH}styles/glassmorphism/"`],
   "zh trends",
 );
 checkPage(
   join("en", "trends", "index.html"),
-  ["Design trend tracker", "Rising", "Cooling", "point-in-time snapshots", 'href="/en/styles/glassmorphism/"'],
+  ["Design trend tracker", "Rising", "Cooling", "point-in-time snapshots", `href="${BASE_SLASH}en/styles/glassmorphism/"`],
   "en trends",
 );
 
@@ -163,6 +167,49 @@ for (const [cat, slugs] of Object.entries(EXPECTED)) {
     }
     checkPage(join(cat, slug, "index.html"), [asRenderedText(zhName), "复制复刻 Prompt", "继续深入"], `zh entry ${cat}/${slug}`);
     checkPage(join("en", cat, slug, "index.html"), [asRenderedText(enName), "Copy replication prompt", "Go deeper"], `en entry ${cat}/${slug}`);
+  }
+}
+
+// ── 站内地址必须带部署子路径 ──
+// 站点作为项目页发布在 <base>/ 下(astro.config.mjs 的 base):产物里任何不带前缀的根路径
+// 站内地址(HTML 的 href/src、CSS url()、JS 字符串里的路径)在那儿都会 404。曾经漏网的
+// 形态:MDX 正文里手写的互链、404 页的语言切换、demo 里的照片路径、字体预载地址。
+{
+  const SEG = "styles|materials|motion|color|type|layout|components|icons|dataviz|principles|resources|trends|en|registry|llms\\.txt|photos|LICENSE|_astro|sitemap|robots";
+  const attrRe = /(?:href|src|content|action|poster)="(\/[^"]*)"/g;
+  const cssUrlRe = /url\(\s*["']?(\/[^)"'\s]*)/g;
+  const jsStrRe = new RegExp(`["'\`](\\/(${SEG})(?:\\/[^"'\`\\s<]*)?)["'\`]`, "g");
+  const offenders = new Map(); // 取值 → Set(文件)
+  let prefixedUrls = 0;
+  const note = (value, file) => {
+    if (value.startsWith(BASE_SLASH)) {
+      prefixedUrls += 1;
+      return;
+    }
+    if (!offenders.has(value)) offenders.set(value, new Set());
+    offenders.get(value).add(file);
+  };
+  const walk = (d, rel) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      const r = rel ? `${rel}/${e.name}` : e.name;
+      if (e.isDirectory()) {
+        walk(p, r);
+      } else if (e.name.endsWith(".html")) {
+        const s = readFileSync(p, "utf8");
+        for (const m of s.matchAll(attrRe)) note(m[1], r);
+        for (const m of s.matchAll(cssUrlRe)) note(m[1], r);
+      } else if (e.name.endsWith(".css")) {
+        for (const m of readFileSync(p, "utf8").matchAll(cssUrlRe)) note(m[1], r);
+      } else if (e.name.endsWith(".js")) {
+        for (const m of readFileSync(p, "utf8").matchAll(jsStrRe)) note(m[1], r);
+      }
+    }
+  };
+  walk(dist, "");
+  console.log(`站内地址子路径检查:${prefixedUrls} 处带 ${BASE_SLASH} 前缀,${offenders.size} 种取值漏网`);
+  for (const [value, files] of offenders) {
+    contentFails.push(`站内地址缺部署子路径 ${BASE_SLASH}:${value} ← ${files.size} 个文件,如 ${[...files][0]}`);
   }
 }
 

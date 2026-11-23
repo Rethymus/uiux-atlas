@@ -1,0 +1,32 @@
+[
+  {
+    "id": "motion/flip-technique",
+    "researchRef": "out/design-study/12-expansion.md#§3 FLIP(First-Last-Invert-Play)精确步骤(aerotwist 一手来源)+ §8 未证实事项(Josh Comeau FLIP 文 404 未采用);交叉:out/research/04-motion-microinteractions.md§3.1/§3.2(View Transitions 支持矩阵)、out/design-study/10-microinteractions-code.md§2.1(layoutId 自动 FLIP)",
+    "note": "四步定义、transform-origin: top left、只动画 transform/opacity(合成器路径)、约 100ms 响应窗口、transitionend/WAAPI finish 清理、GSAP FLIP 插件——全部逐字取补研 12§3;duration 350ms + cubic-bezier(0.2, 0.7, 0.3, 1) 同取 12§3 的「aerotwist 示例改写」片段,已在 schema effect 与 MDX 标注为示例值而非官方规范值;scale invert 拉伸文字的警告与 DOM 拆层对策同段记载。demo 六卡片点击重排,auto=First→Last→Invert 同帧只播 Play(生产形态),step=四阶段手动步进并实时显示反算 dx/dy/scale;reduced-motion 跳过 Play 直出终态。与 slot-spring(layoutId 自动 FLIP)、view-transitions(浏览器原生)、smooth-craft 互链。"
+  },
+  {
+    "id": "motion/scroll-snap",
+    "researchRef": "out/design-study/12-expansion.md#§4 CSS Scroll Snap(吸附轴/对齐/scroll-padding/snap area/snapport/Level 2 事件)+ out/design-study/10-microinteractions-code.md§8.2(MDN Basic concepts:mandatory 警告/scroll-padding/scroll-margin/scroll-snap-stop)与 §8.4(轮播惯例代码)",
+    "note": "概念(snap area=子项+scroll-margin 对齐 snapport=容器−scroll-padding)、容器 scroll-snap-type × 子项 align/stop、MDN「mandatory 仅在内容量已知时用,一般交互用 proximity」警告、scroll-padding 给吸顶导航留位、Level 2 scrollsnapchange/scrollsnapchanging 需降级——逐字取调研 10§8.2 与补研 12§4;参数默认值(align start、stop always、scroll-padding-inline 16px、gap 16px)取 12§4 片段,10§8.4 的 24px proximity 惯例并列记载;CSS 默认 normal 在 effect 中如实注明。demo 横向卡片轨道四参数全 CSS 型(cssVar 直写),prev/next 按钮 + scrollsnapchange 能力检测 + 滚动位置兜底读数,aria-live 播报;reduced-motion 时程序化滚动 behavior: auto。与 scroll-overflow(overscroll-behavior 防滚动链)、inertia-gesture、scroll-driven-animations 互链。"
+  },
+  {
+    "id": "motion/magnetic-hover",
+    "researchRef": "out/design-study/12-expansion.md#§5 磁吸交互(radius/lerp/quickTo/可访问性降级)+ §16 巧思 7;未证实记录:Codrops 教程 URL 污染未核验、GSAP 许可结论未核验",
+    "note": "实现全部取补研 12§5:reach = max(宽,高)/2÷(1−radius)、半径内目标 = 指针偏移×radius、逐帧 cx += (tx−cx)×lerp 配 rAF、直写 el.style.translate、@media (prefers-reduced-motion: reduce), (hover: none) { translate: none } 降级 CSS——逐字同款;默认 radius 0.45 / lerp 0.15 为 12§5 片段默认值,lerp 常用区间 0.05–0.2 与判定带 25%~50% 同页记载;GSAP quickTo(3.10.0+)官方示例场景即磁吸按钮(一手文档);Codrops URL 未核验一事如实写入 MDX,不引第三方教程数值。demo 零依赖手写 lerp 版,只响应 mouse 指针,实时显示 (hover: none) 与 reduced-motion 检测结果,mode=plain 预览降级形态;归位后自动停 rAF。与 press-feedback、smooth-craft(逐帧直写 transform 不走 CSS 变量,调研 10§7.4)、handoff-curves 互链。"
+  },
+  {
+    "id": "motion/kinetic-typography",
+    "researchRef": "out/design-study/12-expansion.md#§6 动态文字(注册轴/GRAD 零重排/font-variation-settings 低层语法/@property 轴过渡/SplitText/手写拆字兜底)+ §16 巧思 8;交叉:out/research/04-motion-microinteractions.md§6.2(matchMedia 检测)、out/research/09(§1.2 @property Baseline)",
+    "note": "注册轴 wght 1–1000↔font-weight、GRAD 改视觉密度不改占位(可动画零重排)、font-variation-settings 需整条重声明→CSS 变量绕过、@property 注册变量 + transition --wght .5s 轴过渡、@font-face 范围描述符、拆字 mask/aria:\"auto\" 语义——逐字取补研 12§6;rise .6s cubic-bezier(.2,.7,.3,1) 与手写拆字 40ms 交错取 12§6 无库兜底片段,GSAP SplitText 官方示例 stagger 0.05/type words,chars/mask/autoSplit 并列记载;旧系统(macOS<10.13)不支持如实标注。demo 用打包的 Inter Variable(variable-fonts 条目同源依赖)驱动 wght 轴 0.5s 过渡 + 逐字/逐词 mask 上升(总铺开 = stagger×(n−1)+rise 已写入 MDX);拆分树 aria-hidden + 容器 aria-label 整句;reduced-motion 上升与轴过渡全关。与 variable-fonts(轴体系)、stagger-orchestration/choreography(交错数学)、page-transitions(标题接力)互链。"
+  },
+  {
+    "id": "motion/progress-motion",
+    "researchRef": "out/research/04-motion-microinteractions.md#§2.2 加载反馈(NN/g 阈值/3 倍可等待/Luke W Polar/M3 skeleton loaders)+ §1.4(M3 short4 200ms + Standard)+ out/design-study/12-expansion.md#§14 目标梯度效应(清晰进度/人为进度)",
+    "note": "NN/g 阈值逐字取调研 04§2.2(<1s 即时态变化/1s+ 必须给指示/循环动画 2–10s/≥10s percent-done+文字说明/EST)、可等待 3 倍时长、M3 骨架「微妙脉动(左上→右下)」+「完成后快速淡入」;完成淡入 200ms cubic-bezier(0.2,0,0,1) 按 skeleton-loading 条目同口径(M3 short4+Standard,调研 04§1.4);目标梯度(人为进度/预盖章)取补研 12§14。total 默认 10000ms 恰落 NN/g ≥10s 百分比阈值;auto 档 1s/3s 分段点为演示编排值已在 MDX 标注(thresholds 本身官方);pulse 1200ms 沿用 skeleton-loading 同口径「社区常见值,未证实」。demo rAF 时间轴四形态互斥切换,确定段 role=progressbar+aria-valuenow 逐帧同步、不确定段不编数值,aria-busy+状态文字全程兜底;reduced-motion 动画停、数值照走。真实案例全为调研记载(Polar 消灭 spinner、Google 搜索滑入转场、目标梯度人为进度)。与 skeleton-loading、count-up 互链。"
+  },
+  {
+    "id": "motion/handoff-curves",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§7.3 中断接力(velocity preserve,Motion 文档逐字)+ §2.2 springSlot(半隐式欧拉积分/速度存 dataset 接力/restDeltaGranular 0.005)+ §2.3/§4.3(ζ=c/(2√(km))、过冲 e^(−πζ/√(1−ζ²)) 实算公式)+ §5.1(vaul VELOCITY_THRESHOLD 0.4/CLOSE_THRESHOLD 0.25/EASE[0.32,0.72,0,1])+ §4.2(velocity 注入)+ 交叉:out/research/04-motion-microinteractions.md§1.3(SwiftUI 弹簧接力保留速度/inertia 参数)与 §5.1(Pointer Events Baseline 2020-07)",
+    "note": "Motion「物理弹簧吸收既有手势/动画速度、velocity 缺省当前值速度」与 duration-based「从静止开始并忽略速度」反例逐字取调研 10§7.3;积分器(dt 钳制 1/30s、m·x''+c·x'+k·(x−t)=0)、restSpeed/restDelta 双阈值停机(0.01/0.005 为 Motion granular 源码值,demo 放宽 0.5/0.5 + 8s 兜底已标注演示值)、ζ≈0.722/过冲≈3.8%/峰值 262ms「中·微弹」档取 10§2.2/§2.3;vaul 阈值 0.4/0.25 取 10§5.1;SwiftUI「连续 spring 接力保留速度」取调研 04§1.3;FLICK_VELOCITY 1500 沿 inertia-gesture 口径标注演示值。demo 拖拽 1:1 直写 transform→释放 EMA 测速→速度随位置交接给半隐式欧拉弹簧,handoff=off 即归零重启反例对照,读数显示释放速度/ζ/预计过冲;reduced-motion 跟手保留、释放直出。与 inertia-gesture(无到位回弹的对照)、slot-spring(档位手感)、damping-craft(ζ 映射)、smooth-craft(中断接力总纲)、shake-decay(velocity 注入另用)互链。"
+  }
+]

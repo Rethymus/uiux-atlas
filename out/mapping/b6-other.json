@@ -1,0 +1,12 @@
+[
+  {
+    "id": "components/empty",
+    "researchRef": "out/research/07-components-patterns.md#§17 空状态(Empty States)(IBM Carbon + Ant Design)",
+    "note": "Carbon 空态三分类(no data/user action/error management)、解剖结构(插画/正向标题/下一步/可选 CTA)与『空态替换原元素』最佳实践取自调研 07§17(含一手 URL carbondesignsystem.com/patterns/empty-states-pattern 与 ant.design/components/empty);antd props 数值(image 默认 PRESENTED_IMAGE_DEFAULT 121×116、内置 PRESENTED_IMAGE_SIMPLE 55×35、description 由 locale 提供『暂无数据』)取自 out/design-study/06-antdesign.md §4.23(6.7.1 源码核对,§5.2-6 标注 description 为实现层默认)。simple 默认 off 对齐 antd image 默认档;footerAction 非官方 props(antd 为 children 可选插槽),demo 默认 on 为展示完整解剖的编辑性选择,已在 effect 文案如实标注。"
+  },
+  {
+    "id": "components/watermark",
+    "researchRef": "out/design-study/06-antdesign.md#§4.24 Watermark(https://ant.design/components/watermark-cn)",
+    "note": "rotate 默认 -22、gap 默认 [100,100]、单格 120×64、font 默认 rgba(0,0,0,.15)/16px/400/sans-serif、zIndex 9、inherit true、MutationObserver 防篡改、5.18.0+ 容器强制 overflow:hidden 均取自 06-antdesign §4.24(6.7.1 源码核对);opacity 默认 0.15 对齐 antd font.color 的 alpha,TDesign --td-text-color-watermark rgba(0,0,0,10%)/暗色 rgba(255,255,255,10%) 取自 out/design-study/02-tdesign.md §1.6(一手 _light.less/_dark.less)。watermark 未见于调研 07,故 researchRef 指向 06-antdesign §4.24。content 三档为 demo 预设文案(antd content 为任意 string/数组、image 优先),已如实标注为编辑性选择;demo 采用 CSS/DOM 瓦片方案,MDX 内写明与 canvas→dataURL(antd 官方路线)的取舍对照。"
+  }
+]

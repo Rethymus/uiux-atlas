@@ -11,7 +11,7 @@ import "@fontsource/noto-sans-sc/700.css";
 import "@/styles/global.css";
 import { t } from "@/i18n/ui";
 import { CATEGORIES, type Locale } from "@/lib/types";
-import { resourcesUrl, trendsUrl } from "@/lib/urls";
+import { categoryUrl, homeUrl, resourcesUrl, trendsUrl, withBase } from "@/lib/urls";
 import CommandPalette from "@/components/CommandPalette";
 
 interface Props {
@@ -29,7 +29,7 @@ interface Props {
 
 const { locale, title, description, altUrl, activeCategory, activeNav, ogType } = Astro.props;
 const dict = t(locale);
-const catPath = (id: string) => (locale === "en" ? `/en/${id}/` : `/${id}/`);
+const catPath = (id: string) => categoryUrl(locale, id);
 
 /* ── canonical / hreflang / OG(清单 hreflang-canonical-missing + og-twitter-missing):
    绝对 URL 全部派生自 astro.config.mjs 的 site(单一事实来源;换域名只改一处)。
@@ -42,8 +42,8 @@ const abs = (p: string) => (SITE ? new URL(p, SITE).href : undefined);
 const canonical = abs(Astro.url.pathname);
 const zhAbs = abs(zhPath);
 const enAbs = abs(enPath);
-/* og:image:站点级默认分享图(static 资源;public/photos/ 既有素材) */
-const ogImage = abs("/photos/glass-alps.jpg");
+/* og:image:站点级默认分享图(static 资源;public/photos/ 既有素材;路径经 withBase 带上部署子路径) */
+const ogImage = abs(withBase("photos/glass-alps.jpg"));
 const ogLocale = locale === "zh" ? "zh_CN" : "en";
 const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
 ---
@@ -108,7 +108,7 @@ const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
     <a class="skip-link" href="#main">{dict.nav.skip}</a>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="brand" href={locale === "en" ? "/en/" : "/"}>
+        <a class="brand" href={homeUrl(locale)}>
           <span class="brand-mark" aria-hidden="true">◍</span>{dict.siteName}
         </a>
         <nav class="site-nav" aria-label={dict.nav.atlas}>
@@ -204,7 +204,7 @@ const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
             <p class="site-footer-head">{dict.footer.colLicense}</p>
             <p class="site-footer-line">
               {dict.footer.licenseDemo}{" "}
-              <a href="/LICENSE">MIT</a> · {dict.footer.licenseText}{" "}
+              <a href={withBase("LICENSE")}>MIT</a> · {dict.footer.licenseText}{" "}
               <a
                 href={locale === "zh"
                   ? "https://creativecommons.org/licenses/by-nc/4.0/deed.zh"
@@ -238,8 +238,8 @@ const ogLocaleAlt = locale === "zh" ? "en" : "zh_CN";
           <nav class="site-footer-col" aria-label={dict.footer.colMachine}>
             <p class="site-footer-head">{dict.footer.colMachine}</p>
             <ul class="site-footer-links">
-              <li><a href="/llms.txt">{dict.footer.machineLlms}</a></li>
-              <li><a href="/registry/index.json">{dict.footer.machineRegistry}</a></li>
+              <li><a href={withBase("llms.txt")}>{dict.footer.machineLlms}</a></li>
+              <li><a href={withBase("registry/index.json")}>{dict.footer.machineRegistry}</a></li>
               {/* MCP 为 stdio 服务器,无站内可直链地址:仓库路径 mcp/server.mjs 即说明锚点 */}
               <li class="site-footer-mcp">
                 {dict.footer.machineMcp} · <code>mcp/server.mjs</code>

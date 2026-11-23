@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { getEntryStore } from "@/lib/store";
 import type { EntrySchema } from "@/lib/types";
+import { withBase } from "@/lib/urls";
 import DemoStage from "@/components/DemoStage";
 
 interface DemoProps {
@@ -242,7 +243,7 @@ export default function Demo({ entryId, schema }: DemoProps) {
         onPointerMove={onScenePointerMove}
       >
         <div className="lg-bg">
-          <img src={`/photos/glass-${backdrop}.jpg`} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
+          <img src={withBase(`photos/glass-${backdrop}.jpg`)} alt="" width={1600} height={1067} loading="lazy" decoding="async" />
           <div className="lg-blob lg-blob-a" />
           <div className="lg-blob lg-blob-b" />
         </div>

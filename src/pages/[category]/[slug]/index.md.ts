@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { CATEGORIES, SYSTEMS, type EntrySchema, type Param } from "@/lib/types";
 import { serializeParamValue } from "@/lib/store";
-import { entryUrl } from "@/lib/urls";
+import { entryUrl, withBase } from "@/lib/urls";
 
 interface EntryProps {
   entryId: string;
@@ -63,7 +63,7 @@ export const GET: APIRoute = ({ props }) => {
     "",
     `- 页面 / Page: ${entryUrl("zh", entryId)}`,
     `- English page: ${entryUrl("en", entryId)}`,
-    `- 本页 / This file: /${entryId}/index.md`,
+    `- 本页 / This file: ${withBase(`${entryId}/index.md`)}`,
     `- 分类 / Category: ${category} ${cat ? `${cat.zh} / ${cat.en}` : ""}`,
     `- 来源体系 / System: ${sys ? `${sys.zh} / ${sys.en}` : schema.system}`,
     `- 参数化程度 / Parameterization: ${schema.star}/3`,

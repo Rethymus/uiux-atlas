@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { CATEGORIES, type Locale } from "@/lib/types";
-import { entryUrl } from "@/lib/urls";
+import { entryUrl, withBase } from "@/lib/urls";
 
 /* ────────────────────────────────────────────────────────────
    全站命令面板(Ctrl+K / Cmd+K / 页头搜索钮唤起)——本条目吃自己的
@@ -337,7 +337,7 @@ export function PalettePanel({
 let itemsPromise: Promise<PaletteItem[]> | null = null;
 function loadItems(): Promise<PaletteItem[]> {
   if (!itemsPromise) {
-    itemsPromise = fetch("/registry/palette.json")
+    itemsPromise = fetch(withBase("registry/palette.json"))
       .then((res) => {
         if (!res.ok) throw new Error(`palette.json ${res.status}`);
         return res.json() as Promise<PaletteItem[]>;

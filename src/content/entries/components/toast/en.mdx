@@ -1,3 +1,5 @@
+import { entryUrl } from "@/lib/urls";
+
 ## Structure & DOM
 
 A toast is a floating stack above page content: a fixed (or stage-relative) container positioned at the anchor spot, with each toast as a small card inside it — appearing and leaving without touching the document flow.
@@ -50,7 +52,7 @@ Where the numbers come from (all checked against antd 6.7.1): functional colors 
 - **Esc to close**: MUI's accessibility requirement for Snackbar; the demo listens for keydown while toasts exist and clears on Esc;
 - **Pause on hover** (`pauseOnHover`, AntD default true) and a manual close button are optional enhancements;
 - Under `prefers-reduced-motion: reduce`, both the spring and the scale/fade are disabled and the toast simply appears (MDN: large translation animations discomfort vestibular users);
-- **Spring deep-dive**: the full stiffness/damping/mass ↔ ζ feel breakdown (ζ↔overshoot conversion, preset table, interruptible velocity handoff) lives in the motion entry [Toast spring](/motion/toast-spring/).
+- **Spring deep-dive**: the full stiffness/damping/mass ↔ ζ feel breakdown (ζ↔overshoot conversion, preset table, interruptible velocity handoff) lives in the motion entry <a href={entryUrl("en", "motion/toast-spring")}>Toast spring</a>.
 
 ## Real-world examples
 

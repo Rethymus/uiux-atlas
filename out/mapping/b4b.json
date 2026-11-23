@@ -1,0 +1,22 @@
+[
+  {
+    "id": "color/light-dark",
+    "researchRef": "out/research/06-color-theming.md#三、§11 Web 端暗色模式实现策略(交叉:§7 M3 语义色默认值、§12 反转 vs 语义、§13 暗色层级/饱和度、§14 暗色 accent 提亮降饱和)",
+    "note": "来源=MDN light-dark() 与 prefers-color-scheme 页(调研一手,Baseline 2024-05 出处 MDN)。默认值:lightValue=#6750A4、darkValue=#D0BCFF,取 Android 开发者文档记载的 M3 亮/暗 primary 官方基线值(调研 06§7 原文值);demo 的 on-primary 硬编码 #FFFFFF/#381E72 同取 §7。对比度数字(白字 6.44:1、#381E72 配 #D0BCFF 7.7:1)为本条目写作时以 WCAG 2.1 公式 node 验算(tmp-b4b/wcag.js),非调研记载,已在 MDX 标明『实测/写作时计算』。scheme 为 JS 型参数(demo 订阅后改写舞台 color-scheme:system→light dark/light→light/dark→dark),不写 cssVar;demo 中性底用系统色 Canvas/CanvasText(CSS Color 4 §6.2 响应 color-scheme,零发明值),@supports not 回退到 prefers-color-scheme 翻转变量(调研 06§11 记载的传统策略)。"
+  },
+  {
+    "id": "color/rule-60-30-10",
+    "researchRef": "out/research/06-color-theming.md#二、§9 60-30-10 法则(交叉:§13 暗色饱和度告诫、§六10 汇总表)",
+    "note": "来源=LogRocket UX 与 hype4.academy 两篇(调研交叉印证)。默认值 dominant=60/secondary=30/accent=10 取法则定义值(双源一致);demo 三色固定为 LogRocket 记述的 Material 例证示意(白画布/浅灰组件/亮蓝按钮,具体 hex 属示意呈现而非精确取样,已在 demo 注释与 MDX 注明),参数只调占比。三个 number 参数为 JS 型(无 cssVar),demo 内归一化为 100 后驱动 flex 比例(总和不必为 100,demo 显式显示『总和 X → 已归一化』)。hype4 的『暗色下避免过饱和(对比过高致视觉疲劳)』告诫已写进 zh/en MDX 的样式与参数小节及 avoid;调研 §7.7 明示『暗色降饱和 15–30%』无可靠量化标准,故未编造任何降幅数字,官方注脚引 M3 #6750A4→#D0BCFF(§7/§14)。"
+  },
+  {
+    "id": "color/wcag-contrast",
+    "researchRef": "out/research/06-color-theming.md#五、§17 WCAG 对比度等级(交叉:§18 APCA、§20 WebAIM 工具、§7 M3 基线值)",
+    "note": "来源=W3C WCAG 2.1 Understanding 三页(contrast-minimum/contrast-enhanced/non-text-contrast,调研一手)。默认值 foreground=#1C1B1F(M3 亮色 on-surface)/background=#FFFBFE(M3 亮色 surface)取调研 06§7 官方原文值,实测比值 16.707:1 为写作时 node 验算(tmp-b4b/wcag.js,WCAG 2.1 Understanding 公式:c≤0.03928 线性化分支 + 0.2126/0.7152/0.0722 加权 + (亮+0.05)/(暗+0.05));公式注释已按要求写进 demo 代码头与 zh/en MDX。demo 显示 AA(4.5)/AAA(7)/大字(3)/非文本(3:1)四项徽章,判定用未舍入原值(4.499:1 不达标,WCAG 原文要求,MDX 与 demo 文案均注明);textScale 为 JS 型参数切样字档位(24px/18.66px bold 对照)。APCA 与 WCAG 的差异(输出 Lc 非比值、非对称、apca-w3 官方包禁自行实现、Radix Lc60/90 实例)写进 zh/en MDX 动效与交互小节;APCA Lc75/60 具体阈值建议调研标注未核实,故未引用。"
+  },
+  {
+    "id": "color/gradient-interpolation",
+    "researchRef": "out/research/06-color-theming.md#一、§4 广色域渐变与插值空间 + §六4 汇总表(交叉:§14 Aurora/mesh 光斑亮度、§3 color-gamut)",
+    "note": "来源=W3C CSS Color 4 §13(调研一手,§六4 汇总表给出来源 URL)与 Tailwind v4 公告(§4)。默认值:space=oklab(Tailwind v4 渐变默认 OKLAB,§4;写作时另抓取 W3C 规范复核『宿主语法未定义兜底空间为 Oklab』)、hueStrategy=shorter(调研仅列四策略未记载默认值,写作时抓取 W3C CSS Color 4 §13.1 原文复核:『For a <polar-color-space> if the <hue-interpolation-method> is not specified, it defaults to shorter』,并经 MDN linear-gradient 正式语法页二次确认)、from=#FF0000/to=#0000FF(spec/调研例证 linear-gradient(in oklab, red, blue) 的命名色,hex 取 CSS Color 4 命名色表)。hue 关键词仅柱坐标空间合法(本条目四选项中即 oklch),demo 对其余空间省略关键词并明示『hue 不适用』;拼串位次按 MDN 惯用示例角度在前(90deg in oklab,正式语法 || 允许互换)。from/to 为 CSS 型参数带 cssVar(--gi-from/--gi-to,由兜底渐变与 color-mix 中点直接消费),space/hueStrategy 为 JS 型拼串驱动;浏览器支持:调研未逐浏览器记载该语法支持年份,browserSupport 如实注明并以 MDN/CanIUse 提示兜底,demo 采用『无 in 普通渐变兜底在前 + 内联 in 渐变可解析时生效』结构。"
+  }
+]

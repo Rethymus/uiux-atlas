@@ -1,0 +1,12 @@
+[
+  {
+    "id": "materials/liquid-glass",
+    "researchRef": "out/design-study/09-apple-materials.md#§8 液态玻璃动效(morph/refraction/交互态)+ §1.4(a/b 模糊/底色/过渡 token apple.com 生产 CSS 实抓)+ §11 巧思 3(折射随体积长)",
+    "note": "升级批(既有条目,只增不删)。demo 三项动态表现:①折射位移场随指针——feOffset 平移 feTurbulence 噪声场,rAF 合帧写 dx/dy,幅度 60 为演示值(官方未公布折射数值,调研 09 §8.1 lensing 仅定性);②折射强度是尺寸的函数(219 [422–445s] 官方定性)——位移 scale = refraction × (当前宽度/胶囊基准宽度),面板态同步加深阴影(阴影具体值为演示自定);③morph 形态过渡——胶囊↔展开面板,过渡 320ms cubic-bezier(0.4,0,0.6,1) 取 09 §1.4a apple.com 生产 CSS 实抓,MDX 如实注明 width/height 触发 layout、生产应换 FLIP/view-transition(09 §8 web 近似配方);触碰辉光 radial-gradient 逐帧直写元素 style(避免逐帧 CSS 变量子树失效),辉光数值为演示近似(09 §1.4d 内高光数值官方未公布)。schema 追加两参数:refraction(number,默认 34=既有 demo 值,官方未公布、SVG 位移方案 09 §8 标注⚠️来源未核验,如实带标注)与 morph(enum pod/panel,默认 pod=官方默认形状 Capsule);既有 variant/dimming/blur/tint 及面板契约不动。zh/en.mdx 重写「动效与交互」(lensing/morph/折射随体积/触碰辉光/共享采样域全部引 09 §8 WWDC 时间戳),新增「真实产品案例」h2(iOS26 tab bar morph / apple.com 导航三态玻璃 / visionOS glass,均溯 09),参数敏感度补 refraction/morph 两行,promptTemplate 追加两条 acceptance,sources 追加 WWDC25 219。prefers-reduced-motion 停用 morph 过渡与入场动画(指针跟随属输入驱动,保留并注明)。另修复层叠隐患:.lg-pod > * 的 position:relative 规则移至绝对定位层之前,保证 veil/glow/controls/menu 的 absolute 生效。"
+  },
+  {
+    "id": "components/toast",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§5 Toast 弹簧入场(react-hot-toast/sonner 源码)+ §6.3 Motion spring.ts 源码默认 stiffness100/damping10 + §2.3 档位实算表 + §2.2 手写积分器 + §4.3 ζ-过冲实算",
+    "note": "升级批(既有条目,只增不删)。demo 入场由 0.2s bezier 滑入改为物理弹簧:半隐式欧拉积分(m=1,dt 上限 1/30,restDelta 0.002=Motion granular 0.01/5 口径,取 10 §2.2 手写积分器);起点=自身高度 200% 外(react-hot-toast toast-bar.tsx,10 §5.1,负号随 top/bottom 方向);逐帧直写 el.style.transform(--tst-from 仅首帧占位,10 §7.4 工艺);卡片层保留 react-hot-toast 缩放/淡入 0.35s cubic-bezier(.21,1.02,.73,1)(scale0.6→1/opacity0.5→1,10 §5.1 原值);调参中途从当前 x/v 继续(速度接力,10 §2.2/§7.3)。schema 追加 stiffness/damping 两参数:默认 100/10 = Motion spring.ts 源码默认(10 §6.3 源码逐字;文档页 stiffness 默认 1 与源码不一致,以源码为准并如实并列);ζ=0.5 过冲≈16.3% 为 10 §4.3 实算;档位 700/40、300/25、200/15 与 500/50 过阻尼反例(ζ≈1.12)均引 10 §2.3 实算表;damping 下限 1 因文档警告 0=永不停止(10 §6.3)。既有 duration/placement/maxCount、Esc 关闭、role=alert、出场不排队(整块消失)契约全部保留;promptTemplate 第 3 条 acceptance 更新为弹簧入场描述(与 demo 一致);sources 追加 react-hot-toast/sonner/Motion spring.ts 源码 URL(10 附录已核)。zh/en.mdx 重写「动效与交互」(弹簧入场细节+库对照退场口径)并写入 /motion/toast-spring/ 固定路径互链(该条目由并行批次产出),参数敏感度补 stiffness/damping 两行(两向说明含 ζ 数值),经验区间补弹簧档位。prefers-reduced-motion:JS 跳过弹簧直落终态 + CSS 停用卡片动画与占位位移。"
+  }
+]

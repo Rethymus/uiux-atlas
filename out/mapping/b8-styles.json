@@ -1,0 +1,42 @@
+[
+  {
+    "id": "styles/y2k-retro-futurism",
+    "researchRef": "out/research/03-visual-style-trends.md §12 Y2K/Retro-Futurism + §三汇总表 row12 + §19(前接/后继时间线) + 09-apple-materials.md §1.4d(specular highlights 官方定性)",
+    "note": "任务给的路径 out/design-study/03-visual-style-trends.md 实际位于 out/research/(design-study 下无该文件),已按实际路径引用。参数:chromeStops(光谱停靠点数 2-8 默认 5)/jellyAlpha(果冻填充 alpha 默认 0.55)/gloss(镜面高光倍率默认 1)——调研 03§12 原文只列「铬/虹彩渐变(光谱色停靠点)、镜面高光与反射强度、半透明果冻填充与描边、低分辨率伪影」四类变量,未附任何数值,全部默认值为本条目基准设定(已在 effect/MDX 如实标注);grain enum(on/off)对应「低分辨率与 JPEG 伪影作为年代徽章」原文特征。chromeStops/gloss 为 JS 型(渐变停靠点串由 chromeGradient() 以 SPECTRUM 色表均匀采样生成,首尾强制银白保金属读感),jellyAlpha/gloss 走 CSS 变量(--y2k-jelly-alpha/--y2k-gloss),grain 为 JS data-grain 切换像素网格叠层。HUD 读数与 EQ 柱 aria-hidden 装饰;prefers-reduced-motion 关闭入场/EQ/闪烁。真实案例 3 个全部出自调研 03§12(iMac G3、WorkOS Launch Week、Balenciaga/Palace+aespa/XG/Charli XCX)。"
+  },
+  {
+    "id": "styles/memphis-design",
+    "researchRef": "out/research/03-visual-style-trends.md §13 Memphis + §三汇总表 row13 + §6 Neo-Brutalism(硬偏移阴影共享语法对照)",
+    "note": "参数:stroke(描边粗细 1-6px 默认 3 基准)/density(图案密度 3-14 默认 8 基准)——调研 03§13 原文列「图案密度与叠放层数、冲突色板(无调和约束)、描边粗细、几何母题库(squiggle/zigzag/dot)、非对称构图」五类变量未附数值;motif enum 三值即原文母题库;palette enum(classic/角色互换)只用原文四色 turquoise×coral×yellow×black,具体 hex(#3EB8B0/#FF6F61/#FFD449/#141414/#F6F1E7)为基准设定已标注。密度铺排用确定性整数 hash 槽位(rnd=sin hash),Shuffle 按钮换 seed 本地状态可复现。技术要点:SVG 母题的 fill/stroke/strokeWidth 含 var(),必须走 style 属性——SVG 表现属性不解析 CSS 变量(demo 内已按此实现);描边变化同步驱动卡片描边与硬偏移阴影(calc(var(--mm-stroke)*2))。母题层 aria-hidden+pointer-events:none;prefers-reduced-motion 关闭入场与按钮过渡。案例 3 个全部出自调研 03§13(Carlton 屏风 1981、Miami Vice/Nickelodeon、Dior 2011-12/Missoni 2015)。"
+  },
+  {
+    "id": "styles/swiss-international",
+    "researchRef": "out/research/03-visual-style-trends.md §15 Swiss/ITS + §三汇总表 row15 + out/research/05-layout-typography.md §17(字阶比率)",
+    "note": "参数:cols(栅格列数 2-8 默认 6)——调研 03§15 列「模块网格列数/栏距/基线」未附数字,网页社区常见 12 列已标注「未证实为规范值」,海报语境基准 6;ratio enum 四选项(1.25 大三度/1.333 纯四度/1.414 增四度/1.5 纯五度)全部为 modularscale.com 记载比率(05§17 一手核对),cssVar --sw-ratio 经 CSS calc 链驱动标题字号=基准×ratio⁴;accent #E30613 为社区常见基准值(调研只记「经典瑞士红」无色值),按 WCAG 相对亮度公式自算对白底 ≈4.9:1 过 SC 1.4.3;grid enum(on/off)切换 aria-hidden 栅格叠层。技术要点:grid-column span 不用 calc()(兼容风险),跨列在 TSX 内联 style 计算,叠层列数与海报同串内联同步;字体用系统无衬线栈近似 Helvetica 并注明不加载商业字体。动效纪律=近乎无动效(仅入场淡入)。案例 3 个全部出自调研 03§15(Müller-Brockmann 海报、1972 Vignelli 纽约地铁导视、MIT/1960s 美国机构)。"
+  },
+  {
+    "id": "styles/editorial-magazine",
+    "researchRef": "out/research/03-visual-style-trends.md §16 Editorial/Magazine + §三汇总表 row16 + out/research/05-layout-typography.md §18(WCAG 2.2 Text Spacing)/§19(Butterick 行长) + 03§7(65ch 示例值)",
+    "note": "参数全部有调研记载:cols enum(1/2/3,默认 2)对应原文「2/3/12 列结构化栏格」(12 列指整页版心,已在 effect/MDX 注明);measure 45-90ch(默认 65)取 Butterick《Practical Typography》原文区间(05§19 一手核对),65ch 亦为 03§7 minimalism 记载示例值,下限 40 仅演示「过短」方向;lead 1.2-2(默认 1.6)对 WCAG 2.2 SC 1.4.12「行高≥1.5 倍」官方阈值(05§18 原文);dropcap enum 对应原文「首字下沉/引文样式」,::first-letter 实现不产生额外 DOM。CSS columns 按列填充,MDX 标注 DOM 顺序=栏序(SC 1.3.2);pull quote 用 blockquote 语义+column-span:all;窄视口回落单栏。衬线/无衬线标题配对切换为场景内 toggle(原文「衬线展示字体×无衬线正文配对」及其反向实验)。案例 3 个全部出自调研 03§16(The Atlantic、Monocle、NYT Cooking)。"
+  },
+  {
+    "id": "styles/frutiger-aero",
+    "researchRef": "out/research/03-visual-style-trends.md §19 Frutiger Aero(关联条目)+ §三汇总表 row19 + §1(Aero 源头/backdrop-filter 支持面) + 09-apple-materials.md §1.4a(blur20px 实抓)/§1.4d(顶缘受光推导区间)",
+    "note": "参数:skyBlue #8ECDEB/grassGreen #7DBB4E——调研 03§19 只记「天空蓝/草绿」色彩语义无色值,hex 为基准设定(社区常见值,未证实,已标注);glossAlpha 默认 0.35 落在 09§1.4d web 复刻惯例推导区间 rgba(255,255,255,.25~.4)(报告明示推导非官方);blur 默认 20px=09§1.4a Apple 官网生产 CSS 实抓 blur(20px)+saturate(180%) 基准档。全部四参数 CSS 变量型。玻璃卡写 -webkit- 双前缀+@supports 提高填充回退(03§1 支持面:Chrome/Edge76+/FF103+/Safari9+ 前缀/Safari18 去前缀)。气泡升起为装饰层(aria-hidden+pointer-events:none,动画结束自动移除节点);prefers-reduced-motion 气泡静止+入场取消。案例:Windows Vista/7 Aero(03§1 记载)+ Nintendo Wii 频道界面、iOS 6 及更早光泽按钮(公认可归入该美学的产品,MDX 未标注为调研出处,属编辑性内容)。"
+  },
+  {
+    "id": "styles/holographic-chrome",
+    "researchRef": "out/research/03-visual-trends 无此条;正确出处 out/research/03-visual-style-trends.md §20 Holographic/Iridescent & Chrome/Liquid Metal(关联条目)+ §三汇总表 row20 + daisyUI 2025 词条 014/015 + 09-apple-materials.md §1.4d/§8(specular/lensing 官方定性)",
+    "note": "参数:mode enum(holo/chrome 两族)= daisyUI 2025 词条 014/015 分立结构(调研 03§20);hueSpan 60-360°默认 240 基准(「光谱渐变」原文特征无数值,JS 采样 7 停靠点 conic 渐变,首尾同色相闭合);sheen 倍率默认 1 基准(镜面高光官方定性参照 WWDC25 219/09§1.4d,2025 语境风格亲缘已注明);diffraction enum(on/off)对应汇总表 row20 原文「衍射效果」,条纹 opacity 0.16+screen 混合+mask 限卡缘。技术要点:光谱游彩用 hue-rotate 动画(background-position 对不可重复 conic 无效);chrome 模式 180° 线性渐变 50% 处深色「地平线」,MDX 标注只给 ≥24px 大字标题(SC 1.4.3 大文本 3:1)。指针移动驱动 --mx/--my 镜面高光(用户驱动,PRM 下保留);漂移/旋转在 prefers-reduced-motion 下静止。案例 3 个为编辑性内容(Instagram 2016 标识、Spotify Wrapped、Apple Card),调研只记 daisyUI 场景引文(cinematic launches/fashion/music/premium technology)。"
+  },
+  {
+    "id": "styles/flat-design",
+    "researchRef": "out/research/03-visual-style-trends.md §17 Flat Design(关联条目)+ §三汇总表 row17(Wikipedia Flat_design:演进链+NN/g 22%)",
+    "note": "参数:accent #007AFF 为社区通传 iOS 蓝引用(调研未核验,已标注);自算对白底 ≈4:1,MDX 标注按钮白字需粗体否则不过 SC 1.4.3;ornament enum(none 严格扁平/gradient 微渐变/shadow 柔投影)直接演示「无拟物深度」纪律与 flat 2.0 演化,默认 none;iconStyle enum(outline/filled)= 原文「简洁字形图标」,同一几何内联 SVG 两模式,currentColor 单色;radius 0-20 默认 4 基准(0=Metro 直角纪律为记载起点 WP7 2010)。NN/g 2017「扁平界面平均慢 22%」为调研 03§17 原文数据,写入 a11y/MDX。案例 3 个全部出自调研 03§17 演进链(Metro→Win8、iOS 7、Holo→Material)。star=2(参数化程度低于其余条目,与样式本身的少装饰属性一致)。demo 磁贴/开关可点,选中态 aria-pressed+色+字三重表达(SC 1.4.1);prefers-reduced-motion 取消全部过渡。"
+  },
+  {
+    "id": "styles/skeuomorphism",
+    "researchRef": "out/research/03-visual-style-trends.md §18 Skeuomorphism(关联条目)+ §三汇总表 row18(daisyUI 词条 008)+ §3 Neumorphism 词源对照 + daisyUI 2025 词条 022/023/024(四分支) + 09-apple-materials.md §1.4d(顶缘受光推导区间同构)",
+    "note": "参数:texture enum(leather/metal/paper/wood)= 原文「材质贴图」,四种底均为 CSS 渐变近似(radial 粒面/repeating-linear 拉丝·木纹/横线纸纹),无外部贴图已在 acceptance 注明;lightAngle 60-300° 默认 135 基准(「光照模型」原文变量无数值,「左上来光」为社区惯例已标注未证实),驱动全部凹凸渐变方向;emboss 0-2 默认 1 基准,顶缘亮内阴影+底缘暗内阴影成对(与 09§1.4d 推导区间同构);stitch enum 缝线 dashed 内描边为年代签名细节(基准设定,调研未记载)。机械控制隐喻=原文第三变量:拨杆 role=switch+aria-checked+aria-live 读数、旋钮按钮 4 档步进 rotate 映射。MDX 含「与扁平化的历史对照」小节(iOS7 2013 转扁平/03§17 扁平被玻璃取代/03§18 拟物 2026 四分支回潮,均有调研出处)。prefers-reduced-motion 过渡取消;按压=物理下沉(位移+内阴影反转)非发光。案例:iOS 6 及更早原生 App+daisyUI 2026 四分支(前者社区公认样本后者调研记载)+ 复古收音机/车载 App(编辑性内容已标注)。"
+  }
+]

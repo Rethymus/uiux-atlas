@@ -1,0 +1,17 @@
+[
+  {
+    "id": "dataviz/small-multiples",
+    "researchRef": "out/design-study/12-expansion.md#§13 数据可视化:小倍数(定义/Tufte/地图结论)+ out/design-study/08-dataviz.md#§4.1 Grafana 常量、§1.1 Okabe-Ito hex、§5.2 网格 9% 公式",
+    "note": "定义(同标度同轴小图并置)、trellis/lattice/panel 别名、Tufte《Envisioning Information》1990 p.67『和什么比?』、『刻意不同标度强调相对变化』变体与『动画胜趋势/运动、小倍数胜时间点对比』的地图研究结论均取 12§13(Wikipedia 条目已核);panelGap 默认 8px 逐字对应 Grafana GRID_CELL_VMARGIN(08§4.1 constants.ts 源码核验,24 列/30px/90px 一并入 MDX);demo 四系列色取 Okabe-Ito R grDevices 固化 hex(08§1.1);面板参考线写死 0.09 与坐标轴条目 Grafana 公式同源(08§5.2);面板标题直标最新值取 jfly 直标原则(08§1.1)。核心对照『同轴小倍数阵列 vs 双轴混杂』为任务要点:双轴模式的左 0–100/右 0–70 双轴、交叉点无结论是 demo 自构反例,数值口径(取整到 10 倍数)已在 MDX 声明为演示档,非官方默认。"
+  },
+  {
+    "id": "dataviz/chart-animation",
+    "researchRef": "out/design-study/12-expansion.md#§13 图表动效(Chart.js duration 1000/easeOutQuart/过渡模式)+ §5 prefers-reduced-motion Baseline + out/design-study/08-dataviz.md#§6 ECharts tooltip 时长、§5.2 网格 9%",
+    "note": "duration 默认 1000ms、easing 默认 'easeOutQuart'(30 种缓动)、三级配置(defaults→datasets[type]→options)、过渡模式 active 400ms/resize 0、animation:false 禁用、onProgress/onComplete 仅主配置生效——全部逐字取 12§13 Chart.js 官方文档(已核);任务要点『入场三式:生长/淡入/扫描』落为 demo 的 grow/fade/sweep 三档(grow 对应 Chart.js 默认从原点起动画的生长语义);easing 的 cubic-bezier(0.165,0.84,0.44,1) 为社区通行 easeOutQuart 近似——调研未记载系数换算,schema effect/MDX/demo chip 三处均标注『社区常见值,未证实』;prefers-reduced-motion 直出终态由『关键帧只写 from,基态=终态』实现,reduce Baseline 2020-01 取 12§5(MDN 已核);aria-live『图表加载完成』播报取 12§13 片段 onComplete→ariaLive 模式;『轴/网格静止』纪律与 0.09 网格同坐标轴条目(08§5.1/5.2);ECharts tooltip transitionDuration 0.4/hideDelay 100 入真实产品案例(08§6 源码核验);『动画 vs 小倍数』适用边界取 12§13 地图结论。"
+  },
+  {
+    "id": "dataviz/chart-accessibility",
+    "researchRef": "out/design-study/12-expansion.md#§13 图表无障碍(WAI 复杂图像教程)+ out/design-study/08-dataviz.md#§3.4 ECharts aria.ts/decal.ts、§1.1 jfly 直标原话、§6 WCAG 1.4.13",
+    "note": "两段式替代文本(短 alt=类型+概要 + 页面内长描述=趋势/比例尺/颜色顺序/相对高度)、figure role=group+figcaption 首选、aria-describedby 仅适合纯文本(结构化表格读成连续段落)、正文先一句话概括——均取 12§13 WAI 教程(已核);decal 默认 off 逐字对应 ECharts aria.decal.show 默认 false、aria.label.enabled 默认 true(08§3.4 aria.ts 源码核验;decal 参数 dashArrayX/Y/rotation 在 util/decal.ts,demo 用 SVG pattern 等效示意并已在 MDX 声明);directLabel 默认 on 取 jfly『图上直标优于远处对色图例』原话(08§1.1 已核);任务要点『tabList 对照』落为 role=tablist+roving tabindex 切换长描述载体(table/text 双档)并与参数面板双向同步;『sonification 说明』按调研边界如实处理:demo 为自研示意(数值→音高 220-880Hz,WebAudio 手势后创建),产品级实现与具体参数本轮调研未核验,schema/MDX/demo chip 三处标注『未核验』不引具体数值;tooltip WCAG 1.4.13 三件套交叉引用图例与提示条目(08§6 W3C 理解页已核)。另:verify-entries.mjs/verify-dist.mjs 的 dataviz slug 清单已按既有批次『落地即并入』惯例加入三 slug(该两文件不在禁改清单);并行批次 b24-principles2 对 verify-entries.mjs 的改动与本批无冲突。"
+  }
+]

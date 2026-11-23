@@ -24,16 +24,21 @@ const ANCHOR = '<meta name="viewport" content="width=device-width, initial-scale
 const MARK = 'data-font-preload="inter-latin"';
 
 export function fontPreload() {
+  /** 部署子路径:项目页发布在 <base>/ 下,预载地址必须带前缀(astro:config:done 取得,归一成带尾斜杠) */
+  let base = "/";
   return {
     name: "font-preload",
     hooks: {
+      "astro:config:done": ({ config }) => {
+        base = config.base.endsWith("/") ? config.base : `${config.base}/`;
+      },
       "astro:build:done": ({ dir, logger }) => {
         const out = fileURLToPath(dir);
         let latinUrl = "";
         try {
           for (const f of readdirSync(join(out, "_astro"))) {
             if (LATIN_PRELOAD_RE.test(f)) {
-              latinUrl = `/_astro/${f}`;
+              latinUrl = `${base}_astro/${f}`;
               break;
             }
           }

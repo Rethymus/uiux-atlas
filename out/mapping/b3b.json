@@ -1,0 +1,27 @@
+[
+  {
+    "id": "motion/count-up",
+    "researchRef": "out/research/04-motion-microinteractions.md#2.5 数字滚动(count-up) 与 §7 行25(交叉:out/research/09-implementation-tech.md#1.2 @property 与 §1.6 Baseline 结论)",
+    "note": "来源=css-tricks.com/animating-number-counters(调研一手抓取):@property --num(syntax '<integer>')+counter-reset/counter() 方案、calc() 拆小数位、可调维度(时长/缓动/起止值/fill forwards)、评论区可访问性结论(读屏读到中间值→reduced-motion 直出终值、hover 需补 :focus+tabindex)全部进 schema/MDX。数值降级说明:调研未记载任何官方默认数值,duration=1200ms 与 endValue=2026、decimals=0 均在 effect 中标注「社区常见值/演示用值,未证实」,符合数值铁律。三参数均为 JS 型(demo 用 rAF+easeOutCubic 计数,未用 @property,方案在 MDX 并列);无障碍按调研实现:动画节点 aria-hidden+sr-only 终值;reduced-motion 用 web.dev 的 matchMedia+change 监听惯例(调研 04§6.2)直出终值。"
+  },
+  {
+    "id": "motion/inertia-gesture",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 §A Motion transitions 的 inertia 段 与 §7 行14(交叉:§5.1 Pointer Events Baseline 2020-07)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取):power 默认 0.8、timeConstant 默认 700、min/max+bounceStiffness 500/bounceDamping 10、modifyTarget 吸附。写作时核验本站安装的 motion-dom@12.43.0 源码:animation/generators/inertia.mjs 落点公式 ideal=origin+power*velocity、指数衰减 calcDelta(t)=-amplitude*exp(-t/timeConstant)(t 为毫秒)、运行时回退 timeConstant=325;animation/utils/\\replace-transition-type.mjs 确认 type:\"inertia\" 为公开 transition 类型;animation/interfaces/motion-value.mjs:29 确认 velocity 缺省注入 value.getVelocity();framer-motion@12.43.0 VisualElementDragControls.mjs 确认拖拽释放同样以 type:\"inertia\" 调用(实际传 timeConstant 750)。按调研约定取文档标注值 700/0.8 为官方默认,运行时 325/拖拽 750 的差异如实写进 timeConstant effect 与双语 MDX。demo:拖拽 x.set() 直写跟手→释放 animate(x,0,{type:\"inertia\",…}),预测落点标线用生成器同款公式,越界走文档默认边界弹簧;reduced-motion 跟手保留、释放直出钳制落点;键盘/按钮等效甩动(FLICK_VELOCITY=1500px/s 为演示用值,已在代码注明非官方)。"
+  },
+  {
+    "id": "motion/skeleton-loading",
+    "researchRef": "out/research/04-motion-microinteractions.md#2.2 加载反馈(NN/g / lukew / M3 skeleton loaders)",
+    "note": "来源=NN/g progress-indicators、m3.material.io transition-patterns、lukew.com/ff/entry.asp?1797(均为调研一手抓取):NN/g 阈值表(<1s 即时态/≥1s 必须指示/2–10s 循环/≥10s 百分比+文案、>10s 附完成时间估计、可等 3 倍时长)完整写入双语 MDX 表格与 scenarios;M3「微妙脉动(左上→右下)+完成后快速淡入」进 MDX 与 demo(diagonal 档=120° 渐变对角扫过)。数值降级说明:pulse=1200ms 调研未记载(M3 只说微妙脉动),effect 标注「社区常见值,未证实」;内容淡入用 200ms+cubic-bezier(0.2,0,0,1),出处为 M3 short4 档 200ms+Standard easing(调研 04§1.4/§2.6,有据);demo 模拟加载 1.8s 标注为演示用值。pulse 为 CSS 型参数(cssVar --skeleton-duration),direction 为 JS 型(demo 切 data-dir);扫光只动 transform(reduced-motion 下 animation:none),加载语义经 aria-busy+role=status 文字兜底。"
+  },
+  {
+    "id": "motion/stagger-orchestration",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.3 §A 编排段(delay 负值/repeat/repeatType;目录含 delay and stagger)(交叉:§1.4 M3 进入类时长档位、§6.1 大平移为前庭触发源)",
+    "note": "来源=motion.dev/docs/react-transitions(调研一手抓取):调研明确记载该页含「delay and stagger」编排能力与 delay 负值语义,但 staggerChildren 细节未被截取——故 stagger=40ms 默认在 effect 与双语 MDX 均标注「社区常见值,未证实」;items 3–8 为演示用枚举。demo 用 Motion 变体 staggerChildren(单位秒,demo 换算 ms→s),参数/重播变化经重挂载整段重放;子项动画数值(16px/0.4s/easeOut)为演示值,MDX 同时给出 M3 进入类官方档位(Standard decelerate 250ms/Emphasized decelerate 400ms)作参照。reduced-motion 按调研 04§6.1(大平移是前庭触发源)降级为纯 opacity 交错淡入(淡入淡出),保留节奏去掉位移;列表保持 ul/li 语义。"
+  },
+  {
+    "id": "motion/linear-easing",
+    "researchRef": "out/research/04-motion-microinteractions.md#1.2 linear() 与弹簧/弹跳曲线近似 与 §8 未证实事项(交叉:out/research/09-implementation-tech.md#1.6 CSS linear() 渐进方案)",
+    "note": "来源=MDN linear()(Baseline 2023-12,调研一手抓取)+ Jake Archibald linear-easing-generator(README/工具页,调研一手抓取)+ css-easing-2 规范记载(规范中无 spring())。默认值 170/26 调研未记载为任何官方数值,在 effect 与双语 MDX 明确标注「社区常见弹簧手感值(react-spring 传统默认),未证实」;生成器公开参数 simplify=0.0017/round=3 取自调研 04§8 第 6 条记载。demo 按生成器算法实现:mass=1 半隐式欧拉采样(a=-k(x-1)-c·v,8ms 步长)→Douglas-Peucker 抽稀(eps=0.0017)→编译 linear() 文本(round=3、不均匀时间点补 % 停留点、首尾强制 0/1,overshoot 越界值保留)→写入场景 CSS 变量,动画本体为纯 CSS animation(ease 对照轨并列);reduced-motion 直出终态但生成文本照常更新;browserSupport.baseline=2023-12(调研 04§1.2),旧浏览器兜底(cubic-bezier 先行声明)写入 MDX。"
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "batch": "b22-icons2",
+  "category": "icons",
+  "slugs": [
+    {
+      "id": "icons/icon-font-vs-svg",
+      "nameZh": "图标字体与 SVG",
+      "researchRef": [
+        "out/design-study/12-expansion.md §12(CSS-Tricks《Inline SVG vs Icon Fonts [CAGEMATCH]》Chris Coyier 2014:失败面清单/锐度/定位/结论 IE9+ 全胜、IE8 字体占优;评论区 SVG 缓存与 DOM 体积)",
+        "out/design-study/07-icons.md §1.1(Lucide defaultAttributes.ts:24 网格/2px/currentColor 源码定值)、§1.5(Material Symbols 可变字体路线、&display=block、子集化 1.7KB)、§5.2(CSS Color 4 §6.4 currentcolor 原文)"
+      ],
+      "note": "demo 为机制对照:SVG 侧真实内联矢量;字体侧用系统符号字形真实渲染(机制同源:码位→字形→color,受文本 AA 与 line-height 定位影响),界面上如实标注「非图标字体文件」;failure 故障模拟器 font-missing 档为仿真(tofu+裸连字),emoji-crash 档为真实浏览器行为(U+FE0F 变体选择符,平台相关)。params: delivery(JS)/size(cssVar,默认 24=全行业祖先网格)/color(cssVar,currentColor 链路)/failure(JS)。"
+    },
+    {
+      "id": "icons/icon-button",
+      "nameZh": "图标按钮",
+      "researchRef": [
+        "out/design-study/12-expansion.md §12(Sara Soueidan《Accessible Icon Buttons》三方案与推荐② hidden+aria-labelledby;aria-label 四缺点;Scott O'Hara 名只放 SVG 的失败矩阵;focusable=false 防 IE 双 Tab;WCAG 2.1 Label in Name)",
+        "out/design-study/07-icons.md §2(Material 图标展示尺寸 24×24 dp)、§4.1(aria-hidden 红线)、§4.3(WCAG 1.4.11)",
+        "out/design-study/04 §2.1(M3 target 48dp,经 fitts-law 条目同源核验)",
+        "out/design-study/02-tdesign.md(实测:文档站顶栏 32×32 图标钮、gap 8px)",
+        "principles/wcag-checklist 条目(WCAG 2.2 SC 2.5.8 ≥24×24 CSS px,先前批次已核值)"
+      ],
+      "note": "demo:naming(JS)直接改写真实按钮 DOM(labelledby/hidden-text/aria-label/svg-only/none 五档)+规则推演播报;hitTarget(cssVar,默认 48=M3 48dp;审计框 <24 变红=WCAG 2.5.8);iconSize(cssVar,默认 24);expand(JS)padding 撑盒 vs 伪元素负 inset 扩热区(社区常见做法,已标注未证实单一权威出处)。APG button 对照:原生 <button> 自带 Enter/Space,交互日志显式记录;APG Space-keyup 细节未在调研内,已删除不用。「16px 字形+48px 热区」无统一标准,标注为社区常见值未证实。"
+    },
+    {
+      "id": "icons/favicon-stack",
+      "nameZh": "Favicon 体系",
+      "researchRef": [
+        "out/design-study/12-expansion.md §12(Evil Martians《How to Favicon in 2024》Andrey Sitnik:5 图标+1 manifest;ico 32×32 根目录/RSS 只认该路径/sizes=32x32 修 Chrome bug;icon.svg 内嵌 <style>+prefers-color-scheme,#0f0f0f↔#f0f0f0 定值;apple-touch 180×180+20px 内边距+背景色;512 maskable 安全区 409×409;manifest 仅 PWA;rel=shortcut icon 无效;staging 反色彩蛋)"
+      ],
+      "note": "demo:scheme(JS)模拟系统深色模式——SVG 字形 #0f0f0f↔#f0f0f0(官方片段定值)+模拟浏览器 chrome 同步翻暗;staging 标签恒反色;padding(cssVar,默认 20)在 apple-touch 面板可视化,<12px 警告;maskable(JS)叠加 409×409 安全圆(512 画布)+圆形裁切预览。<head> 四行接线与 icon.svg 片段逐字取自 12 §12。sources 仅 Evil Martians 一条(调研唯一来源,≥1 满足)。"
+    },
+    {
+      "id": "icons/icon-system-design",
+      "nameZh": "图标系统设计",
+      "researchRef": [
+        "out/design-study/07-icons.md §2(Material 24px 栅格:24dp 修剪区/20dp live area/2dp padding/键程方 18×18 圆 Ø20 竖 16×20 横 20×16/整数坐标/圆角 2dp)",
+        "out/design-study/07-icons.md §3.2(Lucide 贡献规范:1px 安全区/2px 元素间距/2.41px 斜角半径/模糊法验收/光学偏心)、§3.3(WCAG 1.4.11 细线警告)、§1.3(Heroicons 1.5px 实测、16/20 独立重绘)、§1.5(wght 100–700 轴)",
+        "out/design-study/07-icons.md §1.1(Lucide/Feather 2px 源码定值)"
+      ],
+      "note": "demo:六枚手绘迷你图标(24 网格、整数坐标、round 线帽),stroke(cssVar)=系统标准线宽(默认 2),overlay(JS)键程 shapes/像素栅格/安全区叠加层全部按调研数值绘制,audit(JS)注入三类真实缺陷(search 端点 19.5 非整数/home 屋顶 y=1 越修剪区/arrow-right 硬编码 1.5)并标红,naming(JS)注入 Home/search_icon/arrowRIGHT 命名违例;审计表逐行给判定+出处。kebab-case 命名规范标注为社区通行惯例(未证实单一权威规范)。"
+    }
+  ]
+}

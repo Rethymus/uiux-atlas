@@ -1,0 +1,42 @@
+[
+  {
+    "id": "layout/auto-fit-minmax",
+    "researchRef": "out/research/05-layout-typography.md §一.3(minmax/auto-fit 流式网格:repeat(auto-fit, minmax(250px, 1fr)) 为 CSS-Tricks「顶级技巧之一」;auto-fill 保留空轨道 / auto-fit 回收空轨道;轨道关键字 minmax(10px,1fr)/min-content/max-content)+ §一.5 引用的 WebKit 官方示例(gap: 16px)+ §一.2(Baseline 2017-10)+ §9/§10(bento 拼装惯例与 Intrinsic Web Design 抓手)+ out/design-study/11-modern-completion.md §4B(可复用片段)",
+    "note": "参数:minTrack 100-360px 默认 250(调研 05§3 经典配方 minmax(250px,1fr))/gap 4-32px 默认 16(WebKit 官方示例 05§5)/width 220-960 默认 800(演示基准值,配 250px 恰解析 3 轨道,已在 effect/MDX 标注)/mode enum(auto-fill/auto-fit,JS 型 data-mode 切换 repeat() 字面量)/itemCount 1-12 默认 2(少于轨道数正是两关键字产生可见差异的场景)。demo 含轨道标尺,按 (width+gap)/(min+gap) 向下取整解析轨道数并如实标注「计算值」,auto-fit 档标记「回收 0px」轨道;auto-fill/auto-fit 差异机制逐字出自调研 05§3。案例 3 个全部有调研出处:CSS-Tricks 完全指南(05§3)、BentoGrids(05§9)、Jen Simmons Intrinsic Layouts(05§10)。prefers-reduced-motion 关闭入场与徽标过渡。"
+  },
+  {
+    "id": "layout/subgrid",
+    "researchRef": "out/research/05-layout-typography.md §一.4(Subgrid:grid-template-columns/rows: subgrid 继承父网格轨道定义;Baseline Widely available 自 2023-09)+ §一.5 引用的 WebKit 官方示例(gap: 16px)",
+    "note": "参数:axis enum(rows/columns,JS 型 data-axis 切换两套 DOM 与声明)/gap 8-32px 默认 16(CSS 型 --sg-gap,WebKit 官方示例)。demo 左右双面板对照:subgrid 面板(rows 档三卡各跨 3 条父行轨道声明 grid-template-rows: subgrid;columns 档每行卡片 grid-column: 1/-1 声明 grid-template-columns: subgrid)vs independent 面板(auto auto auto 独立轨道回退形态)——页脚错位/对齐一目了然。「换长度」按钮循环三档正文档位,真实 DOM 文本驱动行高,不用固定高度伪造对齐(验收红线写入 promptTemplate)。Baseline 2023-09 出自调研 05§4;Chrome 117 版本号按 Baseline 日期表述并注明调研正文只记日期。案例 2+1:MDN Subgrid 指南(05§4 来源)、设计系统接入页面网格与杂志跨栏排版标注为编辑性内容。"
+  },
+  {
+    "id": "layout/position-sticky",
+    "researchRef": "out/research/05-layout-typography.md §一.7(position: sticky;top: 20px 触达最近滚动祖先偏移阈值后停留、不脱离文档流;Baseline 2015-07;MDN Layout Cookbook 收录 Sticky footers 与 Split navigation 配方)",
+    "note": "参数:top 0-96px 默认 20(CSS 型 --sticky-top,调研 05§7 示例值)/trap enum(off/on,JS 型;on 档在滚动内容与吸顶标题之间插入 overflow:hidden 祖先,复刻「最近滚动祖先被劫持→sticky 失效」的最常见生产事故,MDX 明确标注这是结构问题非兼容性 bug)。吸顶状态由真实滚动监听驱动(标题矩形与容器顶部距离≤阈值),不用定时器伪造;「回到顶部」按钮瞬时滚动不做平滑动画。父容器界定粘滞范围、实底背景防穿透等经验要点写入 MDX。案例:MDN Cookbook 两配方(05§7 记载)+ 分组标题吸顶/表格表头吸顶标注编辑性内容。prefers-reduced-motion 关闭阴影与徽标过渡。"
+  },
+  {
+    "id": "layout/safe-area",
+    "researchRef": "out/research/05-layout-typography.md §二.15(safe-area-inset 环境变量:env() 四向带回退值;viewport-fit=auto|cover 为 WebKit 官方记载;env() 于 iOS 11 以 constant() 引入、STP 41/iOS 11.2 beta 起改名;MDN env() 页收录 titlebar-area-* 与 viewport-segment-*)+ §二.16(viewport-segments 实验性非 Baseline,demo 未使用)",
+    "note": "参数:insetTop 0-60 默认 44 / insetBottom 0-60 默认 34(JS 型模拟 env(),桌面浏览器 env() 实测为 0——44/34px 为 iPhone 时代社区常见值,调研 05§15 只记机制未记数值,已逐处标注「社区常见值,未证实」)/viewportFit enum(auto/cover,取值即 WebKit 官方记载)/applyEnv enum(on/off,off+cover 复刻「铺满全屏却不留边」典型事故:页头顶进刘海、操作栏压进 Home 指示条)。demo 设备框刘海与 Home 指示条 aria-hidden 装饰;CSS 演示「固定 padding 在前 + calc(env()) 在后」级联回退写法;auto 模式=系统自动内缩恒留边。案例 3 个:WebKit iPhone X 官方博客(05§15 来源)、桌面 PWA titlebar-area-*(MDN env() 页,05§15)、全屏沉浸页标注社区通用做法。"
+  },
+  {
+    "id": "layout/grid-lanes",
+    "researchRef": "out/research/05-layout-typography.md §一.5(Grid Lanes:css-grid-3 草案定义、未放置条目进剩余空间最多的列、WebKit 官方语法 display: grid-lanes + repeat(auto-fill,minmax(250px,1fr)) + gap:16px、STP 234 试用、item-flow 提案已弃、Firefox 时间表未查到)+ out/design-study/11-modern-completion.md §4B(fit-tolerance:normal|<length-percentage>|infinite;grid-lanes/inline-grid-lanes;双写降级写法 display:grid; display:grid-lanes; 为规范原文;BCD display.json grid-lanes experimental:Safari/iOS 26.4、Firefox Nightly preview、Chrome 未支持;Safari 27.2 仍在改名属性;gridlanes.webkit.org 教程)",
+    "note": "参数:minTrack 120-400px 默认 220(11§4B 片段;effect 注明 WebKit 示例为 250px 变体)/gap 默认 16(WebKit 官方示例)/engine enum(grid-lanes 双写声明 / columns 多列兜底,JS 型)。支持现状如实:browserSupport 与 MDX 逐项标注「实验性,Safari 26.4+/Firefox Nightly preview/Chrome 未支持,item-flow 已弃,Safari 27.2 仍在改名,语法未冻结」。demo 以 CSS.supports('display','grid-lanes') 运行时检测并如实报告当前路径(原生泳道 / 普通网格回退——行带错位正是泳道要解决的问题);columns 档 break-inside:avoid。案例 3 个全部有调研出处:Pinterest(css-grid-3 草案点名,05§5)、gridlanes.webkit.org(11§4B)、Chrome 团队 masonry 博客加注(05§5)。"
+  },
+  {
+    "id": "layout/masonry-columns",
+    "researchRef": "out/design-study/11-modern-completion.md §4A(CSS Multi-column:columns/column-count/column-width/column-gap/column-rule/column-span;列盒为片段、内容沿列流动;顺序按列排布为 MDN 明确局限;Level 2 column-height/column-wrap/::column 草案)+ §4B 可复用片段(columns: 4 220px、column-gap: 16px、break-inside: avoid、.wall 标注全平台可用老方案)",
+    "note": "参数:colMin 120-400px 默认 220(11§4B 片段)/gap 默认 16(同片段)/rule enum(none/line,JS 型 column-rule)。demo 顺序徽标 01…09 直观暴露「按列填充(自上而下再换列)」的顺序语义——徽标即 MDX 记载局限的可视化,不伪装行序;支持现状如实:核心属性全平台广泛可用、Level 2 仍草案勿依赖。a11y 强调 DOM 顺序=栏序与 WCAG 1.3.2 的关系、Tab 顺序随列数变化、卡内禁放跨列 fixed/absolute。案例:报章正文分栏(MDN 模块页原文)、零 JS 图片墙(社区常用,11§4B 片段标注)、作为 grid-lanes 兜底(11§4B 片段原样组合,标注编辑性组合)。"
+  },
+  {
+    "id": "layout/holy-grail",
+    "researchRef": "out/research/05-layout-typography.md §一.2(CSS Grid + grid-template-areas 为圣杯标准实现;经典字符串 \"header header\" \"sidebar main\" \"footer footer\";每字符串一行、同名 token 合并命名区域;MDN Layout Cookbook 未设 Holy Grail 专页已验证检索无此条目;Baseline 2017-10)+ §一.3 来源 CSS-Tricks 完全指南",
+    "note": "参数:layout enum(desktop-left/desktop-right/stacked,JS 型——grid-template-areas 字符串值不保证可走 CSS 变量,按 container-queries 条目同款惯例订阅后重写 areas/列定义,零 DOM 改动)/gap 8-32px 默认 16(演示基准值,社区常见未证实,已标注)/sideWidth 120-280px 默认 200(演示基准值,已标注)。demo 读数区实时显示当前 grid-template-areas 声明,「改字符串就重排」一眼可见;三档 areas 字符串均矩形(2×2 / 1×4);a11y 强调 DOM 顺序恒定、读屏顺序不随视觉重排(WCAG 1.3.2)、侧栏前置需配跳转链接。案例:MDN grid-template-areas 参考页(05§2 来源,含「无 Holy Grail 专页」已验证事实)、文档站/MDN 自身骨架(编辑性)、CSS-Tricks 完全指南(05§2/§3 收录)。"
+  },
+  {
+    "id": "layout/anchor-positioning",
+    "researchRef": "out/design-study/11-modern-completion.md §1(属性族 anchor-name/position-anchor/anchor()/anchor-size()/position-area/position-try-fallbacks/order/@position-try/position-visibility/anchor-center/anchor-scope/全局 anchor 属性;两套写法片段 A anchor() 函数式 calc(anchor(bottom)+8px) 与片段 B position-area+@position-try+position-visibility:anchors-visible;@supports (anchor-name: --a) 检测;支持:Chrome/Edge 125(2024-05)、Safari/iOS 26(WWDC25 预告,首个 beta 不含 position-visibility)、Firefox 147(2026-01-13 发布说明)、position-visibility 与 flip-x/flip-y 与伪元素增补 Safari 26.2、zoom/transform 定位时序修正 Chrome 144/Safari 27/Firefox 未支持)+ §10 签名巧思 1(锚点气泡零 JS 定位)",
+    "note": "参数:area enum(bottom/top/right/left center,JS 型——生成 position-area 声明并在回退路径换算坐标)/offset 4-48px 默认 8(CSS 型 --ap-offset,11§1 片段 A 的 8px)/tryFallback enum(on/off,JS 型生成/移除 position-try-fallbacks 与 @position-try 规则)。支持现状如实逐项写入 browserSupport 与 MDX(含 Safari 26 首个 beta 不含 position-visibility、26.2 增补、Firefox 147 引文、zoom/transform 修正未覆盖 Firefox)。demo 双路径:CSS.supports('anchor-name: --a') 原生支持走纯 CSS 锚定(anchor-name→position-area→@position-try→position-visibility 全链),否则 getBoundingClientRect 的 JS 回退(同一套 area 语义与翻面逻辑),实时如实报告当前路径;按钮 aria-expanded/aria-describedby 关联,MDX 强调可达性归 popover/dialog 语义、anchor 只管位置。案例 3 个全部为调研记载来源:MDN 模块页、Chrome for Developers 教程、WebKit WWDC25 与 Firefox 147 发布说明(标注为官方教程/发布说明口径)。"
+  }
+]

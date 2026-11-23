@@ -1,0 +1,17 @@
+[
+  {
+    "id": "principles/aesthetic-usability",
+    "researchRef": "out/design-study/12-expansion.md#§14 审美可用性效应(定义/证据/UI 启示/URL)+ lawsofux.com/aesthetic-usability-effect(官方 URL);真实案例第三条反例引用 out/research/03-visual-style-trends.md §2(NN/g Liquid Glass 批评,glassmorphism 条目已核验口径)",
+    "note": "Kurosu & Kashimura 1995(日立设计中心)『26 种 ATM 界面变体 × 252 名参与者』与『美观度与感知易用性相关性强于实际易用性』逐字取 12 补研 §14;美观可能掩盖可用性问题→测试规程设防同源。demo:同一功能两种完成度的 A/B 自测(4 按钮 ATM 卡、任务=查询余额),实测用时/误点 vs 感知评分 1–7 双通道对照;beauty/handicap 为 JS 型参数(store 订阅),accent 为 CSS 变量型(--au-accent);handicap 对两侧等量注入(small-target=18px、slow-response=900ms,均标注为演示缺陷值非定律数值);评分量表 1–7 标注为 demo 教学选择(原实验用语义差异量表)。案例一(ATM 实验载体)与案例三(Liquid Glass 反例)有据;案例二(Apple Big Sur 半透明侧栏)标注『编辑性引申自调研 03§1』。"
+  },
+  {
+    "id": "principles/goal-gradient",
+    "researchRef": "out/design-study/12-expansion.md#§14 目标梯度效应(定义/Hull 1932/1934/Kivetz/Urminsky/Zheng/UI 应用/URL)+ §16 签名巧思 9(预盖一枚已完成章)+ out/research/07-components-patterns.md#§20(NN/g percent-done ≥10s)",
+    "note": "『越接近目标动力越强』、Hull 1932 假说/1934 大鼠奔食、Kivetz/Urminsky/Zheng 购买加速与虚幻进度、人为进度(会员卡预盖章、Uber 类起步进度)逐字取 12 补研 §14;默认 headStart=1 取 §16-9 签名巧思;NN/g ≥10s 用 percent-done 取 07§20。demo:可玩咖啡集章卡(集章格/进度条/打卡按钮),steps=10、headStart=1 为 demo 教学参数(schema 如实标注定律不规定数值);间隔=距上一章的真实毫秒数(第 1 章相对本轮起点,demo 实测非模拟),逐章柱状+最近/最短/最长文本;预盖章带『预』标记并如实标注人为进度(虚幻进度研究的伦理边界写进 avoid);达标后按钮原位变『再来一轮』;aria-live 播报+集章格字符/形状/颜色三通道;reduced-motion 全动画取消。"
+  },
+  {
+    "id": "principles/pareto-principle",
+    "researchRef": "out/design-study/12-expansion.md#§14 帕累托法则(定义/意大利 80% 土地归 20% 人口/UX 应用原句/机械套用误用警告/URL)+ out/research/07-components-patterns.md#§29(序位效应,案例二互补关系)",
+    "note": "『约 80% 的效果来自约 20% 的原因(roughly 非精确值)』、意大利 80/20 土地观察、『将大部分精力集中于能为最多用户带来最大收益的领域』『机械套用(如只顾减少点击次数)是误用』逐字取 12 补研 §14。demo:10 项功能使用占比 SVG 柱状+累计曲线+80% 参考线;share ∝ 1/rank^skew 为 demo 教学模型并如实标注(skew=1.9 时前 2 项承载 78.4% 为公式实时实算,不写死 80;80/20 本身是 roughly 近似);budget 默认 2 对应 20% 关键区域,2→4 增益 78.4%→86.1% 递减如实显示;预算高亮双通道(柱体变色+逐项『预算内』文字);关键数字(前 2 项占比/80% 线名次/预算覆盖)全部文本呈现+动态 aria-label;reduced-motion 取消过渡。真实产品两例均标注『泛例』(未点名具体产品,不确定不编),第三条为 12§14 误用警戒。"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "dataviz/dataviz-chart-selection",
+    "researchRef": "out/design-study/08-dataviz.md §5.4 FT Visual Vocabulary(chart-doctor README 零基线判据/Lollipop 豁免/Cleveland & McGill 引用/FT 版权声明)+ §1.1 jfly CUD(直标优于图例原文)+ §1.3 Carbon danger #da1e28(警示徽标用色;交叉:out/research/06-color-theming.md §17 WCAG 2.1 SC 1.4.11 ≥3:1)",
+    "note": "三个参数全部 JS 型 enum(relation/baseline/labels),demo 订阅 store 重绘 SVG,无 cssVar。数值出处:柱系零基线取 FT chart-doctor README 原文 \"Must always start at 0 on the axis\"(调研 08§5.4 已核);折线可不从零取 FT 引 ONS《Does the axis have to start at zero?》(08§5.4 记载引用关系,ONS 原文未直接核,已在 MDX 如实标注);直标优先取 jfly CUD 原文(08§1.1 已核);警示色 #da1e28 为 Carbon danger(08§1.3 官网已核)。四关系分类(比较/趋势/分布/构成)为社区通行分类学,已在 schema origin 与两份 MDX 注明非 FT 官方族谱;截断失真倍数(49 vs 78 零基线 1.6 倍/截断到 40 起 4.2 倍)为 demo 确定性数据上的可复算算术,非调研记载。demo 数据(比较 4 类目/趋势 12 月/分布 8 箱 40 样本/构成 4 季×4 段)为自造确定性演示值,已在 MDX 注明。真实产品案例三条(FT Visual Vocabulary 四语海报+版权声明/ONS 零基线之辩/Cleveland & McGill)全部出自 08§5.4;Cleveland & McGill 排序细节未转录,不引用具体排序。sources 三条均为调研 08 已核 URL。"
+  },
+  {
+    "id": "dataviz/dataviz-color-ordering",
+    "researchRef": "out/design-study/08-dataviz.md §4.2 Power BI dataColors 顺序=系列取色顺序/good-neutral-bad 语义色 + §1.3 Carbon 14 色按序红线与告警色 #da1e28/#ff832b/#f1c21b/#198038 + §1.1 Okabe-Ito 8 色上限/hex 经 R grDevices 固化 + §5.3 ggplot2 灰底白网格(col_mix(ink,paper,0.92))(交叉:out/research/06-color-theming.md §19 Claus Wilke 色彩章 + §17 WCAG 1.4.11)",
+    "note": "三个 JS 型参数(order/accentSeries/emphasis)+ 一个 CSS 变量型参数(contextGray→--co-gray,hex 注入不依赖 oklch)。按序取用锚点:Power BI dataColors(08§4.2 官方 docs 已核)、Carbon 按序红线(08§1.3 官网已核)、Okabe-Ito 亮色前三/红绿对留低频/8 类封顶(08§1.1+签名巧思 2/3)。强调策略「灰底彩突出」本身为社区通行做法(参考 Wilke 色彩章,调研 06§19 记载了该章 URL),官方无灰值记载——语境灰默认 #B0B0B0 在 schema effect/MDX 表格/demo 徽标三处标注「社区常见值,未证实」;accentSeries 默认 2 注明为 demo 示例值无官方依据。色值 Okabe-Ito 前 5 色取 R grDevices 固化值(08§1.1 源码核验,与 dataviz-categorical-palette 同源)。demo y 轴从 20 起并在 MDX 注明折线可不从零(FT 引 ONS)。全彩模式直标会压线故回退图例——jfly 原文仅反对「直标放得下却用图例」,已在 MDX 如实表述。真实产品案例三条(Power BI dataColors+语义色/Carbon 按序+告警色/ ggplot2 灰底画布 col_mix 0.92)全部出自调研 08 已核内容。sources 四条均为已核 URL(learn.microsoft.com、carbondesignsystem.com、jfly、clauswilke.com,后者经调研 06§19 收录)。"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "motion/press-feedback",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§1 按压反馈对(1.1 组件库源码取证 / 1.2 Web 惯例结论 / 1.3 可直接复用代码)+ out/design-study/09-apple-materials.md#§4 按压反馈",
+    "note": "Arco Button `:active{transition:none}` + 0.1s linear 与 primary hover=色阶-5/active=色阶-7、AntD 五颜色系属性 0.2s motionEaseInOut(motionUnit 0.1×2)、Arco decelerate cubic-bezier(0.4,0.8,0.74,1) 全部逐字取自 10§1.1/§1.3;releaseDuration 默认 120ms 取 §1.3 可复用代码(结构仿 Arco)。pressScale 0.97 / pressAlpha 0.8 为社区常见值,schema effect 与 MDX 均按 §1.2/§9 口径如实标注『未证实』(四大库默认按钮无 scale)。Apple 侧 UIControl.isHighlighted 成对语义、WWDC18 803 即时响应、apple.com :active 只换底色取 09§4。demo 用 pointer+键盘事件驱动 data-pressed,徽章实时显示 normal/highlighted 对照。"
+  },
+  {
+    "id": "motion/slot-spring",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§2 卡槽弹簧(2.1 BuildUI layoutId / 2.2 手写积分器 / 2.3 推荐档位实算 / 2.4 iOS 分段控件对照)+ §6.3 Motion 源码手感映射",
+    "note": "demo 默认 stiffness 300 / damping 25 = §2.3『中·微弹』档(ζ0.722/过冲3.8%/t_peak 262ms/包络→5% 240ms);BuildUI 官方配方 bounce 0.2/duration 0.6(ζ≈0.8/过冲1.5%)与『抄参数先算 ζ』反例(500/50 过阻尼 ζ1.118)写进 schema/MDX;读数条按 §2.3 公式本地实算(ω₀=√k、ζ=c/(2√k)、过冲=e^(−πζ/√(1−ζ²))、包络→5%=ln20/(ζω₀))。iOS 系统分段控件弹簧数值未证实(§2.4)如实标注;HIG ≤5 段/等宽/单一选择器取 §2.4。弹簧经 Motion 物理弹簧驱动,速度接力为 Motion 文档语义(§7.3)。"
+  },
+  {
+    "id": "motion/overlay-entrance",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§3 浮层入场(3.1 shadcn/radix 事实标准 / 3.2 过冲 bezier / 3.3 可直接复用代码)",
+    "note": "初态 scale 0.95(zoom-in-95)+ fade + 200ms = shadcn Dialog 源码逐字;方向性位移 8px = Popover slide-in-from-bottom-2;进慢出快 = Sheet 入 500/出 300,demo 出场默认 150ms 取 §3.3 Motion 版;曲线三档:standard cubic-bezier(0.4,0,0.2,1)(§3.3 CSS 版)/ react-hot-toast 过冲 cubic-bezier(.21,1.02,.73,1) / Arco 过冲 token cubic-bezier(0.3,1.3,0.3,1)(§3.2)。M3 emphasized easing 数值未证实(§3.2)如实标注。demo 含锚点侧 transform-origin、点击外部关闭、Esc、焦点进出归还;全部参数为 CSS 变量型,零订阅直驱。"
+  },
+  {
+    "id": "motion/shake-decay",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§4 错误抖动·指数衰减(4.1 animate.css / 4.2 弹簧速度注入 / 4.3 指数衰减数学 / 4.4 macOS 登录框)",
+    "note": "双轨实现:CSS keyframes 轨按 x(t)=A·e^(−λt)·sin(ω_d t) 采样生成衰减帧(A/λ 可调,默认 10px/6s⁻¹ = §4.3 示例;每拍 0.1s、包络每拍 ×e^(−0.3)≈0.74 与 §4.3 一致);弹簧速度注入轨严格用 §4.2 档位 stiffness 500/damping 24(ζ≈0.536/λ≈12/包络→5%≈250ms),初速度 v₀=A·ω_d 为物理推导已在 MDX 标注。animate.css ±10px 等幅与 macOS 登录框 4–6 拍/~0.5s 均按 §4.1/§4.4 如实标注(前者为等幅特例、后者为社区复刻未证实)。公式出处维基 Damping ratio 与 Motion spring.ts 对应关系取 §4.3。"
+  },
+  {
+    "id": "motion/toast-spring",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§5 Toast 弹簧入场(5.1 react-hot-toast / sonner / vaul 源码 / 5.2 可直接复用代码)+ out/design-study/06-antdesign.md#§4.10 Message",
+    "note": "入场初态(屏外滑入 + scale 0.6 + opacity 0.5)、退场 0.4s cubic-bezier(.06,.71,.55,1)、reduced-motion 纯 fade 逐字取 react-hot-toast toast-bar.tsx(§5.1);lifetime 默认 4000 = sonner TOAST_LIFETIME 源码值;真弹簧档 stiffness 300/damping 25(ζ≈0.722)取 §2.3 同一『弹而不闹』带,Motion 官方写法 bounce 0.25+visualDuration 0.35(§5.2)与 bounceToDampingRatio 换算(§6.3)写入 MDX。AntD message 3s(06§4.10)作对照。WCAG 2.2.3/WAI-APG 口径与 components/toast 条目互链。堆叠上限 3、计时器清理、role=status 均实现。"
+  },
+  {
+    "id": "motion/damping-craft",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§6 阻尼感设计(6.1 物理定义 / 6.2 感知区间 / 6.3 Motion 源码手感映射)+ §4.3 ζ→过冲表",
+    "note": "ζ 范围 0.2–1.2 连续可调(任务指定),默认 0.5 = Motion 源码默认弹簧(stiffness 100/damping 10/mass 1,spring.ts:22-27,§6.3;文档页标注差异已按源码优先口径记录);参考四档 0.3/0.5/0.8/1.1 对应 §6.2 感知区间(0.3–0.7 弹区、0.5–0.8 UI 目标区、ζ=1 临界、>1 过阻尼);过冲/包络读数按 §4.3 表公式本地实算(0.5→16.3%、0.7→4.6%、0.8→1.5%、1→0);Apple UISpringTimingParameters dampingRatio 官方表述(1.0 更阻尼/0.15 多震荡)取 §4.3;bounce↔ζ 换算(bounceToDampingRatio)与 mass:'auto' 写进 MDX(§6.3)。"
+  },
+  {
+    "id": "motion/smooth-craft",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§7 丝滑工艺(7.1 transform/opacity / 7.2 will-change / 7.3 中断接力 / 7.4 CSS 变量代价 / 7.5 linear() / 7.6 刷新率)+ out/design-study/09-apple-materials.md#§9 可中断动画与 velocity matching",
+    "note": "三条工艺对照:属性轨(transform vs left,web.dev 丢帧 50%/1% 实测数据引原文)逐帧直写 el.style.transform(§7.4 不经 CSS 变量);will-change 三条纪律(最后手段/动画前置 animationend 后撤/勿撒 body)按 MDN 原文(§7.2),translateZ(0) 廉价回退;中断接力轨 spring(继承速度)vs tween(starts from rest and ignores velocity,Motion 文档原文 §7.3)。帧率表用同一 rAF 循环统计帧间隔均值与 >25ms 长帧。linear()(Baseline 2023-12)与 ms 不按帧(§7.5/§7.6)及 WWDC18 803『打断即设计』(09§9.1)写进 MDX。"
+  },
+  {
+    "id": "motion/scroll-overflow",
+    "researchRef": "out/design-study/10-microinteractions-code.md#§8 滚动溢出行为(8.1 overscroll-behavior / 8.2 scroll snap / 8.3 滚动条 / 8.4 可直接复用代码)+ out/design-study/09-apple-materials.md#§7.1 overscroll",
+    "note": "四值语义(auto/contain/none/2025 chain)、滚动链定义、『overflow:hidden 恒在边界 → 锁背景』MDN 原文推论、iframe 边界、::backdrop blur(0.5rem) 官方示例全部取自 §8.1(09§7.1 双源一致);innerMode 默认 contain(弹层防穿透标准姿势,巧思 8),cssVar --ob-inner 直接驱动 overscroll-behavior;lockPage on = 外层 data-locked overflow:hidden。demo 含穿透计数器(弹层开+指针在内层时外层滚动即 +1)、Esc/焦点管理、内层 tabindex=0 键盘滚动。mandatory 吸附警告与 scrollbar-width none 的 WCAG 2.1.1 警告取 §8.2/§8.3;Safari 16+ 等版本号如实标注『MDN 兼容表内容,本次调研未逐项核验』。"
+  }
+]

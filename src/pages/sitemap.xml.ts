@@ -26,8 +26,11 @@ export const GET: APIRoute = async ({ site }) => {
     ...entries.map((e) => ({ zh: entryUrl("zh", e.id), en: entryUrl("en", e.id) })),
   ];
 
-  const origin = (site?.href ?? "https://uiux-atlas.example.com/").replace(/\/$/, "");
-  const abs = (p: string) => `${origin}${p.startsWith("/") ? p : `/${p}`}`;
+  /* 绝对 URL = 站内路径(已含部署子路径,来自 urls.ts)解析到 site 上。
+     路径以 "/" 开头,所以无论 Astro.site 是否已并入 base,结果都一致。
+     site 未配置时无法产出真实绝对地址——直接让构建失败,不回落到假域名。 */
+  if (!site) throw new Error("sitemap.xml: astro.config.mjs 的 site 未配置,无法生成绝对 URL");
+  const abs = (p: string) => new URL(p, site).href;
 
   const urls = pagePairs
     .map((pair) => {

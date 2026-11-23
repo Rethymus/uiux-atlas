@@ -1,0 +1,42 @@
+[
+  {
+    "id": "icons/icon-stroke-fill",
+    "researchRef": "out/design-study/07-icons.md#1.1 Lucide(defaultAttributes.ts 源码定值) + #1.2 Feather(attrs 同构) + #1.3 Heroicons(outline 实测 1.5px) + #3.3 线宽与低对比度渲染(WCAG 1.4.11 提醒)",
+    "note": "参数默认值:strokeWidth 默认 2 = Lucide/Feather 官方源码定值(defaultAttributes.ts 四件套 24/2px/round/currentColor,07 §1.1 一手 curl 实测);fill 默认 off = Lucide 源码 fill:'none'(07 §1.1);capJoin 默认 round = 源码 stroke-linecap/linejoin:'round'(07 §1.1)。Heroicons 1.5px 为真实文件实测、README 示例 2 系 v1 旧文案(07 §1.3,已在 effect/MDX 如实标注矛盾)。Demo 内联自绘 24×24 描边图形 8 枚(sun/moon/camera/bolt/flag/chat/pin/bookmark,≥6 满足;非官方库拷贝),相机镜头与定位圆点为写死 fill:none 的镂空子形状,演示「属性写死封死继承」;太阳射线/旗杆为开放路径,fill=on 无形可填。strokeWidth 走 CSS 变量(--sf-stroke),fill/capJoin 为 JS 型 data 属性。"
+  },
+  {
+    "id": "icons/icon-grid-24",
+    "researchRef": "out/design-study/07-icons.md#2. Material 官方 24px 栅格与键程数值(m2.material.io system-icons 逐条原文) + #1.3 Heroicons 20/16 独立重绘网格 + #1.5 Material Symbols 仅 20/24 做了完美像素对齐",
+    "note": "官方锚值(24 档):展示区 24×24dp、活动区 20×20dp 四周 2dp padding、密集活动区 16×16、方形键程 18×18、圆形 Ø20、竖长方 16×20、横长方 20×16、X/Y 整数、圆角默认 2dp(07 §2 全部逐条原文)。参数:gridSize enum 16/20/24/32 默认 24(24=官方基准;20=Material 密集布局官方档+Heroicons mini 重绘;16=Heroicons micro 实测独立 viewBox;32=社区常见放大网格,官方无锚值,已标注未证实);padding dimension 0-4 step1 默认 2(官方 \"2dp of padding\",整数步进呼应 on-pixel 规则)。demo 派生公式 live=g-2pad、square=live-2、circle=live、rect=live×(live-4)(由 24 官方值反推的规则,等比应用并在标签注明「推导,官方未定义」;20+2 档 live=16 恰为官方密集值)。SVG 8 倍整数缩放渲染,0.125 单位描边=1px 参考线;示例图形自绘 24 网格「图片」图标等比缩放,MDX 注明官方做法是换档重绘非缩放。gridSize/padding 均为 JS 型参数(store 订阅重算几何)。"
+  },
+  {
+    "id": "icons/icon-optical-sizing",
+    "researchRef": "out/design-study/07-icons.md#2. 键程四图(圆 Ø20 vs 方 18×18) + #3.1 官方数值级惯例(圆比方大 2dp≈+11%/opsz 20-48 默认 24/GRAD 深底降眩光) + #3.2 Lucide 光学细则(不对称允许 slightly off center/模糊法验收/2.41px 斜角)",
+    "note": "参数:baseSize dimension px 16-48 默认 24(Material Symbols opsz 轴官方默认 24,README \"The default is 24\",07 §1.5;量程 20-48,仅 20/24 完美像素对齐);compensate enum on/off 默认 on(on=圆 Ø20/方 18 官方键程 +11.1% 光学放大+不对称三角光学偏心;off=圆 Ø18 同尺寸纯几何对照)。三角偏移 0.5px 为演示取值——Lucide 原文只写 \"may be moved slightly off center\" 未给数值(已在 effect/MDX 如实标注「未证实为官方数」)。模糊法验收(Lucide 原版技法,07 §3.2)做成 demo「模糊法验收」按钮(filter: blur 1.5px)。线宽用 vector-effect: non-scaling-stroke 恒定 2px 绝对值示意 opsz「放大线相对变细」方向,MDX 注明官方补偿曲线未公开、demo 为方向示意。baseSize/compensate 均为 JS 型参数。"
+  },
+  {
+    "id": "icons/icon-aria-accessible",
+    "researchRef": "out/design-study/07-icons.md#4.1 规则主干(MDN aria-hidden 纯装饰摘除/可聚焦红线/WAI functional-images 动作命名/共享信息图标) + #4.2 WAI-APG 现状(旧页 404,names-and-descriptions 与 hiding-semantics 承接)",
+    "note": "规则全部一手:MDN aria-hidden 可隐藏对象含 \"Purely decorative content, such as icons\"、可聚焦元素/祖先禁用 aria-hidden、摘除前提 \"identical or equivalent meaning and functionality\"(07 §4.1);WAI 教程 \"'print this page' rather than '(image of a) printer'、'search' rather than 'magnifying lens'\"、图标紧跟链接文字不携新信息时 alt=\"\"(07 §4.1)。参数:decorative enum on/off 默认 on(aria-hidden 摘树);label enum with/without 默认 with(名写动作「收藏」,非形状「星形」)。Demo 两个真实按钮(icon-only 收藏 + icon+text 通知)实时消费 aria-hidden/aria-label,可访问名按 accname 简化规则计算展示;读屏播报面板与四格对照表由同一 simulate() 规则函数输出,面板与 MDX 均声明「按 W3C/MDN 规则推演,不逐字复刻任一读屏器,内联 SVG 播报因 NVDA/JAWS/VoiceOver 实现而异」(调研未统一该行为,如实标注)。WAI-APG 旧 Images 页 404 现状写入 MDX(07 §4.2)。"
+  },
+  {
+    "id": "icons/icon-sprite-symbols",
+    "researchRef": "out/design-study/07-icons.md#5.1 symbol/use 机制(MDN:symbol 不可渲染/use 深克隆 shadow DOM/CSS 继承唯一染色通道/已定义属性被忽略/同源限制/data: 弃用) + #1.2 Feather 官方雪碧图 feather-sprite.svg#circle + #1.4 Phosphor duotone 背景层 opacity 0.2 + #5.2 currentColor(CSS Color 4 §6.4) + #5.1 坑位清单(写死 fill/stroke 封死继承等)",
+    "note": "机制全部 MDN/CSS Color 4 一手(07 §5.1/§5.2):<symbol> 自带 viewBox、width/height 仅在引用对象为 svg/symbol 时生效;use 克隆树不吃文档选择器只吃继承;引用时已定义属性被忽略。参数:symbol enum bell/heart/star/bolt 默认 bell(一份模板四实例:16/24/32+行内);ink enum current/inverse/duotone 默认 current(current=宿主一处 color 全链 currentColor;inverse=深底反白同一继承链;duotone=换双层 symbol——背景层 fill=currentColor opacity=0.2 为 Phosphor duotone 文件实测官方值,前景描边层;换 symbol 而非对克隆树写 CSS 正是 MDN 规则的应用)。反例 tile:写死 fill=\"gray\" 的 path 在任何 ink 下拒绝换色(坑位①活体演示)。Demo 12 个 symbol 定义于隐藏 defs(4 裸+4 duotone+1 locked);Feather README 外链雪碧图用法与同源限制写入结构与 MDX(07 §1.2/§5.1)。symbol/ink 均为 JS 型参数。"
+  },
+  {
+    "id": "icons/icon-lucide-set",
+    "researchRef": "out/design-study/07-icons.md#0. 结论速览(五套网格/线宽/许可矩阵) + #1.1-#1.5 五套逐项核验(README+真实 SVG 双证) + #7. 未证实清单(Phosphor 权重像素值/Lucide 图标总数不一致/Heroicons README 过期)",
+    "note": "六集=07 调研覆盖的五套 + 经典 Material Icons(同一 google/material-design-icons 仓库内上一代,README 原文 \"2022 年 4 月推出 Symbols,经典五样式 2022 年起停止更新\",07 §1.5)。核验值照录:Lucide 24×24/2px/ISC(defaultAttributes 源码);Feather 24×24/2px/MIT 系出同门;Heroicons 24/20/16 三档、24 outline 实测 1.5px(README 示例 2 已过期,如实标注)、MIT;Phosphor 256×256 viewBox 实测、fill 路径、6 权重、MIT,权重像素值未证实(07 §7 并入 MDX);Material Symbols 24 基准/wght 100-700/opsz 默认 24/Apache-2.0;经典 Material Icons 填充/Apache-2.0/停更。Lucide 总数官网 1600+ vs 仓库 2000+ 两处不一致如实并录(07 §7)。参数:set enum 六值默认 lucide;glyph enum bell/home/heart/star 默认 bell。Demo 主预览+六迷你卡(可点击,经 store.set 双向同步面板);图形为自绘示意(5 种画法 lineA/B/C+solidA/B,MDX 明示非官方库拷贝);许可徽章 ISC/MIT×3/Apache-2.0×2 全部官方核验。"
+  },
+  {
+    "id": "icons/icon-color-states",
+    "researchRef": "out/design-study/08-dataviz.md#1.3 IBM Carbon 数据可视化色板(分类板 14 色 hex + 告警色 danger #da1e28,官网全文抓取核验,Apache-2.0 LICENSE 已核) + out/design-study/07-icons.md#4.3 WCAG 1.4.11 3:1(2.999:1 算失败) + #5.2 currentColor(CSS Color 4 §6.4) + #1.4 Phosphor duotone opacity 0.2 + #3.1 GRAD 深底降眩光",
+    "note": "状态色取值(本批唯一 hex 来源=08 专项调研已核实值,非编造):default #1192e8=Carbon 分类板 Cyan 50(08 §1.3 板位 #2);hover #002d9c=同板 Blue 80(板位 #8)——Carbon 官方未定义 hover 状态色,取已核实深档作演示语义,已在 effect/MDX 双处标注;danger #da1e28=Carbon 告警色 danger(08 §1.3)。许可 Apache-2.0 经 LICENSE 文件核实(08 §1.3)。对比度阈值 WCAG 1.4.11 ≥3:1(\"2.999:1 would not meet\",07 §4.3)。本会话用 node 按官方相对亮度公式实算:#1192e8 对白底 3.33:1(擦线)、80% 不透明度混白后跌破;#da1e28 5.00:1(80% 时 3.94 仍过、60% 失守);#002d9c 11.32:1(50% 附近才跌破)——数值已写入 MDX 实测锚点,demo 面板实时重算。opacity dimension % 20-100 step5 默认 100,cssVar --cs-opacity;20%=Phosphor duotone 背景层官方弱化量级(07 §1.4)。state JS 型驱动宿主 color,图标+文字 currentColor 全链跟随(CSS Color 4 §6.4,07 §5.2);Tailwind text-gray-500 机制作真实案例(07 §5.2)。"
+  },
+  {
+    "id": "icons/icon-motion",
+    "researchRef": "out/design-study/07-icons.md#6.1 Material Symbols FILL 轴动画(官方盖章 selected 动效/先子集化再动画) + #6.2 M3 微交互时长缓动 token(short3/short4 150/200ms、easing.standard cubic-bezier(0.2,0,1,1)、emphasized 系) + #6.3 无障碍护栏(MDN prefers-reduced-motion/transition none 直切终态/描边版实底版换 use 等效降级)",
+    "note": "M3 token 官方值照录(07 §6.2 表格原文):duration.short3=150ms、short4=200ms(官方用例 \"Selection controls have a short duration of 200ms with Standard easing\")、easing.standard=cubic-bezier(0.2, 0, 1, 1)、emphasized-decelerate=[0.05,0.7,0.1,1]、emphasized-accelerate=[0.3,0,0.8,0.15]——缓动默认值取调研记载的 standard 原文。参数:effect enum dash/rotate/fill 默认 dash(dash=pathLength=1 归一+dashoffset 1→0 重绘,默认态全绘不隐藏图标;rotate=≤90°(07 §6.2 惯例 rotate≤90°/位移±1px);fill=fill-opacity 0→1,Material FILL 轴 \"animated fill effect, to indicate user selection\"(07 §6.1)的 SVG 等效,等效降级=两枚 symbol 换 use 亦入 MDX);duration dimension ms 50-400 step25 默认 200 cssVar --im-duration;easing cubicBezier 默认 [0.2,0,1,1] cssVar --im-easing(store 序列化为 cubic-bezier())。reduced-motion:真实 @media 降级(animation/transition 禁用直切终态,MDN 07 §6.3)+demo「模拟 prefers-reduced-motion」开关(data-reduced 同待遇);触屏无 hover→卡片点击触发,键盘走 :focus-visible。三卡图形自绘(加号/环形箭头/心形,非官方拷贝)。"
+  }
+]

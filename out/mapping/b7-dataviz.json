@@ -1,0 +1,32 @@
+[
+  {
+    "id": "dataviz/dataviz-categorical-palette",
+    "researchRef": "out/design-study/08-dataviz.md#§1 分类色板(1.1 Okabe-Ito / 1.2 Tableau 10 / 1.3 IBM Carbon)",
+    "note": "三套色板 hex 全部取自调研:Okabe-Ito 8 色为 R grDevices 固化值(§1.1 源码核验;官方页只发色样图+PPT 不含 hex,作为官方发布值未证实,文案如实带标注,沿用 out/research/06-color-theming.md §19/§未证实-4 的口径);Carbon 14 色官网已核(Apache-2.0,demo 取前 8 并按官方顺序);Tableau 10 经 R 源码注释佐证、官方博客 403 与官方许可未证实(§1.2),schema effect 与 MDX 表格均如实标注。demo 排序橙→天蓝→蓝绿取自 §9 签名巧思 2;8 类封顶取巧思 3;jfly『图上直标』取 §1.1/§6;Carbon 渐变红线取 §1.3 原文。"
+  },
+  {
+    "id": "dataviz/dataviz-ordinal-scale",
+    "researchRef": "out/design-study/08-dataviz.md#§2 序数色阶(2.1 ColorBrewer 官方 JSON / 2.2 Crameri / 2.3 插值与生态)",
+    "note": "Blues 5(#EFF3FF→#08519C)与 YlGnBu 5(#FFFFCC→#253494)为 ColorBrewer 官方导出 JSON 核验值(§2.1,curl 直下 35,144 字节);RdBu 5 双向阶含中点锁零原则取自 §2.1+§9 巧思 5。demo 在官方 5 锚点间 sRGB 线性插值仅为演示 3-9 档,MDX 明确生产应取官方整档或 d3-scale-chromatic 均匀 B-spline(§2.3 已核)——符合巧思 4『禁止成品自插值』的声明式落地。ColorBrewer 许可未明示、Crameri 具体许可未证实(§7/§8-5),均如实标注;Crameri v9.0.0/DOI/IPCC 在用取自 §2.2(官方页已核)。"
+  },
+  {
+    "id": "dataviz/dataviz-colorblind-safe",
+    "researchRef": "out/design-study/08-dataviz.md#§3 色盲安全(3.1 患病率 / 3.2 三模型 / 3.4 生态实践)",
+    "note": "三模型机制(Brettel 1997 双半平面/Viénot 1999 单平面/Machado 2009 severity 插值)、『sRGB 直套矩阵=流行 bug 整体偏暗』、『tritan 必须 Brettel,复用红绿平面=完全错误』均取自 §3.2(daltonlens.org 已核);患病率 NEI 1/12 男性(§3.1)与 jfly 白人男 8%/亚洲男 5%/非洲男 4%、tritan 0.001%(§1.1/§3.1)照录。feColorMatrix 系数为社区流传 Machado 2009 severity=1 矩阵——调研未记载系数原文(§8-8 论文未直接核),schema/MDX/demo 内均已标注『社区常见值,未证实』并声明 sRGB 空间近似偏差。演示色板朱红/蓝绿混淆对取 Okabe-Ito 固化值;Power BI ColorblindSafe-Longer.json(§3.4 官方 docs 已核)、ECharts aria.decal 默认 false(§3.4 源码核验)、Primer 四套色盲主题(out/research/06-color-theming.md §10/§19)入真实产品案例。"
+  },
+  {
+    "id": "dataviz/dataviz-dashboard-density",
+    "researchRef": "out/design-study/08-dataviz.md#§4 仪表盘密度(4.1 Grafana 源码 / 4.2 Power BI 官方主题文档)",
+    "note": "24 列/行高 30px/间距 8px/最小面板 90px 逐字取自 Grafana public/app/core/constants.ts(§4.1 源码核验,官方 docs 只给档位名不给像素已核);字号阶梯 45/12/12/10 取自 Power BI report-themes-create-custom 官方示例 textClasses(§4.2,标注为官方示例值非强制默认);thirdLevelElements=轴网格线色 #F3F2F1 同 §4.2。comfortable=调研值原样;compact(间距÷2/行高×0.8/callout 45→32/label 10→9)为 demo 演示档——官方未发布 compact 惯例,Tableau 数值惯例未找到(§4.3/§8-4),schema effect 与 MDX 均如实标注『未证实/未找到』,不编造。"
+  },
+  {
+    "id": "dataviz/dataviz-chart-axes",
+    "researchRef": "out/design-study/08-dataviz.md#§5 坐标轴与网格线(5.1 ECharts / 5.2 Grafana / 5.3 ggplot2 / 5.4 FT)",
+    "note": "ECharts v5.5.1 axisDefault.ts:轴线 #6E7079 宽 1、刻度长 5、标签 margin 8/fontSize 12、splitLine #E0E6F1、splitNumber 5、类目轴不画横网格、值轴 auto——全部逐字核验(§5.1)并落进 demo 常量与默认值;gridOpacity 默认 0.09 逐字对应 Grafana getGridColor 9% 透明度公式(§5.2 暗亮主题翻转,demo 用 currentColor 实现翻转);ggplot2 默认删轴线 element_blank() 取 §5.3(L194/L271/L276);FT『Column must always start at 0』零基线原则取 §5.4(海报版权所有不可翻印,MDX 只引原则)。许可背景(ECharts/Grafana=Apache-2.0,ggplot2 MIT 系)取 §7。"
+  },
+  {
+    "id": "dataviz/dataviz-tooltip-legend",
+    "researchRef": "out/design-study/08-dataviz.md#§6 图例与提示(legend & tooltip)",
+    "note": "ECharts tooltip 五默认值(trigger 'item'/triggerOn 'mousemove|click'/showDelay 0/hideDelay 100/transitionDuration 0.4)逐字取自 TooltipModel.ts(§6 源码核验),demo 的 100ms 隐藏宽限即 hideDelay;WCAG 2.1 SC 1.4.13 三要求 Dismissible/Hoverable/Persistent 与失败模式 F95/F114 取自 §6(W3C 官方理解页已核),demo 三件套全部实现(Esc 监听/提示可进入/常驻)。legend 默认 right 取 ggplot2 L262(§5.3/§6 源码核验);Power BI 图例枚举 BottomCenter/Right/Left/RightCenter 取 §4.2/§6(官方示例);jfly『直标优于图例』原话取 §1.1/§6,demo 的 legendPos=none 档落地为首组直标;ECharts legend 默认布局值源码未逐字核到位(§8-9),已在 schema effect 如实标注。"
+  }
+]

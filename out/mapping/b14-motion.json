@@ -1,0 +1,32 @@
+[
+  {
+    "id": "motion/m3-duration-tokens",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 Duration 与编排(Material 3 官方建议:tokens-specs 页令牌表 + applying-easing-and-duration 页准则)",
+    "note": "四档 16 令牌数值逐字取调研 04§1.4:short1–4=50/100/150/200、medium1–4=250/300/350/400、long1–4=450/500/550/600、extra-long1–4=700/800/900/1000ms;官方示例(选择控件 short4 200ms+Standard、FAB→Sheet medium4 400ms、Card→全屏 long2 500ms+Emphasized)与「按面积选档/进入>退出/>600ms 仅限无输入环境转场」准则同源。demo 的 tier/step 为 JS 型枚举,采样卡片以所选令牌重播(曲线固定 Standard;Emphasized 官方标注 CSS 无等价,兜底口径写入 schema/MDX)。>600ms 警示 chip 实时标注官方口径;reduced-motion 直出终态。"
+  },
+  {
+    "id": "motion/easing-pairs",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 官方建议配对表(applying-easing-and-duration 页)+ tokens-specs 页 CSS 贝塞尔值 + §8 未证实事项(Emphasized CSS 无等价)",
+    "note": "六组配对(Emphasized 500 / Emph-decel 400 / Emph-accel 200 / Standard 300 / Std-decel 250 / Std-accel 200 ms)与五组 CSS 贝塞尔逐字取调研 04§1.4;emphasized-500 组按官方口径以 Standard cubic-bezier(0.2,0,0,1) 兜底并在 demo/MDX 显式标注「官方标注 N/A」,Android 多段 pathInterpolator(M 0,0 C 0.05,0 … 1,1)同段记载。曲线语义(进入 decel/永久退出 accel/临时退出 Emphasized)与「进入比退出更长」取同页;travel 参数(40–240px,默认 120px)为演示值已标注。demo 切配对即以该组时长+曲线重播采样滑块,过场类型 chip 同步显示。"
+  },
+  {
+    "id": "motion/choreography",
+    "researchRef": "out/research/04-motion-microinteractions.md#§1.4 配对表(入 250 std-decel/出 200 std-accel)+ §3.3 M3 Enter/exit 方向性(通知自顶/抽屉自侧/sheet 自底/snackbar 定向)+ §1.3 Motion delay/stagger(负值=中途开始)+ §6.1 prefers-reduced-motion 前庭降级",
+    "note": "纯 CSS 编排(animation-delay = i × stagger + 组级 --ch-from 方向),与既有 stagger-orchestration(Motion 库版)互为落地形态,MDX 已互链。入 250ms std-decel cubic-bezier(0,0,0,1)/出 200ms std-accel cubic-bezier(0.3,0,1,1) 取官方配对表;退场反向交错为 demo 演示语义(MDX 未标注为官方)。stagger 默认 40ms 沿用 stagger-orchestration 同一口径「社区常见值,未证实」;方向语义逐字取调研 04§3.3。demo 五项 ul/li,总铺开时间 stagger×(n−1) 实时标注;reduced-motion 去位移保节奏(纯 opacity 交错)。"
+  },
+  {
+    "id": "motion/parallax",
+    "researchRef": "out/research/04-motion-microinteractions.md#§4 滚动驱动动画(scroll()/view() 时间轴、duration auto、animation-timeline 写在简写后、视差为官方典型用例、声明式可离主线程)+ §8.5 未证实事项(视差无专门一手规范)+ §3.3 iOS 转场视差 + out/design-study/11-modern-completion.md#§5 visionOS 借鉴(避免全屏视差)",
+    "note": "实现全部取调研 04§4:animation-timeline: scroll(nearest block) 写在 animation 简写之后、duration auto、只动 transform、声明式可运行在主线程之外;js 对照路径(scroll 事件+rAF 直写)按同页「主线程且与合成器滚动异步→卡顿」结论标注。rate(0–1,默认 0.3,cssVar --par-rate)为最远层跟随比例 p,官方无推荐值——默认为演示值、社区常见 0.2–0.6 标注未证实;中层/近层 p×2/p×3 封顶 1 为演示分层。浏览器支持按调研口径如实写:Chrome/Edge 115+(官方文章快照)、Firefox/Safari 未逐项核实以 MDN 为准,demo 内置 @supports 检测自动落 JS 兜底并标注。reduced-motion 静态分层直出(JS 路径同样停);视差层 aria-hidden 纯装饰;全屏视差警告取 11§5。"
+  },
+  {
+    "id": "motion/haptics-web",
+    "researchRef": "out/research/04-motion-microinteractions.md#§5.2 Web Vibration API(MDN Navigator.vibrate 实抓)+ §2.3/§5.2 Apple HIG Playing haptics(Notification/Impact/Selection 三类预设)+ §2.6 iOS 系统控件自动触感",
+    "note": "API 形态逐字取 MDN(调研 04§5.2):pattern 为毫秒数或振动/暂停交替数组、0/[] 取消、超长截断依实现、sticky user activation、非 Baseline、iOS Safari 无效、静音/勿扰可能不振动。段数语义取 HIG:Selection 单脉冲/success 两段/error 四段脉冲/Impact 五档——HIG 只记载段数与类别,故 pulses/on/off(默认 1|2|4 段、100/60ms)的 ms 值在 schema effect 与 MDX 均如实标注「演示值,官方未给/未证实」。demo 在按钮手势处理器内同步调 navigator.vibrate,提供 vibrate(0) 取消;能力检测缺失时仅播视觉脉冲并明说,不假装振动发生;振动与视觉回声同发(HIG 与视觉/听觉匹配、勿滥用、可关闭、干扰传感器警示全数写入)。"
+  },
+  {
+    "id": "motion/page-transitions",
+    "researchRef": "out/research/04-motion-microinteractions.md#§3.3 M3 六大转场模式(transition-patterns 页)+ §1.4 配对表(各模式推荐配对)+ §3.1/§3.2 View Transitions API 支持矩阵与落地路径",
+    "note": "六模式官方描述逐字取调研 04§3.3:Container transform(持久容器连接起止)/ Forward-backward(Android 滑动+淡出、iOS 视差)/ Lateral(同级齐滑无淡出)/ Top level(先快淡出再淡入、刻意不用持久元素)/ Enter-exit(沿出入点方向轴;sheet 自底、抽屉自侧;临时退出 Emphasized)/ Skeleton(微妙脉动+完成后快速淡入)。推荐配对按 §1.4 换算并标注「按官方配对表」;Android 侧「避免 scale/z 位移」反模式写入 avoid。demo 六模式可切、正反向双播(container 以 FAB 为 origin 展开;enterexit 带遮罩;skeleton 两段式脉动→内容快淡入);duration(200–600,默认 300)为演示变量已在 schema 注明。与 view-transitions 条目互链(工程化落地 + 浏览器支持矩阵),另链 skeleton-loading/overlay-entrance/parallax。"
+  }
+]

@@ -1,3 +1,5 @@
+import { entryUrl } from "@/lib/urls";
+
 ## 结构与 DOM
 
 Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)定位的容器按锚定位摆放,每条 toast 是容器内的一张小卡片,出现与消失都不影响页面文档流。
@@ -50,7 +52,7 @@ Toast 是「页面内容之上的浮层堆栈」:一个固定(或相对舞台)�
 - **Esc 关闭**:MUI 无障碍要求 Snackbar 可用 Esc 关闭;demo 在有 toast 时监听 keydown,按 Esc 清空;
 - **悬停暂停**(`pauseOnHover`,AntD 默认 true)与**手动关闭**是可选增强;
 - `prefers-reduced-motion: reduce` 时弹簧与缩放淡入全部停用,toast 直接出现(MDN:大幅位移动画对前庭障碍用户不友好);
-- **弹簧专题**:stiffness/damping/mass 与 ζ 的完整手感拆解(ζ↔过冲换算、档位表、可中断速度接力)见动效条目 [Toast 弹簧](/motion/toast-spring/)。
+- **弹簧专题**:stiffness/damping/mass 与 ζ 的完整手感拆解(ζ↔过冲换算、档位表、可中断速度接力)见动效条目 <a href={entryUrl("zh", "motion/toast-spring")}>Toast 弹簧</a>。
 
 ## 真实产品案例
 

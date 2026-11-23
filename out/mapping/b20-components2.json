@@ -1,0 +1,32 @@
+[
+  {
+    "id": "components/cascader",
+    "researchRef": "out/design-study/12-expansion.md#§15 级联选择 Cascader + out/research/07-components-patterns.md#§5(APG Combobox)/§34/§35/§36 + out/design-study/06-antdesign.md#§2.2/§2.3/§4.6",
+    "note": "changeOnSelect 默认 false 与 expandTrigger 取值 click|hover 逐字取 12§15(2026-11-22 抓取 ant.design);multiple/expandTrigger 官方默认值未记载,schema 与 mdx 均标注「社区常见值,未证实」。视觉数值全部取 06 已核 token:控件 32/圆角 6/字号 14(§2.3②③)、浮层主阴影逐字(§2.3⑥)、hover rgba(0,0,0,0.04)=FillTertiary、占位 25%=TextQuaternary、分隔线 #f0f0f0=colorBorderSecondary(§2.3⑤)、选中 #E6F4FF/#1677ff(§1.2 蓝板);浮层单列 256px 借 Select listHeight 档(06§4.6)并如实注明 Cascader 未单列该值。键盘/Esc 恢复原值/浮层不进 Tab 序列取 07§5 combobox;Space 勾选取 07§36。省市区数据为 demo 自拟教学数据。"
+  },
+  {
+    "id": "components/timeline",
+    "researchRef": "out/design-study/12-expansion.md#§15 时间线 Timeline + out/design-study/06-antdesign.md#§1.2/§1.3/§2.2/§2.3/§3.1/§3.2 + out/research/07-components-patterns.md#§19(进度指示器)/§37(reduced-motion)",
+    "note": "item color 默认 blue、mode 取值 start|alternate|end、reverse、loading、placement、orientation 逐字取 12§15;mode/reverse 官方默认值未记载,标注「社区常见值,未证实」。accent 参数(CSS 变量 --tl-accent)默认 #1677ff=colorPrimary 表达官方默认 blue(06§1.2/§2.2);成功 #52c41a/失败 #ff4d4f=colorSuccess/colorError(06§2.2);轴线 #f0f0f0=colorBorderSecondary;文字 88/65/45% 透明度体系(06§2.3⑤);字阶 12/14(06§2.3①);时间戳 tabular-nums(06§1.3)。入场 0.3s=motionDurationSlow+EaseOut、stagger 60ms 为 demo 节奏;加载点 1s 自转为 demo 教学参数(未证实),spinner 适用域引用 07§19。节点 12px/线宽 2px 标注「社区常见值,未证实」。真实案例 GitHub 时间线/电商物流为编辑性泛例。"
+  },
+  {
+    "id": "components/collapse-panel",
+    "researchRef": "out/design-study/12-expansion.md#§15 折叠面板 Collapse(APG 骨架)+ out/research/07-components-patterns.md#§34(APG 30 模式含 Accordion)/§36/§22 + out/design-study/06-antdesign.md#§2.3⑤/§3.1/§3.2/§3.3",
+    "note": "APG 骨架 heading[aria-level]>button[aria-expanded][aria-controls]+role=region[aria-labelledby]、可同开>6 块时省略 region、Enter/Space 切换逐字取 12§15;accordion/collapsible(header|icon|disabled)/expandIconPlacement(start|end) 取值同源,官方默认值未记载均标注「社区常见值,未证实」;『多开是常规、手风琴单开是特例』按 12§15 原文口径。过渡 0.2s=motionDurationMid+motionEaseInOut(06§3.1/3.2),collapse 动效族存在性取 06§3.3;文字/分隔线透明度体系(06§2.3⑤);grid-template-rows 0fr/1fr 高度动画为自研实现。标题 padding 12px 16px 标注「社区常见值,未证实」。icon 档下键盘 Enter/Space 保留(可达性不让步)为 demo 实现决策并写入 mdx。方向键/Home/End 为 APG 可选增强,demo 仅实现已记载的 Enter/Space 并如实注明。"
+  },
+  {
+    "id": "components/rate-score",
+    "researchRef": "out/design-study/12-expansion.md#§15 评分 Rate(APG Rating Radio Group Example)+ out/research/07-components-patterns.md#§23(Hick)/§22(Fitts)/§35(focus≠selection)/§36/§37 + out/design-study/06-antdesign.md#§1.2/§2.2/§2.3④",
+    "note": "count 默认 5 与 allowClear 默认 true 逐字取 12§15(官方记载);allowHalf 默认值未记载,标注「社区常见值,未证实」。APG 无独立 rating 模式、官方 Rating Radio Group Example(radiogroup+radio[aria-checked]+roving tabindex+Space 选中)逐字取 12§15;radio 方向键组内移动取 07§36;悬停预览不改 aria-checked 对齐 07§35 focus≠selection。激活色 --rate-active 默认 #faad14=antd gold 主色/seed 金(06§1.2/§2.2),『antd Rate 官方默认色 token 未证实』已在 schema/mdx 注明;空星 #d9d9d9=colorBorder;星间 4px 借 sizeXXS 档(06§2.3④);星形 24px 标注「demo 教学尺寸,未证实」。tooltips[] 文案(很差→超赞)为 demo 自拟,注明非官方。半星实现:每星拆左右两个 radio,aria-label 写「3.5 星」。"
+  },
+  {
+    "id": "components/stepper",
+    "researchRef": "out/design-study/12-expansion.md#§15 步骤条 Steps + §14 目标梯度效应 + out/research/07-components-patterns.md#§16(错误就近)/§21③(可撤销)/§24(Miller)/§34/§36 + out/design-study/06-antdesign.md#§2.2/§2.3③⑤/§3.1/§3.2",
+    "note": "item status wait|process|finish|error 且未配置时由 current 自动推算、percent(process 步进度环)、responsive(<532px 自动转垂直)、maxCount≥3、onChange 设置后可点击 逐字取 12§15;current/orientation 官方默认值未记载,current 默认 1 标注「demo 教学值」、horizontal 标注「社区常见值,未证实」。节点 32px 借 controlHeight 档(06§2.3③,已注明非 Steps 官方记载);wait 25%=TextQuaternary、#d9d9d9=colorBorder、连接线底 #f0f0f0=colorBorderSecondary、error #ff4d4f=colorError(06§2.2/§2.3⑤);图形回弹 0.2s=EaseOutBack token(06§3.2)。ol/li+aria-current=\"step\" 注明「APG 30 模式无步骤条(07§34),惯例未证实」;错误就近取 07§16;可撤销(回退保留数据)取 07§21③;连接线点亮对应目标梯度(12§14,含官方 URL 入 sources)。demo 点击步骤头经 store.set(\"current\") 反向联动参数面板(与 b9 批 peak-end-rule 同一既有模式)。进度环 conic-gradient+mask,0% 不画环。"
+  },
+  {
+    "id": "components/upload-states",
+    "researchRef": "out/research/07-components-patterns.md#§14(Carbon File Uploader 三态)/§1(MUI 隐藏 input)/§16(错误就近)/§19(进度指示器)/§37 + out/design-study/12-expansion.md#§15 上传三态 Upload + out/design-study/06-antdesign.md#§1.2/§2.2/§2.3⑤",
+    "note": "Carbon:两变体(按钮/拖放)、拖入边框变色加粗、上传中三态 loading/success/uploaded、错误态清晰修复指引、标题用途+描述限制、长文件名省略号+tooltip、Space/Enter 开框+焦点回触发元素、Tab 到删除图标再 Space/Enter、模态内勿多文件——全部逐字取 07§14(一手 URL 入 sources)。antd:status 四值 uploading(进度条)/done/error/removed、maxCount=1 替换、beforeUpload、onChange event.percent、Upload.Dragger 逐字取 12§15。五态=入口(点击/拖拽)+拖入悬停+三态映射 antd status。配色 #1677ff/#E6F4FF(蓝板第 1 阶,06§1.2)/#52c41a/#ff4d4f/#d9d9d9/rgba(0,0,0,0.04) 均为 06 已核 token;进度条 4px×72px、行 padding、约 1.5s 模拟时长标注「demo 教学几何/教学模拟,未证实」。mdx 如实记录 NN/g(2–10s 宜 spinner)与 antd(统一百分比条)的张力,声明 demo 遵循 antd。maxCount 官方默认未记载,demo 默认 3 标注教学值。aria-live 播报为 demo 实现,非官方出处。"
+  }
+]
