@@ -1,0 +1,79 @@
+## Structure & DOM
+
+The demo is a **live contrast calculator**: the panel's two swatches (fg/bg) are the inputs, the stage renders an "Aa" specimen in the real colors, and the derivation unfolds line by line beside it:
+
+```html
+<div class="cr-card" style="--cr-fg:#767676; --cr-bg:#ffffff">
+  <span class="cr-preview">Aa specimen</span>
+  <ol class="cr-steps">
+    <li>sRGB → [0,1]: 118/255 = 0.4627</li>
+    <li>γ decode: ((0.4627+0.055)/1.055)^2.4 = 0.1804</li>
+    <li>L = 0.2126·R + 0.7152·G + 0.0722·B = 0.1804</li>
+    <li>Contrast = (1.05)/(0.2304) = 4.5422:1 → AA body ✓</li>
+  </ol>
+</div>
+```
+
+Key points:
+
+- The specimen's `color/background` bind straight to `--cr-fg/--cr-bg` — what the eye sees and what the formula sees are the same color pair;
+- The four rows are the formula's four steps: normalize → γ decode → weighted sum → ratio;
+- Verdicts cover all four gates (AA body / AA large / AAA body / AAA large); misses flag red.
+
+## Styling & Parameters
+
+Two color parameters (fg/bg, injected via cssVar), with the math implemented in-demo, zero dependencies. The complete derivation (research 14 §2.3; formulas quoted verbatim from the WCAG 2.1 spec):
+
+**① Relative luminance (three steps):**
+
+```
+RsRGB = R8bit/255 (likewise G, B)
+R = RsRGB ≤ 0.04045 ? RsRGB/12.92 : ((RsRGB + 0.055)/1.055)^2.4
+L = 0.2126·R + 0.7152·G + 0.0722·B     ← sRGB-primary luminance coefficients (BT.709 lineage)
+```
+
+**② The contrast ratio:**
+
+```
+Contrast = (L1 + 0.05) / (L2 + 0.05)     L1 is the lighter; 0.05 is the flare allowance
+```
+
+**③ Zero-dependency JS (shares its γ decode with oklch-conversion):**
+
+```js
+const srgb2lin = c => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const wcagLuminance = (r8, g8, b8) =>
+  0.2126 * srgb2lin(r8 / 255) + 0.7152 * srgb2lin(g8 / 255) + 0.0722 * srgb2lin(b8 / 255);
+const wcagContrast = (L1, L2) => (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+wcagContrast(wcagLuminance(118,118,118), wcagLuminance(255,255,255)); // 4.5422:1
+```
+
+Gates (same spec): 1.4.3 AA — body ≥4.5:1, large ≥3:1; 1.4.6 AAA — body ≥7:1, large ≥4.5:1; 1.4.11 non-text component boundaries 3:1. Large = ≥18pt (24px) regular or ≥14pt (≈18.66px) bold, with the spec noting 'CJK takes equivalent sizes'. Verification: #767676 vs white = **4.5422:1** (the classic AA-critical gray) ✓.
+
+## Motion & Interaction
+
+- **New colors, new verdict**: change fg/bg in the panel (the demo carries quick chips for critical-gray / passing-gray / failing-gray) and the four derivation rows and verdict stamps recompute live;
+- **Swap experiment**: swapping fg/bg leaves the ratio unchanged (the formula is polarity-symmetric), demonstrating "L1 is always the lighter one";
+- **Dark-mode experiment**: set bg dark and fg a light gray (e.g. #b0b0b8 on #0b1220) — the ratio climbs high, exactly where APCA flags the proportional metric for overestimating light-on-dark readability; both the MDX and the demo readouts note that boundary;
+- No autonomous animation; the entrance fade respects `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **#767676, the critical gray**: 4.5422:1 against white — the a11y community's hard marker for "how light can body gray go"; palette generators draw their AA line right around it (verified by running the formula here);
+- **Apple Dark Mode**: the official doctrine sets 4.5:1 as the floor and pushes custom foreground/background pairs toward **7:1 (AAA)** — the canonical split between the legal minimum and the in-house bar (research 13 §1.5, Typography/Materials official Markdown);
+- **Ant Design's text colors**: body/background contrast targeted at ≥7:1 (AAA), with primary text at `#000000E0` (88% black) rather than pure black — holding AAA while shaving pure black's harshness (research 13 §3.4); its sibling entry wcag-contrast ships the same formula as a live checking panel.
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| RsRGB | unitless ([0,1]) | 8-bit/255, domain [0,1] | >1 or &lt;0 undefined (clamp out-of-domain input); α never participates (pre-composite first) |
+| γ decode | linear light intensity (unitless) | segmented: straight line ≤0.04045, power law above | continuous at the joint; old 0.03928 vs new 0.04045 makes no practical difference (official note 2) |
+| `L` (relative luminance) | unitless ([0,1]) | black 0 ↔ white 1; equal grays equal γ | L=0.5 is not mid-gray — sRGB 50% gray (#808080) has L≈0.216; perceptual and linear sit a whole γ apart |
+| `0.05` (flare allowance) | unitless constant | fixed by the spec | guards the L=0 divide: black on white = (1.05)/(0.05) = 21:1, the formula's theoretical maximum |
+| `Contrast` | unitless ratio | [1, 21]; always ≥1 | identical colors L1=L2 → 1:1; the lighter always sits in the numerator, no directionality |
+| 4.5 / 3 / 7 / 4.5 | unitless thresholds | WCAG 2.1 SC 1.4.3/1.4.6/1.4.11 | judge on the raw value: 4.49:1 misses the 4.5 gate; rounding up to pass is a violation |
+| Large-text definition | px/pt | ≥24px regular or ≥18.66px bold; CJK takes equivalent sizes | the "halved gates for large text" hold only inside these two conditions; line-height and letter-spacing are not in the definition |
+| Polarity bias | — | systematically overestimates light-on-dark readability | low visual contrast of 1.2–1.45 on light grays passes wholesale — re-check with APCA Lc (body floor 75) |
+
+Working doctrine: the WCAG ratio is the compliance instrument (law and audits), while product bars push toward 7:1; audit dark themes as pairs; translucent layers get checked at both extremes. Sibling entries: **wcag-contrast** (the same formula as a shipped checking entry), **oklch-conversion** (shares the γ decode), **prefers-contrast** (the user-side contrast preference), **oklch-workflow** (fixing L to make contrast predictable).

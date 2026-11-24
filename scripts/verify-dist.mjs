@@ -20,19 +20,23 @@ const EXPECTED = {
   // materials 12 条基础 + b21-materials2 批(材质与光影补全)4 条,共 16 个
   // (与 scripts/verify-entries.mjs 的 materials 同一清单)。
   materials: ["backdrop-filter", "filter-functions", "liquid-glass", "swiftui-materials", "fluent-acrylic", "fluent-mica", "m3-state-layers", "aurora-gradient", "grain-gradient", "blend-modes", "theme-shadow", "glass-effect-api", "contact-shadows", "specular-highlight", "dimming-layer", "depth-of-field"],
-  // motion 第 8 批 8 个 + b14 批(动效补全)6 条 + b19 批(微交互补全·二)6 条,共 31 个
+  // motion 第 8 批 8 个 + b14 批(动效补全)6 条 + b19 批(微交互补全·二)6 条
+  // + 公式批(b25-math)spring-integrator / easing-math 2 条,共 33 个
   // (与 scripts/verify-entries.mjs 的 motion 同一清单);
   // 条目页 zh 标记照通用规则 = nameZh ?? name,en = name(见下方逐条全检循环)。
-  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow", "m3-duration-tokens", "easing-pairs", "choreography", "parallax", "haptics-web", "page-transitions", "flip-technique", "scroll-snap", "magnetic-hover", "kinetic-typography", "progress-motion", "handoff-curves"],
-  // color 9 条基础 + b12-color 批 5 条 + b18-color2 批(色彩与主题二批)5 条,共 19 个
+  motion: ["motion-spring", "cubic-bezier", "swiftui-spring", "m3-spring-tokens", "scroll-driven-animations", "view-transitions", "count-up", "inertia-gesture", "skeleton-loading", "stagger-orchestration", "linear-easing", "press-feedback", "toast-spring", "overlay-entrance", "damping-craft", "smooth-craft", "slot-spring", "shake-decay", "scroll-overflow", "m3-duration-tokens", "easing-pairs", "choreography", "parallax", "haptics-web", "page-transitions", "flip-technique", "scroll-snap", "magnetic-hover", "kinetic-typography", "progress-motion", "handoff-curves", "spring-integrator", "easing-math"],
+  // color 9 条基础 + b12-color 批 5 条 + b18-color2 批(色彩与主题二批)5 条
+  // + 公式批(b25-math)oklch-conversion 1 条,共 20 个
   // (与 scripts/verify-entries.mjs 的 color 同一清单)。
-  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation", "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces", "color-psychology-ui", "theme-transition", "brand-color-system", "dark-mode-patterns", "status-color-system", "color-functions", "multi-theme-tokens"],
-  // type 3 条基础 + b11 批(排版补全)6 条 + b17-type2 批(排版二次补全)6 条,共 15 个
+  color: ["oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color", "radix-color-scale", "light-dark", "rule-60-30-10", "wcag-contrast", "gradient-interpolation", "p3-wide-gamut", "semantic-token-layers", "m3-tone-surfaces", "color-psychology-ui", "theme-transition", "brand-color-system", "dark-mode-patterns", "status-color-system", "color-functions", "multi-theme-tokens", "oklch-conversion"],
+  // type 3 条基础 + b11 批(排版补全)6 条 + b17-type2 批(排版二次补全)6 条
+  // + 公式批(b25-math)modular-scale-math / rhythm-formula 2 条,共 17 个
   // (与 scripts/verify-entries.mjs 的 type 同一清单)。
-  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing", "measure-line-length", "wcag-text-spacing", "cjk-typography", "font-display-strategy", "text-wrap-balance", "drop-cap-initial", "tabular-numbers", "baseline-grid", "font-pairing", "small-caps-features", "vertical-rhythm", "display-typography"],
-  // layout container-queries + b10 批(布局补全)8 条 + b16-layout2 批 6 条,共 15 个
+  type: ["fluid-type-scale", "variable-fonts", "fluid-spacing", "measure-line-length", "wcag-text-spacing", "cjk-typography", "font-display-strategy", "text-wrap-balance", "drop-cap-initial", "tabular-numbers", "baseline-grid", "font-pairing", "small-caps-features", "vertical-rhythm", "display-typography", "modular-scale-math", "rhythm-formula"],
+  // layout container-queries + b10 批(布局补全)8 条 + b16-layout2 批 6 条
+  // + 公式批(b25-math)grid-math 1 条,共 16 个
   // (与 scripts/verify-entries.mjs 的 layout 同一清单)。
-  layout: ["container-queries", "auto-fit-minmax", "subgrid", "position-sticky", "safe-area", "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning", "split-view", "aspect-ratio", "responsive-images", "logical-properties", "writing-modes", "custom-scrollbar"],
+  layout: ["container-queries", "auto-fit-minmax", "subgrid", "position-sticky", "safe-area", "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning", "split-view", "aspect-ratio", "responsive-images", "logical-properties", "writing-modes", "custom-scrollbar", "grid-math"],
   // 第七分类 components:24 个 slug + 二批 6 条(cascader / collapse-panel / rate-score /
   // stepper / timeline / upload-states)+ 命令面板条目(command-palette,站点全站
   // Ctrl+K 的组件本体)共 31 个(与 scripts/verify-entries.mjs 的 COMPONENT_SLUGS
@@ -48,7 +52,7 @@ const EXPECTED = {
     "cascader", "collapse-panel", "rate-score", "stepper", "timeline", "upload-states",
     "command-palette",
   ],
-  // 第八/第九分类 icons(图标体系,8+4=12 slug)与 dataviz(数据可视化,8+3=11 slug)——
+  // 第八/第九分类 icons(图标体系,8+4=12 slug)与 dataviz(数据可视化,8+3+1=12 slug)——
   // icons 二批 b22(icon-font-vs-svg / icon-button / favicon-stack / icon-system-design)
   // 并入同一清单,与 scripts/verify-entries.mjs 的 ICONS_SLUGS/DATAVIZ_SLUGS 保持一致;
   // 条目页检查并入常规逐条全检。
@@ -64,9 +68,12 @@ const EXPECTED = {
     // dataviz 扩编批(b23):small-multiples / chart-animation / chart-accessibility,
     // 与 scripts/verify-entries.mjs 的 DATAVIZ_SLUGS 保持同一清单。
     "small-multiples", "chart-animation", "chart-accessibility",
+    // 公式批(b25-math):scale-functions 并入同一清单(与 verify-entries.mjs 同动作)。
+    "scale-functions",
   ],
-  // 第十分类 principles(交互法则与无障碍,15+3=18 slug)——二批 b24
-  // (aesthetic-usability / goal-gradient / pareto-principle)并入同一清单,
+  // 第十分类 principles(交互法则与无障碍,15+3+1=19 slug)——二批 b24
+  // (aesthetic-usability / goal-gradient / pareto-principle)与公式批(b25-math)
+  // contrast-ratio-formula 并入同一清单,
   // 与 scripts/verify-entries.mjs 的 PRINCIPLES_SLUGS 保持一致,并入常规逐条全检
   // (条目页 zh 标记照通用规则 = nameZh ?? name,en = name)。
   principles: [
@@ -75,6 +82,8 @@ const EXPECTED = {
     "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
     "prefers-contrast", "keyboard-navigation",
     "aesthetic-usability", "goal-gradient", "pareto-principle",
+    // 公式批(b25-math):contrast-ratio-formula 并入同一清单(与 verify-entries.mjs 同动作)。
+    "contrast-ratio-formula",
   ],
 };
 

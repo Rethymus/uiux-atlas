@@ -1,0 +1,134 @@
+{
+  "name": "Modular Scale Math",
+  "nameZh": "模数倍率公式",
+  "aliases": ["模数尺", "type scale", "geometric scale", "Utopia clamp"],
+  "category": "type",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "字阶的数学底座:size(n)=base×ratioⁿ 几何级数出层级、calc() 链式同轴缩放、Utopia 流体 clamp——斜率走 vw、截距藏 rem、两端钳制,一行 CSS 就是一段线性回归。",
+    "en": "The math under type scales: size(n)=base×ratioⁿ builds hierarchy, calc() chains keep spacing co-axial, and Utopia's fluid clamp — slope in vw, intercept hidden in rem, both ends clamped — is a linear regression in one line of CSS."
+  },
+  "origin": {
+    "zh": "模数尺概念出自 Robert Bringhurst《The Elements of Typographic Style》的和谐比例观,由 Tim Brown 在 A List Apart 2011《More Meaningful Typography》推广——比率取音乐音程命名,含 1:1.618 黄金比示例与模数尺构造法(本次抓取原文核对);流体 clamp 公式经调研对 utopia.fyi 页面 bundle 反查还原,并与页面真实输出逐字符对拍(调研 14§1)。",
+    "en": "The modular scale descends from Robert Bringhurst's harmonic-proportion view in The Elements of Typographic Style, popularized by Tim Brown's 'More Meaningful Typography' (A List Apart, 2011) — ratios named after musical intervals, with a 1:1.618 golden-ratio example (original fetched and checked); the fluid clamp formula was reverse-engineered from utopia.fyi's production bundle and verified character-for-character against the page's real output (research 14 §1)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "base",
+      "unit": "px",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 16,
+      "effect": {
+        "zh": "字阶基值(step-0 在 minVw 处的字号),demo 用它实跑 size(n)=base×ratioⁿ。默认 16px 对应调研核验的阶梯(base=16, ratio=1.25 → 10.24/12.8/16/20/25);改成 18 可复现 Utopia 黄金样本 step-0 clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem)。",
+        "en": "Scale base (step-0's size at minVw); the demo runs size(n)=base×ratioⁿ live. Default 16px matches the verified ladder (base=16, ratio=1.25 → 10.24/12.8/16/20/25); set 18 to reproduce Utopia's golden sample clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "ratio",
+      "options": [
+        { "value": "1.067", "label": { "zh": "小二度 16:15", "en": "Minor second 16:15" } },
+        { "value": "1.125", "label": { "zh": "大二度 9:8", "en": "Major second 9:8" } },
+        { "value": "1.2", "label": { "zh": "小三度 6:5", "en": "Minor third 6:5" } },
+        { "value": "1.25", "label": { "zh": "大三度 5:4(最常用)", "en": "Major third 5:4 (most used)" } },
+        { "value": "1.3333", "label": { "zh": "纯四度 4:3", "en": "Perfect fourth 4:3" } },
+        { "value": "1.5", "label": { "zh": "纯五度 3:2", "en": "Perfect fifth 3:2" } },
+        { "value": "1.618", "label": { "zh": "黄金比 (1+√5)/2", "en": "Golden ratio (1+√5)/2" } }
+      ],
+      "default": "1.25",
+      "effect": {
+        "zh": "倍率比率表(音乐音程命名,Bringhurst/Tim Brown 传统)。1.25 是调研标注的『最常用的 UI 排版比率』;1.067 适合密集 UI 微调,1.5/1.618 适合展示型页面。JS 型参数,demo 解析为数值实跑几何级数。",
+        "en": "The ratio table (musical-interval naming, Bringhurst/Tim Brown tradition). 1.25 is the research's 'most-used UI type ratio'; 1.067 suits dense UI tweaks, 1.5/1.618 display pages. JS-type param — the demo parses it and runs the geometric series live."
+      }
+    },
+    {
+      "type": "number",
+      "name": "steps",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "effect": {
+        "zh": "向上生成的级数;demo 始终展示 step−1 到 step+steps 的完整阶梯(负 n 为下行阶梯)。",
+        "en": "How many steps to grow upward; the demo always shows the full ladder from step−1 to step+steps (negative n = descending rungs)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "minViewport",
+      "unit": "px",
+      "min": 320,
+      "max": 800,
+      "step": 1,
+      "default": 360,
+      "effect": {
+        "zh": "流体插值下端视口(Utopia 页面默认 360)。与 minViewport 搭配决定 slope=(max−min)/(maxVw−minVw) 的斜率。",
+        "en": "Lower viewport stop of the fluid interpolation (Utopia's page default is 360). Together with maxViewport it sets slope=(max−min)/(maxVw−minVw)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "maxViewport",
+      "unit": "px",
+      "min": 800,
+      "max": 1920,
+      "step": 1,
+      "default": 1240,
+      "effect": {
+        "zh": "流体插值上端视口(Utopia 页面默认 1240)。等于 minViewport 时斜率除零——demo 会给出边界提示而非输出 Infinity。",
+        "en": "Upper viewport stop of the fluid interpolation (Utopia's page default is 1240). Equal to minViewport it divides by zero — the demo shows a bounds note instead of Infinity."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "calc() 是全 evergreen 支持的成熟特性;clamp() 亦已全 evergreen(Can I use 记载 Chrome 79+/Firefox 75+/Safari 13.1+,社区口径,本调研未逐版本核验)。rem 换算依赖根字号——fluidClamp 默认按 16px 折算,根字号不同的站点需传 remBase。",
+      "en": "calc() is supported by every evergreen browser; clamp() likewise (Can I use lists Chrome 79+/Firefox 75+/Safari 13.1+ — community data, not version-audited in this research). rem conversion assumes a 16px root — pass remBase on sites with a different root font size."
+    }
+  },
+  "fallback": {
+    "zh": "不支持 clamp() 的旧浏览器:在 @supports not (width: clamp(1px, 1vw, 2px)) 里给每个 --step-* 写静态 px 值(minVw 处的取值),布局退化为固定字阶而非断点跳变;calc() 链无需回退。",
+    "en": "For browsers without clamp(): inside @supports not (width: clamp(1px, 1vw, 2px)), write static px values (the minVw reading) for each --step-* — the layout degrades to a fixed scale, not a breakpoint jump. The calc() chain needs no fallback."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计系统字阶一次性推导:一个 base、一个 ratio 生成全部 --step-*", "en": "One-shot derivation of a design-system type scale: one base, one ratio, all --step-* tokens" },
+      { "zh": "无断点流体排版:标题在 360–1240px 视口间线性呼吸(Fluid Type Scale 条目的数学内核)", "en": "Breakpoint-free fluid type: headings breathe linearly across 360–1240px viewports (the math inside the Fluid Type Scale entry)" },
+      { "zh": "间距/行高与字号同轴:calc() 链让派生量跟随同一 --ratio 自乘", "en": "Co-axial spacing and leading: the calc() chain multiplies one --ratio through every derived token" },
+      { "zh": "设计评审时反查:给定 clamp 串还原 slope/intercept,判断是否越界", "en": "Review-time audit: recover slope/intercept from a clamp string and check it stays in bounds" }
+    ],
+    "avoid": [
+      { "zh": "层级超过 4–5 级后继续乘 ratio——级差指数爆炸,step+3 在 16/1.25 已达 31px,再乘两倍率脱档", "en": "Multiplying ratio past 4–5 levels — gaps explode exponentially; step+3 at 16/1.25 is already 31px" },
+      { "zh": "minVw/maxVw 覆盖不到的视口依赖插值(两端本就是钳制值,超界等于浪费)", "en": "Expecting interpolation outside [minVw, maxVw] — both ends are clamps, out-of-range viewports get constants" },
+      { "zh": "把比率调到 1.067 以下做正文——相邻级肉眼不可分,层级失效", "en": "Body-text ratios under 1.067 — adjacent steps become indistinguishable and hierarchy dies" },
+      { "zh": "根字号非 16px 时直接套用按 16 折算的 rem 输出——换算错位一整档", "en": "Using 16-based rem output on a site whose root font size is not 16px — everything shifts a notch" }
+    ]
+  },
+  "a11y": {
+    "zh": "用户缩放文本(浏览器最小字号、Dynamic Type)时,px 基值的字阶不跟随——优先用 rem 表达 base 与 --step-*,只在 clamp 的斜率里用 vw;WCAG 1.4.4 要求页面支持 200% 文本放大,固定 px 字阶+固定容器会造成溢出,流体 rem+vw 方案天然兼容。",
+    "en": "When users scale text (browser minimum font size, Dynamic Type), a px-based scale does not follow — express base and --step-* in rem, reserving vw for the clamp slope only; WCAG 1.4.4 requires 200% text zoom, and a fixed px scale in a fixed container overflows, while fluid rem+vw adapts natively."
+  },
+  "sources": [
+    "https://alistapart.com/article/more-meaningful-typography/",
+    "https://utopia.fyi/type/calculator/",
+    "https://www.modularscale.com/",
+    "https://www.w3.org/TR/css-values-4/#calc-serialize"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用几何级数 + calc() 链 + Utopia 流体 clamp 生成一套字阶 token:step−1..step+3,全部派生自一个 base 与一个 ratio,输出可直接粘贴的 CSS 自定义属性。",
+      "en": "Generate a type-scale token set with the geometric series + calc() chain + Utopia fluid clamp: step−1..step+3, all derived from one base and one ratio, output as paste-ready CSS custom properties."
+    },
+    "acceptance": [
+      { "zh": "每个字号都有出处:size(n)=base×ratioⁿ,逐步列出 n 与结果", "en": "Every size is traceable: size(n)=base×ratioⁿ, listing n and the result step by step" },
+      { "zh": "clamp 串按 slope=(max−min)/(maxVw−minVw)、intercept=min−slope×minVw 推导,截距藏 rem、斜率走 vw", "en": "Derive each clamp via slope=(max−min)/(maxVw−minVw) and intercept=min−slope×minVw — intercept in rem, slope in vw" },
+      { "zh": "calc() 链式生成:--step-1: calc(var(--step-0) * var(--ratio)),乘法一侧必须无单位", "en": "Chain with calc(): --step-1: calc(var(--step-0) * var(--ratio)); one side of each multiplication must be unitless" },
+      { "zh": "间距与行高与字阶同源(同一 --ratio),不要另起一套魔法数", "en": "Spacing and line-height share the same --ratio as the scale — no second set of magic numbers" },
+      { "zh": "负阶梯显式写出 --step--1 而不是用负值字号", "en": "Write --step--1 explicitly rather than negative font sizes" }
+    ]
+  }
+}

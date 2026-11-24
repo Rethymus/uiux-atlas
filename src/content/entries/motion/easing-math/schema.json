@@ -1,0 +1,98 @@
+{
+  "name": "Easing Math",
+  "nameZh": "缓动函数数学",
+  "aliases": ["cubic bezier solver", "Newton iteration", "linear() sampling", "parametric curve"],
+  "category": "motion",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "缓动曲线的求解数学:cubic-bezier 是参数化三次曲线(浏览器用牛顿迭代由 x 反解 t),linear() 把曲线采样成折线数据(先钳制、再两点一线)——demo 画出曲线、迭代次数与采样误差。",
+    "en": "The math behind easing curves: cubic-bezier is a parametric cubic (browsers Newton-solve t from x), while linear() samples the curve into polyline data (clamp first, then two-point lines) — the demo plots the curve, iteration counts and sampling error."
+  },
+  "origin": {
+    "zh": "参数化形式与求值算法取自 CSS Easing Level 2 规范(css-easing-2:cubic-bezier easing 创建/求值算法,调研抓取规范原文;linear() 求值算法逐字提取自 §2.1.2/§2.1.4:输入进度先钳制到 [0,1],A.x=B.x 时直接返回 B.y);四条关键字缓动(ease/ease-in/ease-out/ease-in-out)为同规范定义的固定控制点;『弹簧→linear() 采样编译』的工程模式见 linear-easing 条目(调研 14§6.1)。",
+    "en": "The parametric form and evaluation algorithm come from CSS Easing Level 2 (css-easing-2: cubic-bezier creation/evaluation algorithms, spec text fetched; linear() evaluation quoted from §2.1.2/§2.1.4: input progress clamps to [0,1] first, A.x=B.x returns B.y directly); the four keyword easings (ease/ease-in/ease-out/ease-in-out) are fixed control points defined in the same spec; the 'spring→linear() sampling compilation' pattern is the linear-easing entry's subject (research 14 §6.1)."
+  },
+  "params": [
+    {
+      "type": "cubicBezier",
+      "name": "curve",
+      "default": [0, 0, 0.58, 1],
+      "effect": {
+        "zh": "控制点 (x1,y1,x2,y2)。默认 (0, 0, 0.58, 1) 即 CSS 关键字 ease-out 的固定控制点(规范定义);x 控制点必须 ∈[0,1],y 可越界(负 y=预备回拉、y>1=过冲)。",
+        "en": "Control points (x1,y1,x2,y2). Default (0, 0, 0.58, 1) is the fixed control point set of CSS's ease-out keyword (spec-defined); x control points must stay in [0,1] while y may leave it (negative y = anticipation pull-back, y>1 = overshoot)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "segments",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "effect": {
+        "zh": "linear() 采样段数。demo 按参数 t 均匀采样 i/n 段并叠加折线,读出与原曲线的最大偏差——段数越多偏差越小,但关键帧数组越长(linear-easing 条目实测量产用 60–120 段)。",
+        "en": "linear() sample count. The demo samples uniformly in parameter t at i/n, overlays the polyline and reads out the max deviation from the original curve — more segments shrink the error but lengthen the keyframe array (the linear-easing entry's production range is 60–120)."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "mode",
+      "options": [
+        { "value": "bezier", "label": { "zh": "牛顿求解(参数化)", "en": "Newton solve (parametric)" } },
+        { "value": "linear", "label": { "zh": "linear() 采样求值", "en": "linear() sampled evaluation" } }
+      ],
+      "default": "bezier",
+      "effect": {
+        "zh": "JS 型参数:切换读数口径。bezier 模式显示牛顿迭代(迭代次数、解 t、输出 y);linear 模式显示折线段插值(段号、两点一线公式)——同一时间点的两条求值路径并列对照。",
+        "en": "JS-type param: switches the readout lens. bezier mode shows the Newton iteration (iteration count, solved t, output y); linear mode shows polyline segment interpolation (segment index, two-point-line formula) — both evaluation paths side by side at the same timestamp."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "cubic-bezier 全 evergreen(CSS Transitions Level 1 起即是基础特性);linear() 自 2023-12 起全 evergreen(Chrome 113、Safari 17.2、Firefox 112,Baseline 2023-12,linear-easing 条目核验口径)。牛顿求解是浏览器内部的实现细节,JS 复刻仅用于教学与采样编译。",
+      "en": "cubic-bezier is universal in evergreen browsers (a baseline CSS Transitions L1 feature); linear() has been evergreen since 2023-12 (Chrome 113, Safari 17.2, Firefox 112 — Baseline 2023-12, per the linear-easing entry's verification). The Newton solve is an engine internal; the JS re-implementation serves teaching and sampling compilers."
+    }
+  },
+  "fallback": {
+    "zh": "linear() 不支持时回退到最接近的关键字缓动或 cubic-bezier(损耗:自定义折线形状丢失);牛顿迭代不收敛(垂直切线等退化)时回退二分法——参考实现 Newton 8 轮 + 二分兜底,任何合法曲线都收敛。",
+    "en": "Without linear(), fall back to the nearest keyword easing or a cubic-bezier (losing the custom polyline shape); when Newton fails to converge (degenerate vertical tangents), fall back to bisection — the reference implementation runs 8 Newton rounds plus a bisection safety net, converging on any legal curve."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "缓动曲线采样编译:把任意 bezier/弹簧采样成 linear() 关键帧数组(linear-easing 的上游数学)", "en": "Easing sampling compilers: turn any bezier/spring into a linear() keyframe array (the math upstream of linear-easing)" },
+      { "zh": "自研动效引擎的进度求值:给定真实流逝时间,牛顿迭代反解曲线参数", "en": "Progress evaluation in in-house engines: Newton-solve the curve parameter from real elapsed time" },
+      { "zh": "设计工具的曲线编辑器:拖控制点实时重绘 + 求解预览", "en": "Curve editors in design tools: drag control points with live re-plotting and solve preview" },
+      { "zh": "教学与评审:展示『ease-out 到底快在哪』——曲线斜率随时可见", "en": "Teaching and review: show exactly where ease-out is fast — curve slope visible at all times" }
+    ],
+    "avoid": [
+      { "zh": "x 控制点越界 [0,1]——规范直接判非法(CSS 校验拒绝该声明)", "en": "x control points outside [0,1] — the spec rules them invalid outright (CSS rejects the declaration)" },
+      { "zh": "用时间均匀采样参数 t 编译 linear()——应采样 (x(t),y(t)) 二元组,否则时间轴错位", "en": "Compiling linear() by sampling parameter t uniformly in time — sample the (x(t),y(t)) pair, or the time axis skews" },
+      { "zh": "低段数(2–3)硬拟合带过冲的曲线——回弹形状直接丢失;过冲至少 6 段起", "en": "Force-fitting overshooting curves with 2–3 segments — the bounce shape is simply lost; overshoot needs ≥6 segments" },
+      { "zh": "把 y 越界(过冲)曲线用于滚动/拖拽位置映射——位置类插值越界会超出容器或越过目标", "en": "Using y-overshooting curves for scroll/drag position mapping — position interpolation overshoots the container or target" }
+    ]
+  },
+  "a11y": {
+    "zh": "缓动本身是纯映射,但输出端必须遵守 prefers-reduced-motion(整段动画跳过或直落终态,而非仅换缓动);y 越界的过冲曲线在长距离位移上放大前庭刺激——reduced-motion 用户与大规模移动场景优先线性/淡出;缓动选择不改变动画时长语义,读屏用户依赖的是时长与中断性,不是曲线形状。",
+    "en": "Easing is a pure mapping, but the output must honor prefers-reduced-motion (skip the whole animation or land at the end state — not merely swap the curve); y-overshooting curves amplify vestibular stimulus on long-distance moves — prefer linear/fade for reduced-motion users and large traversals; easing choice never changes duration semantics: screen-reader users depend on duration and interruptibility, not curve shape."
+  },
+  "sources": [
+    "https://www.w3.org/TR/css-easing-2/#cubic-bezier-easing-functions",
+    "https://www.w3.org/TR/css-easing-2/#linear-easing-function-output",
+    "https://developer.mozilla.org/en-US/docs/Web/CSS/easing_function/linear"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现零依赖缓动求值器:cubic-bezier 牛顿迭代求解 + linear() 折线求值,输出同一时间点的两条路径读数与曲线图,并给出采样误差。",
+      "en": "Implement a zero-dependency easing evaluator: cubic-bezier Newton solving plus linear() polyline evaluation, with both paths' readouts at the same timestamp, a curve plot, and the sampling error."
+    },
+    "acceptance": [
+      { "zh": "x(t)、y(t) 按参数化三次式求值;x 控制点 ∈[0,1] 校验在前", "en": "x(t), y(t) evaluated via the parametric cubic form; the x∈[0,1] check comes first" },
+      { "zh": "牛顿迭代初值 t=x,8 轮内收敛;失败回退二分法", "en": "Newton starts at t=x and converges within 8 rounds; bisection on failure" },
+      { "zh": "linear() 求值先钳制输入进度到 [0,1],A.x=B.x 时返回 B.y(规范算法)", "en": "linear() clamps input progress to [0,1] first and returns B.y when A.x=B.x (the spec algorithm)" },
+      { "zh": "采样按 (x(tᵢ), y(tᵢ)) 二元组,段数可配,误差可读", "en": "Sampling takes (x(tᵢ), y(tᵢ)) pairs with configurable count and readable error" },
+      { "zh": "复现关键字控制点:ease-out=(0,0,0.58,1) 等四条与规范一致", "en": "Reproduce the keyword control points: ease-out=(0,0,0.58,1) etc., matching the spec" }
+    ]
+  }
+}

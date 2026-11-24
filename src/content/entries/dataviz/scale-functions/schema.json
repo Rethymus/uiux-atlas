@@ -1,0 +1,128 @@
+{
+  "name": "Scale Functions",
+  "nameZh": "标度函数",
+  "aliases": ["d3-scale", "linear scale", "log scale", "normalize interpolate", "domain range"],
+  "category": "dataviz",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "一切映射的母公式:linear 标度 = normalize ∘ interpolate,即 y = r0 + (x−d0)/(d1−d0) × (r1−r0);log 标度在对数域跑同一管线——domain→[0,1]→range,demo 可调 domain/range 实时算。",
+    "en": "The mother formula of all mapping: a linear scale is normalize ∘ interpolate, y = r0 + (x−d0)/(d1−d0) × (r1−r0); the log scale runs the same pipeline in log space — domain→[0,1]→range, with adjustable domain/range computed live."
+  },
+  "origin": {
+    "zh": "公式即 d3-scale 源码(continuous.js 的 normalize 与 interpolate 组合,调研实读源码);log 变换 transformLog(x)=log(x) 后复用同一 transformer(负值/镜像走 −log(−x));同构思想出现在 CSS scroll-driven progress 归一化(p=(y−start)/(end−start))与 Utopia clamp 的 slope/intercept(调研 14§8/§6.2/§1.4)。",
+    "en": "The formula IS d3-scale source (the normalize/interpolate composition in continuous.js, source read during research); the log transform wraps transformLog(x)=log(x) around the same transformer (negatives/mirror via −log(−x)); the same shape appears in CSS scroll-driven progress normalization (p=(y−start)/(end−start)) and Utopia clamp's slope/intercept (research 14 §8/§6.2/§1.4)."
+  },
+  "params": [
+    {
+      "type": "enum",
+      "name": "transform",
+      "options": [
+        { "value": "linear", "label": { "zh": "linear 线性", "en": "linear" } },
+        { "value": "log", "label": { "zh": "log 对数", "en": "log" } }
+      ],
+      "default": "linear",
+      "effect": {
+        "zh": "JS 型参数(demo 订阅后切换映射管线)。linear 用于均匀数据;log 用于跨数量级数据(每个十进位占同等视觉距离)——切换后同一 domain 的曲线曲率立变。",
+        "en": "JS-type param (the demo subscribes and switches pipelines). linear for uniform data; log for data spanning orders of magnitude (each decade takes equal visual distance) — flipping it bends the same domain's curve instantly."
+      }
+    },
+    {
+      "type": "number",
+      "name": "domainMin",
+      "min": 0,
+      "max": 5000,
+      "step": 1,
+      "default": 0,
+      "effect": {
+        "zh": "定义域下端 d0(数据单位)。log 模式下必须 >0:demo 会在 d0≤0 时按 1 处理并给出警告(对数在 0 与负数处无定义)。",
+        "en": "Lower domain end d0 (data units). Must be >0 in log mode: the demo falls back to 1 with a warning when d0≤0 (log is undefined at 0 and negatives)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "domainMax",
+      "unit": "",
+      "min": 10,
+      "max": 100000,
+      "step": 1,
+      "default": 100,
+      "effect": {
+        "zh": "定义域上端 d1。默认与 range 0→640 组成调研核验样本:scaleLinear(0,100,0,640)(50) = 320;log 模式配 domainMin=1、domainMax=1000 得核验样本 scaleLog(...)(10)=213.33。",
+        "en": "Upper domain end d1. Defaults pair with range 0→640 as the verified sample: scaleLinear(0,100,0,640)(50) = 320; in log mode with domainMin=1, domainMax=1000 you get the verified scaleLog(...)(10)=213.33."
+      }
+    },
+    {
+      "type": "number",
+      "name": "rangeMin",
+      "unit": "px",
+      "min": 0,
+      "max": 400,
+      "step": 1,
+      "default": 0,
+      "effect": {
+        "zh": "值域下端 r0(输出单位,px/通道/透明度…)。标度不关心输出量纲——映射到柱高、色带位置或透明度都是同一条公式。",
+        "en": "Lower range end r0 (output units — px, channel, opacity…). The scale is agnostic to output units: bar heights, color-ramp positions and opacities all ride the same formula."
+      }
+    },
+    {
+      "type": "number",
+      "name": "rangeMax",
+      "unit": "px",
+      "min": 100,
+      "max": 800,
+      "step": 1,
+      "default": 640,
+      "effect": {
+        "zh": "值域上端 r1(px)。默认 640 为调研核验样本值;d3 语义:domain 超界不钳制(可外推),要钳制显式调 clamp(true)。",
+        "en": "Upper range end r1 (px). Default 640 is the verified sample value; d3 semantics: out-of-domain input extrapolates unless you call clamp(true)."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 JS 数学,无平台差异;输出到 SVG/Canvas/CSS 时才引入各图形 API 的支持面(全 evergreen)。CSS 侧没有原生标度函数——插值都要么 JS 预算,要么用 CSS clamp()/calc() 承担线性段(log 段 CSS 无对应物)。",
+      "en": "Pure JS math with no platform variance; SVG/Canvas/CSS outputs bring their own evergreen support. CSS has no native scale function — either precompute in JS or let clamp()/calc() carry the linear segment (CSS has no log equivalent)."
+    }
+  },
+  "fallback": {
+    "zh": "log 模式遇到 ≤0 的数据:按领域惯例先移位(整体 +offset)或按 d3 的对称镜像 −log(−x) 分支处理,demo 取「钳到最小正域」的最保守策略并警告;线性标度不存在非法输入(除 d0=d1 除零,demo 拦截)。",
+    "en": "For ≤0 data in log mode: shift the domain by an offset or use d3's symmetric mirror −log(−x) per domain convention — the demo takes the most conservative route (clamping to the smallest legal domain) with a warning; linear scales have no illegal inputs (only the d0=d1 divide-by-zero, which the demo intercepts)."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "图表坐标轴:任何 d3 风格图表的第一行代码就是一个标度", "en": "Chart axes: the first line of any d3-style chart is a scale" },
+      { "zh": "滚动进度归一化:p=(scrollY−start)/(end−start) → 输出位移/透明度(scroll-driven 的 JS 等价)", "en": "Scroll progress normalization: p=(scrollY−start)/(end−start) → offsets/opacity (the JS twin of scroll-driven animations)" },
+      { "zh": "色阶生成:标度把数据映射到 [0,1],再喂给色带插值(dataviz-ordinal-scale 的上游)", "en": "Palette generation: scales map data to [0,1] before color-ramp interpolation (upstream of dataviz-ordinal-scale)" },
+      { "zh": "传感/金融等跨数量级数据:log 标度让 1 与 1000 在图上等距", "en": "Sensor/financial data spanning orders of magnitude: log scales put 1 and 1000 equidistant on the plot" }
+    ],
+    "avoid": [
+      { "zh": "log 模式喂 0 或负数——对数无定义,外推到负空间更无意义;先移位或镜像", "en": "Feeding 0 or negatives to a log scale — undefined at zero, meaningless extrapolated negative; shift or mirror first" },
+      { "zh": "d0=d1(除零)或 r0=r1(常量映射)——demo 拦截前者,后者应直接用常量而不是标度", "en": "d0=d1 (divide by zero) or r0=r1 (constant mapping) — the demo blocks the former; the latter deserves a constant, not a scale" },
+      { "zh": "线性标度画指数增长数据——头部一柱独大、尾部全趴平;数量级跨度 >2 就该切 log", "en": "Linear scales for exponential data — one towering bar, everything else flat; past a 2-orders-of-magnitude spread, switch to log" },
+      { "zh": "忘记 clamp 语义:d3 默认外推,输入越界输出就越界——读数条会提醒当前是否外推", "en": "Forgetting clamp semantics: d3 extrapolates by default, out-of-domain in → out-of-range out — the readout flags whether extrapolation is active" }
+    ]
+  },
+  "a11y": {
+    "zh": "标度决定『数值→视觉』的公平性:线性/对数选错会让同一份数据讲出相反的故事——轴刻度与标度类型必须在图上明示;log 轴要标注刻度是 10ⁿ;色阶映射时保持亮度单调(顺序可感知),否则色盲用户无法排序(dataviz-colorblind-safe 条目);本条公式只管映射,不替代轴标注与可读性检查。",
+    "en": "Scales decide the fairness of 'value → visual': the wrong linear/log choice makes one dataset tell opposite stories — axis ticks and scale type must be declared on the chart; log axes need 10ⁿ tick labeling; color-ramp mapping must keep lightness monotone (perceivable order) or colorblind users cannot rank values (the dataviz-colorblind-safe entry); this entry's formula handles mapping only, never a substitute for axis labeling and readability checks."
+  },
+  "sources": [
+    "https://github.com/d3/d3-scale/blob/main/src/continuous.js",
+    "https://github.com/d3/d3-scale#continuous-scales",
+    "https://github.com/d3/d3-scale/blob/main/src/log.js"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "手写零依赖标度库:scaleLinear 与 scaleLog 各一个工厂函数,支持 domain/range 配置与反向 invert,输出映射读数与曲线。",
+      "en": "Hand-write a zero-dependency scale kit: scaleLinear and scaleLog factories with domain/range configuration and invert, emitting mapping readouts and the curve."
+    },
+    "acceptance": [
+      { "zh": "linear 严格为 normalize ∘ interpolate 两段仿射,与 d3 continuous.js 同构", "en": "linear is strictly the normalize ∘ interpolate two-segment affine, isomorphic to d3's continuous.js" },
+      { "zh": "log 在 log 域跑同一管线:t=(log x − log d0)/(log d1 − log d0)", "en": "log runs the same pipeline in log space: t=(log x − log d0)/(log d1 − log d0)" },
+      { "zh": "核验样本必须复现:scaleLinear(0,100,0,640)(50)=320;scaleLog(1,1000,0,640)(10)≈213.33", "en": "The verified samples must reproduce: scaleLinear(0,100,0,640)(50)=320; scaleLog(1,1000,0,640)(10)≈213.33" },
+      { "zh": "提供 invert(y) 反查与 clamp 选项;log 模式对 d≤0 明确报错或移位策略", "en": "Provide invert(y) and a clamp option; log mode must error or shift policy on d≤0" },
+      { "zh": "domain 倒置(d0>d1)时输出随之倒置,行为与 d3 一致(镜像映射合法)", "en": "Inverted domains (d0>d1) flip the output, matching d3 (mirrored maps are legal)" }
+    ]
+  }
+}

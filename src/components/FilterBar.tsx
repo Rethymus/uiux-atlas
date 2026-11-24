@@ -79,6 +79,13 @@ export default function FilterBar({ entries, locale }: FilterBarProps) {
     return SYSTEMS.filter((s) => present.has(s.id));
   }, [entries]);
 
+  // VD-07:星级组与来源体系组统一零值策略——count=0 的星级不渲染
+  // (此前只过滤体系组,「★ 演示为主 0」仍可点、一点即空态,同一行两套规则)
+  const presentStars = useMemo(
+    () => STAR_ORDER.filter((n) => entries.some((e) => e.star === n)),
+    [entries],
+  );
+
   // 过滤 chip 收录计数(spec §6-15 httpster 工艺:策展密度本身成为信息)
   const systemCounts = useMemo(() => {
     const m = new Map<string, number>();
@@ -101,12 +108,15 @@ export default function FilterBar({ entries, locale }: FilterBarProps) {
   }, []);
 
   // ── 过滤态恢复(挂载后一次):URL query 优先、sessionStorage 回退;
-  //    值按本分类实际可选项校验(死过滤器/非法值回退 all),SSR 标记不受影响
+  //    值按本分类实际可选项校验(死过滤器/非法值回退 all),SSR 标记不受影响。
+  //    VD-07:星级同样校验在场性——持久化的星级若本分类已无对应条目
+  //    (chip 不渲染),回退 all,避免「无选中 chip 的过滤态」
   useEffect(() => {
     const saved = readPersistedFilter();
     const present = new Set<string>(entries.map((e) => e.system));
     const sys = saved.system === "all" || present.has(saved.system) ? saved.system : "all";
-    const st = saved.star;
+    const st =
+      saved.star !== "all" && entries.some((e) => e.star === saved.star) ? saved.star : "all";
     if (sys !== "all") setSystem(sys);
     if (st !== "all") setStar(st);
   }, [entries]);
@@ -233,7 +243,7 @@ export default function FilterBar({ entries, locale }: FilterBarProps) {
               {dict.list.all}
               <span className="fchip-count">{entries.length}</span>
             </button>
-            {STAR_ORDER.map((n) => (
+            {presentStars.map((n) => (
               <button
                 key={n}
                 type="button"

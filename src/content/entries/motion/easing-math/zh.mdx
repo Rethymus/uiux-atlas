@@ -1,0 +1,106 @@
+## 结构与 DOM
+
+demo 是一张**进度-时间曲线图**:横轴时间进度、纵轴输出进度,细线是参数化 bezier 的精确曲线,虚线是 `linear()` 采样折线;一枚时间滑杆驱动当前时刻的求解读数,读数条并列两条求值路径:
+
+```html
+<div class="em-plot">
+  <svg><!-- bezier 精确曲线 + linear() 折线 + 当前点 --></svg>
+  <input type="range" min="0" max="1" step="0.01" value="0.5" /><!-- 时间进度 -->
+</div>
+<div class="em-read">
+  <span>牛顿:t = 0.690,4 轮收敛</span>
+  <span>linear():第 4 段,a.y+(p−a.x)/(b.x−a.x)×(b.y−a.y) = 0.712</span>
+  <span>采样偏差 max|Δ| = 0.008(6 段)</span>
+</div>
+```
+
+关键点:
+
+- 两条曲线同一来源:精确曲线由 x(t),y(t) 直接画;折线由 n 段采样点连成——偏差就是「linear() 编译的代价」;
+- 当前时刻读数分两栏:**bezier 模式**牛顿迭代(t、轮数、y);**linear 模式**段内插值(段号、公式)——同一点两条路径可对账;
+- 时间滑杆 + 「回放」小点;`prefers-reduced-motion` 时回放禁用,滑杆照常。
+
+## 样式与参数
+
+三个参数(curve/segments/mode),数学零依赖。公式逐步(调研 14§6.1,算法逐字核对自 CSS Easing 2 规范):
+
+**① 参数化三次曲线(x、y 各一条,共享参数 t):**
+
+```js
+// P0=(0,0)、P3=(1,1) 固定;x1,x2 ∈[0,1](规范约束),y 可越界
+const bez = (t, c1, c2) => {
+  const u = 1 - t;
+  return 3 * u * u * t * c1 + 3 * u * t * t * c2 + t * t * t;
+};
+// x(t)、y(t) 即 bez(t, x1, x2) 与 bez(t, y1, y2)
+```
+
+**② 牛顿迭代:给定时间进度 p,反解参数 t(浏览器引擎同款思路):**
+
+```js
+const bezD = (t, c1, c2) => 3 * (1 - t) ** 2 * c1 + 6 * (1 - t) * t * (c2 - c1) + 3 * t * t * (1 - c2);
+function solveT(p, x1, x2) {           // p = 时间进度
+  let t = p;                            // 初值 t = x
+  for (let i = 0; i < 8; i++) {         // 牛顿 8 轮(浏览器量级)
+    const err = bez(t, x1, x2) - p;
+    if (Math.abs(err) < 1e-6) return { t, iters: i };
+    const d = bezD(t, x1, x2);
+    if (Math.abs(d) < 1e-6) break;      // 垂直切线 → 二分兜底
+    t = Math.min(1, Math.max(0, t - err / d));
+  }
+  let lo = 0, hi = 1;                   // 二分兜底
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    (bez(mid, x1, x2) < p ? (lo = mid) : (hi = mid));
+  }
+  return { t: (lo + hi) / 2, iters: 8 };
+}
+const progress = (p, x1, y1, x2, y2) => bez(solveT(p, x1, x2).t, y1, y2);
+```
+
+**③ linear() 采样与求值(规范 §2.1.4:先钳制,再两点一线):**
+
+```js
+const sampleLinear = (n, x1, y1, x2, y2) =>
+  Array.from({ length: n + 1 }, (_, i) => {
+    const t = i / n;
+    return [bez(t, x1, x2), bez(t, y1, y2)];   // (x(tᵢ), y(tᵢ)) 二元组——采样的是坐标对,不是 t 本身
+  });
+const evalLinear = (pts, p) => {
+  p = Math.min(1, Math.max(0, p));              // 规范要求先钳制
+  let i = 0;
+  while (i < pts.length - 2 && pts[i + 1][0] <= p) i++;
+  const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
+  return bx === ax ? by : ay + ((p - ax) / (bx - ax)) * (by - ay);
+};
+```
+
+数值出处:默认 (0,0,0.58,1) = CSS `ease-out` 关键字的规范固定控制点;关键字四条 ease(0.25,0.1,0.25,1)/ease-in(0.42,0,1,1)/ease-out(0,0,0.58,1)/ease-in-out(0.42,0,0.58,1) 同出自 CSS Easing 2;`linear(0.1, 0.3 50%, 1)` 的「未定位点均摊」规则亦为规范条文(调研 14§6.1)。
+
+## 动效与交互
+
+- **拖时间滑杆**:当前点沿曲线滑动,两条求值路径的读数同步——牛顿的 t 与 linear() 的段插值在同一时刻几乎重合(偏差读数给出差距);
+- **切 mode**:bezier 模式读「几轮收敛」(典型 2–5 轮),linear 模式读「落在第几段」——同一曲线的两种求值观感;
+- **调 segments**:从 12 降到 2,折线逐渐偏离精确曲线,偏差读数上蹿——「采样是精度换体积」的直观交易;曲线带过冲(如 ease-in-back 风格)时低段数直接削平回弹;
+- **回放**:小点按 1s 时长跑一遍;`prefers-reduced-motion` 时禁用回放按钮,滑杆与读数不受影响。
+
+## 真实产品案例
+
+- **浏览器引擎的 cubic-bezier 求值**:CSS Easing 2 把「由输入进度反解 t」写成 normative 算法,WebKit/Blink 的 UnitBezier 实现正是牛顿(或近似)迭代——所有 CSS transition/animation 的缓动都过这一遍求解;
+- **CSS 关键字缓动**:ease/ease-in/ease-out/ease-in-out 是规范里写死的四组控制点——「ease-out=(0,0,0.58,1)」是数值,不是感觉;本站 cubic-bezier 条目的参数面板就是它们的可调版;
+- **linear() 编译管线(linear-easing 条目)**:把弹簧物理按固定步长采样成 `linear(...)` 关键帧数组,浏览器端零运行时插值——「曲线是数据不是函数库」的生产化,Baseline 2023-12。
+
+## 公式的量纲与边界
+
+| 变量 | 量纲 | 取值边界 | 退化情形 |
+| --- | --- | --- | --- |
+| `x1, x2` | 无单位(时间轴份额) | 必须 ∈[0,1](规范硬约束,CSS 拒绝越界声明) | x1=0/x2=1 产生端点垂直切线,牛顿导数为 0 → 二分兜底 |
+| `y1, y2` | 无单位(输出轴份额) | 可越界 [0,1](负=预备、>1=过冲) | y 越界曲线不能用于位置映射(会越过目标);opacity/color 可用(过冲即闪烁) |
+| `t`(参数) | 无单位 | [0,1];是曲线参数不是时间 | t 与时间进度只在 (0,0)↔(1,1) 直线时相等——「参数 ≠ 时间」是本条核心 |
+| `p`(时间进度) | 无单位 | [0,1],linear() 求值先钳制(规范) | bezier 端点外规范按平切处理(p&lt;0 → 0 段切线,实现常直接钳制) |
+| 牛顿轮数 | 无单位整数 | ≤8(参考实现);典型 2–5 | 初值 t=x 对常见曲线收敛;垂直切线触发二分(24 轮封顶) |
+| 采样段数 n | 无单位整数 | 2–12(demo);量产 60–120(linear-easing) | n=1 退化为单段直线;过冲曲线 n&lt;6 削平回弹形状 |
+| `linear()` 未定位点 | 无单位 | 未标 input 的点在前后锚点间线性均摊 | `linear(0.1, 0.3 50%, 1)`:0.3 定位在 50%,其余按等分(规范 §2.1.2) |
+| 采样偏差 | 无单位 | 随 n 指数下降;读数条实时给出 | 偏差非均匀:曲率大处(端点、过冲峰)偏差集中——段数按最坏处预算 |
+
+经验口径:参数 ≠ 时间,求值必经反解;编译 linear() 采样 (x,y) 对、钳制在求值端;过冲曲线只给 transform/opacity 用。姊妹条目:**cubic-bezier**(曲线的 CSS 形态与手调)、**linear-easing**(采样编译的完整管线)、**handoff-curves**(进出曲线对的设计层)、**spring-integrator**(弹簧的另一半数学:数值积分)。

@@ -1,0 +1,76 @@
+{
+  "name": "OKLCH Conversion",
+  "nameZh": "OKLCH 转换公式",
+  "aliases": ["OKLab", "sRGB to OKLCH", "color space matrix", "Bottosson OKLab"],
+  "category": "color",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "sRGB→线性→LMS→OKLab→OKLCH 的完整矩阵推导:γ 解码、3×3 矩阵、逐通道立方根、柱坐标——零依赖 JS 实现,往返误差 10⁻⁷ 量级。",
+    "en": "The full sRGB→linear→LMS→OKLab→OKLCH matrix chain: gamma decode, two 3×3 matrices, per-channel cube roots, cylindrical coordinates — zero-dependency JS with round-trip error at the 10⁻⁷ scale."
+  },
+  "origin": {
+    "zh": "OKLab 由 Björn Ottosson 2020 年发布(《A perceptual color space for image processing》,含 C++ 参考实现,矩阵常数逐位核对自作者原文);CSS Color 4 规范收录同构链(XYZ(D65)→LMS→OKLab,64 位重算矩阵)并把 oklch() 列为标准函数(调研 14§2,16 个矩阵常数已从规范 HTML 全量比对)。",
+    "en": "OKLab was published by Björn Ottosson in 2020 ('A perceptual color space for image processing', with a C++ reference implementation — matrix constants checked bit-for-bit against the author's original); CSS Color 4 adopted the isomorphic chain (XYZ(D65)→LMS→OKLab, recomputed in 64-bit) and standardized oklch() (research 14 §2, all 16 matrix constants compared against the spec HTML)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "source",
+      "format": "hex",
+      "default": "#ff0000",
+      "presets": ["#ff0000", "#ffffff", "#767676", "#2563eb", "#16a34a"],
+      "cssVar": "--ok-source",
+      "effect": {
+        "zh": "转换链输入色(sRGB 8bit hex)。默认 #ff0000 即调研核验参考值:→OKLab (0.628, 0.2249, 0.1258)、→OKLCH (0.628, 0.2577, 29.234°),与 Bottosson 论文发布值及 color.js 测试值一致;#ffffff 应得 OKLab (1, 0, 0);#767676 是对白 4.5422:1 的 AA 临界灰。demo 展示每一步中间值。",
+        "en": "The chain input color (8-bit sRGB hex). Default #ff0000 is the verified reference: →OKLab (0.628, 0.2249, 0.1258), →OKLCH (0.628, 0.2577, 29.234°), matching Bottosson's published values and color.js test vectors; #ffffff must give OKLab (1, 0, 0); #767676 is the AA-critical gray at 4.5422:1 against white. The demo shows every intermediate."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS 侧 oklch()/oklab() 函数:Can I use 记载 Chrome 111+(2023-03)、Safari 15.4+(2022-03)、Firefox 113+(2023-05)——社区口径,本调研核验的是数学链而非浏览器版本;JS 侧为零依赖实现,任何能跑 Math.cbrt 的环境(IE 除外)都可用。",
+      "en": "For the CSS oklch()/oklab() functions: Can I use lists Chrome 111+ (2023-03), Safari 15.4+ (2022-03), Firefox 113+ (2023-05) — community data; this research verified the math chain, not browser versions. The JS side is zero-dependency and runs anywhere Math.cbrt exists (except IE)."
+    }
+  },
+  "fallback": {
+    "zh": "CSS:@supports not (color: oklch(0.7 0.1 20)) 内用转换链预计算的 sRGB 值兜底(构建期跑一次本条公式即可);JS:往返误差 6.7e-7,直接信任输出,超界(负值/过亮)按 gamut mapping 裁剪后再量化到 8bit。",
+    "en": "CSS: inside @supports not (color: oklch(0.7 0.1 20)), fall back to sRGB values precomputed by running this chain once at build time; JS: with round-trip error at 6.7e-7 you can trust the output directly — clip out-of-gamut results (negatives, overs) before quantizing to 8-bit."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计系统构建期:把 OKLCH 设计值编译成 sRGB 回退与Wide-gamut双份 token", "en": "Design-system build time: compile OKLCH design values into paired sRGB fallback + wide-gamut tokens" },
+      { "zh": "色阶生成:在 OKLCH 域插值(短弧 H)再回 sRGB 交付,中途不发灰", "en": "Palette generation: interpolate in OKLCH (short-arc H) then hand back sRGB — no mid-curve gray-out" },
+      { "zh": "对比度工具:任何空间先进线性域再算 WCAG 亮度(本条 γ 解码与 WCAG 同口径)", "en": "Contrast tooling: enter linear space first, then compute WCAG luminance (same gamma decode as WCAG)" },
+      { "zh": "教学/评审:展示一条颜色的 L、C、H 从哪里来,数值可逐位审计", "en": "Teaching and review: show where a color's L, C, H come from, auditable digit by digit" }
+    ],
+    "avoid": [
+      { "zh": "把 OKLCH 中间值当最终交付色——超 sRGB 色域(LMS 非物理值)必须先裁剪", "en": "Shipping raw OKLCH intermediates as final colors — out-of-sRGB-gamut LMS must be clipped first" },
+      { "zh": "在 sRGB gamma 域直接插值再声称『感知均匀』——灰阶中途塌陷正是这条链要解决的问题", "en": "Interpolating in gamma-encoded sRGB and calling it perceptually uniform — the mid-curve collapse is exactly what this chain fixes" },
+      { "zh": "手抄矩阵常数:16 个常数抄错一位全链错位,务必从实现里复制", "en": "Hand-copying matrix constants: one wrong digit in 16 constants derails the whole chain — copy from the implementation" },
+      { "zh": "对 α 通道做矩阵运算——α 是直线插值,不参与 LMS", "en": "Running the alpha channel through the matrices — α interpolates linearly and never enters LMS" }
+    ]
+  },
+  "a11y": {
+    "zh": "转换本身无损视觉信息,但交付前必须把 OKLCH 值核对到对比度公式(L 线性化口径与 WCAG 相对亮度同源);转换链不改变色觉缺陷下的辨识度——是选色策略(固定 L 只调 C/H)在改善它,见姊妹条目 oklch-workflow。",
+    "en": "The conversion itself preserves visual information, but before shipping, OKLCH values must pass the contrast formula (the linearized L shares its gamma decode with WCAG relative luminance); the chain does not change color-vision-deficiency discernment — the fix is the selection strategy (fix L, vary C/H), see the sibling entry oklch-workflow."
+  },
+  "sources": [
+    "https://bottosson.github.io/posts/oklab/",
+    "https://www.w3.org/TR/css-color-4/#color-conversion",
+    "https://www.w3.org/TR/css-color-4/#numeric-srgb"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现一条零依赖的 sRGB↔OKLCH 转换函数:γ 解码 → LMS 矩阵 → 立方根 → OKLab 矩阵 → 柱坐标,并给出反向链与往返误差验证。",
+      "en": "Implement a zero-dependency sRGB↔OKLCH converter: gamma decode → LMS matrix → cube roots → OKLab matrix → cylindrical coordinates, plus the reverse chain and a round-trip error check."
+    },
+    "acceptance": [
+      { "zh": "16 个矩阵常数与 Bottosson 原文逐位一致,不得手抄 approx 值", "en": "All 16 matrix constants match Bottosson's original bit-for-bit — no approximated hand copies" },
+      { "zh": "γ 解码阈值 0.04045(WCAG 同款;旧值 0.03928 已由官方注 2 背书更新)", "en": "Gamma decode threshold 0.04045 (same as WCAG; the old 0.03928 was superseded per the official note 2)" },
+      { "zh": "白 (#fff) 必须精确得 OKLab (1, 0, 0);纯红得 OKLCH (0.628, 0.2577, 29.234°)", "en": "White (#fff) must yield exactly OKLab (1, 0, 0); pure red yields OKLCH (0.628, 0.2577, 29.234°)" },
+      { "zh": "往返误差 < 1e-6:实现里内置 max|Δchannel| 自检", "en": "Round-trip error below 1e-6: build a max|Δchannel| self-check into the implementation" },
+      { "zh": "H 用 atan2(b,a)×180/π,负角 +360;C≤4e-6 时 H 置 NaN(无色相)", "en": "H via atan2(b,a)×180/π with negative angles +360; NaN H when C≤4e-6 (no hue)" }
+    ]
+  }
+}

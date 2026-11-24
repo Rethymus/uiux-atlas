@@ -1,0 +1,75 @@
+## Structure & DOM
+
+The demo is a **body block with a rhythm ruler**: the text renders at the real fs/lh, and translucent rules are drawn line by line at the snapped leading — "line boxes stacking row by row" made visible, with raw and snapped readings side by side:
+
+```html
+<div class="rh-block" style="font-size:16px; line-height:24px">
+  <span class="rh-line" style="top:24px"></span><!-- one rhythm rule every 24px -->
+  <p>Density from size × multiplier; order from snapping to the half-step.</p>
+</div>
+<code>raw: 16 × 1.5 = 24px → snap(4) = 24px (Δ0, lands natively)</code>
+```
+
+Key points:
+
+- The leading is an exact px value (snapped from fs×m) and the rhythm rules repeat at that same px interval — rules and line boxes must coincide, any offset means the formula is wrong;
+- Three readings: raw `fs×m`, snapped `round(fs×m/unit)×unit`, plus the delta Δ and the post-snap effective multiplier;
+- The CLREQ floor check gets its own row: body ≥1.5×, ruby ≥1.5× (verbatim spec doctrine).
+
+## Styling & Parameters
+
+Three parameters (fontSize/multiplier/unit), all JS-type, run live by the demo (research 14 §7; verified by running: 16×1.5=24 ✓; 15×1.5=22.5 → snap(4)=24 ✓):
+
+**① Density → rhythm, in two steps:**
+
+```
+lineHeight(px) = fontSize × multiplier        multiplier sets relative density
+lh = round(fs × m / unit) × unit              density first, then snap the rhythm (lh ≡ 0 (mod unit))
+```
+
+**② Zero-dependency JS:**
+
+```js
+const snap = (v, u = 4) => Math.round(v / u) * u;
+const baselineLH = (fs, m, u = 4) => snap(fs * m, u);
+const cjkLH = (fs) => Math.max(1.5 * fs, fs + 8);   // CLREQ print constraint as the web floor
+baselineLH(16, 1.5);  // 24 — verified ✓
+baselineLH(15, 1.5);  // 24 (22.5 snapped, airier wins) — verified ✓
+```
+
+**③ CSS realization:**
+
+```css
+.prose { font-size: 16px; line-height: 1.5; }        /* unitless: 16→24, 20→30 */
+.prose  p + p { margin-top: 24px; }                  /* paragraph gap = one rhythm unit */
+.prose  h2 { font-size: 25px; line-height: 32px; }   /* big type, smaller ratio (1.28), px snapped to 4px */
+```
+
+Where the numbers come from: the 16px anchor and 4px half-step translate Material's official "8dp base + 4dp half-step, type on the 4dp baseline grid" to the web; the mixed-script floor = CLREQ §5.6.1 'single-side binding line spacing shall not be less than half the font size' (total leading ≥1.5×) and §5.5.3.2 ruby ≥1.5× the base size; Apple's iOS Body 17/22, Footnote 13/18 are the official measured table (research 13 §1.3); the web mixed-script 1.5–1.75 band is community convention (unverified as a spec value).
+
+## Motion & Interaction
+
+- **Adjust the multiplier**: m from 1.5 to 1.25 at 16px gives a raw 20px leading — already on the 4px grid, Δ0; at 1.4 you get 22.4 → snapped 24, Δ+1.6, "airier wins"; the snapping trade-off is transparent in the Δ reading;
+- **Change the size**: 17 (Apple Body) × 1.294 = 22 — but 22 is not a multiple of 4, so it snaps to 24 (Δ+2): the official 22px leading itself ignores the 4px grid, a real divergence between platform measured tables and engineering grids, shown as-is;
+- **Switch the snap unit**: unit 4 → 8 pushes small sizes (11–13px) onto much coarser steps — the reason the half-step exists, at a glance;
+- Rhythm rules redraw instantly with the parameters; no autonomous animation, entrance fade respects `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **Apple's iOS text style table**: Body 17pt/22pt (ratio ≈1.294), Footnote 13/18 (≈1.385), Caption 1 12/16 (≈1.333) — the official measured table shows big type taking smaller ratios, small type larger, a converging ladder (research 13 §1.3, Typography.md Specifications);
+- **Ant Design's leading formula**: in `genFontSizes.ts` source, `lineHeight = (fontSize + 8) / fontSize` — base 14 → leading 22, i.e. "add 8px absolutely" rather than "multiply a fixed ratio", paired with the log-derived type ramp (research 13 §3.4, source verified line by line);
+- **CLREQ's hard CJK constraints**: W3C's Requirements for Chinese Text Layout sets single-side binding line spacing ≥ half the font size (total leading ≥1.5×), ruby contexts ≥1.5× the base size, and horizontal measure ≤48 characters — the legal-grade basis for Chinese product leading tokens (research 14 §7.3, quoted verbatim from the spec).
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| `fs` (font size) | px | practically 11–34 (web body 14–18); inherits and scales | fs→0 is meaningless; px fs recomputes snapped leadings per size, rem fs scales with the root |
+| `m` (multiplier) | unitless | body 1.5–1.75 (convention band, unverified as spec), headings 1.2–1.4; hard floor 1.5 (CJK body) | m=1 glues line boxes to glyphs (cramped); m≤1.2 measurably hurts dyslexic readers; m→2 scatters paragraphs |
+| `unit` (snap unit) | px | 4 or 8; unit < lh or snapping is meaningless | unit=0 skips snapping; unit ≥ lh makes the step bigger than the line box and explodes small type |
+| `lh` (leading) | px (or unitless multiplier) | after snapping ≡0 (mod unit) | 22.5 → 24 is "airier wins"; snapping to 20 loses the breath — pin the direction |
+| Δ (snap delta) | px | |Δ| < unit/2 (a rounding property) | Δ+ adds air, Δ− tightens; Δ always shown, trade-offs transparent |
+| CJK floor | multiplier/px | line spacing (half-leading ×2) ≥ fs/2, i.e. lh ≥ 1.5×fs; ruby ≥1.5× base | CLREQ is a print-context hard constraint; adopting it as the web floor is engineering convention (stated as such, not spec text) |
+| Paragraph/heading gaps | px (integer rhythm units) | share the grid with lh to align | off-grid paragraph gaps misalign adjacent line rules — the rhythm breaks |
+
+Working doctrine: 16×1.5=24px is the greatest common denominator; big type smaller ratios, body larger, all px on the 4px grid; pass 1.5× before tuning density for mixed scripts; write multipliers unitless so they inherit across sizes. Sibling entries: **vertical-rhythm** (the full rhythm system), **baseline-grid** (the 4px half-step itself), **modular-scale-math** (where the sizes come from), **cjk-typography** (the rest of CLREQ in practice).

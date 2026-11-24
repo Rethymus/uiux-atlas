@@ -60,7 +60,9 @@ const res = dict.resources;
                   </span>
                   {/* 新窗口提示(a11y-blank-hint-002):sr-only 文本并入链接名 */}
                   <span class="sr-only">(在新窗口打开)</span>
-                  <span class="res-url">{r.url}</span>
+                  {/* VD-08:单行 ellipsis 截断的 URL 补 title 悬停全值兜底,
+                      截断串不再是无出处碎片 */}
+                  <span class="res-url" title={r.url}>{r.url}</span>
                   <span class="res-desc">{r.desc.zh}</span>
                   {r.tags && r.tags.length > 0 && (
                     <span class="entry-meta">

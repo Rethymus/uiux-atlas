@@ -1,0 +1,116 @@
+{
+  "name": "Grid Math",
+  "nameZh": "网格数学",
+  "aliases": ["column width formula", "gutter math", "minmax count", "subgrid sizing"],
+  "category": "layout",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "栅格的代数:列宽 = (100% − (n−1)×gap)/n、auto-fit 列数 = ⌊(C+gap)/(minCol+gap)⌋、subgrid 让子组件直接继承父轨道尺寸——demo 可调列数与 gap,等比模型实时算宽。",
+    "en": "Grid algebra: column width = (100% − (n−1)×gap)/n, auto-fit count = ⌊(C+gap)/(minCol+gap)⌋, and subgrid hands the parent's track sizes straight to children — adjust columns and gap, the true-scale model recomputes widths live."
+  },
+  "origin": {
+    "zh": "列宽公式是 CSS Grid track sizing 的代数化(等分 + 槽扣除);生产口径取自调研:Ant Design 24 等分、gutter 推荐 (16+8n) px、响应式 {xs:8, sm:16, md:24, lg:32};TDesign 12 栅格、gutter 默认 16px 固定、安全边距 24px(两家官网文档直取,调研 13§2.1/§3.2)。minmax 数学即 auto-fit/minmax 的计数推导(auto-fit-minmax 条目同源)。",
+    "en": "The column formula is the algebra of CSS Grid track sizing (equal split minus gutters); the production figures come from the research: Ant Design's 24 columns, gutter recommended at (16+8n) px, responsive {xs:8, sm:16, md:24, lg:32}; TDesign's 12 columns with a fixed 16px gutter and 24px margins (both vendors' docs, research 13 §2.1/§3.2). The minmax math is the counting derivation behind auto-fit/minmax (same source as the auto-fit-minmax entry)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "container",
+      "unit": "px",
+      "min": 320,
+      "max": 1920,
+      "step": 1,
+      "default": 1440,
+      "effect": {
+        "zh": "容器宽 C(px)。默认 1440 = TDesign/Ant 共同的设计画板宽度;demo 按此宽画等比模型,列宽读数是真实 px 值。",
+        "en": "Container width C (px). Default 1440 = the shared design-canvas width at TDesign and Ant; the demo draws a true-scale model at this width and column readings are real px values."
+      }
+    },
+    {
+      "type": "number",
+      "name": "columns",
+      "min": 1,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "effect": {
+        "zh": "列数 n。默认 12(TDesign 设计侧口径);Ant 用 24 等分(12 的倍数,兼容 6/8/12 跨列组合)。demo 里 24 列在 1440 宽下每列仅 38px——演示为什么 24 等分是『用来跨列组合』而不是『每列单独用』。",
+        "en": "Column count n. Default 12 (TDesign's design-side doctrine); Ant divides by 24 (a multiple of 12, compatible with 6/8/12 spans). At 24 columns on 1440px each column is a mere 38px in the demo — showing why 24 divisions exist 'to be spanned', never used one-by-one."
+      }
+    },
+    {
+      "type": "dimension",
+      "name": "gap",
+      "unit": "px",
+      "min": 0,
+      "max": 48,
+      "step": 1,
+      "default": 16,
+      "cssVar": "--grid-gap",
+      "effect": {
+        "zh": "槽宽 gap(px)。默认 16 = TDesign 官方固定槽值;Ant 推荐 (16+8n),即 16/24/32 阶。CSS 侧经 --grid-gap 注入 column-gap。",
+        "en": "Gutter gap (px). Default 16 = TDesign's official fixed gutter; Ant recommends (16+8n), i.e. the 16/24/32 ladder. CSS-side it lands in column-gap via --grid-gap."
+      }
+    },
+    {
+      "type": "number",
+      "name": "minCol",
+      "unit": "px",
+      "min": 80,
+      "max": 320,
+      "step": 1,
+      "default": 250,
+      "effect": {
+        "zh": "minmax 最小列宽(px)。默认 250 与 auto-fit-minmax 条目的经典配方一致;demo 用它推 auto-fit 列数 ⌊(C+gap)/(minCol+gap)⌋ 与实际列宽。",
+        "en": "minmax minimum track size (px). Default 250 matches the classic auto-fit-minmax recipe; the demo derives the auto-fit count ⌊(C+gap)/(minCol+gap)⌋ and the realized column width from it."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "CSS Grid 布局全 evergreen;subgrid 于 2023 年全 evergreen(Chrome 117、Firefox 71、Safari 16,社区口径,本调研未逐版本核验)。公式本身是纯代数,任何环境可算。",
+      "en": "CSS Grid layout is universal in evergreen browsers; subgrid went fully evergreen in 2023 (Chrome 117, Firefox 71, Safari 16 — community data, not version-audited in this research). The formulas are pure algebra, computable anywhere."
+    }
+  },
+  "fallback": {
+    "zh": "subgrid 不支持时回退为子网格显式声明同样的轨道模板(把父模板复制进子组件,CSS 变量或构建期注入);不支持 Grid 的极旧浏览器回退 flex + 百分比列宽——列宽公式本身 (100%−(n−1)×gap)/n 就是 Flex 时代的遗产,天然兼容。",
+    "en": "Without subgrid, fall back to the child declaring the same track template explicitly (copy the parent template in via CSS variables or at build time); on browsers without Grid at all, fall back to flex + percentage widths — the column formula (100%−(n−1)×gap)/n is itself a flex-era survivor, natively compatible."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计系统栅格定义:给定画板与槽宽,推导每列真实 px 并核对最小可读列宽", "en": "Defining a design-system grid: given canvas and gutter, derive real per-column px and sanity-check the minimum readable column" },
+      { "zh": "卡片网格:auto-fit + minmax 的列数预估——改容器宽先知道会掉到几列", "en": "Card grids: predicting the auto-fit + minmax column count — know how many columns survive before resizing" },
+      { "zh": "跨卡对齐审计:subgrid 让 N 张卡的标题/页脚落进同一组行轨道", "en": "Cross-card alignment audits: subgrid lands N cards' titles/footers on the same set of row tracks" },
+      { "zh": "响应式槽宽阶梯:断点上把 gap 从 8 抬到 16/24/32,空隙本身就是断点信号", "en": "Responsive gutter ladders: raising gap 8→16/24/32 at breakpoints makes the whitespace itself the breakpoint signal" }
+    ],
+    "avoid": [
+      { "zh": "(n−1)×gap 逼近容器宽——列宽被挤成 0 甚至负数,布局塌陷;demo 会在这种组合上报警", "en": "(n−1)×gap approaching the container width — columns squeeze to zero or negative and the layout collapses; the demo flags that combination" },
+      { "zh": "每列单独用 24 等分栅格——单列 38px 什么都放不下,24 等分只用来跨列", "en": "Using 24-division columns one-by-one — a 38px single column holds nothing; 24 divisions exist to be spanned" },
+      { "zh": "gap 用百分比——槽随容器缩放会让窄屏可读性塌方;主流组件库都把 gap 定值(Ant:『Gutter 宽度固定不变』)", "en": "Percentage gutters — shrinking gaps wreck narrow-screen readability; major libraries keep gutters fixed (Ant: 'gutter width never changes')" },
+      { "zh": "subgrid 套 subgrid 无限嵌套——每层都是同一组轨道的引用,超过两层基本是结构错误", "en": "subgrid inside subgrid without end — every level references the same tracks; past two levels it is almost always a structural bug" }
+    ]
+  },
+  "a11y": {
+    "zh": "列宽公式保证的是视觉对齐,不改变 DOM 顺序——Grid 的视觉重排与 DOM/Tab 顺序分离(WCAG 1.3.2),重排内容时确保源顺序即阅读顺序;槽宽压缩不应挤掉文本容器宽:正文列建议 ≥25ch;触控目标不因列变窄而小于 44×44(Ant/TDesign 行高垫热区的做法)。",
+    "en": "The formula guarantees visual alignment and never touches DOM order — Grid's visual reordering separates from DOM/tab order (WCAG 1.3.2), so keep source order as reading order when re-laying-out; do not let squeezed gaps steal text width: body columns should stay ≥25ch; touch targets must not shrink below 44×44 as columns narrow (the Ant/TDesign padding-hot-zone trick)."
+  },
+  "sources": [
+    "https://tdesign.tencent.com/design/layout",
+    "https://ant.design/components/grid-cn",
+    "https://ant.design/docs/spec/layout-cn"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "用列宽公式与 auto-fit 计数实现一个响应式卡片网格:给定容器宽、列数与槽宽,输出真实列宽的 CSS(Grid 或 Flex 双写),并用 subgrid 保证卡片内部与父网格对齐。",
+      "en": "Build a responsive card grid on the column-width formula and auto-fit counting: given container width, column count and gutter, emit real column widths in CSS (Grid and Flex forms), with subgrid keeping card internals on the parent tracks."
+    },
+    "acceptance": [
+      { "zh": "列宽严格按 (100% − (n−1)×gap)/n 推导,给出 px 数值验算", "en": "Column widths derive strictly from (100% − (n−1)×gap)/n, with a px-level worked check" },
+      { "zh": "gap 定值(px)不随容器缩放;换断点时整档切换(如 8/16/24/32)", "en": "Gutters are fixed px, never container-scaled; switch in steps at breakpoints (e.g. 8/16/24/32)" },
+      { "zh": "auto-fit 列数用 ⌊(C+gap)/(minCol+gap)⌋ 预估并与实际渲染列数一致", "en": "The auto-fit count estimate ⌊(C+gap)/(minCol+gap)⌋ matches the actually rendered column count" },
+      { "zh": "卡片内部行轨道用 subgrid 继承父网格;不支持时回退显式同模板", "en": "Card internals inherit the parent tracks via subgrid; explicit same-template fallback where unsupported" },
+      { "zh": "跨列 span 组合(如 24 栅格里 span 6/8/12)相加不超过列总数,超出换行", "en": "Span combinations (e.g. 6/8/12 on a 24 grid) never exceed the total; overflow wraps" }
+    ]
+  }
+}

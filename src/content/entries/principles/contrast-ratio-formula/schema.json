@@ -1,0 +1,88 @@
+{
+  "name": "Contrast Ratio Formula",
+  "nameZh": "对比度比值公式",
+  "aliases": ["WCAG relative luminance", "relative luminance", "4.5:1", "contrast ratio"],
+  "category": "principles",
+  "system": "web-std",
+  "star": 3,
+  "tagline": {
+    "zh": "WCAG 2.1 对比度的完整推导:8bit→[0,1]→γ 解码→0.2126R+0.7152G+0.0722B 相对亮度→(L1+0.05)/(L2+0.05)——demo 输入两色实时算比值并按 AA/AAA 阈值判定。",
+    "en": "The full WCAG 2.1 derivation: 8-bit→[0,1]→γ decode→0.2126R+0.7152G+0.0722B relative luminance→(L1+0.05)/(L2+0.05) — feed two colors, get the ratio live, judged against the AA/AAA gates."
+  },
+  "origin": {
+    "zh": "公式逐字取自 WCAG 2.1 规范原文(relative luminance 与 contrast ratio 两处定义,调研抓取全文核对);亮度系数 0.2126/0.7152/0.0722 与 ITU-R BT.709 原色同源;0.05 为场景闪烁余量;γ 解码阈值 2021-05 前为 0.03928(旧规范),官方注 2 背书更新为 0.04045,实际计算无差别(调研 14§2.3)。",
+    "en": "The formulas are quoted verbatim from the WCAG 2.1 spec (the relative-luminance and contrast-ratio definitions, full text fetched and checked); the 0.2126/0.7152/0.0722 coefficients share their origin with ITU-R BT.709 primaries; 0.05 is the flare allowance; the γ threshold was 0.03928 before 2021-05 (older spec), updated to 0.04045 per official note 2 with no practical difference (research 14 §2.3)."
+  },
+  "params": [
+    {
+      "type": "color",
+      "name": "fg",
+      "format": "hex",
+      "default": "#767676",
+      "presets": ["#767676", "#6b6b6b", "#8a8a8a", "#000000", "#1d1d1f"],
+      "cssVar": "--cr-fg",
+      "effect": {
+        "zh": "前景色(文字)。默认 #767676 是经典 AA 临界灰——对白底实跑 4.5422:1,恰好过 4.5:1 线;再浅一档 (#8a8a8a ≈ 3.5:1) 就只有大字能过。",
+        "en": "Foreground (text) color. Default #767676 is the classic AA-critical gray — 4.5422:1 against white when run live, just clearing the 4.5:1 gate; one step lighter (#8a8a8a ≈ 3.5:1) passes only as large text."
+      }
+    },
+    {
+      "type": "color",
+      "name": "bg",
+      "format": "hex",
+      "default": "#ffffff",
+      "presets": ["#ffffff", "#f5f5f5", "#1d1d1f", "#000000", "#0b1220"],
+      "cssVar": "--cr-bg",
+      "effect": {
+        "zh": "背景色。demo 用两色各自算 L 后按 (L1+0.05)/(L2+0.05) 取较大在分子——谁亮谁是 L1,公式对明暗两种极性对称。",
+        "en": "Background color. The demo computes L for both colors and puts the lighter one in the numerator of (L1+0.05)/(L2+0.05) — the formula is polarity-symmetric."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯数学定义,与浏览器无关;CSS 侧 contrast-color()(自动选黑/白前景)仍在提案阶段,社区口径——生产请自行按本公式预计算。WCAG 2.2 已发布但对比度定义未变,2.1 口径仍有效。",
+      "en": "A pure mathematical definition, browser-independent; the CSS contrast-color() function (auto black/white foreground) is still a proposal per community sources — precompute with this formula in production instead. WCAG 2.2 is out but the contrast definition is unchanged, so the 2.1 doctrine stands."
+    }
+  },
+  "fallback": {
+    "zh": "公式无运行时依赖,不存在回退;真正的『回退』是设计侧的:比值不达标时加深/提亮其一并重算,每深 10% 灰阶约抬升 0.4–0.6:1(实测线性域近似)——先算再交付,不要靠肉眼看「够不够深」。",
+    "en": "The formula has no runtime dependency and no fallback path; the real 'fallback' is on the design side: if the ratio misses, darken/lighten one side and recompute — each ~10% step in gray moves the ratio roughly 0.4–0.6:1 (a linear-domain approximation) — compute before shipping, never eyeball 'dark enough'."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计 token 定稿:每个 文字/背景 对在浅深两主题下各算一次比值再入库", "en": "Design-token sign-off: compute each text/background pair under both themes before tokens ship" },
+      { "zh": "灰阶阶梯生成:给一排灰找「最后一个过 4.5:1 的档」,即 AA 临界灰", "en": "Generating gray ramps: find the last step that clears 4.5:1 — the AA-critical gray" },
+      { "zh": "无障碍审计与合规:WCAG 2.x / EN 301 549 的法定口径就是这条公式", "en": "Accessibility audits and compliance: WCAG 2.x / EN 301 549 legally hinge on this exact formula" },
+      { "zh": "组件库文档:给色彩 token 表附上实测比值,评审时不用争论「看着够不够」", "en": "Component-library docs: attach measured ratios to color tokens so reviews stop arguing about appearances" }
+    ],
+    "avoid": [
+      { "zh": "对深底浅字只报比值不验可读——比例制对亮色文字会系统性高估可读性(§适用边界)", "en": "Reporting the ratio alone for light-on-dark — the proportional metric systematically overestimates readability there" },
+      { "zh": "拿 AA 通过当终点——正文 AAA 7:1 才是 Apple/Ant 的企业内标,4.5:1 是法定下限不是目标", "en": "Treating AA as the finish line — AAA 7:1 for body text is Apple's and Ant's internal bar; 4.5:1 is the legal floor, not the goal" },
+      { "zh": "对半透明叠加层只算最终合成色的比值——叠加随背景滚动变化,必须按最亮/最暗两端各自核对", "en": "Computing one ratio for translucent overlays — the composite shifts as backdrop scrolls; check the brightest and darkest extremes separately" },
+      { "zh": "四舍五入达标:4.49:1 写成 4.5:1——比值必须原值过线", "en": "Rounding up to pass: 4.49:1 written as 4.5:1 — the raw value must clear the gate" }
+    ]
+  },
+  "a11y": {
+    "zh": "这条公式本身就是无障碍工具:正文 AA 4.5:1、大字 3:1;AAA 正文 7:1、大字 4.5:1;非文本组件边界 3:1(SC 1.4.11)。大字定义 = ≥18pt(24px)常规或 ≥14pt(≈18.66px)bold,规范注明「CJK 字体取等效字号」。注意公式的已知偏差:对深底亮字的高估需要用 APCA(Lc 制)复核,Lc 75 是正文感知下限。",
+    "en": "This formula IS the accessibility tool: body text AA 4.5:1, large text 3:1; AAA body 7:1, large 4.5:1; non-text component boundaries 3:1 (SC 1.4.11). Large = ≥18pt (24px) regular or ≥14pt (≈18.66px) bold, with the spec noting 'CJK takes equivalent sizes'. Known bias: the proportional metric overestimates light-on-dark readability — re-check with APCA (Lc scale), where Lc 75 is the perceptual body-text floor."
+  },
+  "sources": [
+    "https://www.w3.org/TR/WCAG21/#dfn-relative-luminance",
+    "https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio",
+    "https://www.w3.org/TR/WCAG21/#contrast-minimum"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "实现零依赖的 WCAG 对比度计算器:两色 hex 输入,输出各自相对亮度、比值与 AA/AAA 判定,并说明大字/非文本阈值差异。",
+      "en": "Build a zero-dependency WCAG contrast calculator: two hex inputs, per-color relative luminance, the ratio, and AA/AAA verdicts, explaining the large-text and non-text gates."
+    },
+    "acceptance": [
+      { "zh": "γ 解码用 0.04045 阈值分段,亮度系数 0.2126/0.7152/0.0722,不得用 2.2 简化指数", "en": "γ decode segments at 0.04045, luminance coefficients 0.2126/0.7152/0.0722 — no simplified 2.2 exponent" },
+      { "zh": "比值 = (L1+0.05)/(L2+0.05),较亮者为 L1,不取整后判定", "en": "Ratio = (L1+0.05)/(L2+0.05) with the lighter color as L1, judged on the unrounded value" },
+      { "zh": "#767676 vs #ffffff 必须得 ≈4.54:1(经典 AA 临界灰验证点)", "en": "#767676 vs #ffffff must yield ≈4.54:1 (the classic AA-critical-gray verification point)" },
+      { "zh": "输出四档判定:AA 正文 4.5 / AA 大字 3 / AAA 正文 7 / AAA 大字 4.5", "en": "Output all four gates: AA body 4.5 / AA large 3 / AAA body 7 / AAA large 4.5" },
+      { "zh": "注明大字定义(≥24px 或 ≥18.66px bold)与 CJK 等效字号条款", "en": "State the large-text definition (≥24px or ≥18.66px bold) and the CJK equivalent-size clause" }
+    ]
+  }
+}

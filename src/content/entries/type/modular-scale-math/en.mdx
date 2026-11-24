@@ -1,0 +1,90 @@
+## Structure & DOM
+
+The demo is a **live-generated type ladder**: from `step−1` to `step+steps`, one row per rung — the sample glyphs are rendered at the computed size, with the px reading and the fluid `clamp()` string side by side:
+
+```html
+<div class="ms-row">
+  <span class="ms-label">step 1</span>
+  <span class="ms-sample" style="font-size: 20px">Aa</span>
+  <code class="ms-value">20px</code>
+  <code class="ms-clamp">clamp(1.25rem, 1.179rem + 0.3125vw, 1.5625rem)</code>
+</div>
+```
+
+Key points:
+
+- The ladder is a **geometric series**: `size(n) = base × ratioⁿ` with negative n allowed (descending rungs) — one formula, every token;
+- Each rung's `clamp()` string derives from the same minSize/maxSize/minVw/maxVw — **fluidClamp(min, max×ratio, 360, 1240)** — so the scale and its fluid stretch share one ratio;
+- Every number is computed in-page by zero-dependency JS; no preset table.
+
+## Styling & Parameters
+
+Five JS-type parameters (base, ratio, steps, minViewport, maxViewport), all consumed by the demo via the store. Three formulas build on each other:
+
+**① Geometric series** (research 14 §1.2, verified by running: base=16, ratio=1.25 → `10.24, 12.8, 16, 20, 25` ✓):
+
+```js
+const typeScale = (base, ratio, n) => base * Math.pow(ratio, n);      // n may be negative
+const scaleGen  = (base, ratio, n) =>
+  Array.from({ length: 2 * n + 1 }, (_, i) => base * Math.pow(ratio, i - n));
+```
+
+**② Co-axial calc() chain** — sizes, spacing and leading all multiply the same `--ratio` (calc multiplication requires one unitless operand, CSS Values 4 §calc-serialize):
+
+```css
+:root {
+  --ratio: 1.25;
+  --step-0: 1rem;
+  --step-1: calc(var(--step-0) * var(--ratio));   /* chained: one multiplication per step */
+  --step-2: calc(var(--step-1) * var(--ratio));
+  --step--1: calc(var(--step-0) / var(--ratio));  /* descending rungs use division */
+  --lh: calc(var(--step-0) * 1.5);                /* leading on the same axis */
+}
+```
+
+**③ Utopia fluid clamp** (research 14 §1.4, recovered from utopia.fyi's production bundle, character-identical to the page's output):
+
+Mathematical form: `S(vw) = clamp(min, intercept + slope × vw, max)` with `slope = (max − min)/(maxVw − minVw)` (px/px) and `intercept = min − slope × minVw` (px). The production version converts the endpoints to rem and the slope to vw:
+
+```js
+function fluidClamp(minPx, maxPx, minVw, maxVw, remBase = 16, digits = 4) {
+  const minRem = minPx / remBase, maxRem = maxPx / remBase;
+  const slope = (maxRem - minRem) / ((maxVw - minVw) / remBase); // rem per vw
+  const intercept = minRem - (minVw / remBase) * slope;          // rem
+  const f = x => String(+x.toFixed(digits));
+  return `clamp(${f(minRem)}rem, ${f(intercept)}rem + ${f(100 * slope)}vw, ${f(maxRem)}rem)`;
+}
+fluidClamp(18, 20, 360, 1240); // clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem)
+```
+
+Golden samples (run here, character-identical to utopia.fyi's page output): `fluidClamp(18, 20, 360, 1240)` = the page's step-0 ✓; `fluidClamp(15, 16, 360, 1240)` likewise = step−1 ✓. Note that 18→20 is Utopia's base-growth pair (a growth rate of 10/9, distinct from the type-scale ratio); the demo pairs each rung as (min, min×ratio) — copy the standalone function above to reproduce the golden samples verbatim.
+
+Where the numbers come from: the ratio table (1.067→1.618, musical-interval naming) comes from Tim Brown's *More Meaningful Typography* (A List Apart 2011, original fetched and checked); "1.25 = the most-used UI type ratio" is that source's own callout; Utopia's page defaults are minVw=360, maxVw=1240, base 18→20, ratio 1.25.
+
+## Motion & Interaction
+
+- **Parameters update live**: dragging base/ratio/steps/viewport stops recomputes the ladder rung by rung — samples, px readings and clamp strings refresh together, gaps visible at a glance;
+- **Comparison experiment**: move ratio from 1.25 to 1.618 and step+2 jumps from 25px to 41.9px — the ratio scales upper rungs exponentially; at 1.067 everything crowds together, showing "ratio sets hierarchy tension" viscerally;
+- **Bounds demo**: dragging maxViewport down to equal minViewport divides by zero — the demo shows "minVw must be below maxVw" instead of emitting `Infinityvw`;
+- No autonomous animation; the entrance fade respects `prefers-reduced-motion` (degrades to instant), readings are always static text.
+
+## Real-world examples
+
+- **Utopia.fyi fluid type calculator**: page defaults minVw=360, maxVw=1240, base 18→20px, ratio 1.25; the research reverse-checked its production bundle and matched the page output character-for-character on two golden samples — the industrial standard for "one clamp = one linear regression";
+- **modularscale.com** (Tim Brown / Scott Kellum): where the ratio table became a tool — Bringhurst's interval ratios as an interactive modular scale, the Sass-era entry point for scale derivation;
+- **Ant Design's type ramp** (a counter-sample): not a geometric series — the official `genFontSizes.ts` derives its 10 levels from `base×e^(i/5)`, a natural-log curve (H1 38→H5 16, base 14/leading 22), a reminder that the modular scale is a design choice, not the only answer; Apple's Dynamic Type (iOS Large Title 34→Caption 2 11) is likewise a measured table, not a geometric progression (research 13 §1.3/§3.4).
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| `base` | px (or rem) | practically 12–24; the body size is step-0 | base→0 collapses the whole scale; a non-body base detaches hierarchy from the body anchor |
+| `ratio` | unitless number | must be >1 (=1 collapses the ladder); practically 1.067–1.618; in calc(), one side of each multiplication must be unitless | ratio=1 makes size(n)≡base — a flat list; ratio&lt;1 flips the ladder upside down |
+| `n` | unitless integer | …,−2,−1,0,1,2,…; negative n is the descending division ladder | exponential blow-up as n grows: 16×1.25³=31.25px, ×1.618³≈67.9px — past 4–5 rungs it runs away |
+| `minVw` / `maxVw` | px (viewport width) | maxVw−minVw>0; Utopia defaults 360/1240 | maxVw=minVw → slope divides by ±Infinity and the clamp mid-term breaks; too narrow a gap makes the slope jump violently mid-range |
+| `slope` | rem/vw (production) or px/px (math) | determined by the size pair and viewport stops; may be negative | slope=0 (max=min) → clamp degenerates to a constant; a negative slope legitimately means "shrink on big screens" |
+| `intercept` | rem (production) or px (math) | solved from slope: min−slope×minVw | purely algebraic — often negative; a negative intercept is normal, not an error |
+| `remBase` | px/rem | the real root font size (default 16) | on roots ≠16px, rem output converted at 16 shifts every token — always pass the actual value |
+| Out-of-range viewports | — | vw&lt;minVw or vw>maxVw | clamp pins to the endpoints: no extrapolation happens, "fluid" exists only inside the interval |
+
+Working ranges: base=16 with ratio=1.25 (Major Third) is the web's greatest-common-denominator pairing; the 360–1240 viewport pair (Utopia defaults) covers mainstream mobile through desktop; keep the series within step−1..step+4. Sibling entries: **fluid-type-scale** (the CSS realization of the scale), **rhythm-formula** (leading snapped back to the baseline grid), **fluid-spacing** (the same clamp idea applied to whitespace).

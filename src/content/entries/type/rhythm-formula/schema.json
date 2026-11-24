@@ -1,0 +1,102 @@
+{
+  "name": "Line-height Rhythm",
+  "nameZh": "行高韵律公式",
+  "aliases": ["baseline rhythm", "line-height snapping", "vertical rhythm", "CLREQ line spacing"],
+  "category": "type",
+  "system": "web-std",
+  "star": 2,
+  "tagline": {
+    "zh": "行高 × 字号 = 基线倍数:先按密度算 lh = fs×m,再吸附到基线半格 lh = round(fs×m/unit)×unit——乘法管张力、加法管秩序,中西文各有硬约束。",
+    "en": "Line-height × font-size = baseline multiples: compute density first (lh = fs×m), then snap to the grid half-step (lh = round(fs×m/unit)×unit) — multiplication sets tension, addition sets order, with hard constraints for CJK."
+  },
+  "origin": {
+    "zh": "「字号乘比率出层级、行高吸 4px 回节奏」是 Web 排版的工程惯例(调研 14§7,标注为从业者共识);中西文硬约束来自 W3C《中文排版需求》CLREQ:单面装行距不小于字号 1/2、注音场景 ≥1.5 倍基字(规范原文逐字提取);Web 混排 1.5–1.75 倍带为社区惯例,无单一权威规范(未证实,如实标注);Apple iOS 文字样式表(17/22 等)为官方实测值(调研 13§1.3)。",
+    "en": "'Sizes multiply ratios for hierarchy; line-heights snap to 4px for rhythm' is web-typesetting craft convention (research 14 §7, marked as practitioner consensus); the CJK hard constraints come from W3C's CLREQ: single-side binding line spacing ≥ half the font size, ruby contexts ≥1.5× the base size (quoted verbatim from the spec); the web mixed-script 1.5–1.75× band is community practice with no single authority (unverified, stated as such); Apple's iOS text styles (17/22 etc.) are official measured values (research 13 §1.3)."
+  },
+  "params": [
+    {
+      "type": "dimension",
+      "name": "fontSize",
+      "unit": "px",
+      "min": 11,
+      "max": 34,
+      "step": 1,
+      "default": 16,
+      "effect": {
+        "zh": "字号 fs(px)。默认 16 = Web 正文锚点(与 8pt 网格、48px 触控目标互质兼容的最小公倍半格来源);demo 里 17 是 Apple iOS Body 官方字号。",
+        "en": "Font size fs (px). Default 16 = the web body anchor (source of the least-common-multiple half-step that keeps 8pt grids and 48px touch targets compatible); 17 in the demo is Apple's official iOS Body size."
+      }
+    },
+    {
+      "type": "number",
+      "name": "multiplier",
+      "min": 1.1,
+      "max": 2,
+      "step": 0.05,
+      "default": 1.5,
+      "effect": {
+        "zh": "行高倍率 m(无单位)。默认 1.5:16×1.5=24 恰好落 4px 网格(实跑核验);社区常见带:正文 1.5–1.75、标题 1.2–1.4(惯例,未证实为规范值);1.2 以下正文挤、2 以上段落散。",
+        "en": "Line-height multiplier m (unitless). Default 1.5: 16×1.5=24 lands exactly on the 4px grid (verified by running); community band: body 1.5–1.75, headings 1.2–1.4 (convention, unverified as spec values); under 1.2 body text crowds, over 2 paragraphs scatter."
+      }
+    },
+    {
+      "type": "enum",
+      "name": "unit",
+      "options": [
+        { "value": "4", "label": { "zh": "4px 半格", "en": "4px half-step" } },
+        { "value": "8", "label": { "zh": "8px 整格", "en": "8px full step" } }
+      ],
+      "default": "4",
+      "effect": {
+        "zh": "基线吸附单位(px)。4px 半格是 Material 4dp 基线的 Web 化——16px 字号、24px 行高、48px 触控全部兼容;8px 整格更严格但常把行高推离密度最佳值。",
+        "en": "Baseline snapping unit (px). The 4px half-step is Material's 4dp baseline translated to web — 16px type, 24px leading and 48px targets all compatible; the 8px step is stricter but often pushes leading off the density optimum."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "line-height 与间距吸附是纯 CSS 数学,全环境支持;行盒半Leading(leading-trim)尚未普及(提案阶段,社区口径),当前半行距分布由字体度量决定——跨字体对齐要按实测微调。",
+      "en": "line-height and spacing snapping is pure CSS math, supported everywhere; half-leading control (leading-trim) is not yet broadly shipped (proposal stage per community sources) — half-leading distribution currently follows font metrics, so cross-font alignment needs measured tuning."
+    }
+  },
+  "fallback": {
+    "zh": "无兼容性回退可言;真正的风险是把行高吸附得太狠——15×1.5=22.5 吸附到 24 是『宁上行距』(惯例方向),但吸附到 20 就丢了呼吸感。把方向写死:round 永远向可读性侧取整。",
+    "en": "There is no compatibility fallback to speak of; the real risk is snapping too hard — 15×1.5=22.5 snapped to 24 'prefers airier leading' (the conventional direction), but snapping to 20 loses the breathing room. Pin the direction: round always toward readability."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "设计系统行高 token:字号阶 × 倍率带,全部吸附到 4px 半格", "en": "Design-system leading tokens: size scale × multiplier band, all snapped to the 4px half-step" },
+      { "zh": "中西文混排正文:守 CLREQ 下限(≥1.5×)再谈密度", "en": "Mixed CJK/Latin body text: hold the CLREQ floor (≥1.5×) before tuning density" },
+      { "zh": "卡片/列表行高定档:行高为节奏单元,内边距取其整数倍", "en": "Card/list line tiers: leading as the rhythm unit, paddings as integer multiples" },
+      { "zh": "长文排版:行高、段距、标题上下距同用一个节奏单元(vertical-rhythm 条目的数学内核)", "en": "Long-form layout: leading, paragraph gaps and heading margins share one rhythm unit (the math inside vertical-rhythm)" }
+    ],
+    "avoid": [
+      { "zh": "行高用无单位数以外的写法跨字号复用(px 行高不能继承缩放)", "en": "Reusing px line-heights across sizes — a px leading does not scale when inherited" },
+      { "zh": "标题用正文倍率(1.5+)——大字行高比率应更小(1.2–1.4),否则标题块虚胖", "en": "Giving headings body multipliers (1.5+) — large type wants smaller ratios (1.2–1.4) or the heading block bloats" },
+      { "zh": "吸附单位 ≥ 行高本身——8px 单位配 11px 字号会把小字推到爆", "en": "Snapping unit ≥ the leading itself — an 8px unit on 11px type explodes small text" },
+      { "zh": "行高低于 1.5 还开注音/拼音——CLREQ 注音场景要求 ≥1.5 倍基字,低于下限标音互相碰撞", "en": "Ruby/pinyin under 1.5 leading — CLREQ's ruby context requires ≥1.5× the base size; lower and the annotations collide" }
+    ]
+  },
+  "a11y": {
+    "zh": "WCAG 1.4.12 文本间距要求行高可被用户放大到字号 1.5 倍而不破版——用无单位 line-height 并给段落留吸附余量是达标前提;行高 ≥1.5 同时是低视力用户的可读下限;CJK 大字号等效条款见 contrast 条目。行高不是装饰:过密(≤1.2)显著降低读写障碍用户的阅读速度。",
+    "en": "WCAG 1.4.12 text spacing requires layouts to survive user-set leading at 1.5× the font size — unitless line-height with snap headroom is the prerequisite; leading ≥1.5 doubles as the low-vision readability floor; for CJK large-text equivalence see the contrast entry. Leading is not decoration: cramped values (≤1.2) measurably slow readers with dyslexia."
+  },
+  "sources": [
+    "https://www.w3.org/TR/clreq/#handling-interlinear-punctuation",
+    "https://www.w3.org/TR/clreq/#choice-of-size-and-ratio-for-bopomofo-symbols",
+    "https://developer.apple.com/design/human-interface-guidelines/typography"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "给一套字阶配行高:每个字号先乘密度倍率,再吸附到 4px 半格,输出 token 表并标注中西文下限检查结果。",
+      "en": "Pair a type scale with leadings: multiply each size by its density multiplier, snap to the 4px half-step, and emit a token table annotated with the CJK floor check."
+    },
+    "acceptance": [
+      { "zh": "行高 CSS 用无单位倍数或吸附后的 px,两种口径都要给出换算", "en": "Emit line-heights as unitless multipliers or snapped px — with the conversion stated either way" },
+      { "zh": "吸附方向固定『宁上行距』:round(fs×m/unit)×unit,不向下牺牲可读性", "en": "Snap direction fixed to 'airier': round(fs×m/unit)×unit, never downward at readability's expense" },
+      { "zh": "正文行高 ≥1.5×、注音场景 ≥1.5×基字(CLREQ);标题 1.2–1.4", "en": "Body leading ≥1.5×, ruby ≥1.5× base (CLREQ); headings 1.2–1.4" },
+      { "zh": "全部行高落 4px(或 8px)倍数,并与间距 token 同网格", "en": "Every leading lands on a 4px (or 8px) multiple, sharing the grid with spacing tokens" },
+      { "zh": "15×1.5=22.5 → 24 这类吸附案例逐条列出验算", "en": "List snap worked examples like 15×1.5=22.5 → 24 with the arithmetic shown" }
+    ]
+  }
+}

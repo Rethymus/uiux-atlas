@@ -1,0 +1,80 @@
+## Structure & DOM
+
+The demo is a **draggable mapping pipeline**: one input-value slider (in data units) drives two readings — the normalized t and the mapped output y — while the full domain→range curve plots beside them with the current input marked as a point:
+
+```html
+<div class="sf-panel">
+  <input type="range" min="0" max="100" value="50" /><!-- input x (data units) -->
+  <code>t = (50 − 0)/(100 − 0) = 0.5</code>          <!-- normalize -->
+  <code>y = 0 + 0.5 × (640 − 0) = 320px</code>       <!-- interpolate -->
+  <svg><!-- curve + current point --></svg>
+</div>
+```
+
+Key points:
+
+- The readings split strictly in two — **normalize** (x→t) and **interpolate** (t→y) — which is exactly d3's continuous.js composition;
+- The curve flips with the transform: linear is a straight line, log bends downward (every decade equidistant);
+- Switching to log with a domain containing ≤0 clamps to 1 with a warning — the log domain boundary, made visible instead of silent.
+
+## Styling & Parameters
+
+Five parameters (transform/domainMin/domainMax/rangeMin/rangeMax), subscribed by the demo, mapped with zero dependencies. The formulas (research 14 §8 — the source IS the formula: d3-scale/src/continuous.js and log.js read directly):
+
+**① linear scale = normalize ∘ interpolate (two-segment affine):**
+
+```js
+const scaleLinear = (d0, d1, r0, r1) => x => r0 + ((x - d0) / (d1 - d0)) * (r1 - r0);
+scaleLinear(0, 100, 0, 640)(50);  // 320 — verified ✓ (golden sample)
+```
+
+**② log scale = the same pipeline run in log space:**
+
+```js
+const scaleLog = (d0, d1, r0, r1, b = 10) => {
+  const lb = Math.log(b);
+  return x => r0 + ((Math.log(x)/lb - Math.log(d0)/lb) / (Math.log(d1)/lb - Math.log(d0)/lb)) * (r1 - r0);
+};
+scaleLog(1, 1000, 0, 640)(10);    // 213.33 (one decade = 1/3 of the range) — verified ✓
+```
+
+d3 implementation detail: `transformLog(x) = Math.log(x)` wraps the same transformer; negatives/mirrors take the `−log(−x)` branch.
+
+**③ Isomorphic sightings (the same formula in three settings):**
+
+```js
+// Scroll progress normalization (the JS twin of scroll-driven animations, research 14 §6.2)
+const viewProgress = (scrollY, elTop, elH, vh) =>
+  Math.min(1, Math.max(0, (scrollY - (elTop - vh)) / (elH + vh)));
+// Utopia clamp: S(vw) = clamp(min, intercept + slope × vw, max) — the same linear regression (modular-scale-math)
+```
+
+Verified output (run here): linear midpoint 50→320 ✓; log's 10→213.33 (one decade exactly 1/3 of the range) ✓.
+
+## Motion & Interaction
+
+- **Drag the input slider**: t and y update per frame as the point slides along the curve — every step of "normalize first, map second" visible;
+- **Switch to log**: the line bends into a log curve; switching log with domain 0→100 clamps to 1 and raises a warning — the domain boundary is never silent;
+- **Adjust domain/range**: compressing the domain (0→20) steepens the slope — "the data range sets the mapping gain", readable directly off the curve;
+- Every interaction is user-driven, no autonomous animation; the entrance fade respects `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **d3-scale**: the `normalize(x) = (x−a)/(b−a)` / interpolate composition in continuous.js is this entry's formula; Observable Plot and most charting libraries carry the same scale thinking — the shared foundation of dataviz (source read and verified);
+- **CSS scroll-driven animations**: the JS twin of `animation-range: cover 0% cover 100%` semantics is precisely the viewProgress normalization (research 14 §6.2, Chrome's official write-up on range semantics); this site's scroll-driven-animations entry is its CSS form;
+- **OKLCH color ramps (upstream of dataviz-ordinal-scale)**: the research-verified red→blue OKLCH five-station ramp (255,0,0 → 229,0,122 → 183,0,185 → 122,23,225 → 26,51,229) — feeding t∈[0,1] into OKLCH interpolation (short-arc H); the magenta midpass is the signature of a perceptually uniform ramp, where sRGB-space interpolation would gray out midway (research 14 §8.3).
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| `x` (input) | data units (any) | d3 extrapolates by default; clamp(true) pins to [d0,d1] | out-of-range outputs are legal semantics; charts usually clamp explicitly |
+| `d0, d1` (domain) | data units | d1≠d0; d0>d1 legal (mirrored map) | d0=d1 divides by zero (demo blocks); inverted domains invert outputs, matching d3 |
+| `t` (normalized) | unitless | [0,1] when clamped; may overshoot when extrapolating | t=0/1 anchor the ends; mid t is unit-agnostic — the shared hinge of the two affine segments |
+| `r0, r1` (range) | output units (px/channel/α) | r1≠r0 or there is no gain | r0=r1 → constant mapping (the scale is dead; use a constant) |
+| log domain | data units | requires d0>0 and d1>0 | x≤0 undefined; demo clamps to the smallest legal domain with a warning; d3 mirrors negatives via −log(−x) |
+| `b` (log base) | unitless | 10 or 2; mathematically the base only rescales ticks | different bases give equivalent curves (a constant factor); only tick labels care about the base |
+| `slope` (linear gain) | output per data unit | (r1−r0)/(d1−d0) | slope→∞ (a shrinking domain) goes vertical; negative slope = reversed mapping (legal) |
+| output `y` | output units | [r0,r1] when clamped | out-of-range y is the consumer's problem (px past the canvas, colors past the gamut) — scales don't render |
+
+Working doctrine: first ask "how many orders of magnitude" — zero says linear, ≥2 says consider log; always clamp before mapping scroll/progress; when outputting color, let the scale emit t and let the ramp layer interpolate. Sibling entries: **dataviz-ordinal-scale** (the t→ramp segment), **scroll-driven-animations** (CSS-native normalization), **modular-scale-math** (the isomorphic clamp regression), **dataviz-chart-axes** (scales made visible).

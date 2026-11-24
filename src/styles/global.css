@@ -68,7 +68,7 @@
   --warn: #ffb86b; /* 警告/删除 hover(11.34:1) */
   --danger: #ff6165; /* 错误(Apple 官方暗色高对比 Red) */
 
-  /* ── 九分类 accent(styles/materials/motion/color/type/layout/components/icons/dataviz;
+  /* ── 十分类 accent(styles/materials/motion/color/type/layout/components/icons/dataviz/principles;
         Apple 暗色色板一手值,对三层背景 ≥4.76:1,装饰与文本可同值。
         components = 暗色色板 systemYellow(黄 hue 为前六分类未占用),
         对 bg/bg-elev/surface min 12.24:1(2026-11-21 实算)。
@@ -76,6 +76,13 @@
         不达 4.76 线,且与交互 --accent 蓝 hue 冲突,弃用),
         min 9.78:1;dataviz = systemBrown(暖中性 hue 未占用;Tableau 10 分类板含 brown,
         08-dataviz §1.2),min 5.62:1(均 2026-11-21 实算)。
+        principles = systemTeal(VD-04 补缺:此前交互法则全链路语义色失效——
+        页头 accent 短线/条目渐变带/面包屑/bento 标识条取 var(--cat-principles)
+        计算值非法回落透明。候选:systemIndigo 暗色一手值 #5E5CE6 对 bg/surface
+        仅 3.82/3.41:1 不达 4.76 线、且与 --cat-type 同 indigo hue 族,弃用;
+        systemTeal 对四层背景 min 7.93:1(2026-11-24 实算),teal hue 与 materials
+        cyan / icons mint 同处青绿族但三值可辨,且 bento 桌面布局中 principles
+        与 dataviz/info 相邻、不与两者直接相邻)。
         用法纪律:只出现在 ① bento 标识条与数字 ② 条目页头部渐变带
         ③ 面包屑/列表页头当前分类;不进链接/按钮/正文字段(spec §2.1) ── */
   --cat-styles: #db34f2;
@@ -87,6 +94,7 @@
   --cat-components: #ffd60a;
   --cat-icons: #66d4cf;
   --cat-dataviz: #ac8e68;
+  --cat-principles: #40c8e0; /* systemTeal;对 bg/bg-elev/surface/surface-2 min 7.93:1 */
   /* 当前分类语义色的运行时指向(容器上按分类覆写) */
   --cat: var(--accent);
 
@@ -272,7 +280,7 @@
   --warn: #995a00; /* 警告/删除 hover(5.04:1) */
   --danger: #c93040; /* 错误(4.83:1;TDesign error-6 #d54941=4.32:1,加深) */
 
-  /* ── 九分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
+  /* ── 十分类 accent:浅色同 hue 加深,对全部四层底 ≥4.5:1
         (装饰条/文本两用纪律与深色一致,spec §2.1 用法纪律) ── */
   --cat-styles: #a426cc; /* min 4.83:1 */
   --cat-materials: #0b7491; /* min 4.60:1 */
@@ -283,6 +291,7 @@
   --cat-components: #7d6200; /* 黄 hue 加深,min 4.98:1(2026-11-21 实算) */
   --cat-icons: #0d7370; /* mint hue 加深,min 4.87:1(2026-11-21 实算) */
   --cat-dataviz: #755a2e; /* brown hue 加深,min 5.53:1(2026-11-21 实算) */
+  --cat-principles: #0d7086; /* teal hue(192°,随深色 systemTeal)加深,min 4.90:1(2026-11-24 实算) */
 
   /* ── 阴影:浅色减弱(02 §4.1 TDesign 亮色三层投影 5–12% 黑 同比例档;
         深色为 35/45/55%) ── */
@@ -546,13 +555,17 @@ html {
   opacity: 1;
   transform: none;
 }
-/* 首选路径:CSS scroll-driven(view() 时间线;spec §6-4 Chrome 官方 reveal 配方) */
+/* 首选路径:CSS scroll-driven(view() 时间线;spec §6-4 Chrome 官方 reveal 配方)。
+   VD-03:区间由 entry 25% cover 50% 收紧为 entry 0% entry 100%——旧区间要求卡片
+   顶边爬到视口垂直中线(cover 50%)才完成动画,静止时下半屏同级卡片停在半透明、
+   读作「禁用态」;新区间 = 卡片完全进入视口即到终态,任何静止滚动位置下
+   已完全入场的卡片不透明度恒 1(同排卡片几何一致 → 进度一致,无同层失衡) */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .css-scroll-timeline .reveal {
       animation: reveal-in 1s linear both;
       animation-timeline: view();
-      animation-range: entry 25% cover 50%;
+      animation-range: entry 0% entry 100%;
     }
   }
 }
@@ -650,7 +663,10 @@ html {
   height: var(--header-h);
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  /* VD-01:20px 收至 16px(--space-4;TDesign gutter 默认 16 同档)——桌面可用宽
+     被 --shell-max 1280 封顶(1280−48 padding = 1232px,≥1328 视口恒定),
+     品牌区 + 11 个 nowrap 分类链接 + 语言/搜索/主题钮须同宽共存 */
+  gap: var(--space-4);
   min-width: 0;
 }
 /* 品牌区:站点名 + accent 标记;站点名文案逐字保留(产物校验标记) */
@@ -673,18 +689,34 @@ html {
   color: var(--accent);
   margin-right: var(--space-2);
 }
-/* 桌面:九分类横排;active 态由 aria-current 驱动 */
+/* 桌面:十分类 + 资源横排;active 态由 aria-current 驱动。
+   VD-01 溢出修复:① 链接水平内距 12→8px(--space-2,4/8 网格内;11 枚 nowrap
+   链接合计省 ~88px);② 容器自身 overflow-x:auto + 右缘渐隐 mask(<640 方案上提
+   为全宽档通用)——内容放得下时无滚动无裁切,放不下(≈900–1230px 视口)时容器内
+   滑动,绘制永不溢出到语言/搜索钮上(此前 .site-nav min-width:0 允许收缩但链接
+   nowrap 溢出绘制,把「交互法则/资源」压在语言钮与放大镜图标上)。flex:1 让容器
+   在有富余时占满品牌区与右侧钮组之间的整段,mask 渐隐落在空白处不伤末链接。
+   容器内滑动不产生页面级横向滚动(spec §7 红线) */
 .site-nav {
   display: flex;
   gap: var(--space-1);
   margin-left: var(--space-2);
   min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, #000 92%, transparent);
+}
+.site-nav::-webkit-scrollbar {
+  display: none;
 }
 .site-nav a {
   color: var(--text-dim);
   font-size: var(--step--1);
   font-weight: 500;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2);
   border-radius: var(--radius-s);
   white-space: nowrap;
   position: relative;
@@ -704,22 +736,16 @@ html {
   color: var(--text);
   background: var(--seg-thumb); /* v2.1:选中浮起面 token(浅色=白) */
 }
-/* <640:导航变横向滑动 chips(spec §7;容器内滑动不产生页面级横向滚动) */
+/* <640:导航变横向滑动 chips(spec §7);VD-01 后横滑 + 渐隐 mask 已上提为
+   .site-nav 全档通用,这里只保留移动档更紧的 header 内距/间距与更急的渐隐 */
 @media (max-width: 639px) {
   .site-header-inner {
     padding: 0 var(--space-4);
     gap: var(--space-3);
   }
   .site-nav {
-    flex: 1;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* 右缘渐隐 mask(spec §7) */
     -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
     mask-image: linear-gradient(90deg, #000 88%, transparent);
-  }
-  .site-nav::-webkit-scrollbar {
-    display: none;
   }
 }
 /* 语言切换:胶囊链钮(spec §4 语言切换) */
@@ -857,36 +883,22 @@ html {
   height: 16px;
   display: block;
 }
+/* VD-01:kbd 徽标(⌘K / Ctrl K)恒隐藏——桌面可用宽被 --shell-max 1280 封顶
+   (1232px),任何桌面档都没有容纳徽标的富余;快捷键可发现性由按钮
+   aria-keyshortcuts + 命令面板自身展示承担(岛屿仍按平台填充文本,无副作用)。
+   原规则曾 ≥900px 且 data-ready 时显示(⌘K 徽标 ≈40px,是叠压主因之一) */
 .site-search-kbd {
   display: none;
 }
-@media (min-width: 900px) {
-  /* 岛屿填充后(data-ready)才显示,避免水合前出现空徽标 */
-  .site-search-kbd[data-ready] {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    line-height: 1.4;
-    color: var(--text-ghost);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-s);
-    padding: 1px 5px;
-  }
-}
 
-/* ≤899px:导航放不下横排,改为行内横向滚动,避免与语言切换钮重叠(spec §7 响应式矩阵) */
+/* ≤899px:header 元素间距更紧;导航的横滑滚动(VD-01 上提后的 .site-nav 通用行为)
+   保证窄档不与语言切换钮重叠(spec §7 响应式矩阵),仅补 hover 底色的上下呼吸位 */
 @media (max-width: 899px) {
   .site-header-inner {
     gap: var(--space-2);
   }
   .site-nav {
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
     padding: var(--space-1) 0;
-  }
-  .site-nav::-webkit-scrollbar {
-    display: none;
   }
 }
 
@@ -1192,11 +1204,15 @@ html {
   margin-top: var(--space-3);
 }
 
-/* ── 九分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
+/* ── 十分类 bento(spec §4.1-2:dogfood styles/bento-grid 配方:
      4 列 × 140px 行 × gap 16 × radius-xl;显式 areas 不用 dense,
      DOM 顺序 = 阅读顺序 = 焦点顺序(WCAG 2.4.3)。
-     components 与 materials/motion 同为 1×2 tall;icons/dataviz(第八/九分类,
-     条目未接线)与 color/type/layout 同为 1×1,info 收束条随新增两格收窄为 1 宽 ── */
+     VD-02:第 10 分类 principles(交互法则)入格——此前无 .area-principles
+     规则,该格 auto-flow 掉进隐式第 5 行成 4 列栅格下的孤格。重排:
+     components 让出 1×2 tall 回归 1×1(spec §4.1 原始 talls = materials/motion
+     保持不动),底部行 = icons/dataviz/principles/info——info 收束条与交互法则
+     并成底部一行,无隐式行、无孤格;首行 hero 统计「10 分类」与格数(9+info)一致。
+     materials/motion 仍为 1×2 tall ── */
 .bento {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1206,7 +1222,7 @@ html {
     "styles styles materials motion"
     "styles styles materials motion"
     "color type layout components"
-    "icons dataviz info components";
+    "icons dataviz principles info";
 }
 @media (max-width: 899px) {
   .bento {
@@ -1217,7 +1233,7 @@ html {
       "color type"
       "layout components"
       "icons dataviz"
-      "info info";
+      "principles info";
   }
 }
 @media (max-width: 639px) {
@@ -1236,6 +1252,7 @@ html {
       "components"
       "icons"
       "dataviz"
+      "principles"
       "info";
   }
 }
@@ -1278,6 +1295,9 @@ html {
 }
 .bento-cell.area-dataviz {
   grid-area: dataviz;
+}
+.bento-cell.area-principles {
+  grid-area: principles;
 }
 .bento-cell.area-info {
   grid-area: info;
@@ -1495,6 +1515,33 @@ html {
     67% 100%,
     100% 100%;
   background-repeat: no-repeat;
+}
+/* principles:菲茨定律一帧(大小两枚命中靶 = 目标尺寸与距离权衡,纯 CSS 零 JS,
+   两主题通用;VD-02 第 10 分类入格随补,免空预览) */
+.bp-principles {
+  color: var(--cat-principles);
+  background: var(--bg-elev);
+}
+.bp-principles::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  top: 16%;
+  width: 36%;
+  aspect-ratio: 1;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+.bp-principles::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  bottom: 22%;
+  width: 14%;
+  aspect-ratio: 1;
+  background: currentColor;
+  border-radius: 50%;
 }
 /* 非点击统计格(info-card 变体):不可点击卡无 hover 态(spec §3 Card) */
 .bento-cell.is-info {
@@ -2026,12 +2073,17 @@ html {
 }
 
 /* Workbench(spec §4.3:demo 1fr + 面板 340px;900 = workbench 断点;
-   首屏双要素:舞台 ≥240px + 面板头部与 ≥1 参数行同屏,§5-1) */
+   首屏双要素:舞台 ≥240px + 面板头部与 ≥1 参数行同屏,§5-1)。
+   VD-05:align-items 由 start 改为 stretch(grid 默认,显式声明)——右列
+   (sticky 参数面板 max-height 100vh−96 + Prompt 导出)高于左列 demo 面板,
+   拉伸后 .demo-panel 经 flex 列把富余高度全部交给演示台,舞台内容本身
+   保持居中;1440×900 首屏左列与右栏视觉等高,消除 demo 面板下方 ~410px 空洞。
+   <900 单栏档行高 = 内容高,拉伸不生效、布局不变 */
 .workbench {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: var(--space-4);
-  align-items: start;
+  align-items: stretch;
   margin: var(--space-5) 0 var(--space-2);
 }
 @media (max-width: 900px) {
@@ -2050,6 +2102,9 @@ html {
   box-shadow: inset 0 1px 0 var(--mat-regular-highlight), var(--mat-regular-shadow);
   overflow: hidden;
   min-width: 0;
+  /* VD-05:workbench stretch 后把面板富余高度传导给演示台(头部行定高,其余给舞台) */
+  display: flex;
+  flex-direction: column;
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .demo-panel {
@@ -2071,6 +2126,13 @@ html {
 }
 .demo-stage-wrap {
   padding: var(--space-4);
+  /* VD-05:拉伸链路——flex:1 吃下 demo-panel 的富余高度;grid 布局让舞台
+     拉满剩余空间:.demo-stage 在 astro-island(display:contents)之内由客户端
+     挂载,不保证是直接子元素,而 display:contents 使它直接成为本 grid 的
+     栅格项,默认 stretch 双向拉满,不受 Demo 组件自身包了一层的影响。
+     水合前本层为空:富余高度下留白在面板内部,与「面板等高」构图一致 */
+  flex: 1;
+  display: grid;
 }
 
 /* 演示台(spec §2.4 舞台 radius-xl + §6-1 光标聚光钩子):

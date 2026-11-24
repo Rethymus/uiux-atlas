@@ -1,0 +1,106 @@
+## Structure & DOM
+
+The demo is a **progress-vs-time curve plot**: time progress across, output progress up — the thin line is the parametric bezier's exact curve, the dashed line the `linear()` sampled polyline; a time slider drives the readouts for the current moment, with both evaluation paths shown side by side:
+
+```html
+<div class="em-plot">
+  <svg><!-- exact bezier curve + linear() polyline + current point --></svg>
+  <input type="range" min="0" max="1" step="0.01" value="0.5" /><!-- time progress -->
+</div>
+<div class="em-read">
+  <span>Newton: t = 0.690, converged in 4 rounds</span>
+  <span>linear(): segment 4, a.y+(p−a.x)/(b.x−a.x)×(b.y−a.y) = 0.712</span>
+  <span>Sampling error max|Δ| = 0.008 (6 segments)</span>
+</div>
+```
+
+Key points:
+
+- Both curves share one source: the exact curve draws straight from x(t),y(t); the polyline connects n sampled points — the gap between them is the price of linear() compilation;
+- The current-moment readings split in two: **bezier mode** shows the Newton iteration (t, rounds, y); **linear mode** shows segment interpolation (segment index, formula) — two paths, one point, reconcilable;
+- A time slider plus a "replay" dot; under `prefers-reduced-motion` replay is disabled while the slider works as usual.
+
+## Styling & Parameters
+
+Three parameters (curve/segments/mode), math with zero dependencies. The formulas, step by step (research 14 §6.1; algorithms checked verbatim against CSS Easing 2):
+
+**① The parametric cubic (one curve each for x and y, sharing parameter t):**
+
+```js
+// P0=(0,0) and P3=(1,1) are fixed; x1,x2 ∈[0,1] (spec constraint), y may leave it
+const bez = (t, c1, c2) => {
+  const u = 1 - t;
+  return 3 * u * u * t * c1 + 3 * u * t * t * c2 + t * t * t;
+};
+// x(t) and y(t) are bez(t, x1, x2) and bez(t, y1, y2)
+```
+
+**② Newton iteration: given time progress p, solve for parameter t (the engine approach):**
+
+```js
+const bezD = (t, c1, c2) => 3 * (1 - t) ** 2 * c1 + 6 * (1 - t) * t * (c2 - c1) + 3 * t * t * (1 - c2);
+function solveT(p, x1, x2) {           // p = time progress
+  let t = p;                            // initial guess t = x
+  for (let i = 0; i < 8; i++) {         // 8 Newton rounds (engine scale)
+    const err = bez(t, x1, x2) - p;
+    if (Math.abs(err) < 1e-6) return { t, iters: i };
+    const d = bezD(t, x1, x2);
+    if (Math.abs(d) < 1e-6) break;      // vertical tangent → bisection fallback
+    t = Math.min(1, Math.max(0, t - err / d));
+  }
+  let lo = 0, hi = 1;                   // bisection safety net
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    (bez(mid, x1, x2) < p ? (lo = mid) : (hi = mid));
+  }
+  return { t: (lo + hi) / 2, iters: 8 };
+}
+const progress = (p, x1, y1, x2, y2) => bez(solveT(p, x1, x2).t, y1, y2);
+```
+
+**③ linear() sampling and evaluation (spec §2.1.4: clamp first, then two-point lines):**
+
+```js
+const sampleLinear = (n, x1, y1, x2, y2) =>
+  Array.from({ length: n + 1 }, (_, i) => {
+    const t = i / n;
+    return [bez(t, x1, x2), bez(t, y1, y2)];   // (x(tᵢ), y(tᵢ)) pairs — sample coordinates, not t itself
+  });
+const evalLinear = (pts, p) => {
+  p = Math.min(1, Math.max(0, p));              // the spec clamps input progress first
+  let i = 0;
+  while (i < pts.length - 2 && pts[i + 1][0] <= p) i++;
+  const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
+  return bx === ax ? by : ay + ((p - ax) / (bx - ax)) * (by - ay);
+};
+```
+
+Where the numbers come from: the default (0,0,0.58,1) is the spec's fixed control-point set for the CSS `ease-out` keyword; the four keywords ease (0.25,0.1,0.25,1) / ease-in (0.42,0,1,1) / ease-out (0,0,0.58,1) / ease-in-out (0.42,0,0.58,1) all come from CSS Easing 2; the "unpositioned points spread evenly" rule of `linear(0.1, 0.3 50%, 1)` is likewise spec text (research 14 §6.1).
+
+## Motion & Interaction
+
+- **Drag the time slider**: the current point slides along the curve while both evaluation paths update — Newton's t and linear()'s segment interpolation nearly coincide (the error reading quantifies the gap);
+- **Switch mode**: bezier mode reads "converged in N rounds" (typically 2–5); linear mode reads "which segment" — two views of one curve;
+- **Adjust segments**: from 12 down to 2, the polyline drifts off the exact curve and the error reading climbs — "sampling trades precision for size" made tangible; on overshooting curves (ease-in-back style) low counts flatten the bounce outright;
+- **Replay**: a dot runs the curve over 1s; `prefers-reduced-motion` disables the replay button while the slider and readouts stay.
+
+## Real-world examples
+
+- **Browser engines' cubic-bezier evaluation**: CSS Easing 2 writes "solve t from input progress" as a normative algorithm, and WebKit/Blink's UnitBezier implementations are exactly Newton-style iterations — every CSS transition/animation easing passes through this solve;
+- **CSS keyword easings**: ease/ease-in/ease-out/ease-in-out are four control-point sets hardcoded in the spec — "ease-out = (0,0,0.58,1)" is a number, not a vibe; the cubic-bezier entry's parameter panel is their adjustable form;
+- **The linear() compilation pipeline (the linear-easing entry)**: spring physics sampled at a fixed step into a `linear(...)` keyframe array, interpolated by the browser with zero runtime — "curves are data, not function libraries" in production, Baseline 2023-12.
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| `x1, x2` | unitless (time-axis share) | must stay in [0,1] (spec hard constraint; CSS rejects out-of-range declarations) | x1=0/x2=1 create vertical end tangents where Newton's derivative hits 0 → bisection takes over |
+| `y1, y2` | unitless (output-axis share) | may leave [0,1] (negative = anticipation, >1 = overshoot) | overshooting curves must not drive position mapping (they pass the target); opacity/color tolerate overshoot as a flicker |
+| `t` (parameter) | unitless | [0,1]; a curve parameter, not time | t equals time progress only on the straight (0,0)↔(1,1) — "parameter ≠ time" is this entry's core |
+| `p` (time progress) | unitless | [0,1]; linear() clamps before evaluating (spec) | outside the endpoints the spec flat-extends (tangent of the 0/1 segment); implementations usually clamp |
+| Newton rounds | unitless integer | ≤8 in the reference; typically 2–5 | the t=x initial guess converges on common curves; vertical tangents trigger bisection (24-round cap) |
+| Sample count n | unitless integer | 2–12 (demo); 60–120 in production (linear-easing) | n=1 degenerates to one straight segment; overshooting curves below n=6 lose their bounce shape |
+| linear() unpositioned points | unitless | points without an input position spread evenly between their anchors | `linear(0.1, 0.3 50%, 1)`: 0.3 sits at 50%, the rest divide evenly (spec §2.1.2) |
+| Sampling error | unitless | decays fast as n grows; the readout reports it live | error is non-uniform: it concentrates where curvature peaks (endpoints, overshoot crest) — budget segments for the worst spot |
+
+Working doctrine: parameter ≠ time — every evaluation goes through the solve; compile linear() from (x,y) pairs and clamp at evaluation; overshooting curves are for transform/opacity only. Sibling entries: **cubic-bezier** (the curve's CSS form and hand-tuning), **linear-easing** (the full sampling-compiler pipeline), **handoff-curves** (the design layer of in/out curve pairs), **spring-integrator** (the other half of spring math: numerical integration).

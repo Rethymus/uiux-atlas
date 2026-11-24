@@ -35,23 +35,27 @@ const ICONS_SLUGS = [
 ];
 // dataviz 扩编批(b23):small-multiples / chart-animation / chart-accessibility 三条落地,
 // 与既有 8 条并入同一强制校验(与此前各批「同动作」一致)。
+// 公式批(b25-math):scale-functions 落地即并入同一缺失强制校验(与其他分类同动作)。
 const DATAVIZ_SLUGS = [
   "dataviz-categorical-palette", "dataviz-ordinal-scale", "dataviz-colorblind-safe",
   "dataviz-dashboard-density", "dataviz-chart-axes", "dataviz-tooltip-legend",
   "dataviz-chart-selection", "dataviz-color-ordering",
   "small-multiples", "chart-animation", "chart-accessibility",
+  "scale-functions",
 ];
 
 // 第十分类 principles(交互法则与无障碍,15 slug)。
 // 15 条已全部落地,自本轮起并入下方 EXPECTED 缺失强制校验(与 components/icons/dataviz
 // 批产收口同动作);条目级检查照常逐条全检(nameZh 非空为全条目通用检查)。
 // b24-principles2 批(aesthetic-usability/goal-gradient/pareto-principle,调研 12 补研 §14)落地即并入同一强制校验。
+// 公式批(b25-math):contrast-ratio-formula 落地即并入同一强制校验(同前批动作)。
 const PRINCIPLES_SLUGS = [
   "fitts-law", "hick-law", "millers-law", "jakobs-law", "peak-end-rule",
   "doherty-threshold", "teslers-law", "gestalt-proximity", "gestalt-similarity-closure",
   "serial-position", "von-restorff", "apg-patterns", "wcag-checklist",
   "prefers-contrast", "keyboard-navigation",
   "aesthetic-usability", "goal-gradient", "pareto-principle",
+  "contrast-ratio-formula",
 ];
 
 const EXPECTED = {
@@ -85,6 +89,8 @@ const EXPECTED = {
     "haptics-web", "page-transitions",
     "flip-technique", "scroll-snap", "magnetic-hover", "kinetic-typography",
     "progress-motion", "handoff-curves",
+    // 公式批(b25-math):spring-integrator / easing-math 落地即并入缺失强制校验(同前批动作)。
+    "spring-integrator", "easing-math",
   ],
   color: [
     "oklch-workflow", "oklch-space", "hct-tonal-palette", "m3-dynamic-color",
@@ -96,6 +102,8 @@ const EXPECTED = {
     // b18-color2 批(色彩与主题二批):5 条(调研 06 + 12 补研§11),落地即并入缺失强制校验(同前批动作)。
     "brand-color-system", "dark-mode-patterns", "status-color-system",
     "color-functions", "multi-theme-tokens",
+    // 公式批(b25-math):oklch-conversion 落地即并入缺失强制校验(同前批动作)。
+    "oklch-conversion",
   ],
   // type b11 批(排版补全):6 条排版条目并入同一强制校验。
   // type b17-type2 批(排版二次补全):6 条排版条目并入同一强制校验。
@@ -105,6 +113,8 @@ const EXPECTED = {
     "font-display-strategy", "text-wrap-balance", "drop-cap-initial",
     "tabular-numbers", "baseline-grid", "font-pairing",
     "small-caps-features", "vertical-rhythm", "display-typography",
+    // 公式批(b25-math):modular-scale-math / rhythm-formula 落地即并入缺失强制校验(同前批动作)。
+    "modular-scale-math", "rhythm-formula",
   ],
   // layout b10 批(布局补全):8 条(调研 05§一§二 + 11 补研),落地即并入缺失强制校验。
   // layout b16-layout2 批:6 条(split-view/aspect-ratio/responsive-images/logical-properties/
@@ -115,6 +125,8 @@ const EXPECTED = {
     "grid-lanes", "masonry-columns", "holy-grail", "anchor-positioning",
     "split-view", "aspect-ratio", "responsive-images", "logical-properties",
     "writing-modes", "custom-scrollbar",
+    // 公式批(b25-math):grid-math 落地即并入同一强制校验(同前批动作)。
+    "grid-math",
   ],
   components: COMPONENT_SLUGS,
   icons: ICONS_SLUGS,

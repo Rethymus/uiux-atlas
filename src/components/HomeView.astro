@@ -74,9 +74,10 @@ const glassEntryUrl = entryUrl(locale, "styles/glassmorphism");
   </section>
 
   <h2 class="section-title">{home.browse}</h2>
-  {/* ── 九分类 bento(spec §4.1-2:4 列显式 areas,styles 2×2 hero 格,
-       materials/motion/components 1×2 tall,color/type/layout/icons/dataviz 1×1;不用 dense,
-       DOM 顺序 = 阅读顺序 = 焦点顺序) ── */}
+  {/* ── 十分类 bento(spec §4.1-2:4 列显式 areas,styles 2×2 hero 格,
+       materials/motion 1×2 tall,color/type/layout/components/icons/dataviz/principles 1×1,
+       底部行 icons/dataviz/principles/info(VD-02:第 10 分类 principles 入格,
+       info 收束条与之并成底部一行);不用 dense,DOM 顺序 = 阅读顺序 = 焦点顺序) ── */}
   <div class="bento">
     {
       CATEGORIES.map((c, i) => {

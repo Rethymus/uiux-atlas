@@ -1,0 +1,84 @@
+## 结构与 DOM
+
+demo 是一张**等比缩小的真尺度模型**:SVG viewBox 直接等于容器宽 C,画 n 根列轨 + (n−1) 条槽,每列标注真实 px 宽度;下方并列 minmax(auto-fit) 的列数推导:
+
+```html
+<div class="gm-model">
+  <svg viewBox="0 0 1440 120"><!-- n 根列轨,槽宽按 --grid-gap --></svg>
+  <code>colW = (1440 − 11×16) / 12 = 105.33px</code>
+  <code>auto-fit: ⌊(1440+16)/(250+16)⌋ = 5 列 → 实宽 252.8px</code>
+</div>
+```
+
+关键点:
+
+- 模型按 viewBox 等比缩放,**读数不是比例示意而是真实 px**——改 container 就是在改画板;
+- 列宽公式只有一行:`colW = (C − (n−1)×g)/n`,等价于 CSS 的 `(100% − (n−1)×gap)/n`(% 与 px 混合由 calc 消化);
+- minmax 推导与 subgrid 说明在 MDX,demo 里给出 auto-fit 列数与实宽对照。
+
+## 样式与参数
+
+四个参数(container/columns/gap/minCol),gap 兼作 cssVar `--grid-gap` 注入。公式逐步(生产数值取自调研 13§2.1/§3.2,TDesign/Ant 官网文档):
+
+**① 等分列宽(Grid/Flex 通用):**
+
+```css
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr)); /* 1fr 即等分 */
+  column-gap: var(--grid-gap, 16px);                 /* TDesign 官方固定槽 16px */
+}
+/* 列宽公式:colW = (100% − (n−1)×gap) / n
+   1440px / 12 列 / gap 16 → (1440 − 176)/12 = 105.33px */
+```
+
+**② auto-fit/minmax 列数推导(auto-fit-minmax 条目同源):**
+
+```
+能放下几列? n* = ⌊(C + g) / (minCol + g)⌋     (+g 是给最后一列免槽的余量)
+实宽        w  = (C − (n*−1)×g) / n*
+1440/16/250: n* = ⌊1456/266⌋ = 5 列,w = (1440 − 64)/5 = 252.8px
+```
+
+**③ subgrid 尺寸传导:**
+
+```css
+.card {
+  grid-column: span 3;                 /* 占父网格 3 列 */
+  display: grid;
+  grid-template-rows: subgrid;         /* 行轨道 = 父网格的行轨道 */
+  grid-row: span 3;                    /* 占 3 行:标题/正文/页脚各落一行 */
+}
+/* 卡内标题行不自己定高,而是『就是』父网格那一行的高度——
+   N 张卡的标题基线跨卡对齐,不再依赖魔法数字 */
+```
+
+生产口径:Ant 24 等分、gutter 推荐 `(16+8n)` px、响应式 `{xs:8, sm:16, md:24, lg:32}`、Col 总和超 24 整体换行;TDesign 12 栅格、gutter 默认 16px 固定、安全边距 24px、断点刻意下调避开 Safari 滚动条抖动;两家共识:**列随容器缩放,槽宽固定不变**。
+
+## 动效与交互
+
+- **调列数**:从 12 拨到 24,列宽读数从 105.33px 掉到 38px——「24 等分是用来跨列的」一眼成立;
+- **调槽宽**:gap 从 16 拉到 48,(n−1)×gap 逼近容器宽时列宽塌向 0,demo 给出「槽过宽」警告——这正是生产里禁止百分比槽、限制列数×槽组合的原因;
+- **auto-fit 对照**:改 minCol 或 container,看列数在 4↔5↔6 之间跳变、实宽如何跟着重算——预估公式与直觉一致;
+- 无自主动画;入场淡入尊重 `prefers-reduced-motion`。
+
+## 真实产品案例
+
+- **Ant Design 24 栅格**:官方文档明确「在 12 栅格系统的基础上按 24 等分划分」,gutter 推荐 `(16+8n)` px、响应式对象 `{xs:8, sm:16, md:24, lg:32}`(grid-cn 原文);后台布局组件 Header/Sider/Content/Footer 全部落在这套栅格上;
+- **TDesign 12 栅格**:设计侧 12 列内容区、gutter 默认 16px 固定、margin 默认 24px;侧栏展开 232px/收起 64px,&lt;992px 自动收起——列宽公式与安全边距公式(画板 1440)在官网规范页同页给出;
+- **本站(auto-fit-minmax 条目)**:`repeat(auto-fit, minmax(250px, 1fr))` 的列数预估就是本条 ② 式的运行实例;subgrid 条目则演示卡片内部行轨道继承父网格的跨卡对齐——三条互为工程闭环。
+
+## 公式的量纲与边界
+
+| 变量 | 量纲 | 取值边界 | 退化情形 |
+| --- | --- | --- | --- |
+| `C`(容器宽) | px | >0;画板口径 1440/1920 | C→0 全部塌陷;容器为 % 时公式按含 % 的 calc 形态写 |
+| `n`(列数) | 无单位整数 | 1–24 实务;n=0 无意义 | n=1 → colW=C(单列);n 越大单列越窄,1440/24 仅 38px |
+| `gap`(槽) | px | 定值;主流库 8/16/24 阶 | gap=0 → colW=C/n 纯等分;gap 用 % 时窄屏塌方,Ant 明文「Gutter 宽度固定不变」 |
+| `colW` | px(或 %) | (C−(n−1)g)/n > 0 才有布局 | (n−1)g=C → colW=0 全塌;(n−1)g>C 负列宽,Grid 会溢出或静默裁切——必须先钳制 |
+| `minCol` | px | minmax 下限;250 是经典配方 | minCol>C 时 auto-fit 恒 1 列;minCol=0 退化为 auto-fill 平铺 |
+| `n*`(auto-fit 列数) | 无单位整数 | ⌊(C+g)/(minCol+g)⌋ ≥1 | 分子加 g 是「最后一列免槽」的代数余量,不加会低估列数 |
+| subgrid 行 | 无(继承) | 子声明轨道数 ≤ 父可继承范围 | span 超出父网格轨道 → 布局报错或隐式行;子网格不能比父『更细』 |
+| `%` 与 px 混合 | calc 代数 | calc 允许 % ± px | 纯 CSS 里 100% 是容器份额;公式写进 calc 时 gap 一侧必须带单位 |
+
+经验口径:列数 12(内容区)或 24(跨列组合);槽 16 定值起步、断点上 8/16/24/32 阶梯;卡片网格 minmax(250px, 1fr);subgrid 只传导一层。姊妹条目:**auto-fit-minmax**(②式的完整行为)、**subgrid**(③式的完整行为)、**container-queries**(C 换成容器宽的版本)、**fluid-spacing**(槽宽也能呼吸,但要克制)。

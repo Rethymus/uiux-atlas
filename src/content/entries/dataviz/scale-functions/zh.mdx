@@ -1,0 +1,80 @@
+## 结构与 DOM
+
+demo 是一条**可拖动的映射流水线**:一枚输入值滑杆(数据单位)驱动两个读数——归一化 t 与映射输出 y——并把整条 domain→range 曲线画在右侧小图里,当前输入以圆点落在曲线上:
+
+```html
+<div class="sf-panel">
+  <input type="range" min="0" max="100" value="50" /><!-- 输入值 x(数据单位) -->
+  <code>t = (50 − 0)/(100 − 0) = 0.5</code>          <!-- normalize -->
+  <code>y = 0 + 0.5 × (640 − 0) = 320px</code>       <!-- interpolate -->
+  <svg><!-- 曲线 + 当前点 --></svg>
+</div>
+```
+
+关键点:
+
+- 读数严格分两行——**normalize**(x→t)与 **interpolate**(t→y),这就是 d3 continuous.js 的组合结构;
+- 曲线随 transform 切换:linear 是直线,log 是下弯曲线(每个十进位等距);
+- 切换 log 且 domain 含 ≤0 时,demo 钳到 1 并警告——对数的定义域边界可视化呈现。
+
+## 样式与参数
+
+五个参数(transform/domainMin/domainMax/rangeMin/rangeMax)由 demo 订阅,映射零依赖实现。公式(调研 14§8,源码即公式——实读 d3-scale/src/continuous.js 与 log.js):
+
+**① linear 标度 = normalize ∘ interpolate(两段仿射):**
+
+```js
+const scaleLinear = (d0, d1, r0, r1) => x => r0 + ((x - d0) / (d1 - d0)) * (r1 - r0);
+scaleLinear(0, 100, 0, 640)(50);  // 320 —— 实跑 ✓(核验样本)
+```
+
+**② log 标度 = 在对数域跑同一管线:**
+
+```js
+const scaleLog = (d0, d1, r0, r1, b = 10) => {
+  const lb = Math.log(b);
+  return x => r0 + ((Math.log(x)/lb - Math.log(d0)/lb) / (Math.log(d1)/lb - Math.log(d0)/lb)) * (r1 - r0);
+};
+scaleLog(1, 1000, 0, 640)(10);    // 213.33(1 个十进位 = 1/3 量程)—— 实跑 ✓
+```
+
+d3 实现细节:`transformLog(x) = Math.log(x)` 后复用同一 transformer;负值/镜像走 `−log(−x)` 分支。
+
+**③ 同构旁证(同一公式在不同场景的三次出现):**
+
+```js
+// 滚动进度归一化(scroll-driven 的 JS 等价,调研 14§6.2)
+const viewProgress = (scrollY, elTop, elH, vh) =>
+  Math.min(1, Math.max(0, (scrollY - (elTop - vh)) / (elH + vh)));
+// Utopia clamp:S(vw) = clamp(min, intercept + slope × vw, max) —— 同一段线性回归(modular-scale-math)
+```
+
+核验输出(实跑):linear 中点 50→320 ✓;log 的 10→213.33(1 个十进位恰占 1/3 量程)✓。
+
+## 动效与交互
+
+- **拖输入滑杆**:t 与 y 读数逐帧更新,曲线上的圆点同步滑动——「先归一化再映射」的每一步可见;
+- **切 log**:曲线从直线弯成对数曲线;domain 0→100 切 log 时 demo 钳到 1 并亮警告——定义域边界不是静默处理;
+- **调 domain/range**:压缩 domain(0→20)会放大斜率,曲线更陡——「数据范围决定映射增益」用曲线斜率直接可读;
+- 交互全部由用户输入驱动,无自主动画;入场淡入尊重 `prefers-reduced-motion`。
+
+## 真实产品案例
+
+- **d3-scale**:continuous.js 的 `normalize(x) = (x−a)/(b−a)` 与 interpolate 的组合就是本条公式;ObservedArray 图表库、Observable Plot 延用同一套标度思想——数据可视化的公共底座(源码实读核验);
+- **CSS scroll-driven animations**:规范语义 `animation-range: cover 0% cover 100%` 的 JS 等价正是 viewProgress 归一化公式(调研 14§6.2,Chrome 官方文档对 range 语义的说明);本站 scroll-driven-animations 条目是它的 CSS 形态;
+- **OKLCH 色阶(dataviz-ordinal-scale 上游)**:调研核验的红→蓝 OKLCH 五站色阶(255,0,0 → 229,0,122 → 183,0,185 → 122,23,225 → 26,51,229)——把 [0,1] 的 t 喂给 OKLCH 域插值(短弧 H),中途品红过渡正是感知均匀色阶的特征,而 sRGB 域插值会中途发灰(调研 14§8.3)。
+
+## 公式的量纲与边界
+
+| 变量 | 量纲 | 取值边界 | 退化情形 |
+| --- | --- | --- | --- |
+| `x`(输入) | 数据单位(任意) | d3 默认不钳制(可外推);clamp(true) 后钳入 [d0,d1] | 外推输出越界是合法语义;图表用通常显式 clamp |
+| `d0, d1`(domain) | 数据单位 | d1≠d0;d0>d1 合法(镜像映射) | d0=d1 除零(demo 拦截);倒置 domain 输出倒置,d3 语义一致 |
+| `t`(归一化) | 无单位 | [0,1](钳制后);外推时可越界 | t=0/1 是两端锚;中间 t 与数据单位无关——两段仿射的公共枢纽 |
+| `r0, r1`(range) | 输出单位(px/通道/α) | r1≠r0 才有增益 | r0=r1 → 常量映射(标度失效,应直接用常量) |
+| `log` 的 domain | 数据单位 | 必须 d0>0 且 d1>0 | x≤0 无定义;demo 钳到最小正域并警告;d3 负值走 −log(−x) 镜像分支 |
+| `b`(log 底) | 无单位 | 10 或 2;数学上底只改刻度不改曲线形状 | 底数不同曲线等价(差一个常数因子),刻度标签才需要底 |
+| `slope`(线性增益) | 输出单位/数据单位 | (r1−r0)/(d1−d0) | slope→∞(domain 收缩)曲线陡到垂直;负 slope = 反向映射(合法) |
+| 输出 `y` | 输出单位 | [r0,r1](钳制后) | 越界 y 交给消费方裁剪(px 超画布、色值超色域)——标度不管渲染 |
+
+经验口径:先问「跨几个数量级」——0 个用 linear,≥2 个考虑 log;滚动/进度归一化一律先 clamp 再映射;输出到色彩时让标度输出 t、由色带层负责插值。姊妹条目:**dataviz-ordinal-scale**(t→色带那段)、**scroll-driven-animations**(CSS 原生归一化)、**modular-scale-math**(同构的 clamp 线性回归)、**dataviz-chart-axes**(标度的可视呈现)。

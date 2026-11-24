@@ -1,0 +1,113 @@
+{
+  "name": "Spring Integrator",
+  "nameZh": "弹簧积分器",
+  "aliases": ["semi-implicit Euler", "symplectic Euler", "damped harmonic oscillator", "spring simulation"],
+  "category": "motion",
+  "system": "community",
+  "star": 3,
+  "tagline": {
+    "zh": "UI 弹簧的物理内核:m·ẍ+c·ẋ+k·(x−target)=0 用半隐式欧拉离散——先更新速度、再用新速度推进位置;ζ=c/2√(km) 一行锁死手感,dt 决定能量守恒还是爆炸。",
+    "en": "The physics core of UI springs: m·ẍ+c·ẋ+k·(x−target)=0 discretized with semi-implicit Euler — update velocity first, then push position with the NEW velocity; ζ=c/2√(km) pins the feel in one line, dt decides energy conservation vs explosion."
+  },
+  "origin": {
+    "zh": "阻尼谐振子是二阶系统控制论标准模型;半隐式欧拉(Euler–Cromer/辛欧拉)迭代式逐字核对自 Wikipedia《Semi-implicit Euler method》——『v_{n+1}=v_n+g(t_n,x_n)Δt; x_{n+1}=x_n+f(t_n,v_{n+1})Δt』;工业对照为 Motion(原 Framer Motion)物理弹簧:默认 k=100、c=10、m=1,bounce→ζ 映射源码注释『0 为临界阻尼』(自 npm motion-dom@14.14.0 包内 spring.mjs 实读,调研 14§3)。",
+    "en": "The damped harmonic oscillator is a standard second-order control-theory model; the semi-implicit (Euler–Cromer/symplectic) iteration is quoted verbatim from Wikipedia's 'Semi-implicit Euler method' — 'v_{n+1}=v_n+g(t_n,x_n)Δt; x_{n+1}=x_n+f(t_n,v_{n+1})Δt'; the industrial counterpart is Motion's (ex-Framer Motion) physical spring: defaults k=100, c=10, m=1, and the bounce→ζ mapping documented as '0 = critically damped' (read from motion-dom@14.14.0's spring.mjs, research 14 §3)."
+  },
+  "params": [
+    {
+      "type": "number",
+      "name": "stiffness",
+      "min": 10,
+      "max": 400,
+      "step": 1,
+      "default": 100,
+      "effect": {
+        "zh": "弹簧刚度 k(N/m)。默认 100 = Motion 物理弹簧出厂值;决定固有角频率 ω₀=√(k/m)——k 越大节奏越急促,过冲比例(只由 ζ 决定)不变。",
+        "en": "Spring stiffness k (N/m). Default 100 = Motion's factory spring; sets the natural frequency ω₀=√(k/m) — larger k quickens the rhythm while overshoot ratio (governed only by ζ) stays put."
+      }
+    },
+    {
+      "type": "number",
+      "name": "damping",
+      "min": 0.5,
+      "max": 60,
+      "step": 0.5,
+      "default": 10,
+      "effect": {
+        "zh": "阻尼系数 c(N·s/m)。默认 10 与 k=100、m=1 组成 Motion 出厂手感:ζ=0.5、过冲 16.3%;调到 20 即临界阻尼(ζ=1,最快无过冲)。",
+        "en": "Damping coefficient c (N·s/m). Default 10 with k=100, m=1 is Motion's factory feel: ζ=0.5, overshoot 16.3%; raise to 20 for critical damping (ζ=1, fastest with no overshoot)."
+      }
+    },
+    {
+      "type": "number",
+      "name": "mass",
+      "min": 0.2,
+      "max": 4,
+      "step": 0.1,
+      "default": 1,
+      "effect": {
+        "zh": "质量 m(kg)。默认 1;放大 m 同时压低 ω₀ 并压低 ζ(临界阻尼 c_crit=2√(km) 抬高)——「重元素反应慢且更容易晃」的数学来源。",
+        "en": "Mass m (kg). Default 1; growing m lowers both ω₀ and ζ (while critical damping c_crit=2√(km) rises) — the math behind 'heavy elements feel slower and wobblier'."
+      }
+    },
+    {
+      "type": "number",
+      "name": "dt",
+      "unit": "ms",
+      "min": 2,
+      "max": 40,
+      "step": 1,
+      "default": 4,
+      "effect": {
+        "zh": "积分步长(毫秒)。默认 4ms ≈ 1/240s(调研核验精度);dt≤1/120 时辛积分器能量不漂移;dt 过大时半隐式会先变硬后发散,而显式欧拉在更小的 dt 就爆炸——demo 把两条曲线叠出来对照。",
+        "en": "Integration step (milliseconds). Default 4ms ≈ 1/240s (the research's verified precision); at dt≤1/120 the symplectic integrator keeps energy drift-free; large dt first stiffens then diverges the semi-implicit curve, while explicit Euler explodes at even smaller dt — the demo overlays both curves."
+      }
+    }
+  ],
+  "browserSupport": {
+    "note": {
+      "zh": "纯 JS 数值计算,无平台差异;浏览器动画一般按 rAF 帧节拍取 dt(60Hz≈16.7ms),本条公式的 dt 指物理步长——帧率波动时按真实 Δt 逐步积分即可,必要时对单步 dt 设上限防大帧间隔爆炸。",
+      "en": "Pure JS numerics, no platform variance; browser animations typically take dt from the rAF frame cadence (60Hz ≈ 16.7ms) — here dt means the physics step: integrate with the real Δt per frame, and cap a single dt to guard against long-frame blowups."
+    }
+  },
+  "fallback": {
+    "zh": "数值发散(显式欧拉、dt 过大)时钳制单步 dt(如 ≤1/120s)并视作能量泄漏处理;不支持高精度定时器的环境按帧长积分即可——弹簧积分对精度不敏感,ζ 定形状、dt 只定保真度。",
+    "en": "On numerical divergence (explicit Euler, oversized dt), clamp the per-step dt (e.g. ≤1/120s) and treat it as energy leakage; on environments without high-resolution timers, integrate per frame length — the integrator is precision-tolerant: ζ sets the shape, dt only the fidelity."
+  },
+  "scenarios": {
+    "use": [
+      { "zh": "自研弹簧动画引擎:手写积分器而非依赖库,先算 ζ 再定参数", "en": "In-house spring engines: hand-write the integrator instead of pulling a library; compute ζ before picking parameters" },
+      { "zh": "弹簧→linear() 采样编译的采样端:物理步长积分后输出关键帧(linear-easing 条目的上游)", "en": "The sampling side of spring→linear() compilation: integrate at the physics step, emit keyframes (upstream of the linear-easing entry)" },
+      { "zh": "设计系统动效 token 定标:给定目标过冲/整定时间反解 ζ 与 k", "en": "Calibrating motion tokens for a design system: solve ζ and k back from target overshoot/settling time" },
+      { "zh": "评审弹簧手感:用 OS=e^(−πζ/√(1−ζ²)) 与 t_s≈4/(ζω₀) 把「感觉」换算成数字", "en": "Reviewing spring feel: convert 'vibes' into numbers with OS=e^(−πζ/√(1−ζ²)) and t_s≈4/(ζω₀)" }
+    ],
+    "avoid": [
+      { "zh": "显式欧拉做生产积分——同一参数同一 dt 下比半隐式更早发散、能量持续注入", "en": "Explicit Euler in production — it diverges earlier and pumps energy where semi-implicit conserves" },
+      { "zh": "把帧间隔原样当 dt 而不设上限——掉帧到 200ms 的一帧会把弹簧炸飞", "en": "Using raw frame gaps as dt without a cap — one 200ms hiccup flings the spring off screen" },
+      { "zh": "只调 k 不看 ζ——k 只改节奏不改过冲比例,「弹多少」永远由 ζ 说了算", "en": "Tuning k while ignoring ζ — k changes only the tempo; how far it overshoots is ζ's verdict alone" },
+      { "zh": "超大 m 配小 c 的「仪式感」参数——ω₀ 掉到个位数,整定时间以秒计,交互像陷进泥里", "en": "Ceremonial giant-m + tiny-c combos — ω₀ drops to single digits and settling takes seconds, interactions sink into mud" }
+    ]
+  },
+  "a11y": {
+    "zh": "弹簧参数最终都落回 CSS transform 动画,必须全局尊重 prefers-reduced-motion(跳过或直落终态);过冲不是装饰——对前庭障碍用户大幅度过冲是真实的生理不适,ζ≥0.8 是无障碍弹簧的稳妥档;数值曲线 demo 不承载唯一信息,读数以文本同步输出。",
+    "en": "Spring parameters ultimately drive CSS transform animation and must honor prefers-reduced-motion globally (skip or jump to the end state); overshoot is not decoration — large overshoot causes genuine vestibular discomfort, making ζ≥0.8 the safe accessibility tier; the plotted curve carries no sole information, readings are duplicated as text."
+  },
+  "sources": [
+    "https://en.wikipedia.org/wiki/Semi-implicit_Euler_method",
+    "https://en.wikipedia.org/wiki/Damping_ratio",
+    "https://motion.dev/docs/react-transitions"
+  ],
+  "promptTemplate": {
+    "goal": {
+      "zh": "手写一个零依赖弹簧积分器:半隐式欧拉迭代式 + ζ/过冲/整定时间解析读数,参数 k/c/m/dt 可调,能复现 Motion 默认手感(ζ=0.5、过冲≈16.3%)。",
+      "en": "Hand-write a zero-dependency spring integrator: the semi-implicit iteration plus analytic ζ/overshoot/settling readouts, with k/c/m/dt adjustable, reproducing Motion's default feel (ζ=0.5, overshoot≈16.3%)."
+    },
+    "acceptance": [
+      { "zh": "迭代顺序必须是先速度后位置:v_{n+1}=v_n+(−k(x_n−target)−c·v_n)/m×dt;x_{n+1}=x_n+v_{n+1}×dt", "en": "Velocity first, position second: v_{n+1}=v_n+(−k(x_n−target)−c·v_n)/m×dt; x_{n+1}=x_n+v_{n+1}×dt" },
+      { "zh": "解析读数齐全:ω₀=√(k/m)、c_crit=2√(km)、ζ=c/(2√(km))、OS=e^(−πζ/√(1−ζ²))、t_s≈4/(ζω₀)", "en": "Full analytic readouts: ω₀=√(k/m), c_crit=2√(km), ζ=c/(2√(km)), OS=e^(−πζ/√(1−ζ²)), t_s≈4/(ζω₀)" },
+      { "zh": "Motion 默认参数 (100,10,1) 必须得 ζ=0.5、OS≈16.3%、c_crit=20", "en": "Motion's defaults (100,10,1) must yield ζ=0.5, OS≈16.3%, c_crit=20" },
+      { "zh": "dt 默认 ≤1/120s;单步 dt 有上限保护,显式欧拉只作对照不进生产", "en": "Default dt ≤1/120s; per-step dt is capped; explicit Euler is for comparison only, never production" },
+      { "zh": "仿真与解析互相验证:仿真过冲与 OS 差 <1%(dt=1/240 时约 0.3%)", "en": "Simulation cross-checks analytics: sim overshoot within <1% of OS (≈0.3% at dt=1/240)" }
+    ]
+  }
+}

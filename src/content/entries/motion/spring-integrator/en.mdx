@@ -1,0 +1,92 @@
+## Structure & DOM
+
+The demo is a **two-curve comparison**: against the same 0→1 target step, the semi-implicit and explicit Euler trajectories share one coordinate system, with readout chips listing the analytic and measured ζ/overshoot/settling; a ball replays the semi-implicit curve in real time beneath the plot:
+
+```html
+<div class="sp-plot">
+  <svg viewBox="0 0 600 220"><!-- target line + two x(t) traces --></svg>
+</div>
+<div class="sp-read">
+  <span>ζ = c/(2√(km)) = 0.50</span>
+  <span>OS = e^(−πζ/√(1−ζ²)) = 16.3%</span>
+  <span>t_s ≈ 4/(ζω₀) = 0.78s</span>
+</div>
+```
+
+Key points:
+
+- Both curves share one k/c/m/dt — the only difference is the **integration order** (position-first vs velocity-first), and at large dt their fates diverge completely;
+- Readouts come in two flavors: analytic formulas computed directly (OS, t_s, c_crit) and measurements taken off the discrete trace (peak, last out-of-band moment), each cross-checking the other;
+- The replaying ball is only a visualization of the readings, `aria-hidden`; the real information lives in the text readouts.
+
+## Styling & Parameters
+
+Four JS-type parameters (k/c/m/dt), subscribed from the store, integrated in-page with zero dependencies. The formulas, step by step (research 14 §3; the iteration quoted verbatim from Wikipedia, the industrial defaults read from motion-dom@14.14.0 source):
+
+**① The ODE and its semi-implicit (symplectic) Euler discretization — velocity first, position second:**
+
+```
+m·ẍ + c·ẋ + k·(x − target) = 0
+
+v_{n+1} = v_n + ( −k·(x_n − target) − c·v_n ) / m × dt
+x_{n+1} = x_n + v_{n+1} × dt          ← uses v_{n+1} (explicit Euler would use v_n)
+```
+
+**② Feel analytics (standard control-theory results; the research ran them against the simulation: analytic OS=0.163 vs simulated peak 115.89 at dt=1/240, a 0.3% gap):**
+
+```js
+const springAnalytics = (k, c, m) => {
+  const w0 = Math.sqrt(k / m), z = c / (2 * Math.sqrt(k * m)); // ω0, ζ
+  return { w0, z, ccrit: 2 * Math.sqrt(k * m),
+    OS: z < 1 ? Math.exp(-Math.PI * z / Math.sqrt(1 - z * z)) : 0, // overshoot ratio
+    ts2: z > 0 ? -Math.log(0.02) / (z * w0) : Infinity };          // 2% settling
+};
+```
+
+**③ The integrator itself (returns the whole trace for plotting/sampling):**
+
+```js
+function springSim(k, c, m, x0, target, dt = 1 / 240, T = 2) {
+  let x = x0, v = 0, peak = 0, ts2 = 0;
+  const band = 0.02 * Math.abs(target - x0);
+  for (let i = 1; i <= Math.round(T / dt); i++) {
+    const a = (-k * (x - target) - c * v) / m;
+    v += a * dt;                            // velocity first
+    x += v * dt;                            // then position (with the NEW v)
+    if (x - target > peak) peak = x - target;
+    if (Math.abs(x - target) > band) ts2 = (i + 1) * dt;
+  }
+  return { peak, ts2, final: x };
+}
+```
+
+Verified output (run here, k=100, c=10, m=1 — Motion's defaults): ω0=10, ζ=0.5, c_crit=20; analytic overshoot OS=0.163 → expected peak 116.30, simulated 115.89 @t≈0.358s; analytic 2% settling 0.7824s vs simulated 0.7917s ✓. Working bands: UI feel ζ∈[0.6, 1] (0.7≈4.6% overshoot, 0.5≈16.3%), k∈[50,300], dt≤1/120 keeps the symplectic integrator drift-free.
+
+## Motion & Interaction
+
+- **Parameters recompute live**: drag k/c/m and the curve reintegrates with readouts in sync — moving c from 10 to 20 (ζ 0.5→1) makes overshoot vanish while settling slightly lengthens; "critical damping is fastest without overshoot" reads straight off the plot;
+- **The dt experiment**: pull dt from 4ms to 30–40ms and the semi-implicit curve first stiffens (slow energy drift) then diverges, while the explicit curve snowballs at even smaller dt — that fork is the symplectic integrator's entire value;
+- **Ball replay**: press "replay" to run the semi-implicit trace in real time over 2s; under `prefers-reduced-motion` the replay is skipped while the curve and readouts stay;
+- Divergence guard: a trace leaving the plot window (±3) is truncated and flagged "diverged", never drawn to infinity.
+
+## Real-world examples
+
+- **Motion's (ex-Framer Motion) default spring**: source `stiffness:100, damping:10, mass:1` → ζ=0.5, overshoot≈16.3%, settling≈0.78s — the "factory feel" of UI springs is exactly this ODE solved at k/c/m (100,10,1) (read from motion-dom@14.14.0 source);
+- **Apple's `UISpringTimingParameters(dampingRatio:)`**: iOS promotes ζ to a first-class API parameter ('more damped, less bouncy → 1.0; bouncier → near 0.15'), solving the same second-order equation internally — platform-level evidence (research 10 §4.3, cross-confirmed by the damping-craft entry);
+- **The iOS segmented-control indicator (the slot-spring entry)**: the bubble sliding between slots is an interruptible spring — the integrator holds current x/v and the next frame resumes iterating from (x_n, v_n), which is precisely what "interruptible physical animation" means in engineering.
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| `k` (stiffness) | N/m | practically 50–300; >0 | k→0 removes the restoring force — the target is never reached; affects ω₀ and c_crit only, never the overshoot ratio |
+| `c` (damping) | N·s/m | ≥0; c=0 oscillates forever | c=c_crit=2√(km) is critical (fastest, no overshoot); c>c_crit is overdamped (creeping arrival) |
+| `m` (mass) | kg | >0; practically 0.2–4 | m→∞ sends ω₀→0 (frozen); m enters both ω₀ and ζ, so growing it means "slower and wobblier" |
+| `dt` | s (physics) or ms (UI) | ≤1/120 to conserve energy; 1/240 is the research's verified precision | oversized dt: semi-implicit stiffens then diverges, explicit explodes earlier; dt→0 converges both to the analytic solution |
+| `ζ` | unitless | &lt;1 underdamped, =1 critical, >1 overdamped | ζ≤0 removes damping (OS formula diverges); as ζ→1⁻, OS→0 and ωd→0 — the formulas stay continuous |
+| `ω₀=√(k/m)` | rad/s | sets the tempo; typically 5–20 for UI | ζ and ω₀ are orthogonal: ζ shapes (does it wobble), ω₀ scales time (how fast) |
+| `OS` | unitless ratio | 0 (ζ≥1) up to &lt;1 | OS=e^(−πζ/√(1−ζ²)) holds only underdamped; overdamped gives OS≡0 (no peak) |
+| `t_s (2%)` | s | ≈4/(ζω₀); infinite at ζ=0 | the approximation follows the envelope e^(−ζω₀t) and runs conservative when overdamped — trust the last out-of-band moment instead |
+| `target` | same unit as x (e.g. px) | any finite value | the band (2% of |target−x0|) scales with distance, so readouts are amplitude-invariant |
+
+Working doctrine: compute ζ first to set the shape (0.5 bouncy, 0.8 restrained, 1 critical), then set the tempo with k or ω₀; dt only governs fidelity and stays ≤1/120. Sibling entries: **damping-craft** (ζ feel tiers), **slot-spring** (interruptible-resume engineering), **motion-spring / swiftui-spring / m3-spring-tokens** (how platforms expose ζ as API), **linear-easing** (compiling the integrated trace into linear() keyframes).

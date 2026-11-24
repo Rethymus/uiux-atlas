@@ -1,0 +1,94 @@
+## Structure & DOM
+
+The demo is a **conversion pipeline**: one sRGB hex goes in (shared by panel and demo via the store), the five stages run in-page, and every intermediate value is visible:
+
+```html
+<ol class="ok-chain">
+  <li><span>sRGB 8-bit</span><code>255, 0, 0</code></li>
+  <li><span>Linear sRGB (γ decode)</span><code>1.0000, 0.0000, 0.0000</code></li>
+  <li><span>LMS (matrix ①)</span><code>1.0000, 0.0000, 0.0000</code></li>
+  <li><span>LMS′ (cube roots)</span><code>1.0000, 0.0000, 0.0000</code></li>
+  <li><span>OKLab (matrix ②)</span><code>0.6280, 0.2249, 0.1258</code></li>
+  <li><span>OKLCH (cylindrical)</span><code>L 0.628 · C 0.2577 · H 29.23°</code></li>
+</ol>
+```
+
+Key points:
+
+- The five stages have a fixed order: **γ decode → matrix ① (linear sRGB→LMS) → per-channel cube roots → matrix ② (LMS′→OKLab) → cylindrical coordinates (√, atan2)** — reordering breaks everything;
+- The demo also runs the **reverse chain** back to sRGB and shows the max round-trip error (6.7e-7 in the reference implementation);
+- Each row carries a small color chip — "does this stage still look like the original color" at a glance.
+
+## Styling & Parameters
+
+The only parameter, `source` (hex, cssVar `--ok-source`), comes from the panel; all math runs in-page with zero dependencies. The formulas, step by step (research 14 §2.1/§2.2/§2.4; all 16 matrix constants checked bit-for-bit against Bottosson's original and CSS Color 4):
+
+**① γ decode (sRGB EOTF, identical to CSS Color 4 / WCAG 2.1):**
+
+```js
+const srgb2lin = c => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const lin2srgb = c => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.cbrt(c * c * c) - 0.055);
+```
+
+Note: WCAG 2.1's official note 2 states the threshold was 0.03928 before 2021-05 (taken from an older spec) and was updated to 0.04045, with no practical difference in results.
+
+**② Forward chain (two 3×3 matrices + cube roots):**
+
+```js
+function srgbToOklab(r, g, b) {
+  [r, g, b] = [srgb2lin(r), srgb2lin(g), srgb2lin(b)];
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;   // matrix ①
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+  const [l_, m_, s_] = [Math.cbrt(l), Math.cbrt(m), Math.cbrt(s)];    // per-channel cbrt
+  return [0.2104542553*l_ + 0.7936177850*m_ - 0.0040720468*s_,        // matrix ②
+          1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_,
+          0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_];
+}
+// OKLab → OKLCH: C = √(a²+b²); H = atan2(b,a)×180/π (negative angles +360; NaN when C≤4e-6)
+```
+
+**③ Reverse chain (transposed matrix + cubes):**
+
+```js
+function oklabToSrgb(L, a, b) {
+  const l_ = L + 0.3963377774*a + 0.2158037573*b,
+        m_ = L - 0.1055613458*a - 0.0638541728*b,
+        s_ = L - 0.0894841775*a - 1.2914855480*b;
+  const [l, m, s] = [l_**3, m_**3, s_**3];
+  return [4.0767416621*l - 3.3077115913*m + 0.2309699292*s,
+         -1.2684380046*l + 2.6097574011*m - 0.3413193965*s,
+         -0.0041960863*l - 0.7034186147*m + 1.7076147010*s].map(lin2srgb);
+}
+```
+
+Verified output (run here): white → OKLab (1, 0, 0) ✓; pure red → OKLab (0.628, 0.2249, 0.1258), OKLCH (0.628, 0.2577, 29.234) — matching Bottosson's published values (0.6279554, 0.2248636, 0.1258463) and the color.js test vectors; the sRGB→OKLab→sRGB max round-trip error is **6.7e-7**.
+
+## Motion & Interaction
+
+- **New color, new chain**: change `source` in the panel (or click the in-demo reference chips: white / pure red / AA gray #767676) and all six rows refresh stage by stage, chips in sync;
+- **Self-verification experiment**: set white and read row by row — linear sRGB is (1,0,0), matrix ① leaves it (1,0,0), OKLab (1,0,0), C=0 (grays carry no hue, H is NaN) — the neutral axis never moves, intuitive evidence of the matrices' structure;
+- **Round-trip audit**: every pass sends OKLab back to sRGB and shows max|Δchannel|, forever at the 10⁻⁷ scale (pure float noise, impossible to see by eye);
+- No autonomous animation; the entrance fade respects `prefers-reduced-motion`.
+
+## Real-world examples
+
+- **CSS Color 4 / browser oklch() implementations**: the spec's chapter 13 writes the same XYZ(D65)→LMS→OKLab chain (recomputed in 64-bit) as a normative algorithm, and Chrome/Safari/Firefox parse oklch() through it — this entry is the hand-rolled version of the built-in;
+- **Bottosson's reference implementation and color.js**: the author's C++ code (the bit-level baseline) and color.js test vectors expect pure red at (0.6279554, 0.2248636, 0.1258463), agreeing with this implementation to the first four digits — the golden sample of open-source color libraries;
+- **Tailwind CSS v4 palette** (a production counter-sample): the official blog states v4 defines all its scales in OKLCH and derives sRGB and P3 compat values at build time — "OKLCH first, sRGB for delivery" industrialized (community reporting; the research did not fetch their source, but the method itself is verified by this entry's formulas).
+
+## Units, bounds & degenerate cases
+
+| Variable | Unit | Working bounds | Degenerate cases |
+| --- | --- | --- | --- |
+| sRGB input | 8-bit integer or [0,1] real | [0,255] / [0,1]; α never enters the matrices | negatives or >255 are undefined — clamp first; out-of-range input silently yields false colors |
+| Linear sRGB | linear light intensity (unitless real) | [0,1] within the legal domain | gamma decode breakpoint: c≤0.04045 takes the straight segment; the two branches meet continuously at the joint |
+| LMS | L/M/S cone responses (unitless) | roughly [0,1] for legal sRGB; can go negative (out of gamut) | negative LMS = beyond the sRGB gamut; cbrt preserves sign so math still runs, but values must be clipped before delivery |
+| OKLab L | perceptual lightness (unitless) | legal domain [0,1]; matrix output can slightly overshoot | L=0/1 anchor black/white; on the gray axis a=b≈0 |
+| OKLab a, b | perceptual chroma components (unitless) | typically within ±0.4 | a=b=0 → achromatic; C=√(a²+b²)≤4e-6 sets H to NaN (divide-by-zero guard) |
+| C (OKLCH) | perceptual chroma (unitless) | 0–0.4 in practice; capped by L inside sRGB gamut | C=0 → gray, H arbitrary (undefined); implementations return NaN, not 0 |
+| H (OKLCH) | angle (degrees) | [0,360); atan2's range (−180,180] shifted +360 when negative | gray has no meaningful H; interpolation across 0°/360° needs the short-arc fix (see gradient-interpolation) |
+| Reverse output | sRGB [0,1] | legal domain [0,1] | out-of-range (negative/over-bright) = the target OKLCH exceeds the sRGB gamut; clip, then quantize to 8-bit |
+| Round-trip error | max channel absolute difference | ≤6.7e-7 (measured on the reference implementation) | pure float noise; anything at 1e-3 scale means a mistyped constant |
+
+Working doctrine: **OKLCH first, sRGB last** — interpolate and pick colors in the perceptual domain, convert back before delivery (or ship P3 alongside); the γ decode doubles as WCAG relative luminance, one codebase serving both. Sibling entries: **oklch-workflow** (the fix-L selection workflow), **oklch-space** (the space itself), **wcag-contrast** (the second consumer of the same γ decode), **gradient-interpolation** (short-arc hue interpolation).

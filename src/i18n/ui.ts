@@ -107,7 +107,9 @@ export const ui = {
       title: "页面未找到",
       message: "你要找的页面不存在或已被移动——从首页或下方分类重新出发。",
     },
-    langSwitch: "中文",
+    /** 语言切换钮文案 = 目标语言(VD-06):zh 站链接去 en 版,应标「EN」;
+        此前标「中文」读作指向自身,与 en 站(en.langSwitch="中文" 指向 zh,正确)不对称 */
+    langSwitch: "EN",
   },
   en: {
     siteName: "UI/UX Design Atlas",
