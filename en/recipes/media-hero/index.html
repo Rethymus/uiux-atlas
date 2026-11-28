@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="Parallax scrolling + kinetic typography + aurora gradient: the media hero composition."><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>Media Hero · UI/UX Design Atlas</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/en/recipes/media-hero/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/media-hero/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/"><meta property="og:site_name" content="UI/UX Design Atlas"><meta property="og:type" content="website"><meta property="og:title" content="Media Hero"><meta property="og:description" content="Parallax scrolling + kinetic typography + aurora gradient: the media hero composition."><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/en/recipes/media-hero/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Media Hero"><meta name="twitter:description" content="Parallax scrolling + kinetic typography + aurora gradient: the media hero composition."><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/en/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX Design Atlas </a> <nav class="site-nav" aria-label="Atlas"> <a href="/uiux-atlas/en/styles/"> Styles </a><a href="/uiux-atlas/en/materials/"> Materials </a><a href="/uiux-atlas/en/motion/"> Motion </a><a href="/uiux-atlas/en/color/"> Color </a><a href="/uiux-atlas/en/type/"> Typography </a><a href="/uiux-atlas/en/layout/"> Layout </a><a href="/uiux-atlas/en/components/"> Components </a><a href="/uiux-atlas/en/icons/"> Icons </a><a href="/uiux-atlas/en/dataviz/"> Data Viz </a><a href="/uiux-atlas/en/principles/"> Principles </a>  <a href="/uiux-atlas/en/resources/"> Resources </a> </nav> <a class="lang-switch" href="/uiux-atlas/recipes/" hreflang="zh-CN" rel="alternate"> 中文 </a>  <button type="button" class="site-search" data-palette-open aria-label="Search / 搜索" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch color theme" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/en/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> Design recipes </a> </p>  <header class="list-head"> <h1 class="list-title"> Media Hero  </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">3</span> entries </span> </p> </header> <p class="res-intro">Parallax scrolling + kinetic typography + aurora gradient: the media hero composition.</p>  <h2 class="section-title">Combines</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/en/motion/parallax/" style="view-transition-name: card-motion-parallax; --i: 0;"> <span class="entry-name">Parallax</span> <span class="entry-tagline">Depth from per-layer scroll-rate differences: background layers follow scrolling slower than the foreground (follow ratio p, 0 = pinned to viewport, 1 = synced with content), implemented per layer with scroll() timelines of scroll-driven animations that can run off the main thread; reduced-motion renders the static layers.</span> <span class="entry-meta"> <span class="chip">Web Standard</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/kinetic-typography/" style="view-transition-name: card-motion-kinetic-typography; --i: 1;"> <span class="entry-name">Kinetic Typography</span> <span class="entry-tagline">Two routes: registered variable-font axes (wght et al.) animate weight/width — one variable, zero reflow; or split text into characters/words for staggered reveal. The demo headline both rises letter by letter and thickens continuously on the axis.</span> <span class="entry-meta"> <span class="chip">Web Standard</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/materials/aurora-gradient/" style="view-transition-name: card-materials-aurora-gradient; --i: 2;"> <span class="entry-name">Aurora Gradient</span> <span class="entry-tagline">Aurora gradient: stacked low-luminance oklch radial-gradient blobs over a conic base, blurred and saturated as one layer, then drifted slowly — an ambient glow at near-zero cost.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">Why these combine</h2> <p class="res-intro">Research 16 §7 recipe-e: parallax is officially endorsed — M3&#39;s transition doc states iOS forward/backward transitions use parallax (&quot;background slides slower than the foreground&quot;) to reduce motion, a reduction tool not a flourish (https://m3.material.io/styles/motion/transitions/transition-patterns ) (§8 craft 9); Apple adds the background extension effect + scroll edge effect (https://developer.apple.com/design/human-interface-guidelines/layout ). Demo values take entry-schema defaults: rate 0.3 (no official recommendation exists; 0.2–0.6 is the common community band, unverified) and mode css = declarative animation-timeline: scroll() (can run off the main thread), auto-falling back to JS (rAF + scroll events) when unsupported. Kinetic typography = Apple Dynamic Type hierarchy (Large default: Body 17pt / Large Title 34pt; visionOS Extra Large Title for editorial layouts, https://developer.apple.com/design/human-interface-guidelines/typography ) + M3 type-scale-tokens (https://m3.material.io/styles/typography/type-scale-tokens ); demo takes entry-schema defaults: stagger 40ms / rise 600ms cubic-bezier(.2,.7,.3,1) / wght 400 (Inter Variable axis range 100–900) / reveal chars, with per-char aria-hidden + a whole-sentence aria-label preserving screen-reader semantics. The aurora-gradient backdrop has no official spec in any of the four systems → unverified (§9 list); it degrades per Apple&#39;s &quot;Don&#39;t use Liquid Glass in the content layer&quot; — entry-schema defaults: spots 4 / blur 42px / saturate 115% / drift 18s (demo tier; production ambience should be ~60s) / spotA 20% / spotB 70%, with the text card outside the filter layer holding 4.5:1. Motion red line: visionOS forbids ~0.2Hz sustained oscillation and feedback stays short and precise (https://developer.apple.com/design/human-interface-guidelines/motion ); under reduced-motion, parallax and drift stop entirely and characters render directly.</p> <p class="trend-note"> <span class="trend-note-label">Source</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 e「媒体头图叙事」+ §8 巧思 9(依据:M3 transition-patterns parallax、Apple layout/materials/motion/typography、M3 type-scale-tokens;极光渐变未证实,按条目 schema 演示默认落地)</span> </p>  <h2 class="section-title">Live demo</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>Live demo</span> <span>official default</span> </div> <div class="demo-stage-wrap">     <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="RIovF" prefix="r3" component-url="/uiux-atlas/_astro/MediaHero.DxVcPYMk.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;MediaHero&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Media Hero</span><div class="mh-scene" data-mode="css" data-reduced="false"><div class="mh-scroller" tabindex="0" role="region" aria-label="Media hero scroll demo"><div class="mh-world"><div class="mh-layer mh-far" aria-hidden="true"><div class="aur-layer"></div></div><div class="mh-layer mh-mid" aria-hidden="true"></div><div class="mh-edge" aria-hidden="true"></div><div class="mh-copy"><div><p class="mh-kicker">Media hero</p><h2 class="mh-title" aria-label="The story unfolds as you scroll"><span aria-hidden="true"><span class="mh-char" style="--ci:0">T</span><span class="mh-char" style="--ci:1">h</span><span class="mh-char" style="--ci:2">e</span><span class="mh-char" style="--ci:3"> </span><span class="mh-char" style="--ci:4">s</span><span class="mh-char" style="--ci:5">t</span><span class="mh-char" style="--ci:6">o</span><span class="mh-char" style="--ci:7">r</span><span class="mh-char" style="--ci:8">y</span><span class="mh-char" style="--ci:9"> </span><span class="mh-char" style="--ci:10">u</span><span class="mh-char" style="--ci:11">n</span><span class="mh-char" style="--ci:12">f</span><span class="mh-char" style="--ci:13">o</span><span class="mh-char" style="--ci:14">l</span><span class="mh-char" style="--ci:15">d</span><span class="mh-char" style="--ci:16">s</span><span class="mh-char" style="--ci:17"> </span><span class="mh-char" style="--ci:18">a</span><span class="mh-char" style="--ci:19">s</span><span class="mh-char" style="--ci:20"> </span><span class="mh-char" style="--ci:21">y</span><span class="mh-char" style="--ci:22">o</span><span class="mh-char" style="--ci:23">u</span><span class="mh-char" style="--ci:24"> </span><span class="mh-char" style="--ci:25">s</span><span class="mh-char" style="--ci:26">c</span><span class="mh-char" style="--ci:27">r</span><span class="mh-char" style="--ci:28">o</span><span class="mh-char" style="--ci:29">l</span><span class="mh-char" style="--ci:30">l</span></span></h2><p class="mh-sub">The background trails at rate 0.3 — 70% slower than the foreground, so scrolling reads as reduced motion, not spectacle; text always scrolls 1:1, readability first.</p><p class="mh-meta" aria-hidden="true"><span>rate 0.3 · mid <!-- -->0.6</span><span>blur 42px · saturate 115%</span><span>drift 18s(demo)</span><span>stagger 40ms · rise 600ms</span></p></div><div class="mh-card"><h3>Parallax is a motion-reduction tool (M3&#x27;s own words)</h3><p>M3&#x27;s transition doc: iOS transitions use parallax, the background sliding slower than the foreground to reduce motion; aurora gradient has no official spec (unverified) — degraded to a plain gradient layer + dimming scrim per the no-Liquid-Glass-in-content rule, with the text card outside the filter layer holding 4.5:1.</p></div><div class="mh-card"><h3>reduced-motion: all three layers stop</h3><p>Parallax stops (static layers), aurora drift stops, per-char rise stops (direct render); text semantics never depend on animation. visionOS red line: avoid ~0.2Hz sustained oscillation.</p></div></div></div></div><p class="mh-layers" aria-hidden="true"><span><b>1</b> parallax: rate 0.3 · far 30% · mid 60% · mode <!-- -->…</span><span><b>2</b> aurora: 4 spots · blur 42px · sat 115% · drift 18s</span><span><b>3</b> kinetic: chars · stagger 40ms · rise 600ms · wght 400</span><span><b>4</b> scrim: scroll edge + dim · text outside filter</span></p></div><style>
+.mh-scene { position: absolute; inset: 0; overflow: hidden; display: flex; }
+/* ── 内层滚动器:前景文字 1:1 随滚动,背景层拖曳 ── */
+.mh-scroller {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+  background: oklch(0.22 0.04 265);
+  color: oklch(0.97 0.01 265);
+}
+.mh-world { position: relative; height: 1400px; overflow: hidden; }
+/* ── 远层 = 极光渐变背景(materials/aurora-gradient 官方默认;
+      外层壳承担视差位移,内层只承担 18s 慢漂,两层 transform 不打架)── */
+.mh-far { position: absolute; top: -60px; right: 0; left: 0; height: 760px; --m: 1; pointer-events: none; }
+.aur-layer {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(38% 42% at var(--aurora-spot-a, 20%) 25%, oklch(0.6 0.24 300 / .85), transparent 68%),
+    radial-gradient(42% 46% at var(--aurora-spot-b, 70%) 30%, oklch(0.72 0.17 195 / .8), transparent 68%),
+    radial-gradient(50% 55% at 78% 72%, oklch(0.68 0.18 340 / .8), transparent 68%),
+    radial-gradient(45% 50% at 32% 88%, oklch(0.75 0.15 85 / .75), transparent 68%),
+    conic-gradient(from 220deg at 60% 45%, oklch(0.35 0.06 265), oklch(0.3 0.05 210), oklch(0.35 0.06 265));
+  filter: blur(var(--aurora-blur, 42px)) saturate(calc(var(--aurora-saturate, 115%) / 100));
+  animation: aur-drift var(--aurora-drift, 18s) ease-in-out alternate infinite;
+}
+@keyframes aur-drift {
+  from { transform: translate(-2%, -1%) rotate(0.001deg) scale(1); }
+  to   { transform: translate(2%, 1%) rotate(2deg) scale(1.06); }
+}
+/* ── 中层 = 星点(rate×2 封顶 1 的推导分层,同 parallax 条目口径)── */
+.mh-mid {
+  position: absolute;
+  top: 340px;
+  right: 0;
+  left: 0;
+  height: 900px;
+  --m: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(1.8px 1.8px at 14% 12%, oklch(0.9 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.4px 1.4px at 38% 32%, oklch(0.85 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.8px 1.8px at 62% 20%, oklch(0.88 0.03 260) 45%, transparent 55%),
+    radial-gradient(1.2px 1.2px at 84% 44%, oklch(0.85 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 26% 58%, oklch(0.9 0.03 255) 45%, transparent 55%),
+    radial-gradient(1.3px 1.3px at 72% 72%, oklch(0.85 0.03 250) 45%, transparent 55%);
+}
+/* 声明式滚动驱动(css 模式):位移 = (1 − min(rate×m, 1)) × 可滚动距离,
+   层越远反向补偿越多 → 视口内移动越慢(背景慢于前景,M3 官方口径) */
+@supports (animation-timeline: scroll()) {
+  .mh-scene[data-mode="css"] .mh-layer {
+    animation: mh-drift linear both;
+    animation-timeline: scroll(nearest block); /* 必须写在 animation 简写之后 */
+    animation-duration: auto;
+  }
+}
+@keyframes mh-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc((1 - min(0.3 * var(--m, 1), 1)) * var(--mh-s, 900px))); }
+}
+/* ── 顶部 scroll edge 压暗 scrim(Apple scroll edge effect + 35% 压暗语义)── */
+.mh-edge {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 56px;
+  margin-bottom: -56px;
+  background: linear-gradient(180deg, oklch(0.2 0.03 265 / 0.88), transparent);
+  pointer-events: none;
+}
+/* ── 前景内容:1:1 随滚动,永不参加视差 ── */
+.mh-copy { position: relative; z-index: 1; padding: 64px 24px 0; display: flex; flex-direction: column; gap: 300px; }
+.mh-kicker {
+  margin: 0 0 14px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(0.85 0.05 250 / 0.9);
+}
+/* Dynamic Type Large Title 档:34pt = 34px / 行距 41(Apple Typography 官方表) */
+.mh-title {
+  margin: 0;
+  max-width: 15em;
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-variation-settings: "wght" var(--k-wght, 400);
+  text-wrap: balance;
+}
+/* 动态排版(reveal=chars):stagger 40ms × 序号,单字 rise 600ms cubic-bezier(.2,.7,.3,1) */
+.mh-char {
+  display: inline-block;
+  white-space: pre;
+  animation: mh-rise 600ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--ci) * 40ms);
+}
+@keyframes mh-rise {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to { opacity: 1; transform: none; }
+}
+.mh-sub {
+  margin: 16px 0 0;
+  max-width: 34em;
+  /* Dynamic Type Body 档:17pt = 17px / 行距 22 */
+  font-size: 17px;
+  line-height: 22px;
+  color: oklch(0.95 0.01 265 / 0.92);
+}
+.mh-card {
+  padding: 16px 18px;
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 14px;
+  max-width: 460px;
+  background: oklch(0.22 0.03 265 / 0.78);
+}
+.mh-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 620; color: oklch(0.97 0.01 265); }
+.mh-card p { margin: 0; font-size: 12.5px; line-height: 1.65; color: oklch(0.93 0.01 265 / 0.85); }
+.mh-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+.mh-meta span {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: oklch(0.9 0.02 265 / 0.85);
+  border: 1px solid oklch(1 0 0 / 0.18);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: oklch(0.2 0.03 265 / 0.6);
+}
+/* ── 读数与铭牌(mono 元数据纪律)── */
+.mh-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: oklch(0.16 0.02 265 / 0.78);
+  border: 1px solid oklch(1 0 0 / 0.14);
+  color: oklch(0.92 0.01 265 / 0.8);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+  z-index: 3;
+}
+.mh-layers b { font-weight: 600; color: oklch(0.98 0.01 265); }
+@media (max-width: 720px) {
+  .mh-layers { display: none; }
+  .mh-title { font-size: 28px; line-height: 34px; }
+}
+/* ── reduced-motion 一刀切:视差停 / 极光漂移停 / 逐字上升停(条目 fallback 口径)── */
+@media (prefers-reduced-motion: reduce) {
+  .mh-scene .mh-layer { animation: none !important; transform: none !important; }
+  .aur-layer { animation: none !important; }
+  .mh-char { animation: none !important; }
+}
+</style></div><!--astro:end--></astro-island>    </div> </div>  <h2 class="section-title">Composite replication prompt</h2> <astro-island uid="1JwJL9" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## Goal\n\nCompose a media hero: an aurora-gradient background (4 radial spots + conic base, blur 42px + saturate 115%, 18s slow drift) trails the inner scroll with parallax (rate 0.3, background slower than foreground to reduce motion) while foreground copy scrolls 1:1; the large title runs per-char kinetic typography at Dynamic-Type scale (stagger 40ms / rise 600ms / weight axis wght 400); a scroll-edge dimming scrim sits on top and the text card stays outside the filter layer holding 4.5:1.\n\nThis is a multi-component composition. Replicate it one-to-one; follow each component&#39;s official-default parameter snapshot below and do not alter the values.\n\n## Parameter Snapshot (per component · official defaults)\n\n### Parallax (motion/parallax)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;rate\&quot;,\n    \&quot;value\&quot;: \&quot;0.3\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;mode\&quot;,\n    \&quot;value\&quot;: \&quot;css\&quot;\n  }\n]\n```\n\n### Kinetic Typography (motion/kinetic-typography)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stagger\&quot;,\n    \&quot;value\&quot;: \&quot;40ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rise\&quot;,\n    \&quot;value\&quot;: \&quot;600ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;wght\&quot;,\n    \&quot;value\&quot;: \&quot;400\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;reveal\&quot;,\n    \&quot;value\&quot;: \&quot;chars\&quot;\n  }\n]\n```\n\n### Aurora Gradient (materials/aurora-gradient)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;spots\&quot;,\n    \&quot;value\&quot;: \&quot;4\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;blur\&quot;,\n    \&quot;value\&quot;: \&quot;42px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;saturate\&quot;,\n    \&quot;value\&quot;: \&quot;115%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;drift\&quot;,\n    \&quot;value\&quot;: \&quot;18s\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;spotA\&quot;,\n    \&quot;value\&quot;: \&quot;20%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;spotB\&quot;,\n    \&quot;value\&quot;: \&quot;70%\&quot;\n  }\n]\n```\n\n## Acceptance Criteria (per component)\n\n### Parallax\n- Per-layer translation = (1 − p_layer) × scrollable distance, with p_layer = min(rate × layer multiplier, 1)\n- Declarative implementation: animation-timeline: scroll() declared after the animation shorthand, duration auto\n- Animate transform only; include a JS contrast path (rAF + scroll events) labeled with its main-thread cost\n- Browsers without scroll() fall back to the JS path with a label; both fallback tiers keep content readable\n- Under prefers-reduced-motion: reduce, parallax switches off and static layers render; parallax layers are aria-hidden decoration carrying nothing critical\n\n### Kinetic Typography\n- Split units sit in overflow-hidden mask wrappers; the rise goes from translateY(110%) to 0 animating only transform+opacity\n- Stagger interval and rise duration follow the snapshot (stagger × i inline delays; rise via --kinetic-rise)\n- The weight axis drives font-variation-settings through a @property-registered variable with a 0.5s transition (browsers without it degrade to jumps)\n- The headline container carries the sentence in aria-label and every split span is aria-hidden; screen readers never hear letter fragments\n- Under prefers-reduced-motion: reduce, cancel the rise and axis transition; the text renders complete and static\n\n### Aurora Gradient\n- Blobs use radial-gradient(&lt;size&gt; at x% y%, oklch(L 0.18–0.24 H / .55–.85), transparent ~68%) with L pinned at 0.6–0.75\n- Blur and saturate apply to the whole layer container (filter: blur(Npx) saturate(S)), not per blob\n- The layer is oversized with inset:-25% and animated via transform only (ease-in-out alternate infinite) so no edge gaps show\n- Under prefers-reduced-motion: reduce the animation stops and the background stays visually complete but static\n- The layer is aria-hidden decoration; the text card keeps 4.5:1 over the brightest blob\n\n### Recipe-level\n- Parallax is a motion-reduction tool (M3&#39;s own definition: background slower than foreground to reduce motion): background rate 0.3, foreground 1:1, content never depends on the parallax layer; css mode uses animation-timeline: scroll() with automatic JS fallback\n- Aurora gradient has no official spec (unverified): land it on the entry-schema demo defaults (spots 4 / blur 42px / saturate 115% / drift 18s; production ~60s); blobs animate transform only, with the whole-layer filter melting hard edges\n- Text sits outside the filter layer and holds 4.5:1 on the dark base; the hero dimming scrim (clear-variant 35% dimming semantics) is checked against the brightest and darkest backdrop extremes\n- Kinetic type follows the Dynamic Type hierarchy (large title at ≥34pt tier): per-char stagger 40ms, rise 600ms cubic-bezier(.2,.7,.3,1), weight axis wght 400 (range 100–900); per-char aria-hidden + whole-sentence aria-label keep screen readers intact\n- reduced-motion cuts everything at once: parallax stops (all layers render statically), aurora drift stops, per-char rise stops (direct render); text semantics never depend on any layer&#39;s animation\n\n## Research source\n\nout/design-study/16-composition-recipes.md §7 配方 e「媒体头图叙事」+ §8 巧思 9(依据:M3 transition-patterns parallax、Apple layout/materials/motion/typography、M3 type-scale-tokens;极光渐变未证实,按条目 schema 演示默认落地)\n\n## Source\n\n/uiux-atlas/en/recipes/media-hero/&quot;],&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">Copy replication prompt</button><button type="button" class="btn-ghost" aria-expanded="false">View prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/en/resources/">Go beyond: specs · libraries · tools · galleries →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">License</p> <p class="site-footer-line"> Demo code  <a href="/uiux-atlas/LICENSE">MIT</a> · Text  <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (opens in new tab) </span> </a> </p> <p class="site-footer-line">Every value cites a first-party source</p> </section> <nav class="site-footer-col" aria-label="Categories"> <p class="site-footer-head">Categories</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/en/styles/">Styles</a> </li><li> <a href="/uiux-atlas/en/materials/">Materials</a> </li><li> <a href="/uiux-atlas/en/motion/">Motion</a> </li><li> <a href="/uiux-atlas/en/color/">Color</a> </li><li> <a href="/uiux-atlas/en/type/">Typography</a> </li><li> <a href="/uiux-atlas/en/layout/">Layout</a> </li><li> <a href="/uiux-atlas/en/components/">Components</a> </li><li> <a href="/uiux-atlas/en/icons/">Icons</a> </li><li> <a href="/uiux-atlas/en/dataviz/">Data Viz</a> </li><li> <a href="/uiux-atlas/en/principles/">Principles</a> </li> <li><a href="/uiux-atlas/en/resources/">Resources</a></li> <li><a href="/uiux-atlas/en/trends/">Design trend tracker</a></li> <li><a href="/uiux-atlas/en/recipes/">Recipes</a></li>  <li><a href="/uiux-atlas/en/paths/">Learning paths</a></li>  <li><a href="/uiux-atlas/en/graph/">Graph</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="Machine entry points"> <p class="site-footer-head">Machine entry points</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · full entry index</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · component items</a></li>  <li class="site-footer-mcp"> MCP · replication prompt server · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">Switch sounds</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> Sounds </button> <label class="site-sound-label" for="site-sound-volume">Volume</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">Preview</span> <button type="button" class="sound-btn" data-sound-preview="pour">Pour</button> <button type="button" class="sound-btn" data-sound-preview="splash">Splash</button> <button type="button" class="sound-btn" data-sound-preview="rise">Rise</button> <button type="button" class="sound-btn" data-sound-preview="finish">Finish</button> </div> <p class="site-sound-hint">Synchronized sounds for the liquid theme switch; the toggle and volume are stored in this browser.</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="wvwuO" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

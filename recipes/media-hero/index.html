@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="视差滚动 + 动态排版 + 极光渐变:媒体头图的组合方案。"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>媒体头图叙事 · UI/UX 设计全解图集</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/recipes/media-hero/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/media-hero/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/media-hero/"><meta property="og:site_name" content="UI/UX 设计全解图集"><meta property="og:type" content="website"><meta property="og:title" content="媒体头图叙事"><meta property="og:description" content="视差滚动 + 动态排版 + 极光渐变:媒体头图的组合方案。"><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/recipes/media-hero/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="en"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="媒体头图叙事"><meta name="twitter:description" content="视差滚动 + 动态排版 + 极光渐变:媒体头图的组合方案。"><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">跳到主内容</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX 设计全解图集 </a> <nav class="site-nav" aria-label="图集"> <a href="/uiux-atlas/styles/"> 风格流派 </a><a href="/uiux-atlas/materials/"> 材质与光影 </a><a href="/uiux-atlas/motion/"> 动效与微交互 </a><a href="/uiux-atlas/color/"> 色彩与主题 </a><a href="/uiux-atlas/type/"> 排版 </a><a href="/uiux-atlas/layout/"> 布局与响应式 </a><a href="/uiux-atlas/components/"> 前端部件 </a><a href="/uiux-atlas/icons/"> 图标体系 </a><a href="/uiux-atlas/dataviz/"> 数据可视化 </a><a href="/uiux-atlas/principles/"> 交互法则 </a>  <a href="/uiux-atlas/resources/"> 资源 </a> </nav> <a class="lang-switch" href="/uiux-atlas/en/recipes/" hreflang="en" rel="alternate"> EN </a>  <button type="button" class="site-search" data-palette-open aria-label="搜索 / Search" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="切换深浅主题" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> 设计配方 </a> </p>  <header class="list-head"> <h1 class="list-title"> 媒体头图叙事 <span class="recipe-name-en" lang="en"> Media Hero </span> </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">3</span> 个条目 </span> </p> </header> <p class="res-intro">视差滚动 + 动态排版 + 极光渐变:媒体头图的组合方案。</p>  <h2 class="section-title">组合条目</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/motion/parallax/" style="view-transition-name: card-motion-parallax; --i: 0;"> <span class="entry-name">视差滚动</span> <span class="entry-tagline">多层滚动速率差制造深度:背景层跟随滚动慢于前景(跟随比例 p,0=钉在视口、1=与内容同步),用 scroll-driven animations 的 scroll() 时间轴按层下发位移,可运行在主线程之外;reduced-motion 直出静态分层。</span> <span class="entry-meta"> <span class="chip">Web 标准</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/motion/kinetic-typography/" style="view-transition-name: card-motion-kinetic-typography; --i: 1;"> <span class="entry-name">动态文字</span> <span class="entry-tagline">两条路线:可变字体的注册轴(wght 等)做字重/宽度渐变动画——改一个变量、零重排;或把文本拆成字符/单词做交错(stagger)揭示。演示的标题既逐字上升,也随轴值连续变重。</span> <span class="entry-meta"> <span class="chip">Web 标准</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/materials/aurora-gradient/" style="view-transition-name: card-materials-aurora-gradient; --i: 2;"> <span class="entry-name">极光渐变</span> <span class="entry-tagline">极光渐变:多层低亮度 oklch 光斑 radial-gradient 叠在一层 conic 底色上,整层 blur+saturate 后缓慢平移——大面积、可动画、几乎零成本的『氛围光』。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">组合依据</h2> <p class="res-intro">16 号调研 §7-配方 e:视差有官方背书——M3 转场文档明写 iOS 前进/后退转场用 parallax(「background slides slower than the foreground」)以减少运动量,是减动效手段而非炫技(https://m3.material.io/styles/motion/transitions/transition-patterns )(§8 巧思 9);Apple 补 background extension effect + scroll edge effect(https://developer.apple.com/design/human-interface-guidelines/layout );demo 取条目 schema 默认 rate 0.3(官方未给推荐值,0.2–0.6 为社区常见分层,未证实)、mode css = animation-timeline: scroll() 声明式滚动驱动(可离主线程),不支持自动落 JS(rAF + scroll 事件)兜底。动态排版 = Apple Dynamic Type 层级(Large 默认档 Body 17pt/Large Title 34pt,visionOS 编辑类 Extra Large Title,https://developer.apple.com/design/human-interface-guidelines/typography )+ M3 type-scale-tokens(https://m3.material.io/styles/typography/type-scale-tokens );demo 取条目 schema 默认 stagger 40ms/rise 600ms cubic-bezier(.2,.7,.3,1)/wght 400(Inter Variable 轴域 100–900)/reveal chars,逐字 aria-hidden + 整句 aria-label 保读屏语义。极光渐变背景四家官方规范均无 → 未证实(§9 清单);落地按 Apple「Don&#39;t use Liquid Glass in the content layer」自行降级——条目 schema 默认 spots 4/blur 42px/saturate 115%/drift 18s(演示档,生产氛围光建议 60s 级)/spotA 20%/spotB 70%,文字卡独立于滤镜层保 4.5:1。动效红线:visionOS 禁 ~0.2Hz 持续振荡、反馈短促精准(https://developer.apple.com/design/human-interface-guidelines/motion );reduced-motion 时视差与漂移全停、逐字直接呈现。</p> <p class="trend-note"> <span class="trend-note-label">出处</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 e「媒体头图叙事」+ §8 巧思 9(依据:M3 transition-patterns parallax、Apple layout/materials/motion/typography、M3 type-scale-tokens;极光渐变未证实,按条目 schema 演示默认落地)</span> </p>  <h2 class="section-title">实例演示</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>实例演示</span> <span>官方默认</span> </div> <div class="demo-stage-wrap">     <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="ZnH4jj" prefix="r3" component-url="/uiux-atlas/_astro/MediaHero.DxVcPYMk.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;MediaHero&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Media Hero</span><div class="mh-scene" data-mode="css" data-reduced="false"><div class="mh-scroller" tabindex="0" role="region" aria-label="媒体头图滚动演示"><div class="mh-world"><div class="mh-layer mh-far" aria-hidden="true"><div class="aur-layer"></div></div><div class="mh-layer mh-mid" aria-hidden="true"></div><div class="mh-edge" aria-hidden="true"></div><div class="mh-copy"><div><p class="mh-kicker">媒体头图 · Media Hero</p><h2 class="mh-title" aria-label="让叙事随滚动展开"><span aria-hidden="true"><span class="mh-char" style="--ci:0">让</span><span class="mh-char" style="--ci:1">叙</span><span class="mh-char" style="--ci:2">事</span><span class="mh-char" style="--ci:3">随</span><span class="mh-char" style="--ci:4">滚</span><span class="mh-char" style="--ci:5">动</span><span class="mh-char" style="--ci:6">展</span><span class="mh-char" style="--ci:7">开</span></span></h2><p class="mh-sub">背景层以 rate 0.3 拖曳——比前景慢 70%,滚动因此被读作「更少的运动」而非炫技;文字层永远 1:1 随滚动,可读性优先。</p><p class="mh-meta" aria-hidden="true"><span>rate 0.3 · mid <!-- -->0.6</span><span>blur 42px · saturate 115%</span><span>drift 18s(demo)</span><span>stagger 40ms · rise 600ms</span></p></div><div class="mh-card"><h3>视差是减动效手段(M3 官方定义)</h3><p>M3 转场文档:iOS 前进/后退转场用 parallax,「背景慢于前景」以减少运动量;极光渐变无官方规范(未证实),按「内容层禁用 Liquid Glass」降级为普通渐变层 + 压暗 scrim,文字卡独立于滤镜层保 4.5:1。</p></div><div class="mh-card"><h3>reduced-motion:三层全停</h3><p>视差停(所有层静态直出)、极光漂移停、逐字上升停(直接呈现);文本语义不依赖任何一层动画。visionOS 红线:避免 ~0.2Hz 持续振荡。</p></div></div></div></div><p class="mh-layers" aria-hidden="true"><span><b>1</b> parallax: rate 0.3 · far 30% · mid 60% · mode <!-- -->…</span><span><b>2</b> aurora: 4 spots · blur 42px · sat 115% · drift 18s</span><span><b>3</b> kinetic: chars · stagger 40ms · rise 600ms · wght 400</span><span><b>4</b> scrim: scroll edge + dim · text outside filter</span></p></div><style>
+.mh-scene { position: absolute; inset: 0; overflow: hidden; display: flex; }
+/* ── 内层滚动器:前景文字 1:1 随滚动,背景层拖曳 ── */
+.mh-scroller {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+  background: oklch(0.22 0.04 265);
+  color: oklch(0.97 0.01 265);
+}
+.mh-world { position: relative; height: 1400px; overflow: hidden; }
+/* ── 远层 = 极光渐变背景(materials/aurora-gradient 官方默认;
+      外层壳承担视差位移,内层只承担 18s 慢漂,两层 transform 不打架)── */
+.mh-far { position: absolute; top: -60px; right: 0; left: 0; height: 760px; --m: 1; pointer-events: none; }
+.aur-layer {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(38% 42% at var(--aurora-spot-a, 20%) 25%, oklch(0.6 0.24 300 / .85), transparent 68%),
+    radial-gradient(42% 46% at var(--aurora-spot-b, 70%) 30%, oklch(0.72 0.17 195 / .8), transparent 68%),
+    radial-gradient(50% 55% at 78% 72%, oklch(0.68 0.18 340 / .8), transparent 68%),
+    radial-gradient(45% 50% at 32% 88%, oklch(0.75 0.15 85 / .75), transparent 68%),
+    conic-gradient(from 220deg at 60% 45%, oklch(0.35 0.06 265), oklch(0.3 0.05 210), oklch(0.35 0.06 265));
+  filter: blur(var(--aurora-blur, 42px)) saturate(calc(var(--aurora-saturate, 115%) / 100));
+  animation: aur-drift var(--aurora-drift, 18s) ease-in-out alternate infinite;
+}
+@keyframes aur-drift {
+  from { transform: translate(-2%, -1%) rotate(0.001deg) scale(1); }
+  to   { transform: translate(2%, 1%) rotate(2deg) scale(1.06); }
+}
+/* ── 中层 = 星点(rate×2 封顶 1 的推导分层,同 parallax 条目口径)── */
+.mh-mid {
+  position: absolute;
+  top: 340px;
+  right: 0;
+  left: 0;
+  height: 900px;
+  --m: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(1.8px 1.8px at 14% 12%, oklch(0.9 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.4px 1.4px at 38% 32%, oklch(0.85 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.8px 1.8px at 62% 20%, oklch(0.88 0.03 260) 45%, transparent 55%),
+    radial-gradient(1.2px 1.2px at 84% 44%, oklch(0.85 0.03 250) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 26% 58%, oklch(0.9 0.03 255) 45%, transparent 55%),
+    radial-gradient(1.3px 1.3px at 72% 72%, oklch(0.85 0.03 250) 45%, transparent 55%);
+}
+/* 声明式滚动驱动(css 模式):位移 = (1 − min(rate×m, 1)) × 可滚动距离,
+   层越远反向补偿越多 → 视口内移动越慢(背景慢于前景,M3 官方口径) */
+@supports (animation-timeline: scroll()) {
+  .mh-scene[data-mode="css"] .mh-layer {
+    animation: mh-drift linear both;
+    animation-timeline: scroll(nearest block); /* 必须写在 animation 简写之后 */
+    animation-duration: auto;
+  }
+}
+@keyframes mh-drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc((1 - min(0.3 * var(--m, 1), 1)) * var(--mh-s, 900px))); }
+}
+/* ── 顶部 scroll edge 压暗 scrim(Apple scroll edge effect + 35% 压暗语义)── */
+.mh-edge {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 56px;
+  margin-bottom: -56px;
+  background: linear-gradient(180deg, oklch(0.2 0.03 265 / 0.88), transparent);
+  pointer-events: none;
+}
+/* ── 前景内容:1:1 随滚动,永不参加视差 ── */
+.mh-copy { position: relative; z-index: 1; padding: 64px 24px 0; display: flex; flex-direction: column; gap: 300px; }
+.mh-kicker {
+  margin: 0 0 14px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(0.85 0.05 250 / 0.9);
+}
+/* Dynamic Type Large Title 档:34pt = 34px / 行距 41(Apple Typography 官方表) */
+.mh-title {
+  margin: 0;
+  max-width: 15em;
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-variation-settings: "wght" var(--k-wght, 400);
+  text-wrap: balance;
+}
+/* 动态排版(reveal=chars):stagger 40ms × 序号,单字 rise 600ms cubic-bezier(.2,.7,.3,1) */
+.mh-char {
+  display: inline-block;
+  white-space: pre;
+  animation: mh-rise 600ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--ci) * 40ms);
+}
+@keyframes mh-rise {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to { opacity: 1; transform: none; }
+}
+.mh-sub {
+  margin: 16px 0 0;
+  max-width: 34em;
+  /* Dynamic Type Body 档:17pt = 17px / 行距 22 */
+  font-size: 17px;
+  line-height: 22px;
+  color: oklch(0.95 0.01 265 / 0.92);
+}
+.mh-card {
+  padding: 16px 18px;
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 14px;
+  max-width: 460px;
+  background: oklch(0.22 0.03 265 / 0.78);
+}
+.mh-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 620; color: oklch(0.97 0.01 265); }
+.mh-card p { margin: 0; font-size: 12.5px; line-height: 1.65; color: oklch(0.93 0.01 265 / 0.85); }
+.mh-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+.mh-meta span {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: oklch(0.9 0.02 265 / 0.85);
+  border: 1px solid oklch(1 0 0 / 0.18);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: oklch(0.2 0.03 265 / 0.6);
+}
+/* ── 读数与铭牌(mono 元数据纪律)── */
+.mh-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: oklch(0.16 0.02 265 / 0.78);
+  border: 1px solid oklch(1 0 0 / 0.14);
+  color: oklch(0.92 0.01 265 / 0.8);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+  z-index: 3;
+}
+.mh-layers b { font-weight: 600; color: oklch(0.98 0.01 265); }
+@media (max-width: 720px) {
+  .mh-layers { display: none; }
+  .mh-title { font-size: 28px; line-height: 34px; }
+}
+/* ── reduced-motion 一刀切:视差停 / 极光漂移停 / 逐字上升停(条目 fallback 口径)── */
+@media (prefers-reduced-motion: reduce) {
+  .mh-scene .mh-layer { animation: none !important; transform: none !important; }
+  .aur-layer { animation: none !important; }
+  .mh-char { animation: none !important; }
+}
+</style></div><!--astro:end--></astro-island>    </div> </div>  <h2 class="section-title">组合式复刻 Prompt</h2> <astro-island uid="Z1jFLgb" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## 目标\n\n组合一个媒体头图叙事页:极光渐变背景层(4 光斑 + conic 底、blur 42px + saturate 115%、18s 慢漂)以视差(rate 0.3,背景慢于前景以减动效)随内层滚动拖曳,前景文字 1:1 随滚动;大标题按 Dynamic Type 层级做逐字动态排版(stagger 40ms/rise 600ms/字重轴 wght 400);顶部保留 scroll edge 压暗 scrim,文字卡独立于滤镜层保 4.5:1。\n\n这是一个多组件组合方案,请一比一复刻。逐组件严格遵循下方官方默认参数快照,不要自行调整数值。\n\n## 参数快照(逐组件 · 官方默认)\n\n### Parallax / 视差滚动 (motion/parallax)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;rate\&quot;,\n    \&quot;value\&quot;: \&quot;0.3\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;mode\&quot;,\n    \&quot;value\&quot;: \&quot;css\&quot;\n  }\n]\n```\n\n### Kinetic Typography / 动态文字 (motion/kinetic-typography)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stagger\&quot;,\n    \&quot;value\&quot;: \&quot;40ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rise\&quot;,\n    \&quot;value\&quot;: \&quot;600ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;wght\&quot;,\n    \&quot;value\&quot;: \&quot;400\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;reveal\&quot;,\n    \&quot;value\&quot;: \&quot;chars\&quot;\n  }\n]\n```\n\n### Aurora Gradient / 极光渐变 (materials/aurora-gradient)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;spots\&quot;,\n    \&quot;value\&quot;: \&quot;4\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;blur\&quot;,\n    \&quot;value\&quot;: \&quot;42px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;saturate\&quot;,\n    \&quot;value\&quot;: \&quot;115%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;drift\&quot;,\n    \&quot;value\&quot;: \&quot;18s\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;spotA\&quot;,\n    \&quot;value\&quot;: \&quot;20%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;spotB\&quot;,\n    \&quot;value\&quot;: \&quot;70%\&quot;\n  }\n]\n```\n\n## 验收要点(逐组件)\n\n### Parallax / 视差滚动\n- 每层位移 = (1 − p_layer) × 可滚动距离,p_layer = min(rate × 层乘数, 1)\n- 声明式实现:animation-timeline: scroll() 写在 animation 简写之后,duration 取 auto\n- 只动画 transform;附 JS(rAF + scroll 事件)对照路径并标注主线程代价\n- 不支持 scroll() 的浏览器自动落到 JS 路径并显示标注;两级降级都保留内容可读\n- prefers-reduced-motion: reduce 时视差整体关闭、静态构图直出,视差层 aria-hidden 且不承载关键信息\n\n### Kinetic Typography / 动态文字\n- 拆分单元带 overflow hidden 裁剪容器(mask 语义),上升从 translateY(110%) 到 0,只动 transform+opacity\n- 交错间隔与上升时长取参数快照(stagger × i 内联 delay;rise 经 --kinetic-rise)\n- 字重轴经 @property 注册的变量驱动 font-variation-settings,0.5s 过渡(不支持的浏览器降级为跳变)\n- 标题容器 aria-label 整句、拆分 span 全部 aria-hidden;读屏永不读到字母碎片\n- prefers-reduced-motion: reduce 时取消上升与轴过渡,文字直接完整呈现\n\n### Aurora Gradient / 极光渐变\n- 光斑用 radial-gradient(&lt;尺寸&gt; at x% y%, oklch(L 0.18–0.24 H / .55–.85), transparent ~68%),L 保持在 0.6–0.75\n- 模糊与饱和只作用在整层容器(filter: blur(Npx) saturate(S)),不逐光斑设置\n- 整层 inset:-25% 外扩,动画只 transform(ease-in-out alternate infinite),避免边缘露底\n- prefers-reduced-motion: reduce 时动画停止,背景静止但视觉完整\n- 层为 aria-hidden 装饰,文字卡对比度在光斑最亮处仍达 4.5:1\n\n### 配方级\n- 视差是减动效手段(M3 官方定义「背景慢于前景以减少运动量」):背景层 rate 0.3、前景文字 1:1,内容永不依赖视差层传达;css 模式走 animation-timeline: scroll(),不支持自动落 JS 兜底\n- 极光渐变无官方规范(未证实):按条目 schema 演示默认落地(spots 4/blur 42px/saturate 115%/drift 18s,生产建议 60s 级);光斑只动 transform,整层 filter 融化硬边\n- 文字独立于滤镜层、深色底上保 4.5:1;头图上的压暗 scrim(clear 变体 35% 压暗语义)按最亮/最暗背景两端核对\n- 动态排版按 Dynamic Type 层级(大标题 ≥34pt 档):逐字 stagger 40ms、单字 rise 600ms cubic-bezier(.2,.7,.3,1)、字重轴 wght 400(轴域 100–900);逐字 aria-hidden + 整句 aria-label 保读屏整句\n- reduced-motion 一刀切:视差停(所有层静态直出)、极光漂移停、逐字上升停(直接呈现);文本语义不依赖任何一层动画\n\n## 调研出处\n\nout/design-study/16-composition-recipes.md §7 配方 e「媒体头图叙事」+ §8 巧思 9(依据:M3 transition-patterns parallax、Apple layout/materials/motion/typography、M3 type-scale-tokens;极光渐变未证实,按条目 schema 演示默认落地)\n\n## 出处\n\n/uiux-atlas/recipes/media-hero/&quot;],&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">复制复刻 Prompt</button><button type="button" class="btn-ghost" aria-expanded="false">查看 Prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/resources/">授人以渔:规范 · 组件库 · 工具 · 画廊 →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">许可</p> <p class="site-footer-line"> demo 代码  <a href="/uiux-atlas/LICENSE">MIT</a> · 正文  <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (在新窗口打开) </span> </a> </p> <p class="site-footer-line">数值均注明一手来源</p> </section> <nav class="site-footer-col" aria-label="分类导航"> <p class="site-footer-head">分类导航</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/styles/">风格流派</a> </li><li> <a href="/uiux-atlas/materials/">材质与光影</a> </li><li> <a href="/uiux-atlas/motion/">动效与微交互</a> </li><li> <a href="/uiux-atlas/color/">色彩与主题</a> </li><li> <a href="/uiux-atlas/type/">排版</a> </li><li> <a href="/uiux-atlas/layout/">布局与响应式</a> </li><li> <a href="/uiux-atlas/components/">前端部件</a> </li><li> <a href="/uiux-atlas/icons/">图标体系</a> </li><li> <a href="/uiux-atlas/dataviz/">数据可视化</a> </li><li> <a href="/uiux-atlas/principles/">交互法则</a> </li> <li><a href="/uiux-atlas/resources/">资源</a></li> <li><a href="/uiux-atlas/trends/">设计趋势追踪</a></li> <li><a href="/uiux-atlas/recipes/">设计配方</a></li>  <li><a href="/uiux-atlas/paths/">学习路径</a></li>  <li><a href="/uiux-atlas/graph/">知识图谱</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="机器入口"> <p class="site-footer-head">机器入口</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · 全部条目索引</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · 部件发布件</a></li>  <li class="site-footer-mcp"> MCP · 复刻 Prompt 服务器 · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">切换音效</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> 音效 </button> <label class="site-sound-label" for="site-sound-volume">音量</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">试听</span> <button type="button" class="sound-btn" data-sound-preview="pour">流出</button> <button type="button" class="sound-btn" data-sound-preview="splash">落底</button> <button type="button" class="sound-btn" data-sound-preview="rise">上涨</button> <button type="button" class="sound-btn" data-sound-preview="finish">完成</button> </div> <p class="site-sound-hint">液体主题切换的同步音效;开关与音量保存在本浏览器。</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="xTbu1" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

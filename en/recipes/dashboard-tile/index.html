@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="Bento grid + density rules + skeleton loading + a magnetic accent: the dashboard data tile composition."><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>Dashboard Tile · UI/UX Design Atlas</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/en/recipes/dashboard-tile/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/dashboard-tile/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/"><meta property="og:site_name" content="UI/UX Design Atlas"><meta property="og:type" content="website"><meta property="og:title" content="Dashboard Tile"><meta property="og:description" content="Bento grid + density rules + skeleton loading + a magnetic accent: the dashboard data tile composition."><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/en/recipes/dashboard-tile/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Dashboard Tile"><meta name="twitter:description" content="Bento grid + density rules + skeleton loading + a magnetic accent: the dashboard data tile composition."><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/en/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX Design Atlas </a> <nav class="site-nav" aria-label="Atlas"> <a href="/uiux-atlas/en/styles/"> Styles </a><a href="/uiux-atlas/en/materials/"> Materials </a><a href="/uiux-atlas/en/motion/"> Motion </a><a href="/uiux-atlas/en/color/"> Color </a><a href="/uiux-atlas/en/type/"> Typography </a><a href="/uiux-atlas/en/layout/"> Layout </a><a href="/uiux-atlas/en/components/"> Components </a><a href="/uiux-atlas/en/icons/"> Icons </a><a href="/uiux-atlas/en/dataviz/"> Data Viz </a><a href="/uiux-atlas/en/principles/"> Principles </a>  <a href="/uiux-atlas/en/resources/"> Resources </a> </nav> <a class="lang-switch" href="/uiux-atlas/recipes/" hreflang="zh-CN" rel="alternate"> 中文 </a>  <button type="button" class="site-search" data-palette-open aria-label="Search / 搜索" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch color theme" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/en/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> Design recipes </a> </p>  <header class="list-head"> <h1 class="list-title"> Dashboard Tile  </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">4</span> entries </span> </p> </header> <p class="res-intro">Bento grid + density rules + skeleton loading + a magnetic accent: the dashboard data tile composition.</p>  <h2 class="section-title">Combines</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/en/styles/bento-grid/" style="view-transition-name: card-styles-bento-grid; --i: 0;"> <span class="entry-name">Bento Grid</span> <span class="entry-tagline">An array of unequal rounded slots on one CSS Grid, encoding information priority through cell size — the default shape of SaaS feature sections after Apple&#39;s 2022-09 keynote; it is a layout, not a color scheme.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/dataviz/dataviz-dashboard-density/" style="view-transition-name: card-dataviz-dataviz-dashboard-density; --i: 1;"> <span class="entry-name">Dashboard Density</span> <span class="entry-tagline">The density base of BI grids: Grafana&#39;s 24 columns × 30px row height × 8px panel gap (source constants) driving Power BI&#39;s official example font ladder 45/12/12/10 — a comfortable/compact switch that retunes the whole board&#39;s breathing room.</span> <span class="entry-meta"> <span class="chip">Component Lib</span> <span class="chip chip-star" aria-label="Parameterization 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/skeleton-loading/" style="view-transition-name: card-motion-skeleton-loading; --i: 2;"> <span class="entry-name">Skeleton Loading</span> <span class="entry-tagline">Geometric placeholder blocks replicate the upcoming content layout, topped by a sweeping shimmer pulse meaning &quot;loading&quot;; content fades in fast once ready, with zero layout shift.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/magnetic-hover/" style="view-transition-name: card-motion-magnetic-hover; --i: 3;"> <span class="entry-name">Magnetic Hover</span> <span class="entry-tagline">Inside the attraction radius the button is pulled toward the pointer proportionally and snaps back on exit; each frame lerps toward the target, while touch and prefers-reduced-motion get the plain hover.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">Why these combine</h2> <p class="res-intro">Research 16 §7 recipe-b: &quot;bento grid&quot; is not an official term anywhere (§9 unverified list) — the working basis is each system&#39;s grid numbers. The container bento takes the researched recipe repeat(4, minmax(0,1fr))/180px rows/16px gap/24px radius (entry-schema defaults from superdesign.dev); the panel density layer uses Grafana panel numbers — gap 8px (GRID_CELL_VMARGIN), row height 30px (GRID_CELL_HEIGHT), KPI panel = 3 rows = 90px, Power BI type ladder 45/12/12/10. Macro-grid grounding: Ant 24-col/base-8 (https://ant.design/docs/spec/layout-cn/ ) + TDesign base 8px/gutter 16px (https://tdesign.tencent.com/design/layout ) + M3 linear spacing scale (https://m3.material.io/styles/spacing/applying-spacing ). Density switches spacing only, never font size (Ant Table three cellPadding tiers 16/12/8 with cellFontSize fixed at 14, https://ant.design/components/table-cn/ ; ProTable ships density switching as a first-class toolbar action). Skeleton sizes equal real card sizes so loading lands with zero shift — Ant &quot;use skeletons only on the first data load&quot; (https://ant.design/components/skeleton-cn/ ) + Apple Loading &quot;show something as soon as possible&quot;, replace on arrival (https://developer.apple.com/design/human-interface-guidelines/loading ) + M3 officially lists skeleton loaders among its six transition patterns (https://m3.material.io/styles/motion/transitions/transition-patterns ) + TDesign forbids first-screen sequential animation (https://tdesign.tencent.com/design/motion ) (§8 craft 5: &quot;the skeleton is the layout&#39;s trailer&quot;). The magnetic button is an accent layer (radius 0.45 / lerp 0.15, entry-schema defaults) — touch and reduced-motion users get plain press states with magnetics off.</p> <p class="trend-note"> <span class="trend-note-label">Source</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 b「仪表盘数据卡」+ §8 巧思 5(依据:HIG Loading、M3 transition-patterns/skeleton loaders、Ant Skeleton/Table/layout-cn、TDesign layout/motion、Grafana/Power BI 密度数值)</span> </p>  <h2 class="section-title">Live demo</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>Live demo</span> <span>official default</span> </div> <div class="demo-stage-wrap">  <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="1vcwCX" prefix="r3" component-url="/uiux-atlas/_astro/DashboardTile.BlpKYgkh.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;DashboardTile&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Dashboard Tile</span><div class="dt-scene" data-density="comfortable"><p class="dt-status" role="status">Loading… (skeleton sized = real cards)</p><div class="dt-bento" aria-busy="true"><div class="dt-cell dt-hero" data-loading="true"><div class="dt-skel dt-skel-row" style="width:38%"></div><div class="dt-skel dt-skel-kpi" style="width:52%"></div><div class="dt-skel dt-skel-hero"></div></div><div class="dt-cell dt-kpi" data-loading="true" style="min-height:calc(var(--dvz-row) * 3)"><div class="dt-skel dt-skel-kpi"></div></div><div class="dt-cell dt-spark" data-loading="true"><div class="dt-skel dt-skel-spark"></div></div><div class="dt-cell dt-list" data-loading="true"><div class="dt-skel dt-skel-row" style="width:30%"></div><div class="dt-skel" style="height:var(--dvz-row)"></div><div class="dt-skel" style="height:var(--dvz-row)"></div><div class="dt-skel" style="height:var(--dvz-row)"></div></div></div><p class="dt-layers" aria-hidden="true"><span><b>1</b> bento: repeat(4,minmax(0,1fr)) · rows 180px · gap 16 · r24</span><span><b>2</b> density: gap <!-- -->8<!-- -->px · row <!-- -->30<!-- -->px · ladder 45/12/12/<!-- -->10</span><span><b>3</b> skeleton: 1200ms sweep · size = real · first-load only</span><span><b>4</b> magnet: r 0.45 · lerp 0.15 (accent)</span></p><div class="dt-toolbar" role="group" aria-label="Density"><button type="button" aria-pressed="true">舒适</button><button type="button" aria-pressed="false">紧凑</button></div></div><style>
+.dt-scene { position: absolute; inset: 0; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+/* ── 容器层 · bento 网格(styles/bento-grid 官方默认)── */
+.dt-bento {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));   /* cols=4 */
+  grid-auto-rows: 180px;                              /* rowHeight=180px:全部格子的节奏单位 */
+  gap: 16px;                                          /* gap=16px:统一间隙是 bento 识别特征 */
+}
+.dt-cell {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 24px;                                /* radius=24px(标志值,区间 20–28px) */
+  background: var(--surface);
+  overflow: hidden;
+}
+/* 面板内密度 = dataviz-dashboard-density comfortable 官方默认 */
+.dt-cell {
+  --dvz-gap: 8px;    /* Grafana GRID_CELL_VMARGIN=8 */
+  --dvz-row: 30px;   /* Grafana GRID_CELL_HEIGHT=30;KPI 面板 = 3 格 = 90px */
+  --dvz-callout: 45px; /* Power BI 字号阶梯 45/12/12/10 */
+  --dvz-label: 12px;
+  --dvz-small: 10px;
+  padding: calc(var(--dvz-gap) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dvz-gap);
+}
+.dt-scene[data-density="compact"] .dt-cell {
+  --dvz-gap: 4px;    /* 演示档:间距减半 */
+  --dvz-row: 24px;   /* 行高 ×0.8 */
+  --dvz-callout: 32px; /* callout 45→32 */
+  --dvz-small: 9px;  /* label 10→9(9px 逼近 AA 可读下限;官方无 compact 惯例,未证实) */
+}
+.dt-hero { grid-column: span 2; grid-row: span 2; }
+.dt-kpi { grid-column: span 1; }
+.dt-spark { grid-column: span 1; }
+.dt-list { grid-column: span 2; }
+.dt-label {
+  margin: 0;
+  font-size: var(--dvz-label);
+  line-height: 1.35;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dt-callout {
+  margin: 0;
+  font-size: var(--dvz-callout);
+  font-weight: 640;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.dt-delta { margin: 0; font-size: var(--dvz-small); line-height: 1.35; color: oklch(0.72 0.14 155); font-variant-numeric: tabular-nums; }
+.dt-spark svg { display: block; width: 100%; height: 100%; }
+.dt-rows { display: flex; flex-direction: column; gap: var(--dvz-gap); min-height: 0; overflow: hidden; }
+.dt-row {
+  flex: none;
+  height: var(--dvz-row);            /* 行高单元 = --dvz-row(30px/24px) */
+  display: flex;
+  align-items: center;
+  gap: var(--dvz-gap);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--dvz-small);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.dt-row b { font-weight: 550; color: var(--text); }
+.dt-row .dt-row-val { margin-left: auto; }
+.dt-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--dvz-small);
+  color: var(--text-dim);
+}
+/* ── 点缀层 · 磁吸按钮(motion/magnetic-hover 官方默认 radius 0.45 / lerp 0.15;
+      触屏/减动效直出普通按压态,键盘聚焦走 focus-visible 不位移)── */
+.dt-magnet {
+  align-self: flex-start;
+  position: relative;
+  margin-top: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 7px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  background: var(--surface-2);
+  white-space: nowrap;
+  will-change: transform;
+}
+.dt-magnet::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: transparent; pointer-events: none; }
+.dt-magnet:hover::after { background: color-mix(in srgb, var(--text) 8%, transparent); }   /* M3 hover +8%(内容色) */
+.dt-magnet:active::after { background: color-mix(in srgb, var(--text) 10%, transparent); } /* M3 press +10% */
+/* CSS 双保险:reduced-motion / 触屏无 hover 时磁吸位移整体失效 */
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .dt-magnet { transform: none !important; }
+}
+/* ── 密度工具栏(右上;ProTable「密度切换是一等工具栏能力」语义)── */
+.dt-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border);
+}
+.dt-toolbar button {
+  position: relative;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+}
+.dt-toolbar button::after { content: ""; position: absolute; inset: -8px; } /* 热区 ≥42px */
+.dt-toolbar button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
+/* ── 骨架层(motion/skeleton-loading):占位尺寸=真实卡片尺寸(同一 bento 模板),
+      扫光脉动 1200ms 水平档(--skeleton-duration 官方默认);内容到达快速淡入、零位移 ── */
+.dt-skel { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 8px; }
+.dt-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 7%, transparent), transparent);
+  animation: dt-sweep var(--skeleton-duration, 1200ms) linear infinite; /* pulse=1200ms,horizontal */
+}
+@keyframes dt-sweep { to { transform: translateX(0); } }
+.dt-skel-hero { flex: 1; }
+.dt-skel-kpi { height: 34px; }
+.dt-skel-row { height: 12px; }
+.dt-skel-spark { flex: 1; }
+.dt-cell[data-loading="true"] > :not(.dt-skel) { display: none; }
+.dt-cell[data-loading="true"] { justify-content: stretch; gap: var(--dvz-gap); }
+/* 内容到达:快速淡入覆盖(演示档 200ms = Ant motionDurationMid 口径;骨架→内容零位移) */
+.dt-real { animation: dt-in 200ms ease-out both; }
+@keyframes dt-in { from { opacity: 0; } to { opacity: 1; } }
+/* ── 四层铭牌(mono 元数据纪律,同 GlassCardPro)── */
+.dt-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.dt-layers b { font-weight: 600; color: var(--text); }
+.dt-status {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+/* bento 回退:不支持 Grid 的环境退化为纵向堆叠等宽卡片(条目 fallback 口径) */
+@supports not (display: grid) {
+  .dt-bento { display: flex; flex-direction: column; }
+  .dt-cell { min-height: 96px; }
+}
+@media (max-width: 720px) {
+  .dt-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dt-hero { grid-column: span 2; }
+  .dt-list { grid-column: span 2; }
+  .dt-layers { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dt-skel::after { animation: none; transform: none; } /* 脉动停用,色块保持静态基色 */
+  .dt-real { animation: none; }
+}
+</style></div><!--astro:end--></astro-island>       </div> </div>  <h2 class="section-title">Composite replication prompt</h2> <astro-island uid="Z2loKtT" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## Goal\n\nCompose a dashboard data-tile page: a bento container grid (repeat(4, minmax(0,1fr))/180px rows/16px gap/24px radius), panels following dashboard-density rules (Grafana gap 8px / row height 30px / KPI = 3 rows, Power BI type ladder 45/12/12/10), first-load skeletons sized exactly like the real cards (1200ms shimmer, zero-shift swap on arrival), and one magnetic accent button on the hero tile (radius 0.45 / lerp 0.15); density switching touches spacing only, never font size.\n\nThis is a multi-component composition. Replicate it one-to-one; follow each component&#39;s official-default parameter snapshot below and do not alter the values.\n\n## Parameter Snapshot (per component · official defaults)\n\n### Bento Grid (styles/bento-grid)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;cols\&quot;,\n    \&quot;value\&quot;: \&quot;4\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rowHeight\&quot;,\n    \&quot;value\&quot;: \&quot;180px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;gap\&quot;,\n    \&quot;value\&quot;: \&quot;16px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;radius\&quot;,\n    \&quot;value\&quot;: \&quot;24px\&quot;\n  }\n]\n```\n\n### Dashboard Density (dataviz/dataviz-dashboard-density)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;density\&quot;,\n    \&quot;value\&quot;: \&quot;comfortable\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;gap\&quot;,\n    \&quot;value\&quot;: \&quot;8px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rowHeight\&quot;,\n    \&quot;value\&quot;: \&quot;30px\&quot;\n  }\n]\n```\n\n### Skeleton Loading (motion/skeleton-loading)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;pulse\&quot;,\n    \&quot;value\&quot;: \&quot;1200ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;direction\&quot;,\n    \&quot;value\&quot;: \&quot;horizontal\&quot;\n  }\n]\n```\n\n### Magnetic Hover (motion/magnetic-hover)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;radius\&quot;,\n    \&quot;value\&quot;: \&quot;0.45\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lerp\&quot;,\n    \&quot;value\&quot;: \&quot;0.15\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;mode\&quot;,\n    \&quot;value\&quot;: \&quot;magnet\&quot;\n  }\n]\n```\n\n## Acceptance Criteria (per component)\n\n### Bento Grid\n- grid-template-columns: repeat(N, minmax(0,1fr)) with one uniform gap (default 16px)\n- Row height uses the parameter value (default 180px); the hero cell spans 2×2\n- Cell radius uses the parameter value (default 24px, never below 16px)\n- Cell size encodes priority: the largest cell carries the most important fact, one fact per cell\n- Breakpoints reduce columns (768px→2, 480px→1 with spans reset); DOM order = reading order, no reliance on dense for sequencing\n\n### Dashboard Density\n- Grid constants verbatim from the research: 24 columns, 30px rows, 8px panel gaps, 3-row minimum panels (Grafana source-verified)\n- Font ladder 45/12/12/10 labeled as Power BI&#39;s official example values, not enforced defaults\n- Compact-preset values honestly labeled as demo-proposed (no official compact conventions exist)\n- Keep tiers separate: grid gap from grid variables, panel padding from intra-panel density\n- MDX states Tableau&#39;s numeric conventions are unpublished (not found) — no invented values\n\n### Skeleton Loading\n- Placeholder and content blocks align in size; the swap causes no layout shift\n- The sweep animates only transform (translateX) at the snapshot period --skeleton-duration\n- Content fades in at 200ms cubic-bezier(0.2, 0, 0, 1) (M3 short4 + Standard easing)\n- Under prefers-reduced-motion: reduce, disable the sweep and fade; the loading state rides on text/aria-busy\n- The loading semantics are conveyed via aria-busy and visible text, never via motion alone\n\n### Magnetic Hover\n- Distance test: reach = max(w,h)/2 ÷ (1 − radius); inside it target = pointer offset × radius, outside it target returns to zero\n- Per-frame lerp current += (target − current) × lerp (default 0.15) in an rAF loop, written straight to el.style.translate\n- Touch (e.pointerType === touch / (hover: none)) and prefers-reduced-motion switch magnetism off entirely, falling back to plain hover\n- CSS carries the @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } belt-and-suspenders\n- The button is keyboard-focusable with a focus-visible outline and zero displacement; clickability also rides on color/label\n\n### Recipe-level\n- Two grids, two jobs: the container bento (cols 4 / rowHeight 180px / gap 16px / radius 24px) owns composition, in-panel density (gap 8px / rowHeight 30px via --dvz-gap/--dvz-row) owns information density; uneven gaps break the bento instantly\n- Density switching changes spacing and row height, leaving the type ladder mostly intact (comfortable 45/12/12/10; compact demo tier: halved spacing, ×0.8 rows, callout 45→32, label 10→9 — no official compact conventions exist, unverified; 9px is at the AA readability floor); Ant Table: cellPadding 16/12/8 across three tiers while cellFontSize stays 14\n- Skeleton sizes equal real card sizes (same grid template); content fades in fast with zero shift; skeletons are first-load only (the replay button is a demo affordance); \&quot;loading\&quot; semantics ride on aria-busy/status text, never on the shimmer alone\n- The 1200ms horizontal shimmer is a common community value (unverified: M3 only demands a \&quot;subtle pulse\&quot; and records no number); under reduced-motion the pulse stops and blocks keep their static base color\n- The magnetic button is an accent, not a requirement: radius 0.45 / lerp 0.15 (per-frame current += (target−current)×0.15); fully off under prefers-reduced-motion or hover:none with plain press states instead; keyboard focus keeps the focus-visible ring with zero translation\n\n## Research source\n\nout/design-study/16-composition-recipes.md §7 配方 b「仪表盘数据卡」+ §8 巧思 5(依据:HIG Loading、M3 transition-patterns/skeleton loaders、Ant Skeleton/Table/layout-cn、TDesign layout/motion、Grafana/Power BI 密度数值)\n\n## Source\n\n/uiux-atlas/en/recipes/dashboard-tile/&quot;],&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">Copy replication prompt</button><button type="button" class="btn-ghost" aria-expanded="false">View prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/en/resources/">Go beyond: specs · libraries · tools · galleries →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">License</p> <p class="site-footer-line"> Demo code  <a href="/uiux-atlas/LICENSE">MIT</a> · Text  <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (opens in new tab) </span> </a> </p> <p class="site-footer-line">Every value cites a first-party source</p> </section> <nav class="site-footer-col" aria-label="Categories"> <p class="site-footer-head">Categories</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/en/styles/">Styles</a> </li><li> <a href="/uiux-atlas/en/materials/">Materials</a> </li><li> <a href="/uiux-atlas/en/motion/">Motion</a> </li><li> <a href="/uiux-atlas/en/color/">Color</a> </li><li> <a href="/uiux-atlas/en/type/">Typography</a> </li><li> <a href="/uiux-atlas/en/layout/">Layout</a> </li><li> <a href="/uiux-atlas/en/components/">Components</a> </li><li> <a href="/uiux-atlas/en/icons/">Icons</a> </li><li> <a href="/uiux-atlas/en/dataviz/">Data Viz</a> </li><li> <a href="/uiux-atlas/en/principles/">Principles</a> </li> <li><a href="/uiux-atlas/en/resources/">Resources</a></li> <li><a href="/uiux-atlas/en/trends/">Design trend tracker</a></li> <li><a href="/uiux-atlas/en/recipes/">Recipes</a></li>  <li><a href="/uiux-atlas/en/paths/">Learning paths</a></li>  <li><a href="/uiux-atlas/en/graph/">Graph</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="Machine entry points"> <p class="site-footer-head">Machine entry points</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · full entry index</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · component items</a></li>  <li class="site-footer-mcp"> MCP · replication prompt server · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">Switch sounds</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> Sounds </button> <label class="site-sound-label" for="site-sound-volume">Volume</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">Preview</span> <button type="button" class="sound-btn" data-sound-preview="pour">Pour</button> <button type="button" class="sound-btn" data-sound-preview="splash">Splash</button> <button type="button" class="sound-btn" data-sound-preview="rise">Rise</button> <button type="button" class="sound-btn" data-sound-preview="finish">Finish</button> </div> <p class="site-sound-hint">Synchronized sounds for the liquid theme switch; the toggle and volume are stored in this browser.</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="wvwuO" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

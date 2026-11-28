@@ -1,0 +1,224 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="Toast spring + progress motion + shake decay: the notification stack composition."><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>Notification Stack · UI/UX Design Atlas</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/en/recipes/notification-stack/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/notification-stack/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/"><meta property="og:site_name" content="UI/UX Design Atlas"><meta property="og:type" content="website"><meta property="og:title" content="Notification Stack"><meta property="og:description" content="Toast spring + progress motion + shake decay: the notification stack composition."><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/en/recipes/notification-stack/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Notification Stack"><meta name="twitter:description" content="Toast spring + progress motion + shake decay: the notification stack composition."><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/en/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX Design Atlas </a> <nav class="site-nav" aria-label="Atlas"> <a href="/uiux-atlas/en/styles/"> Styles </a><a href="/uiux-atlas/en/materials/"> Materials </a><a href="/uiux-atlas/en/motion/"> Motion </a><a href="/uiux-atlas/en/color/"> Color </a><a href="/uiux-atlas/en/type/"> Typography </a><a href="/uiux-atlas/en/layout/"> Layout </a><a href="/uiux-atlas/en/components/"> Components </a><a href="/uiux-atlas/en/icons/"> Icons </a><a href="/uiux-atlas/en/dataviz/"> Data Viz </a><a href="/uiux-atlas/en/principles/"> Principles </a>  <a href="/uiux-atlas/en/resources/"> Resources </a> </nav> <a class="lang-switch" href="/uiux-atlas/recipes/" hreflang="zh-CN" rel="alternate"> 中文 </a>  <button type="button" class="site-search" data-palette-open aria-label="Search / 搜索" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch color theme" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/en/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> Design recipes </a> </p>  <header class="list-head"> <h1 class="list-title"> Notification Stack  </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">3</span> entries </span> </p> </header> <p class="res-intro">Toast spring + progress motion + shake decay: the notification stack composition.</p>  <h2 class="section-title">Combines</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/en/motion/toast-spring/" style="view-transition-name: card-motion-toast-spring; --i: 0;"> <span class="entry-name">Toast Spring Entrance</span> <span class="entry-tagline">A toast springs in from the screen edge: the entrance carries overshoot (a true spring or a y₂&gt;1 overshoot bezier), the exit is a pure eased settle, and the lifecycle auto-dismisses on time — attack in, retreat out, the pair never collides.</span> <span class="entry-meta"> <span class="chip">Component Lib</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/progress-motion/" style="view-transition-name: card-motion-progress-motion; --i: 1;"> <span class="entry-name">Progress Motion</span> <span class="entry-tagline">Progress form follows certainty: skeleton blocks (nothing known) → looping sweep (loading, but not how long) → percent bar (exactly how much is left) → fast fade-in completion; the form switches at NN/g duration thresholds, and momentum builds toward the end (goal-gradient).</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/shake-decay/" style="view-transition-name: card-motion-shake-decay; --i: 2;"> <span class="entry-name">Shake · Exponential Decay</span> <span class="entry-tagline">Error shakes are best built as the decaying sinusoid x(t)=A·e^(−λt)·sin(ωt): two implementations side by side — CSS decay keyframes vs injecting initial velocity and letting the spring decay itself — continuous under rapid re-triggers.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">Why these combine</h2> <p class="res-intro">Research 16 §7 recipe-f (§8 craft 7: &quot;the toast stack is a state machine, not a message stream&quot;): Ant has the fullest stack numbers — message duration 3s / top 8 / maxCount auto-closing the oldest / key reuse of the same toast / stack mode (6.4.0); notification duration 4.5s / placement topRight / stack{threshold:3} / showProgress bar (5.18+) / pauseOnHover (default true) / width 384 / top·bottom 24px (https://ant.design/components/notification-cn/ ; https://ant.design/components/message-cn/ ); M3 snackbar is the counterweight — no-action auto-dismiss 4–10s, only one at a time full-screen, at most one action, and web auto-dismiss must pair with inline feedback or an operable path (https://m3.material.io/components/snackbar/guidelines ). The demo takes Ant numbers as stack discipline and toast-spring entry defaults as spring params: stiffness 300 / damping 25 (ζ≈0.722, overshoot ≈3.8% and no more) / edge bottom / lifetime 4000ms (sonner TOAST_LIFETIME source value); the official spring basis is M3 Expressive motion-physics (spatial + effects springs, the latter owning color/opacity transitions — the narrowing progress bar is exactly that form, https://m3.material.io/blog/building-with-m3-expressive ); the entrance band = TDesign drawer/notification/message 280ms desktop / 140ms mobile with dialogs classified as Z-axis motion, and the perceptual-constancy rule &quot;desktop = mobile ×2&quot; (https://tdesign.tencent.com/design/motion ); the demo progress bar = Ant notification showProgress semantics (countdown narrowing with remaining lifetime, hover pauses = pauseOnHover default true). Shake decay has no official recipe anywhere → unverified (§9 list); the nearest official neighbors are TDesign listing &quot;input shake&quot; as a micro-motion example and Apple&#39;s visionOS line against ~0.2Hz sustained oscillation (https://developer.apple.com/design/human-interface-guidelines/motion ); the demo takes shake-decay entry defaults A=10px (animate.css shakeX&#39;s ±10px scale) / λ=6s⁻¹ (research 10 §4.3 sampling example: 5 beats/0.5s, envelope ×0.74 per beat) — a decaying transient, not sustained oscillation. Composition glue: the spring owns entrance/exit only, the progress bar owns remaining lifetime only, the shake owns field-level errors only — the three motions never stack; Esc dismisses the newest toast and restores focus; reduced-motion degrades entrance/exit to pure fade and stops the shake (error semantics carried by text and border).</p> <p class="trend-note"> <span class="trend-note-label">Source</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 f「通知栈」+ §8 巧思 7(依据:Ant message/notification Token、M3 snackbar/m3-expressive、TDesign motion、Apple Motion ~0.2Hz 红线;摇晃衰减未证实,按条目 schema 默认落地)</span> </p>  <h2 class="section-title">Live demo</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>Live demo</span> <span>official default</span> </div> <div class="demo-stage-wrap">      <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z2sUjt" prefix="r3" component-url="/uiux-atlas/_astro/NotificationStack.B-_dE5dS.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;NotificationStack&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Notification Stack</span><div class="ns-scene" data-edge="bottom" data-reduced="false"><form class="ns-form"><input class="ns-input" data-error="false" data-shake="false" type="text" placeholder="Notification title (required)" aria-label="Notification title" aria-invalid="false"/><button type="submit" class="ns-send">Send</button></form><p class="ns-hint">Empty title → the input shakes with decay; a valid title springs a toast in from the edge that leaves back the same way when the countdown ends; hover a toast to pause its timer.</p><div class="ns-stack" role="status" aria-live="polite"></div><div class="ns-toolbar" role="group" aria-label="Entry edge"><button type="button" aria-pressed="true" title="Bottom">底部弹出</button><button type="button" aria-pressed="false" title="Top">顶部落下</button><button type="button" title="Error toast sample">Error sample</button></div><p class="ns-layers" aria-hidden="true"><span><b>1</b> toast: k300 · c25 (ζ≈.72) · edge <!-- -->bottom<!-- --> · 4000ms</span><span><b>2</b> progress: countdown bar · pauseOnHover · width 384</span><span><b>3</b> stack: threshold 3 · +N collapse · edge offset 24px</span><span><b>4</b> shake: A 10px · λ 6s⁻¹ · <!-- -->5<!-- --> beats/<!-- -->500<!-- -->ms</span></p></div><style>
+@keyframes ns-shake { 0% { transform: translateX(0); } 10.0% { transform: translateX(-7.41px); } 30.0% { transform: translateX(4.07px); } 50.0% { transform: translateX(-2.23px); } 70.0% { transform: translateX(1.22px); } 90.0% { transform: translateX(-0.67px); } 100% { transform: translateX(0); } }
+.ns-scene { position: absolute; inset: 0; overflow: hidden; }
+/* ── 发布表单:空标题提交 → 输入框摇晃衰减(shake-decay)── */
+.ns-form {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  translate: -50% -50%;
+  width: min(400px, calc(100% - 28px));
+  display: flex;
+  gap: 8px;
+}
+.ns-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  font-family: inherit;
+}
+.ns-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ns-input[data-error="true"] { border-color: oklch(0.62 0.2 25); }
+.ns-scene[data-reduced="false"] .ns-input[data-shake="true"] {
+  animation: ns-shake var(--ns-shake-ms, 500ms) ease-in-out both;
+}
+.ns-send {
+  position: relative;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(30, 90, 220, 0.85);
+}
+.ns-send:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ns-err {
+  position: absolute;
+  left: 50%;
+  top: calc(34% + 30px);
+  translate: -50% 0;
+  margin: 0;
+  width: min(400px, calc(100% - 28px));
+  font-size: 12px;
+  color: oklch(0.62 0.2 25);
+}
+.ns-hint {
+  position: absolute;
+  left: 50%;
+  top: calc(34% + 52px);
+  translate: -50% 0;
+  margin: 0;
+  width: min(460px, calc(100% - 28px));
+  text-align: center;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+/* ── 通知栈(吐司弹簧 + 进度倒计时):宽度 384(Ant notification)、
+      距边 24px(Ant top/bottom 默认)、上限 3 条展开 + "+N" 收起牌(Ant stack threshold 3)── */
+.ns-stack {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(384px, calc(100% - 28px));
+  z-index: 5;
+  pointer-events: none;
+}
+.ns-scene[data-edge="bottom"] .ns-stack { bottom: 24px; }
+.ns-scene[data-edge="top"] .ns-stack { top: 24px; }
+.ns-toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px 13px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.12), 0 9px 28px 0 rgba(0, 0, 0, 0.05); /* Ant @shadow-2 下拉面板档 */
+  will-change: transform;
+  transition: opacity 160ms ease;
+}
+.ns-scene[data-reduced="true"] .ns-toast[data-leaving="true"] { opacity: 0; }
+.ns-dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #fff;
+  background: oklch(0.62 0.14 155);
+}
+.ns-dot[data-kind="error"] { background: oklch(0.62 0.19 25); }
+.ns-toast p { margin: 0; flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+/* M3 snackbar「最多一个动作」:整条通知只有 ✕ 一个动作 */
+.ns-close {
+  flex: none;
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.ns-close::after { content: ""; position: absolute; inset: -4px; } /* 热区 ≥42px(spec §7) */
+.ns-close:hover { color: var(--text); }
+.ns-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* 进度倒计时条(Ant notification showProgress 语义):宽度 = 剩余寿命/lifetime,
+   rAF 直写;悬停暂停计时同步暂停(pauseOnHover 默认 true) */
+.ns-progress {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+.ns-progress > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--accent) 85%, transparent);
+}
+/* "+N" 收起牌(Ant stack{threshold:3} 语义:超过 3 条收成堆叠) */
+.ns-collapsed {
+  pointer-events: auto;
+  position: relative;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-variant-numeric: tabular-nums;
+}
+.ns-collapsed::after { content: ""; position: absolute; inset: -6px; }
+.ns-collapsed:hover { color: var(--text); border-color: var(--accent); }
+.ns-collapsed:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* ── 工具栏 / 铭牌(mono 元数据纪律,同批次样板)── */
+.ns-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border);
+}
+.ns-toolbar button {
+  position: relative;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+}
+.ns-toolbar button::after { content: ""; position: absolute; inset: -8px; } /* 热区 ≥42px */
+.ns-toolbar button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
+.ns-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.ns-layers b { font-weight: 600; color: var(--text); }
+.ns-has-toasts .ns-layers { opacity: 0; } /* 弹出时让位 */
+@media (max-width: 720px) {
+  .ns-layers { display: none; }
+  .ns-hint { display: none; }
+}
+</style></div><!--astro:end--></astro-island>   </div> </div>  <h2 class="section-title">Composite replication prompt</h2> <astro-island uid="Z22U2Qs" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## Goal\n\nCompose a notification stack: an empty-title submit shakes the input with exponential decay (A 10px / λ 6s⁻¹, 5 beats/0.5s); a valid title springs a toast in from the bottom edge (stiffness 300 / damping 25, ζ≈0.722 with slight overshoot only), at width 384 / 24px from the edge (Ant notification numbers), collapsing into a \&quot;+N\&quot; pill beyond 3 toasts (Ant stack{threshold:3}); every toast carries a countdown progress bar (showProgress semantics, hover pauses the timer = pauseOnHover), and at lifetime 4000ms it springs back out the same edge; each toast has at most one action (✕), and Esc dismisses the newest while restoring focus.\n\nThis is a multi-component composition. Replicate it one-to-one; follow each component&#39;s official-default parameter snapshot below and do not alter the values.\n\n## Parameter Snapshot (per component · official defaults)\n\n### Toast Spring Entrance (motion/toast-spring)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stiffness\&quot;,\n    \&quot;value\&quot;: \&quot;300\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;damping\&quot;,\n    \&quot;value\&quot;: \&quot;25\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;edge\&quot;,\n    \&quot;value\&quot;: \&quot;bottom\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lifetime\&quot;,\n    \&quot;value\&quot;: \&quot;4000ms\&quot;\n  }\n]\n```\n\n### Progress Motion (motion/progress-motion)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;total\&quot;,\n    \&quot;value\&quot;: \&quot;10000ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;pulse\&quot;,\n    \&quot;value\&quot;: \&quot;1200ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;phase\&quot;,\n    \&quot;value\&quot;: \&quot;auto\&quot;\n  }\n]\n```\n\n### Shake · Exponential Decay (motion/shake-decay)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;amp\&quot;,\n    \&quot;value\&quot;: \&quot;10\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lambda\&quot;,\n    \&quot;value\&quot;: \&quot;6s⁻¹\&quot;\n  }\n]\n```\n\n## Acceptance Criteria (per component)\n\n### Toast Spring Entrance\n- Entrance initial state mirrors react-hot-toast: off-screen travel + scale 0.6 + opacity 0.5 (direction per edge)\n- Entrance spring strictly stiffness 300 / damping 25 (mass 1, ζ≈0.722); exit 0.4s cubic-bezier(.06,.71,.55,1)\n- 4000ms auto-dismiss lifecycle (sonner&#39;s source value); timers cleared on unmount/manual close\n- Container role=status (aria-live=polite), messages manually closeable via ✕; never critical info\n- Under prefers-reduced-motion both directions become a bare fade (react-hot-toast&#39;s official degradation)\n\n### Progress Motion\n- Forms evolve by duration thresholds: skeleton (the &lt;1s zone) → loop (the 2–10s semantics) → percent (the ≥10s semantics) + descriptive text and ETA\n- Pulse/sweep period follows the snapshot --prog-pulse, animating only transform (compositor path)\n- The determinate phase syncs aria-valuenow on role=progressbar; the indeterminate phase provides no value (no invented progress)\n- Done-state content fades in fast at 200ms cubic-bezier(0.2, 0, 0, 1) (M3 short4 + Standard)\n- Under prefers-reduced-motion: reduce, pulse/sweep/fade are disabled while values and status text keep updating\n\n### Shake · Exponential Decay\n- Defaults A=10px, λ=6s⁻¹: 5 beats/0.5s, envelope ×e^(−0.3)≈0.74 per beat (research 10 §4.3 example)\n- The spring lane strictly stiffness 500 / damping 24 / velocity=−A·ω_d (ζ≈0.536, λ≈12), flagged as the research tier\n- animate.css&#39; ±10px is explicitly named the constant-amplitude special case, never sold as physical decay\n- The error carries triple non-motion channels (border/text/role=status); under reduced-motion the shake drops while the error survives\n- macOS login-shake numbers are flagged as community replication, unverified\n\n### Recipe-level\n- The stack is a state machine, not a message stream (§8 craft 7): Ant stack{threshold:3} / maxCount truncation / key-reuse semantics — beyond 3 toasts collapse into a \&quot;+N\&quot; pill that expands on click; M3 snackbar allows one at a time and one action max, so each demo toast carries only ✕\n- Spring params = entry official defaults: stiffness 300 / damping 25 (ζ≈0.722, overshoot ≈3.8% and no more — TDesign&#39;s \&quot;UI is Cubic only\&quot;) / edge bottom / lifetime 4000ms (sonner TOAST_LIFETIME source value); the toast returns to the edge it came from, exit on the same edge and faster\n- The progress bar = Ant notification showProgress semantics: width narrows with remaining lifetime and hover pauses the timer (pauseOnHover default true); Ant duration 4.5s / message 3s are the official references, while the demo lifetime takes the toast-spring entry default 4000ms\n- Shake decay has no official recipe (unverified): the nearest official neighbors are TDesign&#39;s \&quot;input shake\&quot; micro-motion example and Apple&#39;s visionOS ~0.2Hz sustained-oscillation red line; the demo A=10px / λ=6s⁻¹ (entry defaults: 5 beats/0.5s, envelope ×0.74 per beat) is a decaying transient, not sustained oscillation; under reduced-motion the shake stops and error semantics ride on text and border\n- Auto-dismiss never loses the message: the bar is visual only; toast semantics ride on role=status/aria-live and the ✕ action (M3: web auto-dismiss must pair with inline feedback); Esc dismisses the newest and restores focus to the send button; reduced-motion degrades entrance/exit to pure fade\n\n## Research source\n\nout/design-study/16-composition-recipes.md §7 配方 f「通知栈」+ §8 巧思 7(依据:Ant message/notification Token、M3 snackbar/m3-expressive、TDesign motion、Apple Motion ~0.2Hz 红线;摇晃衰减未证实,按条目 schema 默认落地)\n\n## Source\n\n/uiux-atlas/en/recipes/notification-stack/&quot;],&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">Copy replication prompt</button><button type="button" class="btn-ghost" aria-expanded="false">View prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/en/resources/">Go beyond: specs · libraries · tools · galleries →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">License</p> <p class="site-footer-line"> Demo code  <a href="/uiux-atlas/LICENSE">MIT</a> · Text  <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (opens in new tab) </span> </a> </p> <p class="site-footer-line">Every value cites a first-party source</p> </section> <nav class="site-footer-col" aria-label="Categories"> <p class="site-footer-head">Categories</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/en/styles/">Styles</a> </li><li> <a href="/uiux-atlas/en/materials/">Materials</a> </li><li> <a href="/uiux-atlas/en/motion/">Motion</a> </li><li> <a href="/uiux-atlas/en/color/">Color</a> </li><li> <a href="/uiux-atlas/en/type/">Typography</a> </li><li> <a href="/uiux-atlas/en/layout/">Layout</a> </li><li> <a href="/uiux-atlas/en/components/">Components</a> </li><li> <a href="/uiux-atlas/en/icons/">Icons</a> </li><li> <a href="/uiux-atlas/en/dataviz/">Data Viz</a> </li><li> <a href="/uiux-atlas/en/principles/">Principles</a> </li> <li><a href="/uiux-atlas/en/resources/">Resources</a></li> <li><a href="/uiux-atlas/en/trends/">Design trend tracker</a></li> <li><a href="/uiux-atlas/en/recipes/">Recipes</a></li>  <li><a href="/uiux-atlas/en/paths/">Learning paths</a></li>  <li><a href="/uiux-atlas/en/graph/">Graph</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="Machine entry points"> <p class="site-footer-head">Machine entry points</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · full entry index</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · component items</a></li>  <li class="site-footer-mcp"> MCP · replication prompt server · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">Switch sounds</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> Sounds </button> <label class="site-sound-label" for="site-sound-volume">Volume</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">Preview</span> <button type="button" class="sound-btn" data-sound-preview="pour">Pour</button> <button type="button" class="sound-btn" data-sound-preview="splash">Splash</button> <button type="button" class="sound-btn" data-sound-preview="rise">Rise</button> <button type="button" class="sound-btn" data-sound-preview="finish">Finish</button> </div> <p class="site-sound-hint">Synchronized sounds for the liquid theme switch; the toggle and volume are stored in this browser.</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="wvwuO" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

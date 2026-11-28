@@ -1,0 +1,224 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="吐司弹簧 + 进度动效 + 摇晃衰减:通知栈的组合方案。"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>通知栈 · UI/UX 设计全解图集</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/recipes/notification-stack/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/notification-stack/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/notification-stack/"><meta property="og:site_name" content="UI/UX 设计全解图集"><meta property="og:type" content="website"><meta property="og:title" content="通知栈"><meta property="og:description" content="吐司弹簧 + 进度动效 + 摇晃衰减:通知栈的组合方案。"><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/recipes/notification-stack/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="en"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="通知栈"><meta name="twitter:description" content="吐司弹簧 + 进度动效 + 摇晃衰减:通知栈的组合方案。"><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">跳到主内容</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX 设计全解图集 </a> <nav class="site-nav" aria-label="图集"> <a href="/uiux-atlas/styles/"> 风格流派 </a><a href="/uiux-atlas/materials/"> 材质与光影 </a><a href="/uiux-atlas/motion/"> 动效与微交互 </a><a href="/uiux-atlas/color/"> 色彩与主题 </a><a href="/uiux-atlas/type/"> 排版 </a><a href="/uiux-atlas/layout/"> 布局与响应式 </a><a href="/uiux-atlas/components/"> 前端部件 </a><a href="/uiux-atlas/icons/"> 图标体系 </a><a href="/uiux-atlas/dataviz/"> 数据可视化 </a><a href="/uiux-atlas/principles/"> 交互法则 </a>  <a href="/uiux-atlas/resources/"> 资源 </a> </nav> <a class="lang-switch" href="/uiux-atlas/en/recipes/" hreflang="en" rel="alternate"> EN </a>  <button type="button" class="site-search" data-palette-open aria-label="搜索 / Search" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="切换深浅主题" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> 设计配方 </a> </p>  <header class="list-head"> <h1 class="list-title"> 通知栈 <span class="recipe-name-en" lang="en"> Notification Stack </span> </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">3</span> 个条目 </span> </p> </header> <p class="res-intro">吐司弹簧 + 进度动效 + 摇晃衰减:通知栈的组合方案。</p>  <h2 class="section-title">组合条目</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/motion/toast-spring/" style="view-transition-name: card-motion-toast-spring; --i: 0;"> <span class="entry-name">Toast 弹簧入场</span> <span class="entry-tagline">Toast 从屏幕边缘弹入:入场带过冲(真弹簧或 y₂&gt;1 的过冲 bezier),退场纯缓出收尾,生命周期到点自动消失——『进攻退守,一进一出永不打架』。</span> <span class="entry-meta"> <span class="chip">组件库</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/motion/progress-motion/" style="view-transition-name: card-motion-progress-motion; --i: 1;"> <span class="entry-name">进度反馈动效</span> <span class="entry-tagline">进度形态随「确定性」变:骨架块(什么都不知道)→ 循环扫光(知道在加载)→ 百分比条(知道还剩多少)→ 完成快速淡入;形态切换按 NN/g 时长阈值演进,越接近终点动力越强(目标梯度)。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/motion/shake-decay/" style="view-transition-name: card-motion-shake-decay; --i: 2;"> <span class="entry-name">错误抖动·指数衰减</span> <span class="entry-tagline">错误反馈抖动优先做成 x(t)=A·e^(−λt)·sin(ωt) 的指数衰减正弦:CSS 衰减 keyframes 与『给初速度、让弹簧自己衰减』两种实现对照,连按与中断物理连续。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">组合依据</h2> <p class="res-intro">16 号调研 §7-配方 f(§8 巧思 7「吐司栈的三件套:栈是状态机,不是消息流」):栈管理数值 Ant 最全——message duration 3s/top 8/maxCount 超限自动关最早/key 复用同条消息/stack 堆叠模式(6.4.0),notification duration 4.5s/placement topRight/stack{threshold:3}/showProgress 进度条(5.18+)/pauseOnHover(默认 true)/width 384/top·bottom 24px(https://ant.design/components/notification-cn/ ;https://ant.design/components/message-cn/ );M3 snackbar 作反面配重——无操作 4~10s 自动消失、全屏同时只允许一条、最多一个动作,Web 端自动消失必须配行内反馈或改为可操作(https://m3.material.io/components/snackbar/guidelines )。demo 栈纪律取 Ant 数值,弹簧参数取 toast-spring 条目官方默认:stiffness 300/damping 25(ζ≈0.722、过冲≈3.8%,轻微过冲即止)/edge bottom/lifetime 4000ms(sonner TOAST_LIFETIME 源码值);官方弹簧依据 = M3 Expressive motion-physics(spatial springs + effects springs,后者专管颜色/透明度过渡——进度条收窄即其形态,https://m3.material.io/blog/building-with-m3-expressive );入场时长档 = TDesign 抽屉/消息通知/全局提示 280ms(桌面)/140ms(移动)、弹窗气泡类归 Z 轴运动,感知恒常性公式「桌面 = 移动 ×2」(https://tdesign.tencent.com/design/motion );demo 进度条 = Ant notification showProgress 语义(lifetime 倒计时收窄,悬停暂停 = pauseOnHover 默认 true)。摇晃衰减四家均无官方配方 → 未证实(§9 清单),唯一官方相邻依据 = TDesign 把「输入框抖动」列为微观动效示例 + Apple visionOS 避免约 0.2Hz 持续振荡(对该频率极敏感,https://developer.apple.com/design/human-interface-guidelines/motion );demo 取 shake-decay 条目官方默认 A=10px(animate.css shakeX ±10px 同量级)/λ=6s⁻¹(调研 10§4.3 采样示例:5 拍/0.5s,包络每拍 ×0.74)——瞬态衰减、非持续振荡。组合衔接:弹簧只管入出场、进度条只管剩余寿命、摇晃只管字段级错误,三动效互不叠加;Esc 关最新一条并归还焦点;reduced-motion 入出场退化纯 fade、摇晃停(错误语义由文案与描边兜底)。</p> <p class="trend-note"> <span class="trend-note-label">出处</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 f「通知栈」+ §8 巧思 7(依据:Ant message/notification Token、M3 snackbar/m3-expressive、TDesign motion、Apple Motion ~0.2Hz 红线;摇晃衰减未证实,按条目 schema 默认落地)</span> </p>  <h2 class="section-title">实例演示</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>实例演示</span> <span>官方默认</span> </div> <div class="demo-stage-wrap">      <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1WiqIF" prefix="r3" component-url="/uiux-atlas/_astro/NotificationStack.B-_dE5dS.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;NotificationStack&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Notification Stack</span><div class="ns-scene" data-edge="bottom" data-reduced="false"><form class="ns-form"><input class="ns-input" data-error="false" data-shake="false" type="text" placeholder="通知标题(必填)" aria-label="通知标题" aria-invalid="false"/><button type="submit" class="ns-send">发送通知</button></form><p class="ns-hint">空标题提交 → 输入框摇晃衰减;有效标题 → 通知从边缘弹簧弹入、倒计时到点回边消失;悬停通知暂停计时。</p><div class="ns-stack" role="status" aria-live="polite"></div><div class="ns-toolbar" role="group" aria-label="弹入边缘 Edge"><button type="button" aria-pressed="true" title="Bottom">底部弹出</button><button type="button" aria-pressed="false" title="Top">顶部落下</button><button type="button" title="错误通知样例">错误样例</button></div><p class="ns-layers" aria-hidden="true"><span><b>1</b> toast: k300 · c25 (ζ≈.72) · edge <!-- -->bottom<!-- --> · 4000ms</span><span><b>2</b> progress: countdown bar · pauseOnHover · width 384</span><span><b>3</b> stack: threshold 3 · +N collapse · edge offset 24px</span><span><b>4</b> shake: A 10px · λ 6s⁻¹ · <!-- -->5<!-- --> beats/<!-- -->500<!-- -->ms</span></p></div><style>
+@keyframes ns-shake { 0% { transform: translateX(0); } 10.0% { transform: translateX(-7.41px); } 30.0% { transform: translateX(4.07px); } 50.0% { transform: translateX(-2.23px); } 70.0% { transform: translateX(1.22px); } 90.0% { transform: translateX(-0.67px); } 100% { transform: translateX(0); } }
+.ns-scene { position: absolute; inset: 0; overflow: hidden; }
+/* ── 发布表单:空标题提交 → 输入框摇晃衰减(shake-decay)── */
+.ns-form {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  translate: -50% -50%;
+  width: min(400px, calc(100% - 28px));
+  display: flex;
+  gap: 8px;
+}
+.ns-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  font-family: inherit;
+}
+.ns-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ns-input[data-error="true"] { border-color: oklch(0.62 0.2 25); }
+.ns-scene[data-reduced="false"] .ns-input[data-shake="true"] {
+  animation: ns-shake var(--ns-shake-ms, 500ms) ease-in-out both;
+}
+.ns-send {
+  position: relative;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(30, 90, 220, 0.85);
+}
+.ns-send:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ns-err {
+  position: absolute;
+  left: 50%;
+  top: calc(34% + 30px);
+  translate: -50% 0;
+  margin: 0;
+  width: min(400px, calc(100% - 28px));
+  font-size: 12px;
+  color: oklch(0.62 0.2 25);
+}
+.ns-hint {
+  position: absolute;
+  left: 50%;
+  top: calc(34% + 52px);
+  translate: -50% 0;
+  margin: 0;
+  width: min(460px, calc(100% - 28px));
+  text-align: center;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+/* ── 通知栈(吐司弹簧 + 进度倒计时):宽度 384(Ant notification)、
+      距边 24px(Ant top/bottom 默认)、上限 3 条展开 + "+N" 收起牌(Ant stack threshold 3)── */
+.ns-stack {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(384px, calc(100% - 28px));
+  z-index: 5;
+  pointer-events: none;
+}
+.ns-scene[data-edge="bottom"] .ns-stack { bottom: 24px; }
+.ns-scene[data-edge="top"] .ns-stack { top: 24px; }
+.ns-toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px 13px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.12), 0 9px 28px 0 rgba(0, 0, 0, 0.05); /* Ant @shadow-2 下拉面板档 */
+  will-change: transform;
+  transition: opacity 160ms ease;
+}
+.ns-scene[data-reduced="true"] .ns-toast[data-leaving="true"] { opacity: 0; }
+.ns-dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #fff;
+  background: oklch(0.62 0.14 155);
+}
+.ns-dot[data-kind="error"] { background: oklch(0.62 0.19 25); }
+.ns-toast p { margin: 0; flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+/* M3 snackbar「最多一个动作」:整条通知只有 ✕ 一个动作 */
+.ns-close {
+  flex: none;
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.ns-close::after { content: ""; position: absolute; inset: -4px; } /* 热区 ≥42px(spec §7) */
+.ns-close:hover { color: var(--text); }
+.ns-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* 进度倒计时条(Ant notification showProgress 语义):宽度 = 剩余寿命/lifetime,
+   rAF 直写;悬停暂停计时同步暂停(pauseOnHover 默认 true) */
+.ns-progress {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+.ns-progress > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--accent) 85%, transparent);
+}
+/* "+N" 收起牌(Ant stack{threshold:3} 语义:超过 3 条收成堆叠) */
+.ns-collapsed {
+  pointer-events: auto;
+  position: relative;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-variant-numeric: tabular-nums;
+}
+.ns-collapsed::after { content: ""; position: absolute; inset: -6px; }
+.ns-collapsed:hover { color: var(--text); border-color: var(--accent); }
+.ns-collapsed:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* ── 工具栏 / 铭牌(mono 元数据纪律,同批次样板)── */
+.ns-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border);
+}
+.ns-toolbar button {
+  position: relative;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+}
+.ns-toolbar button::after { content: ""; position: absolute; inset: -8px; } /* 热区 ≥42px */
+.ns-toolbar button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
+.ns-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.ns-layers b { font-weight: 600; color: var(--text); }
+.ns-has-toasts .ns-layers { opacity: 0; } /* 弹出时让位 */
+@media (max-width: 720px) {
+  .ns-layers { display: none; }
+  .ns-hint { display: none; }
+}
+</style></div><!--astro:end--></astro-island>   </div> </div>  <h2 class="section-title">组合式复刻 Prompt</h2> <astro-island uid="eUNLw" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## 目标\n\n组合一个通知栈:空标题提交 → 输入框摇晃衰减(A 10px/λ 6s⁻¹,5 拍/0.5s 指数衰减);有效标题 → 通知从底部弹簧弹入(stiffness 300/damping 25、ζ≈0.722 轻微过冲即止)、宽度 384/距边 24px(Ant notification 口径)、超出 3 条收成「+N」堆叠牌(Ant stack{threshold:3});每条通知带剩余寿命倒计时进度条(showProgress 语义、悬停暂停计时 = pauseOnHover)、lifetime 4000ms 到点从同一条边弹簧退场;每条最多一个动作(✕),Esc 关最新一条并归还焦点。\n\n这是一个多组件组合方案,请一比一复刻。逐组件严格遵循下方官方默认参数快照,不要自行调整数值。\n\n## 参数快照(逐组件 · 官方默认)\n\n### Toast Spring Entrance / Toast 弹簧入场 (motion/toast-spring)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stiffness\&quot;,\n    \&quot;value\&quot;: \&quot;300\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;damping\&quot;,\n    \&quot;value\&quot;: \&quot;25\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;edge\&quot;,\n    \&quot;value\&quot;: \&quot;bottom\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lifetime\&quot;,\n    \&quot;value\&quot;: \&quot;4000ms\&quot;\n  }\n]\n```\n\n### Progress Motion / 进度反馈动效 (motion/progress-motion)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;total\&quot;,\n    \&quot;value\&quot;: \&quot;10000ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;pulse\&quot;,\n    \&quot;value\&quot;: \&quot;1200ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;phase\&quot;,\n    \&quot;value\&quot;: \&quot;auto\&quot;\n  }\n]\n```\n\n### Shake · Exponential Decay / 错误抖动·指数衰减 (motion/shake-decay)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;amp\&quot;,\n    \&quot;value\&quot;: \&quot;10\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lambda\&quot;,\n    \&quot;value\&quot;: \&quot;6s⁻¹\&quot;\n  }\n]\n```\n\n## 验收要点(逐组件)\n\n### Toast Spring Entrance / Toast 弹簧入场\n- 入场初态与 react-hot-toast 同构:屏外滑入 + scale 0.6 + opacity 0.5(方向按边缘)\n- 入场弹簧参数严格 stiffness 300 / damping 25(mass 1,ζ≈0.722),退场 0.4s cubic-bezier(.06,.71,.55,1)\n- 生命周期 4000ms 自动消失(sonner 源码值);计时在卸载/手动关闭时清理\n- 容器 role=status(aria-live=polite),消息可 ✕ 手动关闭;不承载关键信息\n- prefers-reduced-motion 时入/出均为纯 fade(react-hot-toast 官方降级)\n\n### Progress Motion / 进度反馈动效\n- 形态按时长阈值演进:骨架(&lt;1s 段)→ 循环(2–10s 区间语义)→ 百分比(≥10s 语义)+ 文字说明与完成时间估计\n- 脉动/扫光周期取参数快照 --prog-pulse,只动 transform(合成器路径)\n- 确定段 role=progressbar 同步 aria-valuenow,不确定段不提供数值(不编造进度)\n- 完成态内容以 200ms cubic-bezier(0.2, 0, 0, 1)(M3 short4 + Standard)快速淡入\n- prefers-reduced-motion: reduce 时停用脉动/扫光/淡入,数值与状态文字照常更新\n\n### Shake · Exponential Decay / 错误抖动·指数衰减\n- 默认 A=10px、λ=6s⁻¹:5 拍/0.5s,包络每拍 ×e^(−0.3)≈0.74(调研 10§4.3 示例)\n- 弹簧轨严格 stiffness 500 / damping 24 / velocity=−A·ω_d(ζ≈0.536、λ≈12),标注为调研档位\n- animate.css ±10px 被明确称为等幅特例,不得说成物理衰减\n- 错误状态有三重非动效承载(描边/文案/role=status),reduced-motion 时抖动取消而错误完整\n- macOS 登录框参数标注为社区复刻经验、未证实\n\n### 配方级\n- 栈是状态机,不是消息流(§8 巧思 7):Ant stack{threshold:3}/maxCount 截断/key 复用语义——超出 3 条收成「+N」堆叠牌、点开可展开;M3 snackbar 全屏一次只许一条、最多一个动作,demo 每条通知只有 ✕ 一个动作\n- 弹簧参数 = 条目官方默认:stiffness 300 / damping 25(ζ≈0.722、过冲≈3.8%,轻微过冲即止——TDesign「UI 一律 Cubic」)/ edge bottom / lifetime 4000ms(sonner TOAST_LIFETIME 源码值);从哪条边来、回哪条边去,退场同边且更快\n- 进度条 = Ant notification showProgress 语义:宽度随剩余寿命收窄,悬停暂停计时(pauseOnHover 默认 true);Ant duration 4.5s / message 3s 为官方参考值,demo 生命周期取 toast-spring 条目默认 4000ms\n- 摇晃衰减无官方配方(未证实):唯一官方相邻依据 = TDesign「输入框抖动」微观动效示例 + Apple visionOS ~0.2Hz 持续振荡红线;demo A=10px/λ=6s⁻¹(条目默认:5 拍/0.5s,包络每拍 ×0.74)是瞬态衰减、非持续振荡;reduced-motion 摇晃停、错误语义由文案与描边兜底\n- 自动消失的信息不丢:进度条只是视觉,通知语义由 role=status/aria-live 与 ✕ 兜底(M3:Web 自动消失必须配行内反馈);Esc 关最新一条并归还焦点到发送按钮;reduced-motion 时入出场退化为纯 fade\n\n## 调研出处\n\nout/design-study/16-composition-recipes.md §7 配方 f「通知栈」+ §8 巧思 7(依据:Ant message/notification Token、M3 snackbar/m3-expressive、TDesign motion、Apple Motion ~0.2Hz 红线;摇晃衰减未证实,按条目 schema 默认落地)\n\n## 出处\n\n/uiux-atlas/recipes/notification-stack/&quot;],&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">复制复刻 Prompt</button><button type="button" class="btn-ghost" aria-expanded="false">查看 Prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/resources/">授人以渔:规范 · 组件库 · 工具 · 画廊 →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">许可</p> <p class="site-footer-line"> demo 代码  <a href="/uiux-atlas/LICENSE">MIT</a> · 正文  <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (在新窗口打开) </span> </a> </p> <p class="site-footer-line">数值均注明一手来源</p> </section> <nav class="site-footer-col" aria-label="分类导航"> <p class="site-footer-head">分类导航</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/styles/">风格流派</a> </li><li> <a href="/uiux-atlas/materials/">材质与光影</a> </li><li> <a href="/uiux-atlas/motion/">动效与微交互</a> </li><li> <a href="/uiux-atlas/color/">色彩与主题</a> </li><li> <a href="/uiux-atlas/type/">排版</a> </li><li> <a href="/uiux-atlas/layout/">布局与响应式</a> </li><li> <a href="/uiux-atlas/components/">前端部件</a> </li><li> <a href="/uiux-atlas/icons/">图标体系</a> </li><li> <a href="/uiux-atlas/dataviz/">数据可视化</a> </li><li> <a href="/uiux-atlas/principles/">交互法则</a> </li> <li><a href="/uiux-atlas/resources/">资源</a></li> <li><a href="/uiux-atlas/trends/">设计趋势追踪</a></li> <li><a href="/uiux-atlas/recipes/">设计配方</a></li>  <li><a href="/uiux-atlas/paths/">学习路径</a></li>  <li><a href="/uiux-atlas/graph/">知识图谱</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="机器入口"> <p class="site-footer-head">机器入口</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · 全部条目索引</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · 部件发布件</a></li>  <li class="site-footer-mcp"> MCP · 复刻 Prompt 服务器 · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">切换音效</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> 音效 </button> <label class="site-sound-label" for="site-sound-volume">音量</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">试听</span> <button type="button" class="sound-btn" data-sound-preview="pour">流出</button> <button type="button" class="sound-btn" data-sound-preview="splash">落底</button> <button type="button" class="sound-btn" data-sound-preview="rise">上涨</button> <button type="button" class="sound-btn" data-sound-preview="finish">完成</button> </div> <p class="site-sound-hint">液体主题切换的同步音效;开关与音量保存在本浏览器。</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="xTbu1" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

@@ -1,0 +1,22 @@
+import{j as o}from"./jsx-runtime.D_zvdyIk.js";import{r as E}from"./index.DLkBFFtG.js";import{g as K}from"./color.DuEPkvq5.js";import{D as B}from"./DemoStage.vW1CgYCd.js";const M=a=>a<=.04045?a/12.92:((a+.055)/1.055)**2.4,w=a=>a<=.0031308?a*12.92:1.055*Math.cbrt(a*a*a)-.055;function D(a,t,s){const n=a+.3963377774*t+.2158037573*s,j=a-.1055613458*t-.0638541728*s,h=a-.0894841775*t-1.291485548*s,i=n**3,c=j**3,p=h**3,l=[4.0767416621*i-3.3077115913*c+.2309699292*p,-1.2684380046*i+2.6097574011*c-.3413193965*p,-.0041960863*i-.7034186147*c+1.707614701*p];return[w(l[0]),w(l[1]),w(l[2])]}function G(a){const t=a.replace("#",""),s=parseInt(t.length===3?t.replace(/./g,n=>n+n):t.slice(0,6),16);return[s>>16&255,s>>8&255,s&255]}const F=[{hex:"#ff0000",zh:"纯红(核验值)",en:"pure red (verified)"},{hex:"#ffffff",zh:"白 → OKLab(1,0,0)",en:"white → OKLab(1,0,0)"},{hex:"#767676",zh:"AA 临界灰",en:"AA-critical gray"}],I=`
+.ok-stage { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 2px; padding: 30px 14px 10px; overflow: hidden; }
+.ok-row {
+  display: grid; grid-template-columns: 128px 1fr 22px; align-items: center; gap: 8px;
+  padding: 3px 8px; border-radius: 8px; min-height: 0;
+}
+.ok-row:nth-child(odd) { background: color-mix(in srgb, var(--border) 16%, transparent); }
+.ok-name { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.ok-vals { font-size: 11px; color: var(--text); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ok-chip { width: 20px; height: 14px; border-radius: 4px; border: 1px solid var(--border); justify-self: end; }
+.ok-foot { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.ok-tag { padding: 1px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+.ok-chips { display: flex; gap: 4px; }
+.ok-chips button {
+  border: 1px solid var(--border); border-radius: 999px; background: transparent;
+  padding: 2px 10px; font-size: 11px; cursor: pointer; color: var(--text-dim);
+}
+.ok-chips button[aria-pressed="true"] { background: var(--accent); border-color: transparent; color: var(--bg); }
+.ok-stage { animation: ok-in 0.4s ease-out both; }
+@keyframes ok-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ok-stage { animation: none; } }
+`,e=(a,t=4)=>String(+a.toFixed(t));function J({entryId:a,schema:t}){const s=K(a,t),[n,j]=E.useState(()=>s.get("source").toUpperCase());E.useEffect(()=>s.subscribe(()=>{j(s.get("source").toUpperCase())}),[s]);const[h,i,c]=G(n),[p,l,y]=[h/255,i/255,c/255],[b,u,g]=[M(p),M(l),M(y)],z=.4122214708*b+.5363325363*u+.0514459929*g,S=.2119034982*b+.6806995451*u+.1073969566*g,C=.0883024619*b+.2817188376*u+.6299787005*g,[f,k,v]=[Math.cbrt(z),Math.cbrt(S),Math.cbrt(C)],[d,x,m]=[.2104542553*f+.793617785*k-.0040720468*v,1.9779984951*f-2.428592205*k+.4505937099*v,.0259040371*f+.7827717662*k-.808675766*v],$=Math.sqrt(x*x+m*m),N=$<=4e-6?NaN:(Math.atan2(m,x)*180/Math.PI+360)%360,[L,R,_]=D(d,x,m),H=Math.max(Math.abs(L-p),Math.abs(R-l),Math.abs(_-y)).toExponential(1),O=Number.isNaN(N)?`oklch(${e(d*100,1)}% ${e($,4)} 0)`:`oklch(${e(d*100,1)}% ${e($,4)} ${e(N,2)})`,A=[{name:"sRGB 8bit",vals:`${h}, ${i}, ${c}`,chip:n},{name:"线性 sRGB(γ 解码)",vals:`${e(b)}, ${e(u)}, ${e(g)}`},{name:"LMS(矩阵①)",vals:`${e(z)}, ${e(S)}, ${e(C)}`},{name:"LMS′(立方根)",vals:`${e(f)}, ${e(k)}, ${e(v)}`},{name:"OKLab(矩阵②)",vals:`L ${e(d)} · a ${e(x)} · b ${e(m)}`},{name:"OKLCH(柱坐标)",vals:`L ${e(d*100,1)}% · C ${e($,4)} · H ${Number.isNaN(N)?"—":e(N,2)+"°"}`},{name:"反向链 → sRGB",vals:`${e(L*255,2)}, ${e(R*255,2)}, ${e(_*255,2)}`}];return o.jsx(B,{entryId:a,schema:t,children:o.jsxs("div",{className:"ok-stage",children:[A.map(r=>o.jsxs("div",{className:"ok-row",children:[o.jsx("span",{className:"ok-name",children:r.name}),o.jsx("code",{className:"ok-vals",children:r.vals}),r.chip?o.jsx("span",{className:"ok-chip",style:{background:r.chip},"aria-hidden":"true"}):o.jsx("span",{})]},r.name)),o.jsxs("div",{className:"ok-foot",children:[o.jsx("span",{className:"ok-tag",children:O}),o.jsxs("span",{className:"ok-tag",children:["往返误差 max|Δ| = ",H]}),o.jsx("span",{className:"ok-chips",role:"group","aria-label":"参考色 Reference colors",children:F.map(r=>o.jsx("button",{type:"button","aria-pressed":n===r.hex,title:r.en,onClick:()=>s.set("source",r.hex),children:r.zh},r.hex))})]}),o.jsx("style",{children:I})]})})}export{J as default};

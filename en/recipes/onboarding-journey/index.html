@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="Choreographed motion + goal-gradient + empty-state handoff: the onboarding composition."><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>Onboarding Journey · UI/UX Design Atlas</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/en/recipes/onboarding-journey/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/onboarding-journey/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/"><meta property="og:site_name" content="UI/UX Design Atlas"><meta property="og:type" content="website"><meta property="og:title" content="Onboarding Journey"><meta property="og:description" content="Choreographed motion + goal-gradient + empty-state handoff: the onboarding composition."><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/en/recipes/onboarding-journey/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Onboarding Journey"><meta name="twitter:description" content="Choreographed motion + goal-gradient + empty-state handoff: the onboarding composition."><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/en/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX Design Atlas </a> <nav class="site-nav" aria-label="Atlas"> <a href="/uiux-atlas/en/styles/"> Styles </a><a href="/uiux-atlas/en/materials/"> Materials </a><a href="/uiux-atlas/en/motion/"> Motion </a><a href="/uiux-atlas/en/color/"> Color </a><a href="/uiux-atlas/en/type/"> Typography </a><a href="/uiux-atlas/en/layout/"> Layout </a><a href="/uiux-atlas/en/components/"> Components </a><a href="/uiux-atlas/en/icons/"> Icons </a><a href="/uiux-atlas/en/dataviz/"> Data Viz </a><a href="/uiux-atlas/en/principles/"> Principles </a>  <a href="/uiux-atlas/en/resources/"> Resources </a> </nav> <a class="lang-switch" href="/uiux-atlas/recipes/" hreflang="zh-CN" rel="alternate"> 中文 </a>  <button type="button" class="site-search" data-palette-open aria-label="Search / 搜索" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch color theme" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/en/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> Design recipes </a> </p>  <header class="list-head"> <h1 class="list-title"> Onboarding Journey  </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">3</span> entries </span> </p> </header> <p class="res-intro">Choreographed motion + goal-gradient + empty-state handoff: the onboarding composition.</p>  <h2 class="section-title">Combines</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/en/motion/choreography/" style="view-transition-name: card-motion-choreography; --i: 0;"> <span class="entry-name">Motion Choreography</span> <span class="entry-tagline">Choreography in pure CSS: animation-delay grows with --i to stagger start points, and a shared direction (up/down/left/right/none) gives the whole group one spatial meaning; duration and curve come from M3&#39;s official pairs (enter std-decel 250ms, exit std-accel 200ms — enters outlast exits).</span> <span class="entry-meta"> <span class="chip">Material 3</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/components/empty/" style="view-transition-name: card-components-empty; --i: 1;"> <span class="entry-name">Empty</span> <span class="entry-tagline">A friendly placeholder for no data: artwork + short title + next-step copy + an optional action button — turning a dead end into guidance.</span> <span class="entry-meta"> <span class="chip">Component Lib</span> <span class="chip chip-star" aria-label="Parameterization 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/principles/goal-gradient/" style="view-transition-name: card-principles-goal-gradient; --i: 2;"> <span class="entry-name">Goal-Gradient Effect</span> <span class="entry-tagline">Effort toward a goal intensifies as the goal gets closer. Give clear progress indicators, pre-seed &#39;artificial progress&#39; at the start, and invest in the final stretch — the nearer the goal, the stronger each step&#39;s pull.</span> <span class="entry-meta"> <span class="chip">Community</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">Why these combine</h2> <p class="res-intro">Research 16 §7 recipe-g: Apple Onboarding leads — onboarding runs after launching, never inside it; teach interactively (better than manuals); show contextual tips near their target (TipKit); keep pre-flows short; tutorials are skippable and never re-shown; defer non-essential setup with defaults; rating/paywall requests come after the experience (https://developer.apple.com/design/human-interface-guidelines/onboarding ). Choreography discipline = TDesign&#39;s &quot;never express content order with sequential animation on first load — present directly or cross-fade&quot; (https://tdesign.tencent.com/design/motion ) — the demo&#39;s first paint renders directly (pure fade), and stagger is reserved for user-triggered step transitions: choreography entry defaults stagger 40ms (a common community value, unverified; no official inter-item interval exists) / direction up, in 250ms std-decel cubic-bezier(0,0,0,1) / out 200ms std-accel cubic-bezier(0.3,0,1,1) = M3&#39;s official pairing + Ant &quot;exits vanish as whole blocks, never queued&quot; (https://ant.design/docs/spec/motion-cn/ ) + M3 container transform for card→workspace continuity (https://m3.material.io/styles/motion/transitions/transition-patterns ). &quot;Goal gradient&quot; is not codified under that name in any of the four systems → unverified (§9 list); proxy numbers = visionOS ≥60pt button-center spacing and M3 40dp state layer / 48dp target (https://developer.apple.com/design/human-interface-guidelines/layout ; https://m3.material.io/foundations/interaction/states/state-layers ); the demo takes goal-gradient entry defaults steps=10 / headStart=1 (one artificial progress stamp pre-stamped at the start, the &quot;pre-stamp one tick&quot; craft note). Empty→content handoff = Ant Empty — explicit no-data hint plus initialization guidance, children as CTA (&lt;Empty&gt;&lt;Button&gt;create&lt;/Button&gt;&lt;/Empty&gt;), Empty built into Select/Table etc. for global consistency (https://ant.design/components/empty-cn/ ; the empty-state template page https://ant.design/docs/spec/research-empty-cn/ ) + Apple Loading &quot;show something as soon as possible&quot;, replacing placeholders on arrival (https://developer.apple.com/design/human-interface-guidelines/loading ) + M3&#39;s official skeleton-loaders transition pattern; the demo swaps with zero shift (empty placeholder sized = content size, content fading in fast).</p> <p class="trend-note"> <span class="trend-note-label">Source</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 g「首启引导」(依据:HIG Onboarding/Loading/layout、M3 transition-patterns/state-layers、Ant Empty/motion-cn/research-empty、TDesign motion;目标梯度未证实,按条目 schema 默认落地)</span> </p>  <h2 class="section-title">Live demo</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>Live demo</span> <span>official default</span> </div> <div class="demo-stage-wrap">       <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="2bVPLp" prefix="r3" component-url="/uiux-atlas/_astro/OnboardingJourney.zw_iCGKI.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;OnboardingJourney&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Onboarding Journey</span><div class="oj-scene" data-reduced="false"><section class="oj-card" aria-label="Onboarding demo"><div class="oj-head"><ol class="oj-dots" aria-label="Onboarding progress"><li class="oj-dot" data-state="process" aria-current="step" title="Welcome"></li><li class="oj-dot" data-state="wait" title="Try it"></li><li class="oj-dot" data-state="wait" title="Done"></li></ol><button type="button" class="oj-skip">Skip</button></div><div class="oj-body" aria-busy="false"><div class="oj-panel" data-fresh="true"><p class="oj-title">Three steps to make it yours</p><p class="oj-desc">Onboarding runs after launch (never inside it); contextual tips beat a single flow. This first screen renders directly per TDesign — no choreography on first paint.</p></div></div><div class="oj-foot"><button type="button" class="oj-btn oj-btn-primary">Next →</button></div></section><p class="oj-toolbar" aria-hidden="true"><span aria-hidden="true">choreography on</span></p><p class="oj-layers" aria-hidden="true"><span><b>1</b> choreo: first paint direct · steps i×<!-- -->40<!-- -->ms · 250/200ms (M3)</span><span><b>2</b> empty: art + title + desc + children CTA · zero-shift swap</span><span><b>3</b> gradient: <!-- -->10<!-- --> stamps · headStart <!-- -->1<!-- --> (artificial)</span><span><b>4</b> skip: skippable, won&#x27;t reshow (Apple Onboarding)</span></p></div><style>
+.oj-scene { position: absolute; inset: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.oj-card {
+  width: min(430px, 100%);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px 16px 16px;
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.12), 0 9px 28px 0 rgba(0, 0, 0, 0.05); /* Ant @shadow-2 下拉面板档 */
+}
+/* 步骤头:aria-current=step;可跳过且不再弹(Apple Onboarding)走右上「跳过」 */
+.oj-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.oj-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.oj-dot {
+  width: 22px; height: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+}
+.oj-dot[data-state="process"] { background: var(--accent); }
+.oj-dot[data-state="finish"] { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.oj-skip {
+  position: relative;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-faint);
+}
+.oj-skip::after { content: ""; position: absolute; inset: -6px; } /* 热区 ≥42px */
+.oj-skip:hover { color: var(--text); }
+.oj-skip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* ── 步骤体编排:首屏直出(TDesign 禁顺序动画),步进转场才交错(choreography)── */
+.oj-body { min-height: 148px; position: relative; }
+.oj-panel { display: flex; flex-direction: column; gap: 10px; }
+/* 首屏直出:整块 200ms 纯 fade,无交错 */
+.oj-panel[data-fresh="true"] { animation: oj-fade 200ms ease-out both; }
+/* 步进入场:子项 delay = i × 40ms,方向 up(translateY 14px → 0),250ms std-decel */
+.oj-panel[data-anim="in"] > * { animation: oj-in 250ms cubic-bezier(0, 0, 0, 1) both; }
+/* 步进出场:整块退场(Ant「出场整块消失不排队」),200ms std-accel */
+.oj-panel[data-anim="out"] { animation: oj-out 200ms cubic-bezier(0.3, 0, 1, 1) both; }
+.oj-scene[data-reduced="true"] .oj-panel > *,
+.oj-scene[data-reduced="true"] .oj-panel[data-fresh="true"] { animation-name: oj-fade; }
+.oj-scene[data-reduced="true"] .oj-panel > * { transform: none !important; }
+@keyframes oj-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes oj-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes oj-fade { from { opacity: 0; } to { opacity: 1; } }
+.oj-title { margin: 0; font-size: 15px; font-weight: 650; color: var(--text); }
+.oj-desc { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--text-dim); }
+/* 交互式教学(Apple:可交互方式教学优于说明书):真开关,试用后下一步才放行 */
+.oj-try {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; background: var(--bg-elev);
+}
+.oj-try input { accent-color: var(--accent); width: 16px; height: 16px; }
+.oj-try span { font-size: 13px; color: var(--text); }
+.oj-try small { margin-left: auto; font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.oj-nudge { margin: 0; font-size: 12px; color: var(--accent); }
+/* 页脚:目标 ≥48px(M3 交互目标口径;视觉 36px + ::after 热区补足) */
+.oj-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.oj-btn {
+  position: relative;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  background: transparent;
+  white-space: nowrap;
+}
+.oj-btn::after { content: ""; position: absolute; inset: -5px; } /* 热区 ≥48px */
+.oj-btn:hover { border-color: var(--accent); }
+.oj-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.oj-btn-primary { background: rgba(30, 90, 220, 0.85); border-color: transparent; color: #fff; }
+.oj-btn-primary:hover { background: rgba(30, 90, 220, 0.95); }
+/* ── 工作台:集章卡(goal-gradient steps=10/headStart=1)+ 空状态↔内容(空状态组件)── */
+.oj-stamps { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.oj-stamp {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border: 1.5px dashed color-mix(in srgb, var(--text) 30%, transparent);
+  border-radius: 999px;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+  background: transparent;
+}
+.oj-stamp[data-pre="true"] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+.oj-stamp[data-hit="true"] {
+  border-style: solid;
+  border-color: oklch(0.62 0.14 155 / 0.75);
+  background: oklch(0.62 0.14 155 / 0.16);
+  color: oklch(0.55 0.13 155);
+}
+.oj-scene[data-reduced="false"] .oj-stamp[data-anim="true"] { animation: oj-pop 250ms cubic-bezier(0, 0, 0, 1) both; }
+@keyframes oj-pop { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.oj-progress { height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--text) 10%, transparent); overflow: hidden; }
+.oj-progress > i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 300ms ease; }
+.oj-readout { margin: 0; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.oj-readout b { color: var(--text); font-weight: 600; }
+/* 空状态卡(Ant Empty 解剖:插画 + 标题 + 说明 + children CTA):占位尺寸 = 内容尺寸,换载零位移 */
+.oj-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 18px 16px 16px; text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-elev);
+  min-height: 118px;
+}
+.oj-art { width: 62px; height: 48px; border-radius: 8px; position: relative; background: color-mix(in srgb, var(--text) 6%, transparent); overflow: hidden; }
+.oj-art::before { content: ""; position: absolute; inset: 10px 12px auto; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text) 25%, transparent); }
+.oj-art::after { content: ""; position: absolute; left: 12px; right: 22px; bottom: 10px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text) 12%, transparent); }
+.oj-empty strong { font-size: 13.5px; color: var(--text); }
+.oj-empty p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--text-dim); }
+.oj-cta {
+  position: relative;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(30, 90, 220, 0.85);
+  min-height: 48px; /* M3 交互目标 48dp 口径 */
+}
+.oj-cta::after { content: ""; position: absolute; inset: -4px; }
+.oj-cta:hover { background: rgba(30, 90, 220, 0.95); }
+.oj-cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* 内容到达:快速淡入覆盖、零位移(占位尺寸 = 内容尺寸) */
+.oj-rows { display: flex; flex-direction: column; gap: 8px; min-height: 118px; }
+.oj-row {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-size: 12.5px; color: var(--text); background: var(--surface);
+}
+.oj-scene[data-reduced="false"] .oj-row { animation: oj-fade 200ms ease-out both; }
+.oj-row b { font-weight: 600; }
+.oj-row small { margin-left: auto; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+/* ── 工具栏 / 铭牌(mono 元数据纪律)── */
+.oj-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  margin: 0;
+  display: flex;
+  gap: 2px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.oj-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.oj-layers b { font-weight: 600; color: var(--text); }
+@media (max-width: 860px) {
+  .oj-toolbar { display: none; } /* 纯信息徽标:窄舞台让位给卡片,避免压住「跳过」钮 */
+  .oj-layers { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oj-progress > i { transition: none; }
+}
+</style></div><!--astro:end--></astro-island>  </div> </div>  <h2 class="section-title">Composite replication prompt</h2> <astro-island uid="20aIRt" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## Goal\n\nCompose a first-run onboarding: a three-step card (Welcome → Try it → Done) running after launch, with the first paint rendered directly per TDesign (no choreography on load); step transitions use choreography (stagger 40ms / direction up, in 250ms std-decel / out 200ms std-accel, exits as whole blocks); every step is skippable and never re-shown (Apple Onboarding); completion lands on an empty workspace — an empty state (art + title + description + children CTA \&quot;Create first project\&quot;) swapping to content with zero shift; a 10-stamp card pre-stamps 1 artificial stamp (headStart=1 for finishing onboarding), and each created project adds a stamp while a readout counts the remaining ones (goal gradient).\n\nThis is a multi-component composition. Replicate it one-to-one; follow each component&#39;s official-default parameter snapshot below and do not alter the values.\n\n## Parameter Snapshot (per component · official defaults)\n\n### Motion Choreography (motion/choreography)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stagger\&quot;,\n    \&quot;value\&quot;: \&quot;40ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;direction\&quot;,\n    \&quot;value\&quot;: \&quot;up\&quot;\n  }\n]\n```\n\n### Empty (components/empty)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;simple\&quot;,\n    \&quot;value\&quot;: \&quot;off\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;footerAction\&quot;,\n    \&quot;value\&quot;: \&quot;on\&quot;\n  }\n]\n```\n\n### Goal-Gradient Effect (principles/goal-gradient)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;steps\&quot;,\n    \&quot;value\&quot;: \&quot;10章\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;headStart\&quot;,\n    \&quot;value\&quot;: \&quot;1章\&quot;\n  }\n]\n```\n\n## Acceptance Criteria (per component)\n\n### Motion Choreography\n- Staggering is animation-delay = i × stagger, with no JS animation library\n- One direction per group, consistent with the content&#39;s spatial origin (M3: notifications top, drawers side, sheets bottom)\n- Enter/exit durations from the official pairs: enter 250ms std-decel, exit 200ms std-accel (enters outlast exits)\n- Animate only opacity and transform, and show the total spread stagger × (n−1) live\n- Under prefers-reduced-motion: reduce, cross-fade with opacity only — keep the rhythm, drop the displacement\n\n### Empty\n- The empty card replaces the table region: no header/footer retained when there is no data (Carbon best practice)\n- Artwork follows the selected tier — 121×116 (default) or 55×35 (simple) proportions — and is aria-hidden\n- Title follows the locale default &#39;No data&#39; style; the sub-copy states the next step positively\n- The bottom action is optional: when off, no button placeholder is rendered\n- The empty state announces via role=\&quot;status\&quot;; the artwork never carries key information\n\n### Goal-Gradient Effect\n- steps/headStart are JS-type params consumed via store subscription; changing them restarts the round, and head-start slots carry a visible &#39;pre-stamped&#39; mark honestly labeled as artificial progress\n- Interval = real milliseconds since the previous stamp (stamp 1 measured from round start), shown per-stamp as bars plus latest/min/max text — never chart-only\n- &#39;n/N · percent · m left&#39; text stays in sync and is announced via aria-live; collected slots carry a ✓ glyph, never color-only\n- On completion the button becomes &#39;another round&#39;; the celebration is a one-shot animation; under prefers-reduced-motion all animation drops and numbers update instantly\n- Cite Hull 1932/1934 and Kivetz/Urminsky/Zheng; label steps/headStart as demo teaching params — the law itself sets no numbers\n\n### Recipe-level\n- Onboarding discipline (Apple Onboarding): runs after launch, never inside it; interactive teaching (a real switch; a light nudge on Next before it&#39;s tried) beats manuals; skippable and never re-shown; non-essential setup deferred — the demo carries no settings\n- Choreography discipline (TDesign/Ant/M3): no sequential animation on first load — the first paint renders directly (pure 200ms fade); stagger is reserved for user-triggered step transitions: delay = i×40ms, one shared up direction, in 250ms std-decel / out 200ms std-accel (M3&#39;s official pairing), exits as whole blocks never queued (Ant)\n- \&quot;Goal gradient\&quot; is not codified by the four systems (unverified, §9 list): proxy numbers = visionOS ≥60pt button centers, M3 40dp state layer / 48dp target (CTA min-height 48px); demo params = entry official defaults steps=10 / headStart=1 (artificial progress pre-stamped); progress rides on progressbar semantics (aria-valuenow), never on the stamp graphic alone\n- Empty→content = Ant Empty anatomy (art + title + description + children CTA) + Apple Loading&#39;s placeholder swap: placeholder sized = content size (min-height 118px), content fades in fast with zero shift; the CTA is a real button (focusable, with a pressed state)\n- reduced-motion cuts everything at once: stagger degrades to opacity-only fade (transforms zeroed), stamp pop stops, the swap loses all animation; step progress and stamp semantics are carried by text/aria, never by any layer&#39;s animation\n\n## Research source\n\nout/design-study/16-composition-recipes.md §7 配方 g「首启引导」(依据:HIG Onboarding/Loading/layout、M3 transition-patterns/state-layers、Ant Empty/motion-cn/research-empty、TDesign motion;目标梯度未证实,按条目 schema 默认落地)\n\n## Source\n\n/uiux-atlas/en/recipes/onboarding-journey/&quot;],&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">Copy replication prompt</button><button type="button" class="btn-ghost" aria-expanded="false">View prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/en/resources/">Go beyond: specs · libraries · tools · galleries →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">License</p> <p class="site-footer-line"> Demo code  <a href="/uiux-atlas/LICENSE">MIT</a> · Text  <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (opens in new tab) </span> </a> </p> <p class="site-footer-line">Every value cites a first-party source</p> </section> <nav class="site-footer-col" aria-label="Categories"> <p class="site-footer-head">Categories</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/en/styles/">Styles</a> </li><li> <a href="/uiux-atlas/en/materials/">Materials</a> </li><li> <a href="/uiux-atlas/en/motion/">Motion</a> </li><li> <a href="/uiux-atlas/en/color/">Color</a> </li><li> <a href="/uiux-atlas/en/type/">Typography</a> </li><li> <a href="/uiux-atlas/en/layout/">Layout</a> </li><li> <a href="/uiux-atlas/en/components/">Components</a> </li><li> <a href="/uiux-atlas/en/icons/">Icons</a> </li><li> <a href="/uiux-atlas/en/dataviz/">Data Viz</a> </li><li> <a href="/uiux-atlas/en/principles/">Principles</a> </li> <li><a href="/uiux-atlas/en/resources/">Resources</a></li> <li><a href="/uiux-atlas/en/trends/">Design trend tracker</a></li> <li><a href="/uiux-atlas/en/recipes/">Recipes</a></li>  <li><a href="/uiux-atlas/en/paths/">Learning paths</a></li>  <li><a href="/uiux-atlas/en/graph/">Graph</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="Machine entry points"> <p class="site-footer-head">Machine entry points</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · full entry index</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · component items</a></li>  <li class="site-footer-mcp"> MCP · replication prompt server · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">Switch sounds</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> Sounds </button> <label class="site-sound-label" for="site-sound-volume">Volume</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">Preview</span> <button type="button" class="sound-btn" data-sound-preview="pour">Pour</button> <button type="button" class="sound-btn" data-sound-preview="splash">Splash</button> <button type="button" class="sound-btn" data-sound-preview="rise">Rise</button> <button type="button" class="sound-btn" data-sound-preview="finish">Finish</button> </div> <p class="site-sound-hint">Synchronized sounds for the liquid theme switch; the toggle and volume are stored in this browser.</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="wvwuO" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

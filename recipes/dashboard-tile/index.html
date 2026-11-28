@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="bento 网格 + 密度规范 + 骨架加载 + 磁吸点缀:仪表盘数据卡的组合方案。"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>仪表盘数据卡 · UI/UX 设计全解图集</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/recipes/dashboard-tile/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/dashboard-tile/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/dashboard-tile/"><meta property="og:site_name" content="UI/UX 设计全解图集"><meta property="og:type" content="website"><meta property="og:title" content="仪表盘数据卡"><meta property="og:description" content="bento 网格 + 密度规范 + 骨架加载 + 磁吸点缀:仪表盘数据卡的组合方案。"><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/recipes/dashboard-tile/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="zh_CN"><meta property="og:locale:alternate" content="en"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="仪表盘数据卡"><meta name="twitter:description" content="bento 网格 + 密度规范 + 骨架加载 + 磁吸点缀:仪表盘数据卡的组合方案。"><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">跳到主内容</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX 设计全解图集 </a> <nav class="site-nav" aria-label="图集"> <a href="/uiux-atlas/styles/"> 风格流派 </a><a href="/uiux-atlas/materials/"> 材质与光影 </a><a href="/uiux-atlas/motion/"> 动效与微交互 </a><a href="/uiux-atlas/color/"> 色彩与主题 </a><a href="/uiux-atlas/type/"> 排版 </a><a href="/uiux-atlas/layout/"> 布局与响应式 </a><a href="/uiux-atlas/components/"> 前端部件 </a><a href="/uiux-atlas/icons/"> 图标体系 </a><a href="/uiux-atlas/dataviz/"> 数据可视化 </a><a href="/uiux-atlas/principles/"> 交互法则 </a>  <a href="/uiux-atlas/resources/"> 资源 </a> </nav> <a class="lang-switch" href="/uiux-atlas/en/recipes/" hreflang="en" rel="alternate"> EN </a>  <button type="button" class="site-search" data-palette-open aria-label="搜索 / Search" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="切换深浅主题" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> 设计配方 </a> </p>  <header class="list-head"> <h1 class="list-title"> 仪表盘数据卡 <span class="recipe-name-en" lang="en"> Dashboard Tile </span> </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">4</span> 个条目 </span> </p> </header> <p class="res-intro">bento 网格 + 密度规范 + 骨架加载 + 磁吸点缀:仪表盘数据卡的组合方案。</p>  <h2 class="section-title">组合条目</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/styles/bento-grid/" style="view-transition-name: card-styles-bento-grid; --i: 0;"> <span class="entry-name">便当盒布局</span> <span class="entry-tagline">一个 CSS Grid 上的不等大小圆角卡槽阵列,以格子大小编码信息优先级——Apple 2022-09 发布会后成为 SaaS 功能区的默认形态;是布局不是配色。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/dataviz/dataviz-dashboard-density/" style="view-transition-name: card-dataviz-dataviz-dashboard-density; --i: 1;"> <span class="entry-name">仪表盘密度</span> <span class="entry-tagline">BI 网格的密度底座:Grafana 24 列 × 30px 行高 × 8px 面板间距(源码常量),联动 Power BI 官方示例字号阶梯 45/12/12/10——comfortable 与 compact 两档切换整盘呼吸感。</span> <span class="entry-meta"> <span class="chip">组件库</span> <span class="chip chip-star" aria-label="参数化 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/motion/skeleton-loading/" style="view-transition-name: card-motion-skeleton-loading; --i: 2;"> <span class="entry-name">骨架屏</span> <span class="entry-tagline">用几何色块复刻即将出现的内容布局,叠加一道扫光脉动表示「加载中」;内容就绪后快速淡入覆盖,布局零跳动。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 2/3"> <span class="stars" aria-hidden="true">★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/motion/magnetic-hover/" style="view-transition-name: card-motion-magnetic-hover; --i: 3;"> <span class="entry-name">磁吸交互</span> <span class="entry-tagline">指针进入吸引半径后,按钮被「吸」向指针按比例偏移,离开即回位;逐帧用 lerp 线性插值逼近目标,触屏与 prefers-reduced-motion 下直出普通 hover。</span> <span class="entry-meta"> <span class="chip">社区流派</span> <span class="chip chip-star" aria-label="参数化 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">组合依据</h2> <p class="res-intro">16 号调研 §7-配方 b:「bento grid」官方术语未证实(§9 清单),替代依据是各系栅格数值——容器层 bento 取调研配方 repeat(4, minmax(0,1fr))/行高 180px/间隙 16px/圆角 24px(superdesign.dev 条目 schema 官方默认);面板密度层走 Grafana 面板数值 gap 8px(GRID_CELL_VMARGIN)/行高 30px(GRID_CELL_HEIGHT)/KPI 面板 3 格=90px、Power BI 字号阶梯 45/12/12/10;宏观栅格依据 = Ant 24 栅格/基数 8(https://ant.design/docs/spec/layout-cn/ )+ TDesign 基数 8px/gutter 16px(https://tdesign.tencent.com/design/layout )+ M3 spacing 线性 scale(https://m3.material.io/styles/spacing/applying-spacing )。密度切换只动间距不动字号(Ant Table 三档 cellPadding 16/12/8 而 cellFontSize 恒 14,https://ant.design/components/table-cn/ ;ProTable 密度切换是一等工具栏能力)。骨架占位尺寸=真实卡片尺寸、加载完成零位移——Ant「只在第一次加载数据时使用骨架屏」(https://ant.design/components/skeleton-cn/ )+ Apple Loading「show something as soon as possible」内容到达即替换(https://developer.apple.com/design/human-interface-guidelines/loading )+ M3 把 Skeleton loaders 官方列为六大转场模式之一(https://m3.material.io/styles/motion/transitions/transition-patterns )+ TDesign 首屏禁顺序动画(https://tdesign.tencent.com/design/motion )(§8 巧思 5「骨架屏是布局的预告片」)。磁吸按钮为点缀层(radius 0.45/lerp 0.15,条目 schema 默认),触屏与 reduced-motion 用户直接关掉磁吸走普通按压态。</p> <p class="trend-note"> <span class="trend-note-label">出处</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 b「仪表盘数据卡」+ §8 巧思 5(依据:HIG Loading、M3 transition-patterns/skeleton loaders、Ant Skeleton/Table/layout-cn、TDesign layout/motion、Grafana/Power BI 密度数值)</span> </p>  <h2 class="section-title">实例演示</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>实例演示</span> <span>官方默认</span> </div> <div class="demo-stage-wrap">  <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="ZppRg3" prefix="r3" component-url="/uiux-atlas/_astro/DashboardTile.BlpKYgkh.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;DashboardTile&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Dashboard Tile</span><div class="dt-scene" data-density="comfortable"><p class="dt-status" role="status">加载中…(骨架占位,尺寸 = 真实卡片)</p><div class="dt-bento" aria-busy="true"><div class="dt-cell dt-hero" data-loading="true"><div class="dt-skel dt-skel-row" style="width:38%"></div><div class="dt-skel dt-skel-kpi" style="width:52%"></div><div class="dt-skel dt-skel-hero"></div></div><div class="dt-cell dt-kpi" data-loading="true" style="min-height:calc(var(--dvz-row) * 3)"><div class="dt-skel dt-skel-kpi"></div></div><div class="dt-cell dt-spark" data-loading="true"><div class="dt-skel dt-skel-spark"></div></div><div class="dt-cell dt-list" data-loading="true"><div class="dt-skel dt-skel-row" style="width:30%"></div><div class="dt-skel" style="height:var(--dvz-row)"></div><div class="dt-skel" style="height:var(--dvz-row)"></div><div class="dt-skel" style="height:var(--dvz-row)"></div></div></div><p class="dt-layers" aria-hidden="true"><span><b>1</b> bento: repeat(4,minmax(0,1fr)) · rows 180px · gap 16 · r24</span><span><b>2</b> density: gap <!-- -->8<!-- -->px · row <!-- -->30<!-- -->px · ladder 45/12/12/<!-- -->10</span><span><b>3</b> skeleton: 1200ms sweep · size = real · first-load only</span><span><b>4</b> magnet: r 0.45 · lerp 0.15 (accent)</span></p><div class="dt-toolbar" role="group" aria-label="密度切换 Density"><button type="button" aria-pressed="true">舒适</button><button type="button" aria-pressed="false">紧凑</button></div></div><style>
+.dt-scene { position: absolute; inset: 0; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+/* ── 容器层 · bento 网格(styles/bento-grid 官方默认)── */
+.dt-bento {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));   /* cols=4 */
+  grid-auto-rows: 180px;                              /* rowHeight=180px:全部格子的节奏单位 */
+  gap: 16px;                                          /* gap=16px:统一间隙是 bento 识别特征 */
+}
+.dt-cell {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 24px;                                /* radius=24px(标志值,区间 20–28px) */
+  background: var(--surface);
+  overflow: hidden;
+}
+/* 面板内密度 = dataviz-dashboard-density comfortable 官方默认 */
+.dt-cell {
+  --dvz-gap: 8px;    /* Grafana GRID_CELL_VMARGIN=8 */
+  --dvz-row: 30px;   /* Grafana GRID_CELL_HEIGHT=30;KPI 面板 = 3 格 = 90px */
+  --dvz-callout: 45px; /* Power BI 字号阶梯 45/12/12/10 */
+  --dvz-label: 12px;
+  --dvz-small: 10px;
+  padding: calc(var(--dvz-gap) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dvz-gap);
+}
+.dt-scene[data-density="compact"] .dt-cell {
+  --dvz-gap: 4px;    /* 演示档:间距减半 */
+  --dvz-row: 24px;   /* 行高 ×0.8 */
+  --dvz-callout: 32px; /* callout 45→32 */
+  --dvz-small: 9px;  /* label 10→9(9px 逼近 AA 可读下限;官方无 compact 惯例,未证实) */
+}
+.dt-hero { grid-column: span 2; grid-row: span 2; }
+.dt-kpi { grid-column: span 1; }
+.dt-spark { grid-column: span 1; }
+.dt-list { grid-column: span 2; }
+.dt-label {
+  margin: 0;
+  font-size: var(--dvz-label);
+  line-height: 1.35;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dt-callout {
+  margin: 0;
+  font-size: var(--dvz-callout);
+  font-weight: 640;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.dt-delta { margin: 0; font-size: var(--dvz-small); line-height: 1.35; color: oklch(0.72 0.14 155); font-variant-numeric: tabular-nums; }
+.dt-spark svg { display: block; width: 100%; height: 100%; }
+.dt-rows { display: flex; flex-direction: column; gap: var(--dvz-gap); min-height: 0; overflow: hidden; }
+.dt-row {
+  flex: none;
+  height: var(--dvz-row);            /* 行高单元 = --dvz-row(30px/24px) */
+  display: flex;
+  align-items: center;
+  gap: var(--dvz-gap);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--dvz-small);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.dt-row b { font-weight: 550; color: var(--text); }
+.dt-row .dt-row-val { margin-left: auto; }
+.dt-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--dvz-small);
+  color: var(--text-dim);
+}
+/* ── 点缀层 · 磁吸按钮(motion/magnetic-hover 官方默认 radius 0.45 / lerp 0.15;
+      触屏/减动效直出普通按压态,键盘聚焦走 focus-visible 不位移)── */
+.dt-magnet {
+  align-self: flex-start;
+  position: relative;
+  margin-top: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 7px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  background: var(--surface-2);
+  white-space: nowrap;
+  will-change: transform;
+}
+.dt-magnet::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: transparent; pointer-events: none; }
+.dt-magnet:hover::after { background: color-mix(in srgb, var(--text) 8%, transparent); }   /* M3 hover +8%(内容色) */
+.dt-magnet:active::after { background: color-mix(in srgb, var(--text) 10%, transparent); } /* M3 press +10% */
+/* CSS 双保险:reduced-motion / 触屏无 hover 时磁吸位移整体失效 */
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .dt-magnet { transform: none !important; }
+}
+/* ── 密度工具栏(右上;ProTable「密度切换是一等工具栏能力」语义)── */
+.dt-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--border);
+}
+.dt-toolbar button {
+  position: relative;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+}
+.dt-toolbar button::after { content: ""; position: absolute; inset: -8px; } /* 热区 ≥42px */
+.dt-toolbar button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
+/* ── 骨架层(motion/skeleton-loading):占位尺寸=真实卡片尺寸(同一 bento 模板),
+      扫光脉动 1200ms 水平档(--skeleton-duration 官方默认);内容到达快速淡入、零位移 ── */
+.dt-skel { position: relative; overflow: hidden; background: var(--surface-2); border-radius: 8px; }
+.dt-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 7%, transparent), transparent);
+  animation: dt-sweep var(--skeleton-duration, 1200ms) linear infinite; /* pulse=1200ms,horizontal */
+}
+@keyframes dt-sweep { to { transform: translateX(0); } }
+.dt-skel-hero { flex: 1; }
+.dt-skel-kpi { height: 34px; }
+.dt-skel-row { height: 12px; }
+.dt-skel-spark { flex: 1; }
+.dt-cell[data-loading="true"] > :not(.dt-skel) { display: none; }
+.dt-cell[data-loading="true"] { justify-content: stretch; gap: var(--dvz-gap); }
+/* 内容到达:快速淡入覆盖(演示档 200ms = Ant motionDurationMid 口径;骨架→内容零位移) */
+.dt-real { animation: dt-in 200ms ease-out both; }
+@keyframes dt-in { from { opacity: 0; } to { opacity: 1; } }
+/* ── 四层铭牌(mono 元数据纪律,同 GlassCardPro)── */
+.dt-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.dt-layers b { font-weight: 600; color: var(--text); }
+.dt-status {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+/* bento 回退:不支持 Grid 的环境退化为纵向堆叠等宽卡片(条目 fallback 口径) */
+@supports not (display: grid) {
+  .dt-bento { display: flex; flex-direction: column; }
+  .dt-cell { min-height: 96px; }
+}
+@media (max-width: 720px) {
+  .dt-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dt-hero { grid-column: span 2; }
+  .dt-list { grid-column: span 2; }
+  .dt-layers { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dt-skel::after { animation: none; transform: none; } /* 脉动停用,色块保持静态基色 */
+  .dt-real { animation: none; }
+}
+</style></div><!--astro:end--></astro-island>       </div> </div>  <h2 class="section-title">组合式复刻 Prompt</h2> <astro-island uid="1BJTOF" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## 目标\n\n组合一块仪表盘数据卡页面:容器层用 bento 网格(repeat(4, minmax(0,1fr))/行高 180px/间隙 16px/圆角 24px),面板内部按仪表盘密度规范(Grafana gap 8px/行高 30px/KPI 面板 3 格、Power BI 字号阶梯 45/12/12/10),首次加载用与真实卡片同尺寸的骨架占位(扫光脉动 1200ms、完成零位移换载),hero 格配一枚磁吸按钮点缀(radius 0.45/lerp 0.15);密度切换只动间距不动字号。\n\n这是一个多组件组合方案,请一比一复刻。逐组件严格遵循下方官方默认参数快照,不要自行调整数值。\n\n## 参数快照(逐组件 · 官方默认)\n\n### Bento Grid / 便当盒布局 (styles/bento-grid)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;cols\&quot;,\n    \&quot;value\&quot;: \&quot;4\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rowHeight\&quot;,\n    \&quot;value\&quot;: \&quot;180px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;gap\&quot;,\n    \&quot;value\&quot;: \&quot;16px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;radius\&quot;,\n    \&quot;value\&quot;: \&quot;24px\&quot;\n  }\n]\n```\n\n### Dashboard Density / 仪表盘密度 (dataviz/dataviz-dashboard-density)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;density\&quot;,\n    \&quot;value\&quot;: \&quot;comfortable\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;gap\&quot;,\n    \&quot;value\&quot;: \&quot;8px\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;rowHeight\&quot;,\n    \&quot;value\&quot;: \&quot;30px\&quot;\n  }\n]\n```\n\n### Skeleton Loading / 骨架屏 (motion/skeleton-loading)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;pulse\&quot;,\n    \&quot;value\&quot;: \&quot;1200ms\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;direction\&quot;,\n    \&quot;value\&quot;: \&quot;horizontal\&quot;\n  }\n]\n```\n\n### Magnetic Hover / 磁吸交互 (motion/magnetic-hover)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;radius\&quot;,\n    \&quot;value\&quot;: \&quot;0.45\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lerp\&quot;,\n    \&quot;value\&quot;: \&quot;0.15\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;mode\&quot;,\n    \&quot;value\&quot;: \&quot;magnet\&quot;\n  }\n]\n```\n\n## 验收要点(逐组件)\n\n### Bento Grid / 便当盒布局\n- grid-template-columns: repeat(N, minmax(0,1fr)) 且 gap 全局统一(默认 16px)\n- 行高取参数值(默认 180px),hero 格 span 2×2\n- 单元格圆角取参数值(默认 24px,不低于 16px)\n- 格子大小编码优先级:最大格放最重要事实,每格自包含一个事实\n- 断点降列(768px→2 列、480px→1 列并重置 span),DOM 顺序=阅读顺序,不依赖 dense 排序\n\n### Dashboard Density / 仪表盘密度\n- 网格常量逐字取自调研:24 列、行高 30px、面板间距 8px、最小面板 3 格 90px(Grafana 源码核验)\n- 字号阶梯 45/12/12/10 标注为 Power BI 官方文档示例值,非强制默认\n- compact 档数值如实标注为 demo 演示值(官方未发布 compact 惯例)\n- 面板间距与面板内边距分层:间距走网格变量,padding 走面板内密度\n- MDX 写明 Tableau 数值惯例官方未公开(未找到),不编造\n\n### Skeleton Loading / 骨架屏\n- 占位块与内容块尺寸对齐,切换时不发生布局位移\n- 扫光只动 transform(translateX),周期取参数快照 --skeleton-duration\n- 内容淡入 200ms cubic-bezier(0.2, 0, 0, 1)(M3 short4 + Standard easing)\n- prefers-reduced-motion: reduce 时停用扫光与淡入,加载状态用文字/aria-busy 兜底\n- 加载语义同时经 aria-busy 与可见文字传达,不依赖动画\n\n### Magnetic Hover / 磁吸交互\n- 距离判定:reach = max(宽, 高)/2 ÷ (1 − radius),半径内目标 = 指针偏移 × radius,半径外目标归零\n- 逐帧插值 current += (target − current) × lerp(默认 0.15),配 rAF 循环,位移直写 el.style.translate\n- 触屏(e.pointerType === touch / (hover: none))与 prefers-reduced-motion 下磁吸整体关闭,直出普通 hover\n- CSS 挂 @media (prefers-reduced-motion: reduce), (hover: none) { translate: none } 双保险\n- 按钮可键盘聚焦,focus-visible 描边不产生位移;磁吸语义同时由颜色/文字承担\n\n### 配方级\n- 两套网格各司其职:容器 bento(cols 4/rowHeight 180px/gap 16px/radius 24px)管板块构图,面板内密度(gap 8px/rowHeight 30px,--dvz-gap/--dvz-row)管信息密度;间隙不统一 bento 立刻散架\n- 密度切换只动间距与行高、字号阶梯基本不动(comfortable 45/12/12/10;compact 演示档:间距减半、行高 ×0.8、callout 45→32、label 10→9——官方无 compact 数值惯例,未证实;9px 已是 AA 可读下限);Ant Table 口径:三档 cellPadding 16/12/8 而 cellFontSize 恒 14\n- 骨架占位尺寸=真实卡片尺寸(同一 grid 模板),内容到达快速淡入、零位移;骨架只用于首次加载(重放按钮仅为演示),「正在加载」语义用 aria-busy/状态文字兜底而非只靠扫光动画\n- 扫光脉动 1200ms 水平档为社区常见值(未证实:M3 只要求「微妙脉动」未记载数值);reduced-motion 时脉动停用、色块保持静态基色\n- 磁吸按钮是点缀不是必需:radius 0.45/lerp 0.15(逐帧插值 current += (target−current)×0.15),prefers-reduced-motion 或 hover:none 时整体关闭、直出普通按压态;键盘聚焦走 focus-visible 描边不产生位移\n\n## 调研出处\n\nout/design-study/16-composition-recipes.md §7 配方 b「仪表盘数据卡」+ §8 巧思 5(依据:HIG Loading、M3 transition-patterns/skeleton loaders、Ant Skeleton/Table/layout-cn、TDesign layout/motion、Grafana/Power BI 密度数值)\n\n## 出处\n\n/uiux-atlas/recipes/dashboard-tile/&quot;],&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">复制复刻 Prompt</button><button type="button" class="btn-ghost" aria-expanded="false">查看 Prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/resources/">授人以渔:规范 · 组件库 · 工具 · 画廊 →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">许可</p> <p class="site-footer-line"> demo 代码  <a href="/uiux-atlas/LICENSE">MIT</a> · 正文  <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (在新窗口打开) </span> </a> </p> <p class="site-footer-line">数值均注明一手来源</p> </section> <nav class="site-footer-col" aria-label="分类导航"> <p class="site-footer-head">分类导航</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/styles/">风格流派</a> </li><li> <a href="/uiux-atlas/materials/">材质与光影</a> </li><li> <a href="/uiux-atlas/motion/">动效与微交互</a> </li><li> <a href="/uiux-atlas/color/">色彩与主题</a> </li><li> <a href="/uiux-atlas/type/">排版</a> </li><li> <a href="/uiux-atlas/layout/">布局与响应式</a> </li><li> <a href="/uiux-atlas/components/">前端部件</a> </li><li> <a href="/uiux-atlas/icons/">图标体系</a> </li><li> <a href="/uiux-atlas/dataviz/">数据可视化</a> </li><li> <a href="/uiux-atlas/principles/">交互法则</a> </li> <li><a href="/uiux-atlas/resources/">资源</a></li> <li><a href="/uiux-atlas/trends/">设计趋势追踪</a></li> <li><a href="/uiux-atlas/recipes/">设计配方</a></li>  <li><a href="/uiux-atlas/paths/">学习路径</a></li>  <li><a href="/uiux-atlas/graph/">知识图谱</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="机器入口"> <p class="site-footer-head">机器入口</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · 全部条目索引</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · 部件发布件</a></li>  <li class="site-footer-mcp"> MCP · 复刻 Prompt 服务器 · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">切换音效</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> 音效 </button> <label class="site-sound-label" for="site-sound-volume">音量</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">试听</span> <button type="button" class="sound-btn" data-sound-preview="pour">流出</button> <button type="button" class="sound-btn" data-sound-preview="splash">落底</button> <button type="button" class="sound-btn" data-sound-preview="rise">上涨</button> <button type="button" class="sound-btn" data-sound-preview="finish">完成</button> </div> <p class="site-sound-hint">液体主题切换的同步音效;开关与音量保存在本浏览器。</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="xTbu1" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;zh&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>

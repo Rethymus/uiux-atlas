@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><script>
+      (function () {
+        try {
+          var t = localStorage.getItem("atlas-theme");
+          if (t !== "light" && t !== "dark") {
+            t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script><meta name="generator" content="Astro v5.18.2"><meta name="description" content="Steps + M3 state layers + a spring submit toast + keyboard navigation: the stepped-form composition."><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0e13"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f8"><title>Segmented Form Flow · UI/UX Design Atlas</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b0e13'/%3E%3Ccircle cx='38' cy='42' r='17' fill='%236db2ff' opacity='0.75'/%3E%3Ccircle cx='62' cy='58' r='17' fill='%23a78bfa' opacity='0.6'/%3E%3C/svg%3E"><link rel="canonical" href="https://rethymus.github.io/uiux-atlas/en/recipes/segmented-form-flow/"><link rel="alternate" hreflang="zh-CN" href="https://rethymus.github.io/uiux-atlas/recipes/"><link rel="alternate" hreflang="en" href="https://rethymus.github.io/uiux-atlas/en/recipes/segmented-form-flow/"><link rel="alternate" hreflang="x-default" href="https://rethymus.github.io/uiux-atlas/recipes/"><meta property="og:site_name" content="UI/UX Design Atlas"><meta property="og:type" content="website"><meta property="og:title" content="Segmented Form Flow"><meta property="og:description" content="Steps + M3 state layers + a spring submit toast + keyboard navigation: the stepped-form composition."><meta property="og:url" content="https://rethymus.github.io/uiux-atlas/en/recipes/segmented-form-flow/"><meta property="og:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><meta property="og:locale" content="en"><meta property="og:locale:alternate" content="zh_CN"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Segmented Form Flow"><meta name="twitter:description" content="Steps + M3 state layers + a spring submit toast + keyboard navigation: the stepped-form composition."><meta name="twitter:image" content="https://rethymus.github.io/uiux-atlas/photos/glass-alps.jpg"><link rel="stylesheet" href="/uiux-atlas/_astro/index.1V_MrXxU.css"><link data-font-preload="inter-latin" rel="preload" href="/uiux-atlas/_astro/inter-latin-wght-normal.Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin /></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="site-header"> <div class="site-header-inner"> <a class="brand" href="/uiux-atlas/en/"> <span class="brand-mark" aria-hidden="true">◍</span>UI/UX Design Atlas </a> <nav class="site-nav" aria-label="Atlas"> <a href="/uiux-atlas/en/styles/"> Styles </a><a href="/uiux-atlas/en/materials/"> Materials </a><a href="/uiux-atlas/en/motion/"> Motion </a><a href="/uiux-atlas/en/color/"> Color </a><a href="/uiux-atlas/en/type/"> Typography </a><a href="/uiux-atlas/en/layout/"> Layout </a><a href="/uiux-atlas/en/components/"> Components </a><a href="/uiux-atlas/en/icons/"> Icons </a><a href="/uiux-atlas/en/dataviz/"> Data Viz </a><a href="/uiux-atlas/en/principles/"> Principles </a>  <a href="/uiux-atlas/en/resources/"> Resources </a> </nav> <a class="lang-switch" href="/uiux-atlas/recipes/" hreflang="zh-CN" rel="alternate"> 中文 </a>  <button type="button" class="site-search" data-palette-open aria-label="Search / 搜索" aria-keyshortcuts="Control+K Meta+K"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="10.5" cy="10.5" r="6.5"></circle> <path d="M20.5 20.5 15.3 15.3"></path> </svg> <kbd class="site-search-kbd" data-palette-kbd aria-hidden="true"></kbd> </button>  <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch color theme" aria-pressed="false"> <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path> </svg> <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path> </svg> </button> </div> </header> <main class="shell" id="main">  <div class="resources-page">  <p class="page-back"> <a class="back-link" href="/uiux-atlas/en/recipes/" data-back> <span class="back-arrow" aria-hidden="true">←</span> Design recipes </a> </p>  <header class="list-head"> <h1 class="list-title"> Segmented Form Flow  </h1> <p class="recipe-chips recipe-head-chips"> <span class="chip"> <span class="list-count-num">4</span> entries </span> </p> </header> <p class="res-intro">Steps + M3 state layers + a spring submit toast + keyboard navigation: the stepped-form composition.</p>  <h2 class="section-title">Combines</h2> <div class="entry-grid"> <a class="entry-card reveal" href="/uiux-atlas/en/components/stepper/" style="view-transition-name: card-components-stepper; --i: 0;"> <span class="entry-name">Steps</span> <span class="entry-tagline">Split complex tasks into an ordered sub-step navigation: nodes strung on connectors with wait/process/finish/error derived automatically, and a progress ring on the process step.</span> <span class="entry-meta"> <span class="chip">Component Lib</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/materials/m3-state-layers/" style="view-transition-name: card-materials-m3-state-layers; --i: 1;"> <span class="entry-name">State Layers (M3)</span> <span class="entry-tagline">Material 3 state layers: a low-opacity overlay of the content color on top of a control, with fixed percentages distinguishing hover/focus/press/drag instead of ad-hoc colors.</span> <span class="entry-meta"> <span class="chip">Material 3</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/motion/toast-spring/" style="view-transition-name: card-motion-toast-spring; --i: 2;"> <span class="entry-name">Toast Spring Entrance</span> <span class="entry-tagline">A toast springs in from the screen edge: the entrance carries overshoot (a true spring or a y₂&gt;1 overshoot bezier), the exit is a pure eased settle, and the lifecycle auto-dismisses on time — attack in, retreat out, the pair never collides.</span> <span class="entry-meta"> <span class="chip">Component Lib</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a><a class="entry-card reveal" href="/uiux-atlas/en/principles/keyboard-navigation/" style="view-transition-name: card-principles-keyboard-navigation; --i: 3;"> <span class="entry-name">Keyboard Navigation</span> <span class="entry-tagline">Tab/Shift+Tab moves between components, arrow keys move inside composites (roving focus); focus indicators stay visible, focus is never lost, and modal traps must release via Esc and return focus.</span> <span class="entry-meta"> <span class="chip">Web Standard</span> <span class="chip chip-star" aria-label="Parameterization 3/3"> <span class="stars" aria-hidden="true">★★★</span> </span> </span>  </a> </div>  <h2 class="section-title">Why these combine</h2> <p class="res-intro">Research 16 §7 recipe-c: steps use Ant Steps — &quot;split into a series of steps when the task is complex or ordered&quot;, auto-vertical under 532px, status&#39;s four states can mark the error step, percent progress ring (https://ant.design/components/steps-cn/ ); ProForm StepsForm keeps full data per step and merges at the end (https://procomponents.ant.design/components/steps-form/ ); the Ant form-page template rule: a stepped form = linear task split + progress made visible by the step bar + **one final confirmation right before submitting** (https://ant.design/docs/spec/research-form-cn/ ) (§8 craft 6: &quot;the step bar is a promise list&quot;). All button/step-header feedback goes to M3 content-color state layers: hover +8%, focus +10%, press +10%, one layer at a time, color taken from the content color (https://m3.material.io/foundations/interaction/states/state-layers ). Submit feedback = a spring toast: the official spring basis is M3 Expressive motion-physics (spatial + effects springs, https://m3.material.io/blog/building-with-m3-expressive ), demo params take the entry-schema defaults stiffness 300 / damping 25 (ζ≈0.722, overshoot ≈3.8%), edge bottom, lifetime 4000ms (sonner TOAST_LIFETIME source value); Ant&#39;s split: light feedback = 3s message, heavy = result page countdown (https://ant.design/components/message-cn/ ; https://ant.design/docs/spec/research-result-cn/ ); the counter-rule: TDesign &quot;UI uses Cubic curves only, Elastic is for cartoon illustration&quot; — the spring stops at a slight overshoot (https://tdesign.tencent.com/design/motion ); no vendor publishes a form-step spring parameter table → unverified. Keyboard navigation = Ant Modal keyboard-Esc default true + focusable{trap} (https://ant.design/components/modal-cn/ ) + Apple &quot;bind the primary button to Return&quot; (https://developer.apple.com/design/human-interface-guidelines/buttons ), with the law citation backed by WAI-ARIA APG Dialog focus management (https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/ ); step headers form a toolbar with roving tabindex + arrow keys (APG / keyboard-navigation entry).</p> <p class="trend-note"> <span class="trend-note-label">Source</span> <span class="trend-source-path">out/design-study/16-composition-recipes.md §7 配方 c「分段表单流」+ §8 巧思 6(依据:Ant Steps/Form/message/research-form、ProForm StepsForm、M3 state-layers/m3-expressive、TDesign motion、Ant Modal focusable、Apple Buttons、WAI-ARIA APG Dialog)</span> </p>  <h2 class="section-title">Live demo</h2> <div class="demo-panel recipe-demo-panel"> <div class="demo-panel-head"> <span>Live demo</span> <span>official default</span> </div> <div class="demo-stage-wrap">   <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="ykCq" prefix="r3" component-url="/uiux-atlas/_astro/SegmentedFormFlow.aN0-2D7L.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;SegmentedFormFlow&quot;,&quot;value&quot;:true}" await-children><div class="demo-stage"><span class="stage-plate" aria-hidden="true"><span class="stage-plate-dot"></span>Segmented Form Flow</span><div class="sfp-scene"><form class="sfp-form" noValidate=""><ol class="sfp-steps" aria-label="Setup steps"><li class="sfp-step" data-state="process"><span class="sfp-step-head"><button type="button" class="sfp-step-dot" tabindex="0" aria-current="step" aria-label="Step 1: Account" title="Account">1</button><span class="sfp-step-label">Account</span></span><span class="sfp-step-line" data-done="false" aria-hidden="true"></span></li><li class="sfp-step" data-state="wait"><span class="sfp-step-head"><button type="button" class="sfp-step-dot" tabindex="-1" aria-label="Step 2: Params" title="Params">2</button><span class="sfp-step-label">Params</span></span><span class="sfp-step-line" data-done="false" aria-hidden="true"></span></li><li class="sfp-step" data-state="wait"><span class="sfp-step-head"><button type="button" class="sfp-step-dot" tabindex="-1" aria-label="Step 3: Confirm" title="Confirm">3</button><span class="sfp-step-label">Confirm</span></span><span class="sfp-step-line" data-done="false" aria-hidden="true"></span></li></ol><div class="sfp-body"><div class="sfp-field"><label for="sfp-name">Project name (required)</label><input id="sfp-name" class="sfp-input" aria-invalid="false" placeholder="e.g. uiux-atlas" value=""/></div><p class="sfp-note">StepsForm semantics: each step holds complete data, merged and submitted at the end.</p></div><div class="sfp-foot"><button type="submit" class="sfp-btn sfp-btn-primary">Next →</button></div></form><p class="sfp-layers" aria-hidden="true"><span><b>1</b> steps: 4-state · error mark · &lt;532px vertical</span><span><b>2</b> states: hover +8% · focus +10% · press +10% (content color)</span><span><b>3</b> toast: k300 · c25 (ζ≈.72) · bottom · 4000ms</span><span><b>4</b> keys: roving · Esc→restore · Return=primary</span></p></div><style>
+.sfp-scene { position: absolute; inset: 0; overflow: hidden; padding: 16px; display: flex; justify-content: center; }
+.sfp-form {
+  width: min(560px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 16px 18px;
+}
+/* ── 步骤条(components/stepper):四态推算 current;errorAt 显式标错步 ── */
+.sfp-steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+.sfp-step { display: flex; align-items: center; flex: 1; min-width: 0; }
+.sfp-step:last-child { flex: 0 0 auto; }
+.sfp-step-head { display: inline-flex; align-items: center; gap: 8px; flex: none; min-width: 0; }
+.sfp-step-dot {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* M3 内容色状态层:一次一层、颜色取内容色 */
+.sfp-step-dot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: transparent; pointer-events: none; }
+.sfp-step-dot:hover::after { background: color-mix(in srgb, var(--text) 8%, transparent); }
+.sfp-step-dot:focus-visible::after { background: color-mix(in srgb, var(--text) 10%, transparent); }
+.sfp-step-dot:active::after { background: color-mix(in srgb, var(--text) 10%, transparent); }
+.sfp-step[data-state="finish"] .sfp-step-dot,
+.sfp-step[data-state="process"] .sfp-step-dot { border-color: var(--accent); color: var(--accent); }
+.sfp-step[data-state="error"] .sfp-step-dot { border-color: #ff4d4f; color: #ff4d4f; } /* colorError,调研 06§2.2 */
+.sfp-ring { position: absolute; inset: -2px; width: calc(100% + 4px); height: calc(100% + 4px); transform: rotate(-90deg); pointer-events: none; }
+.sfp-ring circle { fill: none; stroke-width: 2; }
+.sfp-ring-track { stroke: transparent; }
+.sfp-ring-fill { stroke: var(--accent); stroke-linecap: round; }
+.sfp-step-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sfp-step[data-state="process"] .sfp-step-label { color: var(--text); font-weight: 550; }
+.sfp-step[data-state="error"] .sfp-step-label { color: #ff4d4f; }
+.sfp-step-line { flex: 1; height: 2px; min-width: 12px; margin-left: 10px; background: var(--border-strong); border-radius: 1px; }
+.sfp-step-line[data-done="true"] { background: var(--accent); }
+.sfp-step:last-child .sfp-step-line { display: none; }
+/* antd Steps responsive:宽度 <532px 自动转垂直 */
+@media (max-width: 532px) {
+  .sfp-steps { flex-direction: column; gap: 0; }
+  .sfp-step { flex: none; flex-direction: column; align-items: flex-start; }
+  .sfp-step-line { flex: none; width: 2px; height: 20px; min-width: 0; margin: 4px 0 4px 15px; }
+}
+/* ── 表单字段 ── */
+.sfp-body { min-height: 148px; display: flex; flex-direction: column; gap: 12px; }
+.sfp-field { display: flex; flex-direction: column; gap: 6px; }
+.sfp-field > label { font-size: 13px; font-weight: 550; color: var(--text); }
+.sfp-input {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg-elev);
+  font-family: inherit;
+}
+.sfp-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sfp-input[aria-invalid="true"] { border-color: #ff4d4f; }
+.sfp-err { margin: 0; font-size: 12px; color: #ff4d4f; }
+.sfp-choice { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text); }
+.sfp-choice input { accent-color: var(--accent); width: 15px; height: 15px; }
+.sfp-note { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--text-dim); }
+.sfp-summary { margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-elev); font-size: 13px; line-height: 1.7; color: var(--text-dim); }
+.sfp-summary b { color: var(--text); font-weight: 550; }
+.sfp-foot { display: flex; justify-content: flex-end; gap: 10px; }
+/* ── M3 内容色状态层(materials/m3-state-layers 官方默认 hover8/focus10/press10)── */
+.sfp-btn {
+  position: relative;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--text);
+  background: transparent;
+  white-space: nowrap;
+}
+.sfp-btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: transparent; pointer-events: none; }
+.sfp-btn:hover::after { background: color-mix(in srgb, var(--text) 8%, transparent); }    /* M3 hover +8% */
+.sfp-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sfp-btn:focus-visible::after { background: color-mix(in srgb, var(--text) 10%, transparent); } /* M3 focus +10% */
+.sfp-btn:active::after { background: color-mix(in srgb, var(--text) 10%, transparent); }  /* M3 press +10% */
+.sfp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.sfp-btn:disabled::after { background: transparent !important; }
+.sfp-btn-primary { background: rgba(30, 90, 220, 0.85); border-color: transparent; color: #fff; }
+.sfp-btn-primary:hover::after { background: rgba(255, 255, 255, 0.08); }   /* 内容色 = #fff */
+.sfp-btn-primary:focus-visible::after { background: rgba(255, 255, 255, 0.10); }
+.sfp-btn-primary:active::after { background: rgba(255, 255, 255, 0.10); }
+/* ── 吐司弹簧(motion/toast-spring 官方默认 k300/c25/edge bottom/lifetime 4000ms)── */
+.sfp-toast-wrap { position: absolute; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; pointer-events: none; }
+.sfp-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 10px 12px 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.12), 0 9px 28px 0 rgba(0, 0, 0, 0.05); /* Ant @shadow-2 下拉面板档 */
+  will-change: transform;
+  transition: opacity 160ms ease;
+}
+.sfp-toast-wrap[data-reduced="true"][data-leaving="true"] .sfp-toast { opacity: 0; } /* RM:入出场退化纯 fade */
+.sfp-toast-dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #fff;
+  background: oklch(0.62 0.14 155);
+}
+.sfp-toast p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+.sfp-toast-x {
+  flex: none;
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.sfp-toast-x:hover { color: var(--text); }
+/* ── 四层铭牌(mono 元数据纪律)── */
+.sfp-layers {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  pointer-events: none;
+}
+.sfp-layers b { font-weight: 600; color: var(--text); }
+.sfp-toast-open .sfp-layers { opacity: 0; } /* 吐司弹出时让位,避免遮挡 */
+@media (max-width: 720px) {
+  .sfp-layers { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sfp-toast { transition: none; }
+}
+</style></div><!--astro:end--></astro-island>      </div> </div>  <h2 class="section-title">Composite replication prompt</h2> <astro-island uid="2b7maR" prefix="r4" component-url="/uiux-atlas/_astro/RecipePromptExport.BYOzRDw2.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;prompt&quot;:[0,&quot;## Goal\n\nCompose a segmented form flow: an Ant-Steps step bar (task split, error marks on the failing step, auto-vertical under 532px) + M3 content-color state layers on every button/step header (hover +8% / focus +10% / press +10%, one layer at a time) + a final-step \&quot;confirm again\&quot; gate before submit, which pops a bottom-edge spring toast (stiffness 300 / damping 25 / edge bottom / lifetime 4000ms, pause on hover, ✕ closable, Esc closes and restores focus) + roving-tabindex arrow-key navigation on the step-header toolbar and Return bound to the primary button.\n\nThis is a multi-component composition. Replicate it one-to-one; follow each component&#39;s official-default parameter snapshot below and do not alter the values.\n\n## Parameter Snapshot (per component · official defaults)\n\n### Steps (components/stepper)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;current\&quot;,\n    \&quot;value\&quot;: \&quot;1\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;errorAt\&quot;,\n    \&quot;value\&quot;: \&quot;none\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;percent\&quot;,\n    \&quot;value\&quot;: \&quot;50\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;orientation\&quot;,\n    \&quot;value\&quot;: \&quot;horizontal\&quot;\n  }\n]\n```\n\n### State Layers (M3) (materials/m3-state-layers)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;hover\&quot;,\n    \&quot;value\&quot;: \&quot;8%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;focus\&quot;,\n    \&quot;value\&quot;: \&quot;10%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;press\&quot;,\n    \&quot;value\&quot;: \&quot;10%\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;drag\&quot;,\n    \&quot;value\&quot;: \&quot;16%\&quot;\n  }\n]\n```\n\n### Toast Spring Entrance (motion/toast-spring)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;stiffness\&quot;,\n    \&quot;value\&quot;: \&quot;300\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;damping\&quot;,\n    \&quot;value\&quot;: \&quot;25\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;edge\&quot;,\n    \&quot;value\&quot;: \&quot;bottom\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;lifetime\&quot;,\n    \&quot;value\&quot;: \&quot;4000ms\&quot;\n  }\n]\n```\n\n### Keyboard Navigation (principles/keyboard-navigation)\n\n```json\n[\n  {\n    \&quot;name\&quot;: \&quot;scene\&quot;,\n    \&quot;value\&quot;: \&quot;toolbar\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;ring\&quot;,\n    \&quot;value\&quot;: \&quot;native\&quot;\n  },\n  {\n    \&quot;name\&quot;: \&quot;ringWidth\&quot;,\n    \&quot;value\&quot;: \&quot;3px\&quot;\n  }\n]\n```\n\n## Acceptance Criteria (per component)\n\n### Steps\n- ol/li ordered list + aria-current=\&quot;step\&quot; on the active header; four states use glyphs (✓/✕/number) plus text, never color alone\n- Derivation: i&lt;current finish, i=current process, i&gt;current wait; errorAt overrides explicitly\n- The process ring uses conic-gradient from the exact percent param (no ring at 0%); connector fill #1677ff\n- Headers are native buttons; click/Enter sets current and syncs aria-current; focus ring visible\n- Error state #ff4d4f with ✕ glyph and text; vertical below 532px or via orientation=vertical; motion honors prefers-reduced-motion\n\n### State Layers (M3)\n- The four state layers use the content color (e.g. on-primary) with opacities exactly at the snapshot 8/10/10/16%; do not recolor them\n- The four layers can stack simultaneously (e.g. hover+focus+press), press above hover in z-order\n- The focus state keeps a visible focus ring; never rely on the state layer alone\n- Implement state layers as one absolutely positioned overlay per state driven by data attributes — not by swapping background-image per state\n\n### Toast Spring Entrance\n- Entrance initial state mirrors react-hot-toast: off-screen travel + scale 0.6 + opacity 0.5 (direction per edge)\n- Entrance spring strictly stiffness 300 / damping 25 (mass 1, ζ≈0.722); exit 0.4s cubic-bezier(.06,.71,.55,1)\n- 4000ms auto-dismiss lifecycle (sonner&#39;s source value); timers cleared on unmount/manual close\n- Container role=status (aria-live=polite), messages manually closeable via ✕; never critical info\n- Under prefers-reduced-motion both directions become a bare fade (react-hot-toast&#39;s official degradation)\n\n### Keyboard Navigation\n- Scene keys follow APG/WebAIM exactly: toolbar arrows rove; tabs arrows select; dialog Esc returns focus\n- The skip link becomes visible on keyboard focus and jumps past repeated blocks\n- ring is a JS-type param: native keeps the default outline; strong draws a --kn-ring-width solid ring\n- focus ≠ selection: on tabs, the focus ring and the selected fill are simultaneously distinguishable and different\n- The key log announces via aria-live; everything is keyboard-only operable\n\n### Recipe-level\n- The step bar is a promise list: split only linear tasks, always show progress in the headers, mark the failing step with the error state; each step holds complete data merged at the end (Ant StepsForm); auto-vertical below 532px\n- The last step requires an explicit \&quot;confirm again\&quot; before submit (Ant form-page template rule), and success gets a clear result feedback: light = spring toast (heavy = result-page countdown)\n- State layers take the content color (on color), one layer at a time: hover +8%, focus +10%, press +10%; focus adds a focus-visible ring; state never rides on color alone\n- Spring toast params = entry official defaults: stiffness 300 / damping 25 (ζ≈0.722, overshoot ≈3.8% and no more — TDesign&#39;s \&quot;UI is Cubic only\&quot;) / edge bottom / lifetime 4000ms; hover pauses the timer, ✕ closes manually; reduced-motion degrades entrance/exit to pure fade\n- Complete keyboard path: roving tabindex + arrow keys on step headers; Esc dismisses the toast and restores focus to the submit button; the primary button binds Return; no tabindex≥1, no outline:0 (keyboard-navigation engineering red lines)\n\n## Research source\n\nout/design-study/16-composition-recipes.md §7 配方 c「分段表单流」+ §8 巧思 6(依据:Ant Steps/Form/message/research-form、ProForm StepsForm、M3 state-layers/m3-expressive、TDesign motion、Ant Modal focusable、Apple Buttons、WAI-ARIA APG Dialog)\n\n## Source\n\n/uiux-atlas/en/recipes/segmented-form-flow/&quot;],&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;RecipePromptExport&quot;,&quot;value&quot;:true}" await-children><div class="prompt-box"><div class="prompt-actions"><button type="button" class="btn-primary" data-magnet="true">Copy replication prompt</button><button type="button" class="btn-ghost" aria-expanded="false">View prompt</button></div></div><!--astro:end--></astro-island>  <p class="home-res-link"> <a href="/uiux-atlas/en/resources/">Go beyond: specs · libraries · tools · galleries →</a> </p> </div>  </main> <footer class="site-footer"> <div class="site-footer-inner">  <div class="site-footer-grid"> <section class="site-footer-col"> <p class="site-footer-head">License</p> <p class="site-footer-line"> Demo code  <a href="/uiux-atlas/LICENSE">MIT</a> · Text  <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+CC BY-NC 4.0<span class="acc-src-ico" aria-hidden="true">↗</span>  <span class="sr-only"> (opens in new tab) </span> </a> </p> <p class="site-footer-line">Every value cites a first-party source</p> </section> <nav class="site-footer-col" aria-label="Categories"> <p class="site-footer-head">Categories</p> <ul class="site-footer-links"> <li> <a href="/uiux-atlas/en/styles/">Styles</a> </li><li> <a href="/uiux-atlas/en/materials/">Materials</a> </li><li> <a href="/uiux-atlas/en/motion/">Motion</a> </li><li> <a href="/uiux-atlas/en/color/">Color</a> </li><li> <a href="/uiux-atlas/en/type/">Typography</a> </li><li> <a href="/uiux-atlas/en/layout/">Layout</a> </li><li> <a href="/uiux-atlas/en/components/">Components</a> </li><li> <a href="/uiux-atlas/en/icons/">Icons</a> </li><li> <a href="/uiux-atlas/en/dataviz/">Data Viz</a> </li><li> <a href="/uiux-atlas/en/principles/">Principles</a> </li> <li><a href="/uiux-atlas/en/resources/">Resources</a></li> <li><a href="/uiux-atlas/en/trends/">Design trend tracker</a></li> <li><a href="/uiux-atlas/en/recipes/">Recipes</a></li>  <li><a href="/uiux-atlas/en/paths/">Learning paths</a></li>  <li><a href="/uiux-atlas/en/graph/">Graph</a></li> </ul> </nav> <nav class="site-footer-col" aria-label="Machine entry points"> <p class="site-footer-head">Machine entry points</p> <ul class="site-footer-links"> <li><a href="/uiux-atlas/llms.txt">llms.txt · full entry index</a></li> <li><a href="/uiux-atlas/registry/index.json">registry · component items</a></li>  <li class="site-footer-mcp"> MCP · replication prompt server · <code>mcp/server.mjs</code> </li> </ul> </nav> </div>   <section class="site-footer-sound" aria-labelledby="site-sound-head" data-sound-panel> <p class="site-footer-head" id="site-sound-head">Switch sounds</p> <div class="site-sound-controls"> <button type="button" class="sound-toggle" data-sound-toggle aria-pressed="false"> Sounds </button> <label class="site-sound-label" for="site-sound-volume">Volume</label> <input class="site-sound-volume" id="site-sound-volume" type="range" min="0" max="1" step="0.05" value="0.7" data-sound-volume> <span class="site-sound-label">Preview</span> <button type="button" class="sound-btn" data-sound-preview="pour">Pour</button> <button type="button" class="sound-btn" data-sound-preview="splash">Splash</button> <button type="button" class="sound-btn" data-sound-preview="rise">Rise</button> <button type="button" class="sound-btn" data-sound-preview="finish">Finish</button> </div> <p class="site-sound-hint">Synchronized sounds for the liquid theme switch; the toggle and volume are stored in this browser.</p> </section>  </div> </footer>  <script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><astro-island uid="wvwuO" prefix="r5" component-url="/uiux-atlas/_astro/CommandPalette.CNoSlN5P.js" component-export="default" renderer-url="/uiux-atlas/_astro/client.CyNhh_UO.js" props="{&quot;locale&quot;:[0,&quot;en&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;CommandPalette&quot;,&quot;value&quot;:true}"></astro-island> <script type="module" src="/uiux-atlas/_astro/Base.astro_astro_type_script_index_0_lang.FJl-szOn.js"></script> </body> </html>
